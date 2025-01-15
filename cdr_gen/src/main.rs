@@ -1,47 +1,73 @@
 use rand::Rng;
+use sled::{Db};  // Removed IVec import
+use serde::{Serialize, Deserialize};  // Added serde imports
+use std::sync::Mutex;
 
-fn generate_msisdn(cc_code: &str, ndc_code: u16, sn_length: usize) -> Result<String, String> {
-    if sn_length < 6 || sn_length > 10 {
-        return Err("Subscriber number length must be between 6 and 10.".to_string());
-    }
-
-
-    let mut rng = rand::thread_rng();
-    let sn_random_number: String = (0..sn_length)
-        .map(|_| rng.gen_range(0..10).to_string())
-        .collect();
-    Ok(format!("{}{}{}", cc_code, ndc_code.to_string(), sn_random_number))
+#[derive(Debug, Clone, Serialize, Deserialize)]  // Derive Serialize and Deserialize
+enum CustomerType {
+    Home,
+    National,
+    International,
 }
 
-fn generate_imsi(mcc_code: u16, mnc_code: u16) -> Result<String, String> {
-    let hlr_code="01";
-    let msin_length = 8;
-    if mcc_code > 999 || mcc_code < 100 {
-        return Err("MCC must be a 3-digit number.".to_string());
-    }
-    if mnc_code > 99 || mnc_code < 10 {
-        return Err("MNC must be a 2-digit number.".to_string());
-    }
-    let mut rng = rand::thread_rng();
-    let msin_random_number: String = (0..msin_length)
-        .map(|_| rng.gen_range(0..10).to_string())
-        .collect();
-    Ok(format!("{}{}{}{}", mcc_code.to_string(), mnc_code.to_string(),hlr_code ,msin_random_number))    
+#[derive(Debug, Clone, Serialize, Deserialize)]  // Added Serialize and Deserialize
+struct Customer {
+    id: u32,
+    customer_type: CustomerType,
+    msisdn: String,
+    imsi: String,
+    imei: String,
 }
 
+impl Customer {
+    fn new(cc_code: &str, ndc_code: u16, sn_length: usize, mcc_code: u16, mnc_code: u16, customer_type: CustomerType) -> Self {
+        let id = Customer::generate_id();
+        let msisdn = Customer::generate_msisdn(cc_code, ndc_code, sn_length);
+        let imsi = Customer::generate_imsi(mcc_code, mnc_code);
+        let imei = Customer::generate_imei();
+        
+        Customer {
+            id,
+            customer_type,
+            msisdn,
+            imsi,
+            imei,
+        }
+    }
 
-fn generate_imei() -> Result<String, String> {
-    let mut rng = rand::thread_rng();
-    
-    let imei_base: String = (0..14)
-        .map(|_| rng.gen_range(0..10).to_string())
-        .collect();
-    
-    let checksum = calculate_luhn_checksum(&imei_base);
-    
-    Ok(format!("{}{}", imei_base, checksum))
+    fn generate_id() -> u32 {
+        static COUNTER: Mutex<u32> = Mutex::new(0);
+        let mut counter = COUNTER.lock().unwrap();
+        *counter += 1;
+        *counter
+    }
+
+    fn generate_msisdn(cc_code: &str, ndc_code: u16, sn_length: usize) -> String {
+        let mut rng = rand::thread_rng();
+        let sn_random_number: String = (0..sn_length)
+            .map(|_| rng.gen_range(0..10).to_string())
+            .collect();
+        format!("{}{}{}", cc_code, ndc_code, sn_random_number)
+    }
+
+    fn generate_imsi(mcc_code: u16, mnc_code: u16) -> String {
+        let msin_length = 8;
+        let mut rng = rand::thread_rng();
+        let msin_random_number: String = (0..msin_length)
+            .map(|_| rng.gen_range(0..10).to_string())
+            .collect();
+        format!("{}{}01{}", mcc_code, mnc_code, msin_random_number)
+    }
+
+    fn generate_imei() -> String {
+        let mut rng = rand::thread_rng();
+        let imei_base: String = (0..14)
+            .map(|_| rng.gen_range(0..10).to_string())
+            .collect();
+        let checksum = calculate_luhn_checksum(&imei_base);
+        format!("{}{}", imei_base, checksum)
+    }
 }
-
 
 fn calculate_luhn_checksum(number: &str) -> u8 {
     let digits: Vec<u8> = number.chars()
@@ -61,26 +87,64 @@ fn calculate_luhn_checksum(number: &str) -> u8 {
     checksum
 }
 
-fn main() {
-    println!("Hello, world!");
-    let cc_code = "+216";
-    let ndc_code = 50;
-    let sn_length = 6;
+// Database repository using Sled
+struct CustomerDatabaseRepository {
+    db: Db,
+}
 
-    match generate_msisdn(cc_code, ndc_code, sn_length) {
-        Ok(msisdn) => println!("Generated MSISDN: {}", msisdn),
-        Err(e) => eprintln!("Error: {}", e),
+impl CustomerDatabaseRepository {
+    fn new(db_path: &str) -> Self {
+        let db = sled::open(db_path).expect("Failed to open Sled database");
+        CustomerDatabaseRepository { db }
     }
 
-    let mcc_code = 111;
-    let mnc_code = 22;
-    match generate_imsi(mcc_code, mnc_code) {
-        Ok(imsi) => println!("Generated IMSI: {}", imsi),
-        Err(e) => eprintln!("Error: {}", e),
-    }  
+    fn add_customer(&self, customer: &Customer) {
+        let customer_id = customer.id.to_string();
+        let serialized_customer = bincode::serialize(customer).expect("Failed to serialize customer");
 
-    match generate_imei() {
-        Ok(imei) => println!("Generated IMEI: {}", imei),
-        Err(e) => eprintln!("Error: {}", e),
-    }   
+        self.db.insert(customer_id, serialized_customer).expect("Failed to insert customer");
+    }
+
+    fn get_customer_by_id(&self, id: u32) -> Option<Customer> {
+        let customer_id = id.to_string();
+        if let Some(serialized_customer) = self.db.get(customer_id).expect("Failed to retrieve customer") {
+            let customer: Customer = bincode::deserialize(&serialized_customer).expect("Failed to deserialize customer");
+            Some(customer)
+        } else {
+            None
+        }
+    }
+
+    fn get_all_customers(&self) -> Vec<Customer> {
+        let mut customers = Vec::new();
+        for item in self.db.iter() {
+            if let Ok((_, serialized_customer)) = item {
+                if let Ok(customer) = bincode::deserialize::<Customer>(&serialized_customer) {
+                    customers.push(customer);
+                }
+            }
+        }
+        customers
+    }
+}
+
+fn main() {
+    // Database example using Sled
+    let db_repo = CustomerDatabaseRepository::new("customers.sled");
+    let customer1 = Customer::new("+1", 415, 7, 310, 10, CustomerType::National);
+    db_repo.add_customer(&customer1);
+    let customer2 = Customer::new("+1", 415, 7, 310, 10, CustomerType::National);
+    db_repo.add_customer(&customer2);
+    let customer3 = Customer::new("+1", 415, 7, 310, 11, CustomerType::National);
+    db_repo.add_customer(&customer3);
+
+    if let Some(customer) = db_repo.get_customer_by_id(1) {
+        println!("{:?}", customer);
+    }
+
+    // Print all customers stored in the database
+    let all_customers = db_repo.get_all_customers();
+    for customer in all_customers {
+        println!("{:?}", customer);
+    }
 }
