@@ -49,7 +49,7 @@ fn main() {
     }
 
     // Generate commit message with the current date
-    let current_date = Local::now().format("%d/%m/%Y").to_string();
+    let current_date = Local::now().format("%Y/%m/%d").to_string();
     let commit_message = format!("commit {}", current_date);
 
     // Create commit with `git commit -m`
