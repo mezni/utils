@@ -76,4 +76,29 @@ fn main() {
             exit(1);
         }
     }
+
+    // Push changes to the remote repository (main branch)
+    let push_result = Command::new("git")
+        .arg("push")
+        .arg("origin")
+        .arg("main")
+        .output();
+
+    match push_result {
+        Ok(output) => {
+            if output.status.success() {
+                println!("Successfully pushed changes to remote repository.");
+            } else {
+                eprintln!(
+                    "Git push failed: {}",
+                    String::from_utf8_lossy(&output.stderr)
+                );
+                exit(1);
+            }
+        }
+        Err(error) => {
+            eprintln!("Failed to push changes to remote repository: {}", error);
+            exit(1);
+        }
+    }
 }
