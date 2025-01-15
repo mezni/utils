@@ -17,7 +17,7 @@ fn main() {
         eprintln!("Failed to set Git user email: {}", error);
         exit(1);
     } else {
-        println!("Git user email set to: {}", git_email);
+        println!("Git user email set");
     }
 
     // Set the global user name
@@ -32,7 +32,7 @@ fn main() {
         eprintln!("Failed to set Git user name: {}", error);
         exit(1);
     } else {
-        println!("Git user name set to: {}", git_name);
+        println!("Git user name");
     }
 
     // Stage changes using `git add -A`
