@@ -1,0 +1,29 @@
+customers:
+  - customer_type: "home"
+    cc_ndc:
+      - cc: "+216"
+        ndc: [30, 31, 32]
+        mcc: 603
+        mnc: 10
+        perc: 40
+      - cc: "+216"
+        ndc: [50, 51, 52, 53]
+        mcc: 603
+        mnc: 11
+        perc: 60
+    digits: 6
+    count: 10
+  - customer_type: "national"
+    cc_ndc:
+      - cc: "+216"
+        ndc: [20, 21, 23]
+        mcc: 603
+        mnc: 20
+        perc: 50
+      - cc: "+216"
+        ndc: [95, 96, 97]
+        mcc: 603
+        mnc: 30
+        perc: 50
+    digits: 6
+    count: 10
