@@ -10,7 +10,6 @@ struct DirectoryNumberConfig {
 }
 
 struct GeneratorConfig {
-    id: u32,
     customer_type: String,
     cc_ndc: Vec<DirectoryNumberConfig>,
     digits: usize,
@@ -118,12 +117,9 @@ fn calculate_luhn_checksum(number: &str) -> u8 {
     (10 - (sum % 10)) % 10
 }
 
-fn generator(config: &GeneratorConfig) {
+fn generator(config: &GeneratorConfig) -> Vec<Customer> {
     let mut rng = rand::thread_rng();
-
-    println!("Customer Type: {}", config.customer_type);
-    println!("Digits: {}", config.digits);
-    println!("Count: {}", config.count);
+    let mut customers = Vec::new();
 
     let mut cumulative_perc = Vec::new();
     let mut total = 0;
@@ -158,17 +154,17 @@ fn generator(config: &GeneratorConfig) {
                 selected.mcc,
                 selected.mnc,
             ) {
-                Ok(customer) => println!(
-                    "Generated Customer {}: ID: {}, MSISDN: {}, IMSI: {}, IMEI: {}",
-                    customer.customer_type, customer.id, customer.msisdn, customer.imsi, customer.imei
-                ),
+                Ok(customer) => customers.push(customer),
                 Err(e) => println!("Error generating customer: {}", e),
             }
         } else {
             println!("Error: No configuration selected!");
         }
     }
+
+    customers
 }
+
 
 fn main() {
     let cc_ndc1 = DirectoryNumberConfig {
@@ -188,12 +184,18 @@ fn main() {
     };
 
     let config = GeneratorConfig {
-        id: 1,
         customer_type: "home".to_string(),
         cc_ndc: vec![cc_ndc1, cc_ndc2],
         digits: 6,
         count: 10,
     };
 
-    generator(&config);
+    let customers = generator(&config);
+
+    for customer in customers {
+        println!(
+            "Generated Customer {}: ID: {}, MSISDN: {}, IMSI: {}, IMEI: {}",
+            customer.customer_type, customer.id, customer.msisdn, customer.imsi, customer.imei
+        );
+    }
 }
