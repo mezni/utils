@@ -22,12 +22,17 @@ fn read_csv_file(file_path: &str) -> Result<Vec<String>, io::Error> {
 }
 
 /// Creates a RecordBatch from the schema, UUIDs, and additional columns.
-fn create_record_batch(schema: Arc<Schema>, uuids: Vec<String>, lines: Vec<String>, file_path: &str, current_time: &str) -> Result<RecordBatch, ArrowError> {
+fn create_record_batch(
+    schema: Arc<Schema>,
+    uuids: Vec<String>,
+    lines: Vec<String>,
+    file_path: &str,
+    current_time: &str,
+) -> Result<RecordBatch, datafusion::arrow::error::ArrowError> {
     let id_array = StringArray::from(uuids);
     let line_array = StringArray::from(lines);
-let file_name_array = StringArray::from(vec![file_path.to_string(); line_array.len()]);
-let process_time_array = StringArray::from(vec![current_time.clone(); line_array.len()]);
-
+    let file_name_array = StringArray::from(vec![file_path.to_string()]);
+    let process_time_array = StringArray::from(vec![current_time.to_string()]);
 
     RecordBatch::try_new(
         schema,
