@@ -1,20 +1,8 @@
 use rand::Rng;
 use std::sync::Mutex;
+mod config;  // Declare the config module
 
-struct DirectoryNumberConfig {
-    cc: String,
-    ndc: Vec<u16>,
-    mcc: u16,
-    mnc: u16,
-    perc: u16,
-}
-
-struct GeneratorConfig {
-    customer_type: String,
-    cc_ndc: Vec<DirectoryNumberConfig>,
-    digits: usize,
-    count: usize,
-}
+use config::{read_config, process_customer};
 
 struct Customer {
     id: u32,
@@ -117,23 +105,24 @@ fn calculate_luhn_checksum(number: &str) -> u8 {
     (10 - (sum % 10)) % 10
 }
 
-fn generator(config: &GeneratorConfig) -> Vec<Customer> {
+fn generator(config: &mut config::GeneratorConfig) -> Vec<Customer> {
     let mut rng = rand::thread_rng();
     let mut customers = Vec::new();
 
     let mut cumulative_perc = Vec::new();
     let mut total = 0;
 
-    for cc_ndc in &config.cc_ndc {
-        total += cc_ndc.perc as u32;
-        cumulative_perc.push(total);
-    }
+    // Now config.cc_ndc is mutable and can be updated
+for cc_ndc in &mut config.cc_ndc {
+    total += cc_ndc.perc.unwrap() as u32; 
+    cumulative_perc.push(total);
+}
 
     if total != 100 {
         println!("Warning: Total percentages do not sum to 100!");
     }
 
-    for _ in 0..config.count {
+    for _ in 0..config.count.unwrap() {
         let choice = rng.gen_range(0..total);
         let mut selected = None;
 
@@ -150,52 +139,38 @@ fn generator(config: &GeneratorConfig) -> Vec<Customer> {
                 config.customer_type.clone(),
                 &selected.cc,
                 ndc,
-                config.digits,
-                selected.mcc,
-                selected.mnc,
+                config.digits.unwrap(),
+                selected.mcc.unwrap(),
+                selected.mnc.unwrap(),
             ) {
                 Ok(customer) => customers.push(customer),
                 Err(e) => println!("Error generating customer: {}", e),
             }
-        } else {
-            println!("Error: No configuration selected!");
         }
     }
 
     customers
 }
 
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // Read and process the configuration
+    let mut customer_list = read_config("config.yaml")?;
 
-fn main() {
-    let cc_ndc1 = DirectoryNumberConfig {
-        cc: "+216".to_string(),
-        ndc: vec![30, 31, 32],
-        mcc: 603,
-        mnc: 10,
-        perc: 40,
-    };
+    // Iterate over each customer in the customer list and process
+    for customer_config in &mut customer_list.customers {
+        // Process each customer (e.g., validate or update fields)
+        process_customer(customer_config);
 
-    let cc_ndc2 = DirectoryNumberConfig {
-        cc: "+216".to_string(),
-        ndc: vec![50, 51, 52, 53],
-        mcc: 603,
-        mnc: 11,
-        perc: 60,
-    };
+        // Now we can call generator with a mutable reference
+        let customers = generator(customer_config);
 
-    let config = GeneratorConfig {
-        customer_type: "home".to_string(),
-        cc_ndc: vec![cc_ndc1, cc_ndc2],
-        digits: 6,
-        count: 10,
-    };
-
-    let customers = generator(&config);
-
-    for customer in customers {
-        println!(
-            "Generated Customer {}: ID: {}, MSISDN: {}, IMSI: {}, IMEI: {}",
-            customer.customer_type, customer.id, customer.msisdn, customer.imsi, customer.imei
-        );
+        for customer in customers {
+            println!(
+                "Generated Customer {}: ID: {}, MSISDN: {}, IMSI: {}, IMEI: {}",
+                customer.customer_type, customer.id, customer.msisdn, customer.imsi, customer.imei
+            );
+        }
     }
+
+    Ok(())
 }
