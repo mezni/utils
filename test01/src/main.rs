@@ -34,7 +34,8 @@ async fn main() -> Result<(), datafusion::error::DataFusionError> {
     let df = session_context.read_batch(batch)?;
 
     // Show the records
-    df.show().await?;
-
+    // df.show().await?;
+    let df1=df.limit(0, Some(10))?;
+    df1.show().await?;
     Ok(())
 }
