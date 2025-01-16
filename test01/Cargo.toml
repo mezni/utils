@@ -4,3 +4,6 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+datafusion = "44.0.0"  
+tokio = { version = "1.43.0", features = ["full"] }
+arrow = "44.0.0" 
