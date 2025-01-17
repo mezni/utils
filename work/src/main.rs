@@ -1,3 +1,5 @@
+pub mod myfs;
 fn main() {
-    println!("Hello, world!");
+    println!("MAIN");
+    myfs::test_create_dir();
 }
