@@ -1,4 +1,3 @@
-
 /*
 pub mod myfs;
 
@@ -23,7 +22,7 @@ fn main() -> sled::Result<()> {
 
     // Retrieve a value from the tree
     let value = tree.get("key1")?;
-    
+
     // Deserialize the byte array into a string
     if let Some(bytes) = value {
         let str_value = String::from_utf8_lossy(&bytes).into_owned();
