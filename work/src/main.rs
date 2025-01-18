@@ -12,7 +12,7 @@ use sled::{open, IVec};
 
 fn main() -> sled::Result<()> {
     // Open the Sled database
-    let db = open("my_database")?;
+    let db = open("QUEUE")?;
 
     // Open a tree for our data
     let tree = db.open_tree("my_tree")?;
