@@ -32,8 +32,10 @@ fn main() -> Result<(), Box<dyn Error>> {
     let queue = Queue::new("my_queue")?;
 
     // Enqueue some items into the queue
+    let key1 = String::from("Key1");
     let val1 = String::from("Item 1");
-    queue.enqueue("Item1", &val1)?; // Enqueue with val1
+
+    queue.enqueue(&key1, &val1)?; // Enqueue with val1
     queue.enqueue("Item2", "Item 2")?;
     queue.enqueue("Item3", "Item 3")?;
 
