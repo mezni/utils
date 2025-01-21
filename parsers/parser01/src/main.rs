@@ -6,21 +6,21 @@ struct SyslogMessage {
     hostname: String,
     app_name: String,
     sd_type: String,
-   kv_pairs: Vec<(String, Option<String>)>,
+    kv_pairs: Vec<(String, String)>,
 }
 
-fn parse_kv_pairs(message: &str) -> Result<Vec<(String, Option<String>)>, String> {
-    let kv_pairs: Vec<(String, Option<String>)> = message
+fn parse_kv_pairs(message: &str) -> Result<Vec<(String, String)>, String> {
+    let kv_pairs: Vec<(String, String)> = message
         .split_whitespace()
-        .map(|pair| {
-            if let Some((key, value)) = pair.split_once('=') {
-                (key.to_string(), Some(value.to_string()))
-            } else {
-                (pair.to_string(), None)
-            }
+        .filter_map(|pair| {
+            let mut parts = pair.splitn(2, '=');
+            let key = parts.next()?;
+            let value = parts.next()?;
+            let value = value.trim_matches('"').to_string(); // Remove quotes
+            Some((key.to_string(), value))
         })
         .collect();
-    
+
     Ok(kv_pairs)
 }
 
@@ -50,7 +50,7 @@ fn parse_syslog(input: &str) -> Result<SyslogMessage, String> {
 }
 
 fn main() {
-    let input = r#"<14>1 2019-12-27T09:48:23.298Z YAOFW01 RT_FLOW - RT_FLOW_SESSION_CLOSE [junos@2636.1.1.1.2.28 x=y v=t ]"#;
+    let input = r#"<14>1 2019-12-27T09:48:23.298Z YAOFW01 RT_FLOW - RT_FLOW_SESSION_CLOSE [junos@2636.1.1.1.2.28 reason="idle Timeout" source-address="10.40.186.212" source-port="38812" destination-address="41.202.217.132" destination-port="53" connection-tag="0" service-name="junos-dns-udp" nat-source-address="41.202.207.5" nat-source-port="23329" nat-destination-address="41.202.217.132" nat-destination-port="53" nat-connection-tag="0" src-nat-rule-type="source rule" src-nat-rule-name="rule_1" dst-nat-rule-type="N/A" dst-nat-rule-name="N/A" protocol-id="17" policy-name="Gi_TO_Untrust_1" source-zone-name="Gi-SZ" destination-zone-name="Untrust" session-id-32="94942576" packets-from-client="1" bytes-from-client="70" packets-from-server="1" bytes-from-server="130" elapsed-time="3" application="UNKNOWN" nested-application="UNKNOWN" username="N/A" roles="N/A" packet-incoming-interface="reth0.2572" encrypted="UNKNOWN"]"#;
     match parse_syslog(input) {
         Ok(msg) => println!("{:?}", msg),
         Err(err) => println!("Error: {}", err),
