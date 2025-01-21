@@ -26,18 +26,28 @@ fn parse_kv_pairs(message: &str) -> Result<Vec<(String, String)>, String> {
 
 fn parse_syslog(input: &str) -> Result<SyslogMessage, String> {
     let mut parts = input.splitn(8, |c| c == ' ' || c == '>' || c == '[' || c == ']');
-    let pri = parts.next().unwrap().trim_start_matches('<').trim_end_matches('>').to_string();
+    let pri = parts
+        .next()
+        .unwrap()
+        .trim_start_matches('<')
+        .trim_end_matches('>')
+        .to_string();
     let version: u32 = parts.next().unwrap().parse().unwrap();
     let ts = parts.next().unwrap().to_string();
     let hostname = parts.next().unwrap().to_string();
     let app_name = parts.next().unwrap().to_string();
     parts.next(); // Consume the "-" character
     let sd_type = parts.next().unwrap().to_string();
-    let message = parts.next().unwrap().to_string().trim_start_matches('[').trim_end_matches(']').to_string();
+    let message = parts
+        .next()
+        .unwrap()
+        .to_string()
+        .trim_start_matches('[')
+        .trim_end_matches(']')
+        .to_string();
 
-        
     let kv_pairs = parse_kv_pairs(&message)?;
-        
+
     Ok(SyslogMessage {
         pri,
         version,
