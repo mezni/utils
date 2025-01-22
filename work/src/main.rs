@@ -14,28 +14,32 @@ use syslog_gen::syslog::{SyslogMessage, delete_old_entries};
 const LOOP_COUNT: usize = 1000;
 const MAX_BUFFER_SIZE: usize = 1000;
 const SLEEP_DURATION_SECS: u64 = 5;
-const MAX_LINES: usize = 20_000; // Limit to 20,000 lines
+const MAX_LINES_PER_FILE: usize = 5_000;
 
 fn main() {
     let mut rng: ThreadRng = thread_rng();
     let mut buffer_open: HashMap<String, SyslogMessage> = HashMap::new();
     let mut buffer_close: HashMap<String, SyslogMessage> = HashMap::new();
-    let mut line_count: usize = 0; // Counter for the number of lines written
+    let mut line_count: usize = 0;
+    let mut file_index: usize = 1;
 
-    // Open a file for writing logs
-    let file = File::create("syslog_output.log").expect("Failed to create file");
+    // Create the first file
+    let mut file_name = format!("syslog_{:02}.log", file_index);
+    let mut file = File::create(&file_name).expect("Failed to create file");
     let mut writer = BufWriter::new(file);
 
     for _ in 0..LOOP_COUNT {
-        if line_count >= MAX_LINES {
-            break;
-        }
-
         let cnt = buffer_open.len();
         if cnt < MAX_BUFFER_SIZE {
             for _ in 0..MAX_BUFFER_SIZE - cnt {
-                if line_count >= MAX_LINES {
-                    break;
+                if line_count >= MAX_LINES_PER_FILE {
+                    // Switch to a new file
+                    writer.flush().expect("Failed to flush writer");
+                    file_index += 1;
+                    file_name = format!("syslog_{:02}.log", file_index);
+                    file = File::create(&file_name).expect("Failed to create file");
+                    writer = BufWriter::new(file);
+                    line_count = 0; // Reset line count for the new file
                 }
 
                 let syslog_message = SyslogMessage::new(&mut rng);
@@ -55,16 +59,18 @@ fn main() {
         let now = Utc::now();
         let deleted_entries = delete_old_entries(now, &mut buffer_open, &mut buffer_close);
         for (_, sl) in &deleted_entries {
-            if line_count >= MAX_LINES {
-                break;
+            if line_count >= MAX_LINES_PER_FILE {
+                // Switch to a new file
+                writer.flush().expect("Failed to flush writer");
+                file_index += 1;
+                file_name = format!("syslog_{:02}.log", file_index);
+                file = File::create(&file_name).expect("Failed to create file");
+                writer = BufWriter::new(file);
+                line_count = 0; // Reset line count for the new file
             }
 
             writeln!(writer, "{}", sl).expect("Failed to write to file");
             line_count += 1;
-        }
-
-        if line_count >= MAX_LINES {
-            break;
         }
 
         writer.flush().expect("Failed to flush writer");
@@ -74,5 +80,5 @@ fn main() {
     // Flush any remaining writes to ensure all data is saved
     writer.flush().expect("Failed to flush writer");
 
-    println!("Finished writing {} lines to the file.", line_count);
+    println!("Finished writing logs to multiple files.");
 }
