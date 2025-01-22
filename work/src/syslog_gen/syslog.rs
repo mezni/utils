@@ -1,6 +1,6 @@
 use chrono::{DateTime, Utc};
-use rand::Rng;
 use rand::rngs::ThreadRng;
+use rand::Rng;
 use std::collections::{BTreeMap, HashMap};
 
 #[derive(Debug, Clone)]
@@ -37,11 +37,13 @@ impl SyslogMessage {
     }
 
     fn generate_ip_address(rng: &mut ThreadRng) -> String {
-        format!("{}.{}.{}.{}",
-                 rng.gen_range(1..256),
-                 rng.gen_range(0..256),
-                 rng.gen_range(0..256),
-                 rng.gen_range(0..256))
+        format!(
+            "{}.{}.{}.{}",
+            rng.gen_range(1..256),
+            rng.gen_range(0..256),
+            rng.gen_range(0..256),
+            rng.gen_range(0..256)
+        )
     }
 
     pub fn to_string(&self, event_type: &str) -> String {
@@ -63,7 +65,9 @@ pub fn delete_old_entries(
     let mut deleted_entries: BTreeMap<DateTime<Utc>, String> = BTreeMap::new();
 
     buffer_open.retain(|ts, sl| {
-        let ts_dt = DateTime::parse_from_rfc3339(ts).unwrap().with_timezone(&Utc);
+        let ts_dt = DateTime::parse_from_rfc3339(ts)
+            .unwrap()
+            .with_timezone(&Utc);
         if ts_dt < now {
             let val = sl.to_string("RT_FLOW_SESSION_OPEN");
             deleted_entries.insert(ts_dt, val);
@@ -74,7 +78,9 @@ pub fn delete_old_entries(
     });
 
     buffer_close.retain(|ts, sl| {
-        let ts_dt = DateTime::parse_from_rfc3339(ts).unwrap().with_timezone(&Utc);
+        let ts_dt = DateTime::parse_from_rfc3339(ts)
+            .unwrap()
+            .with_timezone(&Utc);
         if ts_dt < now {
             let val = sl.to_string("RT_FLOW_SESSION_CLOSE");
             deleted_entries.insert(sl.start_ts, val);

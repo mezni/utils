@@ -5,18 +5,18 @@ use rand::rngs::ThreadRng;
 use rand::thread_rng;
 use std::collections::HashMap;
 use std::fs::File;
-use std::io::{Write, BufWriter};
+use std::io::{BufWriter, Write};
 use std::thread;
 use std::time::Duration as StdDuration;
 
-use syslog_gen::syslog::{SyslogMessage, delete_old_entries};
+use syslog_gen::syslog::{delete_old_entries, SyslogMessage};
 
 const LOOP_COUNT: usize = 1000;
 const MAX_BUFFER_SIZE: usize = 1000;
 const SLEEP_DURATION_SECS: u64 = 5;
 const MAX_LINES_PER_FILE: usize = 5_000;
 
-fn main() {
+fn generate() {
     let mut rng: ThreadRng = thread_rng();
     let mut buffer_open: HashMap<String, SyslogMessage> = HashMap::new();
     let mut buffer_close: HashMap<String, SyslogMessage> = HashMap::new();
@@ -44,11 +44,17 @@ fn main() {
 
                 let syslog_message = SyslogMessage::new(&mut rng);
                 buffer_open.insert(
-                    syslog_message.start_ts.format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string(),
+                    syslog_message
+                        .start_ts
+                        .format("%Y-%m-%dT%H:%M:%S%.3fZ")
+                        .to_string(),
                     syslog_message.clone(),
                 );
                 buffer_close.insert(
-                    syslog_message.end_ts.format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string(),
+                    syslog_message
+                        .end_ts
+                        .format("%Y-%m-%dT%H:%M:%S%.3fZ")
+                        .to_string(),
                     syslog_message,
                 );
             }
@@ -81,4 +87,8 @@ fn main() {
     writer.flush().expect("Failed to flush writer");
 
     println!("Finished writing logs to multiple files.");
+}
+
+fn main() {
+    generate()
 }
