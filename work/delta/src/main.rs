@@ -1,102 +1,123 @@
-use deltalake::arrow::{
-    array::{Int32Array, StringArray, TimestampMicrosecondArray},
-    datatypes::{DataType as ArrowDataType, Field, Schema as ArrowSchema, TimeUnit},
-    record_batch::RecordBatch,
-};
-use deltalake::kernel::{DataType, PrimitiveType, StructField};
-use deltalake::operations::collect_sendable_stream;
-use deltalake::parquet::{
-    basic::{Compression, ZstdLevel},
-    file::properties::WriterProperties,
-};
-use deltalake::{protocol::SaveMode, DeltaOps};
-
+use datafusion::prelude::*; // Import everything from prelude, including ParquetReadOptions
+use datafusion::arrow::array::StringArray;
+use datafusion::arrow::datatypes::{DataType, Field, Schema};
+use datafusion::arrow::record_batch::RecordBatch;
+use datafusion::datasource::MemTable;
+use datafusion::dataframe::DataFrameWriteOptions;
 use std::sync::Arc;
 
-fn create_batch() -> RecordBatch {
-    // Define the schema
-    let schema = Arc::new(ArrowSchema::new(vec![
-        Field::new("timestamp", ArrowDataType::Utf8, false),
-        Field::new("session-id-32", ArrowDataType::Utf8, false),
-        Field::new("source-address", ArrowDataType::Utf8, false),
-    ]));
+#[tokio::main]
+async fn main() -> datafusion::error::Result<()> {
+    // Initialize execution context
+    let ctx = SessionContext::new();
 
-    // Create arrays
-    let timestamp_values = StringArray::from(vec![
-        "2019-12-27T09:48:23.298Z",
-        "2019-12-27T09:48:23.398Z",
-        "2019-12-27T09:48:23.498Z",
-        "2019-12-27T09:48:23.598Z",
-    ]);
-    let session_id_values = StringArray::from(vec!["23232322", "23232323", "23232324", "23232325"]);
-    let source_address_values =
-        StringArray::from(vec!["21.56.78.2", "21.56.78.3", "21.56.78.4", "21.56.78.5"]);
+    // Define schema
+    let schema = create_schema();
 
-    // Create a RecordBatch
-    RecordBatch::try_new(
-        schema.clone(),
-        vec![
-            Arc::new(timestamp_values),
-            Arc::new(session_id_values),
-            Arc::new(source_address_values),
-        ],
-    )
-    .unwrap()
-}
+    // Create and write the "open" table
+    let open_batch = create_record_batch_open(&schema)?;
+    process_table(&ctx, "open", open_batch, "open.parquet").await?;
 
-fn create_schema() -> Vec<StructField> {
-    vec![
-        StructField::new(
-            String::from("timestamp"),
-            DataType::Primitive(PrimitiveType::String),
-            false,
-        ),
-        StructField::new(
-            String::from("session-id-32"),
-            DataType::Primitive(PrimitiveType::String),
-            true,
-        ),
-        StructField::new(
-            String::from("source-address"),
-            DataType::Primitive(PrimitiveType::String),
-            true,
-        ),
-    ]
-}
+    // Create and write the "close" table
+    let close_batch = create_record_batch_close(&schema)?;
+    process_table(&ctx, "close", close_batch, "close.parquet").await?;
 
-#[tokio::main(flavor = "current_thread")]
-async fn main() -> Result<(), deltalake::errors::DeltaTableError> {
-    let table_uri = Some("tablee"); // Replace with your desired value or None
-    let ops = if let Some(uri) = table_uri {
-        DeltaOps::try_from_uri(uri).await?
-    } else {
-        DeltaOps::new_in_memory()
-    };
+    // Read the "open" Parquet file into a DataFrame
+    let df_open = read_parquet_to_dataframe("open.parquet").await?;
 
-    let writer_properties = WriterProperties::builder()
-        .set_compression(Compression::ZSTD(ZstdLevel::try_new(3).unwrap()))
-        .build();
+    // Read the "close" Parquet file into a DataFrame
+    let df_close = read_parquet_to_dataframe("close.parquet").await?;
 
-    let table = ops
-        .create()
-        .with_columns(create_schema())
-        //.with_partition_columns(["timestamp"])
-        .with_table_name("my_table")
-        .with_comment("A table to show how delta-rs works")
-        .await?;
-
-    let batch = create_batch();
-
-    let writer_properties = WriterProperties::builder()
-        .set_compression(Compression::ZSTD(ZstdLevel::try_new(3).unwrap()))
-        .build();
-
-    // To overwrite instead of append (which is the default), use `.with_save_mode`:
-    let table = DeltaOps(table)
-        .write(vec![batch.clone()])
-        .with_save_mode(SaveMode::Overwrite)
-        .with_writer_properties(writer_properties)
-        .await?;
+    println!("DataFrames read from Parquet files");
 
     Ok(())
+}
+
+/// Define the schema for the data
+fn create_schema() -> Arc<Schema> {
+    Arc::new(Schema::new(vec![
+        Field::new("timestamp", DataType::Utf8, false),
+        Field::new("session-id-32", DataType::Utf8, false),
+        Field::new("source-address", DataType::Utf8, true),
+    ]))
+}
+
+/// Create a record batch for the "open" dataset
+fn create_record_batch_open(schema: &Arc<Schema>) -> datafusion::error::Result<RecordBatch> {
+    create_record_batch(
+        schema,
+        vec![
+            "2019-12-27T09:48:23.298Z",
+            "2019-12-27T09:48:23.398Z",
+            "2019-12-27T09:48:23.498Z",
+            "2019-12-27T09:48:23.598Z",
+        ],
+    )
+}
+
+/// Create a record batch for the "close" dataset
+fn create_record_batch_close(schema: &Arc<Schema>) -> datafusion::error::Result<RecordBatch> {
+    create_record_batch(
+        schema,
+        vec![
+            "2019-12-27T09:48:24.298Z",
+            "2019-12-27T09:48:24.398Z",
+            "2019-12-27T09:48:24.498Z",
+            "2019-12-27T09:48:24.598Z",
+        ],
+    )
+}
+
+/// Helper to create a record batch from timestamp data
+fn create_record_batch(
+    schema: &Arc<Schema>,
+    timestamps: Vec<&str>,
+) -> datafusion::error::Result<RecordBatch> {
+    let timestamp_values = Arc::new(StringArray::from(timestamps));
+    let session_id_values = Arc::new(StringArray::from(vec![
+        "23232322", "23232323", "23232324", "23232325",
+    ]));
+    let source_address_values = Arc::new(StringArray::from(vec![
+        "21.56.78.2", "21.56.78.3", "21.56.78.4", "21.56.78.5",
+    ]));
+
+    Ok(RecordBatch::try_new(
+        schema.clone(),
+        vec![timestamp_values, session_id_values, source_address_values],
+    )?)
+}
+
+/// Process a table: register it and write it to a Parquet file
+async fn process_table(
+    ctx: &SessionContext,
+    table_name: &str,
+    batch: RecordBatch,
+    output_path: &str,
+) -> datafusion::error::Result<()> {
+    // Register the batch as a table
+    let schema = batch.schema();
+    let table = MemTable::try_new(schema, vec![vec![batch]])?;
+    ctx.register_table(table_name, Arc::new(table))?;
+
+    // Write to Parquet
+    let df = ctx.table(table_name).await?;
+    let options = DataFrameWriteOptions::new();
+    df.write_parquet(output_path, options, None).await?;
+
+    println!("Table '{}' written to '{}'.", table_name, output_path);
+    Ok(())
+}
+
+/// Read a Parquet file into a DataFrame
+async fn read_parquet_to_dataframe(file_path: &str) -> datafusion::error::Result<DataFrame> {
+    // Initialize execution context
+    let ctx = SessionContext::new();
+
+    // Create an empty ParquetReadOptions object
+    let options = ParquetReadOptions::default();
+
+    // Read the Parquet file into a DataFrame
+    let df = ctx.read_parquet(file_path, options).await?;
+
+    Ok(df)
 }
