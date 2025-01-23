@@ -1,9 +1,9 @@
-use datafusion::prelude::*; // Import everything from prelude, including ParquetReadOptions
 use datafusion::arrow::array::StringArray;
 use datafusion::arrow::datatypes::{DataType, Field, Schema};
 use datafusion::arrow::record_batch::RecordBatch;
-use datafusion::datasource::MemTable;
 use datafusion::dataframe::DataFrameWriteOptions;
+use datafusion::datasource::MemTable;
+use datafusion::prelude::*;
 use std::sync::Arc;
 
 #[tokio::main]
@@ -23,11 +23,22 @@ async fn main() -> datafusion::error::Result<()> {
     process_table(&ctx, "close", close_batch, "close.parquet").await?;
 
     // Read the "open" Parquet file into a DataFrame
-    let df_open = read_parquet_to_dataframe("open.parquet").await?;
-
+    let df_open = read_parquet_to_dataframe(&ctx, "open.parquet").await?;
+    df_open.clone().show().await?;
     // Read the "close" Parquet file into a DataFrame
-    let df_close = read_parquet_to_dataframe("close.parquet").await?;
-
+    let df_close = read_parquet_to_dataframe(&ctx, "close.parquet").await?;
+    let df_close = df_close.with_column_renamed("session-id-32", "session-id-32_close")?;
+    let df_close = df_close.with_column_renamed("timestamp", "timestamp_close")?;
+    let df_close = df_close.with_column_renamed("source-address", "source-address_close")?;
+    df_close.clone().show().await?;
+    let df_joined = df_open.join(
+        df_close,
+        JoinType::Inner,          // join type
+        &["session-id-32"],       // left keys
+        &["session-id-32_close"], // right keys
+        None,                     // filter
+    )?;
+    df_joined.clone().show().await?;
     println!("DataFrames read from Parquet files");
 
     Ok(())
@@ -78,7 +89,10 @@ fn create_record_batch(
         "23232322", "23232323", "23232324", "23232325",
     ]));
     let source_address_values = Arc::new(StringArray::from(vec![
-        "21.56.78.2", "21.56.78.3", "21.56.78.4", "21.56.78.5",
+        "21.56.78.2",
+        "21.56.78.3",
+        "21.56.78.4",
+        "21.56.78.5",
     ]));
 
     Ok(RecordBatch::try_new(
@@ -109,10 +123,10 @@ async fn process_table(
 }
 
 /// Read a Parquet file into a DataFrame
-async fn read_parquet_to_dataframe(file_path: &str) -> datafusion::error::Result<DataFrame> {
-    // Initialize execution context
-    let ctx = SessionContext::new();
-
+async fn read_parquet_to_dataframe(
+    ctx: &SessionContext,
+    file_path: &str,
+) -> datafusion::error::Result<DataFrame> {
     // Create an empty ParquetReadOptions object
     let options = ParquetReadOptions::default();
 
