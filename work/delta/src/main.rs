@@ -5,7 +5,7 @@ use deltalake::arrow::{
 };
 use std::sync::Arc;
 
-fn main() {
+fn create_batch() {
     // Define the schema
     let schema = Arc::new(ArrowSchema::new(vec![
         Field::new("timestamp", ArrowDataType::Utf8, false),
@@ -73,4 +73,9 @@ fn main() {
             i, timestamp, session_id, source_address
         );
     }
+}
+
+
+fn main() {
+    create_batch() 
 }
