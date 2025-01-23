@@ -1,0 +1,12 @@
+[package]
+name = "work"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+datafusion = "10.0"
+chrono = "0.4"
+rand = "0.8.5"
+tokio = "1.43.0"
+ 
+

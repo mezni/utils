@@ -1,0 +1,15 @@
+close:
+  condition: "RT_FLOW_SESSION_CLOSE"
+  tokens:
+    - "source-address"
+    - "source-port"
+    - "destination-address"
+    - "destination-port"
+
+open:
+  condition: "RT_FLOW_SESSION_OPEN"
+  tokens:
+    - "source-address"
+    - "source-port"
+    - "destination-address"
+    - "destination-port"

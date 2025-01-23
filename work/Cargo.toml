@@ -4,9 +4,5 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-datafusion = "10.0"
-chrono = "0.4"
-rand = "0.8.5"
-tokio = "1.43.0"
- 
-
+serde = { version = "1.0.217", features = ["derive"] }
+serde_yaml = "0.9.34"
