@@ -1,0 +1,8 @@
+[package]
+name = "delta"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+deltalake = { version = "0.23.2", features = ["datafusion"] }
+tokio = "1.35.1"
