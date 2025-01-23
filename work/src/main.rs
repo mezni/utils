@@ -6,6 +6,10 @@ use datafusion::prelude::*;
 use std::collections::HashMap;
 use std::sync::Arc;
 use tokio; // Ensure tokio is included
+use std::path::Path;
+use tempfile::tempdir;
+use delta::DeltaTable;
+use delta::action::WriteMode;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -60,7 +64,6 @@ async fn main() -> Result<()> {
     for input in inputs {
         input_batch.push(input);
 
-        // Once we have 100 inputs, process them and generate a DataFrame
         if input_batch.len() == batch_size {
             process_batch(&input_batch, &syslog_config, &mut timestamps, &mut session_ids)?;
 
@@ -85,14 +88,20 @@ async fn main() -> Result<()> {
             let df = ctx.read_batch(data)?; // Use read_batch instead of create_dataframe
             df.clone().show_limit(10).await?;
 
-            // Clear the batch for next set of 100 inputs
+            // Define the path for output file
+            let target_path = tempdir()?.path().join("output.parquet");
+
+            // Write the DataFrame to Parquet using file path
+            df.write_parquet(target_path.to_str().unwrap(), DataFrameWriteOptions::new(), None).await?;
+
+            // Clear the batch for the next set of 100 inputs
             input_batch.clear();
             timestamps.clear();
             session_ids.clear();
         }
     }
 
-    // If there are remaining inputs less than 100
+    // Handle the remaining inputs (less than 100)
     if !input_batch.is_empty() {
         process_batch(&input_batch, &syslog_config, &mut timestamps, &mut session_ids)?;
 
@@ -116,12 +125,33 @@ async fn main() -> Result<()> {
         let ctx = SessionContext::new();
         let df = ctx.read_batch(data)?; // Use read_batch instead of create_dataframe
         df.clone().show_limit(10).await?;
+
+        // Define the path for output file
+        let target_path = tempdir()?.path().join("output.parquet");
+
+        // Write the DataFrame to Parquet using file path
+        df.write_parquet(target_path.to_str().unwrap(), DataFrameWriteOptions::new(), None).await?;
     }
+
+    // Define the Delta table path
+    let delta_path = Path::new("delta_table");
+
+    // Create or load the Delta table
+    let dt = DeltaTable::for_path(delta_path)
+        .unwrap();
+
+    // Append data from Parquet to Delta table
+    dt.write()
+        .mode(WriteMode::Append)
+        .parquet("output.parquet")
+        .unwrap();
+
+    println!("Data appended to Delta table at {:?}", delta_path);
 
     Ok(())
 }
 
-// Function to process a batch of syslog input
+// Process a batch of syslog input
 fn process_batch(
     input_batch: &[&str],
     syslog_config: &HashMap<String, (String, Vec<String>)>,
@@ -143,7 +173,7 @@ fn process_batch(
     Ok(())
 }
 
-// Function to process syslog input
+// Process syslog input
 fn process_syslog(
     input: &str,
     syslog_config: &HashMap<String, (String, Vec<String>)>,
