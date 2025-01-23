@@ -1,7 +1,7 @@
 use datafusion::arrow::array::{ArrayRef, StringArray};
 use datafusion::arrow::datatypes::{DataType, Field, Schema};
 use datafusion::arrow::record_batch::RecordBatch;
-use datafusion::error::Result;
+use datafusion::error::{DataFusionError, Result};
 use datafusion::prelude::*;
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -63,7 +63,7 @@ async fn main() -> Result<()> {
         // Once we have 100 inputs, process them and generate a DataFrame
         if input_batch.len() == batch_size {
             process_batch(&input_batch, &syslog_config, &mut timestamps, &mut session_ids)?;
-            
+
             // Convert to Arrow arrays
             let timestamp_array = StringArray::from(timestamps.clone());
             let session_id_array = StringArray::from(session_ids.clone());
@@ -127,14 +127,17 @@ fn process_batch(
     syslog_config: &HashMap<String, (String, Vec<String>)>,
     timestamps: &mut Vec<String>,
     session_ids: &mut Vec<String>,
-) -> Result<(), String> {
+) -> Result<(), DataFusionError> {
     for input in input_batch {
         match process_syslog(input, syslog_config, timestamps, session_ids) {
             Ok(()) => {
                 println!("Timestamp extracted: {}", timestamps.last().unwrap());
                 println!("Session ID extracted: {}", session_ids.last().unwrap());
             }
-            Err(err) => eprintln!("Error processing syslog: {}", err),
+            Err(err) => {
+                // Convert String error to DataFusionError
+                return Err(DataFusionError::Execution(err));
+            }
         }
     }
     Ok(())
