@@ -1,21 +1,21 @@
 use deltalake::{
+    DeltaOps, DeltaTable, DeltaTableBuilder, DeltaTableError,
     kernel::{DataType, PrimitiveType, StructField, StructType},
-    protocol::{SaveMode, Protocol,DeltaTableMetaData},
+    protocol::{DeltaTableMetaData, Protocol},
     writer::{DeltaWriter, RecordBatchWriter},
-    DeltaOps, DeltaTable, DeltaTableError, DeltaTableBuilder,
 };
-
 use arrow::{
     array::StringArray,
     datatypes::{DataType as ArrowDataType, Field, Schema},
     record_batch::RecordBatch,
-    error::ArrowError,
 };
-use std::collections::HashMap;
-use std::path::Path;
-use std::sync::Arc;
+use std::{
+    collections::HashMap,
+    error::Error,
+    path::Path,
+    sync::Arc,
+};
 use tokio;
-use std::error::Error;
 
 
 // Define the table schema
