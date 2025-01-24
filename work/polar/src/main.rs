@@ -33,9 +33,12 @@ pub async fn get_delta_table(
 
 #[tokio::main]
 async fn main() -> Result<(), DeltaTableError> {
+    let table1_path = "./delta_lake/table1";
+    let table1_schema = table_schema();
+
     let _trips_table = get_delta_table(
-        "./delta_lake/ccccc",
-        table_schema(),
+        table1_path,
+        table1_schema,
         None,  
     )
     .await?;
