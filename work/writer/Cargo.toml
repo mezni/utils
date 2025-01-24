@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-arrow = "54.0.0"
+arrow = "53.4.0"
 deltalake = "0.23.2"
+serde_json = "1.0.137"
 tokio = "1.43.0"
