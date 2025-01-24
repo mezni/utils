@@ -1,0 +1,11 @@
+[package]
+name = "polar"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+arrow = "54.0.0"
+datafusion = "44.0.0"
+deltalake = "0.23.2"
+rand = "0.8.5"
+tokio = { version = "1.43.0", features = ["full"] }
