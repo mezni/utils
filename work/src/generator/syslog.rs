@@ -1,6 +1,12 @@
-use chrono::{DateTime, Utc};
-use rand::rngs::ThreadRng;
+use chrono::DateTime;
+use chrono::{Duration, Utc};
+use rand::thread_rng;
 use rand::Rng;
+use std::collections::HashMap;
+use std::thread::sleep;
+use std::time::Duration as StdDuration;
+
+const BUFFER_SIZE: u32 = 10000;
 
 #[derive(Debug, Clone)]
 pub struct SyslogMessage {
@@ -12,30 +18,71 @@ pub struct SyslogMessage {
     pub start_ts: String,
     pub end_ts: String,
     pub duration: String,
+    pub msg_type: String,
 }
 
-impl SyslogMessage {
-    pub fn new(rng: &mut ThreadRng) -> Self {
-        let now = Utc::now();
-        let one_minute_ago = now - chrono::Duration::minutes(1);
-        let random_seconds = rng.gen_range(0..120);
-        let start_ts = one_minute_ago + chrono::Duration::seconds(random_seconds as i64);
-        let duration = rng.gen_range(0..120);
-        let end_ts = start_ts + chrono::Duration::seconds(duration as i64);
+pub struct SyslogMessageBatch {
+    buffer: HashMap<DateTime<Utc>, SyslogMessage>,
+}
 
-        SyslogMessage {
-            session_id: rng.gen_range(100_000..999_999).to_string(),
-            source_ip_address: Self::generate_ip_address(rng),
-            source_port: rng.gen_range(1025..35000).to_string(),
-            dest_ip_address: Self::generate_ip_address(rng),
-            dest_port: rng.gen_range(1025..35000).to_string(),
-            start_ts: start_ts.to_rfc3339(),
-            end_ts: end_ts.to_rfc3339(),
-            duration: duration.to_string(),
-        }
+impl SyslogMessageBatch {
+    // Constructor for SyslogMessageBatch that calls load
+    pub fn new() -> Self {
+        SyslogMessageBatch::load(BUFFER_SIZE/4)
     }
 
-    fn generate_ip_address(rng: &mut ThreadRng) -> String {
+    // Load a batch of SyslogMessages
+    pub fn load(count: u32) -> Self {
+        let mut rng = thread_rng();
+        let mut buffer: HashMap<DateTime<Utc>, SyslogMessage> = HashMap::new();
+
+        for _ in 0..count {
+            let now = Utc::now();
+            let start_interval = now - Duration::minutes(2);
+            let random_seconds = rng.gen_range(0..60);
+            let start_ts = start_interval + Duration::seconds(random_seconds as i64);
+            let duration = rng.gen_range(0..120);
+            let end_ts = start_ts + Duration::seconds(duration as i64);
+
+            let session_id = format!("{}", rng.gen_range(10000000..99999999));
+            let source_ip_address = SyslogMessageBatch::generate_ip_address(&mut rng);
+            let source_port = format!("{}", rng.gen_range(1024..65535));
+            let dest_ip_address = SyslogMessageBatch::generate_ip_address(&mut rng);
+            let dest_port = format!("{}", rng.gen_range(1024..65535));
+
+            let msg_open = SyslogMessage {
+                session_id: session_id.clone(),
+                source_ip_address: source_ip_address.clone(),
+                source_port: source_port.clone(),
+                dest_ip_address: dest_ip_address.clone(),
+                dest_port: dest_port.clone(),
+                start_ts: start_ts.to_rfc3339(),
+                end_ts: "".to_string(),
+                duration: "".to_string(),
+                msg_type: "open".to_string(),
+            };
+
+            let msg_close = SyslogMessage {
+                session_id: session_id.clone(),
+                source_ip_address: source_ip_address.clone(),
+                source_port: source_port.clone(),
+                dest_ip_address: dest_ip_address.clone(),
+                dest_port: dest_port.clone(),
+                start_ts: "".to_string(),
+                end_ts: end_ts.to_rfc3339(),
+                duration: format!("{}", duration),
+                msg_type: "close".to_string(),
+            };
+
+            buffer.insert(start_ts, msg_open);
+            buffer.insert(end_ts, msg_close);
+        }
+
+        SyslogMessageBatch { buffer }
+    }
+
+    // Helper function to generate random IP addresses
+    fn generate_ip_address(rng: &mut rand::rngs::ThreadRng) -> String {
         format!(
             "{}.{}.{}.{}",
             rng.gen_range(1..256),
@@ -43,5 +90,43 @@ impl SyslogMessage {
             rng.gen_range(0..256),
             rng.gen_range(0..256)
         )
+    }
+
+    // Extend the current batch with another batch of messages
+    pub fn extend(&mut self, other: SyslogMessageBatch) {
+        self.buffer.extend(other.buffer);
+    }
+
+    // Return the buffer length
+    pub fn length(&self) -> usize {
+        self.buffer.len()
+    }
+
+    // Print the messages from the batch, remove them from buffer
+    pub fn print_messages(&mut self) {
+        // Get the current UTC time
+        let now = Utc::now();
+
+        // Collect keys to be removed to avoid modifying the HashMap while iterating
+        let mut keys_to_remove: Vec<DateTime<Utc>> = self
+            .buffer
+            .keys()
+            .filter(|&key| *key > now)
+            .cloned()
+            .collect();
+        keys_to_remove.sort();
+        // Iterate over the collected keys and print messages, then remove them
+        for key in keys_to_remove {
+            if let Some(msg) = self.buffer.remove(&key) {
+                println!("{:?}", msg); // Print the message
+            }
+        }
+
+        // If the buffer has space for more messages, load more messages
+        if self.buffer.len() < BUFFER_SIZE as usize {
+            let additional_messages =
+                SyslogMessageBatch::load((BUFFER_SIZE - self.buffer.len() as u32) / 2);
+            self.buffer.extend(additional_messages.buffer);
+        }
     }
 }
