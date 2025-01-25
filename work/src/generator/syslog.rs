@@ -1,4 +1,5 @@
 use chrono::DateTime;
+use chrono::SecondsFormat;
 use chrono::{Duration, Utc};
 use rand::thread_rng;
 use rand::Rng;
@@ -6,7 +7,8 @@ use std::collections::HashMap;
 use std::thread::sleep;
 use std::time::Duration as StdDuration;
 
-const BUFFER_SIZE: u32 = 10000;
+const BUFFER_SIZE: u32 = 20000;
+const BATCH_SIZE: u32 = 10000;
 
 #[derive(Debug, Clone)]
 pub struct SyslogMessage {
@@ -28,7 +30,7 @@ pub struct SyslogMessageBatch {
 impl SyslogMessageBatch {
     // Constructor for SyslogMessageBatch that calls load
     pub fn new() -> Self {
-        SyslogMessageBatch::load(BUFFER_SIZE/4)
+        SyslogMessageBatch::load(BUFFER_SIZE)
     }
 
     // Load a batch of SyslogMessages
@@ -38,8 +40,8 @@ impl SyslogMessageBatch {
 
         for _ in 0..count {
             let now = Utc::now();
-            let start_interval = now - Duration::minutes(2);
-            let random_seconds = rng.gen_range(0..60);
+            let start_interval = now - Duration::minutes(1);
+            let random_seconds = rng.gen_range(0..120);
             let start_ts = start_interval + Duration::seconds(random_seconds as i64);
             let duration = rng.gen_range(0..120);
             let end_ts = start_ts + Duration::seconds(duration as i64);
@@ -56,7 +58,7 @@ impl SyslogMessageBatch {
                 source_port: source_port.clone(),
                 dest_ip_address: dest_ip_address.clone(),
                 dest_port: dest_port.clone(),
-                start_ts: start_ts.to_rfc3339(),
+                start_ts: start_ts.to_rfc3339_opts(SecondsFormat::Millis, true),
                 end_ts: "".to_string(),
                 duration: "".to_string(),
                 msg_type: "open".to_string(),
@@ -69,7 +71,7 @@ impl SyslogMessageBatch {
                 dest_ip_address: dest_ip_address.clone(),
                 dest_port: dest_port.clone(),
                 start_ts: "".to_string(),
-                end_ts: end_ts.to_rfc3339(),
+                end_ts: end_ts.to_rfc3339_opts(SecondsFormat::Millis, true),
                 duration: format!("{}", duration),
                 msg_type: "close".to_string(),
             };
@@ -102,31 +104,34 @@ impl SyslogMessageBatch {
         self.buffer.len()
     }
 
-    // Print the messages from the batch, remove them from buffer
-    pub fn print_messages(&mut self) {
-        // Get the current UTC time
-        let now = Utc::now();
+    pub fn generate(&mut self) -> Vec<SyslogMessage> {
+        let mut messages = Vec::new();
 
-        // Collect keys to be removed to avoid modifying the HashMap while iterating
-        let mut keys_to_remove: Vec<DateTime<Utc>> = self
-            .buffer
-            .keys()
-            .filter(|&key| *key > now)
-            .cloned()
-            .collect();
-        keys_to_remove.sort();
-        // Iterate over the collected keys and print messages, then remove them
-        for key in keys_to_remove {
-            if let Some(msg) = self.buffer.remove(&key) {
-                println!("{:?}", msg); // Print the message
+        while messages.len() < BATCH_SIZE as usize {
+            let now = Utc::now();
+            let mut keys_to_remove: Vec<DateTime<Utc>> = self
+                .buffer
+                .keys()
+                .filter(|&key| *key < now)
+                .cloned()
+                .collect();
+            keys_to_remove.sort();
+            for key in keys_to_remove
+                .into_iter()
+                .take(BATCH_SIZE as usize - messages.len())
+            {
+                if let Some(msg) = self.buffer.remove(&key) {
+                    messages.push(msg);
+                }
             }
+            if self.buffer.len() < BUFFER_SIZE as usize {
+                let additional_messages =
+                    SyslogMessageBatch::load((BUFFER_SIZE - self.buffer.len() as u32) / 2);
+                self.buffer.extend(additional_messages.buffer);
+            }
+            sleep(StdDuration::from_secs(1));
         }
 
-        // If the buffer has space for more messages, load more messages
-        if self.buffer.len() < BUFFER_SIZE as usize {
-            let additional_messages =
-                SyslogMessageBatch::load((BUFFER_SIZE - self.buffer.len() as u32) / 2);
-            self.buffer.extend(additional_messages.buffer);
-        }
+        messages
     }
 }
