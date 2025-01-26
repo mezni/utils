@@ -8,3 +8,4 @@ arrow = "54.0.0"
 chrono = "0.4.39"
 parquet = "54.0.0"
 rand = "0.8.5"
+tokio = { version = "1.43.0", features = ["full"] }
