@@ -1,15 +1,17 @@
 mod generator;
 use generator::syslog::{SyslogMessage, SyslogMessageBatch};
 
-use arrow::array::StringArray;
-use arrow::datatypes::{DataType, Field, Schema};
-use arrow::record_batch::RecordBatch;
+use arrow::{
+    array::StringArray,
+    datatypes::{DataType, Field, Schema},
+    record_batch::RecordBatch,
+};
+
+use parquet::arrow::arrow_reader::{ParquetRecordBatchReaderBuilder};
 
 use chrono::Local;
-use parquet::arrow::ArrowWriter;
-use parquet::file::properties::WriterProperties;
-use std::fs::File;
-use std::sync::Arc;
+use parquet::{arrow::ArrowWriter, file::properties::WriterProperties};
+use std::{fs::File, sync::Arc};
 use tokio;
 
 // Converts Vec<SyslogMessage> into RecordBatch
@@ -46,9 +48,9 @@ pub fn vec_to_arrow(messages: Vec<SyslogMessage>) -> RecordBatch {
         Field::new("source_port", DataType::Utf8, false),
         Field::new("dest_ip_address", DataType::Utf8, false),
         Field::new("dest_port", DataType::Utf8, false),
-        Field::new("start_ts", DataType::Utf8, false),
-        Field::new("end_ts", DataType::Utf8, false),
-        Field::new("duration", DataType::Utf8, false),
+        Field::new("start_ts", DataType::Utf8, true),
+        Field::new("end_ts", DataType::Utf8, true),
+        Field::new("duration", DataType::Utf8, true),
         Field::new("msg_type", DataType::Utf8, false),
     ]));
 
@@ -97,8 +99,28 @@ pub fn generate() -> Result<(), std::io::Error> {
 }
 
 #[tokio::main]
-async fn main() {
-    if let Err(err) = generate() {
-        eprintln!("Error generating Parquet files: {}", err);
+async fn main() -> Result<(), std::io::Error> {
+/*
+     if let Err(err) = generate() {
+         eprintln!("Error generating Parquet files: {}", err);
+     }
+*/
+
+    let file = File::open("MQ/INPUT/syslog_20250126015602_01.parquet")?;
+
+    let builder = ParquetRecordBatchReaderBuilder::try_new(file)?;
+    println!("Converted arrow schema is: {}", builder.schema());
+
+    let mut reader = builder.build()?;
+    let mut batches = Vec::new();
+    while let Some(batch_result) = reader.next() {
+        let batch = batch_result.map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+        batches.push(batch);
+        println!("Read {} records.", batches.len());
     }
+    println!("Read {} records.", batches.len());
+
+//    println!("Read {} records.", record_batch.num_rows());
+
+    Ok(())
 }
