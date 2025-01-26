@@ -8,6 +8,7 @@ use generator::syslog::SyslogMessageBatch;
 use parquet::arrow::ArrowWriter;
 use parquet::file::properties::WriterProperties;
 use parquet::file::writer::SerializedFileWriter;
+use chrono::Local;
 use std::fs::File;
 use std::sync::Arc;
 
@@ -95,13 +96,19 @@ pub fn save_to_parquet(record_batch: &RecordBatch, file_path: &str) {
     println!("Parquet file saved to {}", file_path);
 }
 
-fn main() {
+pub fn generate() {
     for i in 0..5 {
         let mut batch = SyslogMessageBatch::new();
         let messages = batch.generate();
         let record_batch = vec_to_arrow(messages);
-        let file_path = format!("syslog_data_0{}.parquet", i + 1);
+
+        let timestamp = Local::now().format("%Y%m%d%H%M%S").to_string();
+        let file_path = format!("MQ/INPUT/syslog_{}_0{}.parquet", timestamp, i + 1);
 
         save_to_parquet(&record_batch, &file_path);
-    }
+    }    
+}
+
+fn main() {
+    generate()
 }
