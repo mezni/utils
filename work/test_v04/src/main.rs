@@ -2,6 +2,7 @@ use sled::{Db, Tree};
 use std::path::Path;
 use serde_json;
 use std::collections::HashMap;
+use tokio;
 
 pub struct CacheManager {
     db: Db,
@@ -26,38 +27,39 @@ impl CacheManager {
         Ok(tree)
     }
 
-    pub fn insert<K: AsRef<[u8]>, V: AsRef<[u8]>>(&mut self, table: &str, key: K, value: V) -> Result<(), sled::Error> {
+    async fn insert_async<K: AsRef<[u8]>, V: AsRef<[u8]>>(&mut self, table: &str, key: K, value: V) -> Result<(), sled::Error> {
         let tree = self.get_or_create_table(table)?;
         let value = value.as_ref().to_vec();
         tree.insert(key, value)?;
         Ok(())
     }
 
-    pub fn get<K: AsRef<[u8]>>(&mut self, table: &str, key: K) -> Result<Option<Vec<u8>>, sled::Error> {
+    async fn get_async<K: AsRef<[u8]>>(&mut self, table: &str, key: K) -> Result<Option<Vec<u8>>, sled::Error> {
         let tree = self.get_or_create_table(table)?;
         let value = tree.get(key)?;
         let value = value.map(|ivec| ivec.to_vec());
         Ok(value)
     }
 
-    pub fn delete<K: AsRef<[u8]>>(&mut self, table: &str, key: K) -> Result<(), sled::Error> {
+    async fn delete_async<K: AsRef<[u8]>>(&mut self, table: &str, key: K) -> Result<(), sled::Error> {
         let tree = self.get_or_create_table(table)?;
         tree.remove(key)?;
         Ok(())
     }
 }
 
-fn main() -> Result<(), sled::Error> {
+#[tokio::main]
+async fn main() -> Result<(), sled::Error> {
     let mut manager = CacheManager::new("my_cache")?;
 
     let user_key = "1";
     let user_value = "John Doe";
-    manager.insert("users", user_key, user_value)?;
+    manager.insert_async("users", user_key, user_value).await?;
 
-    let user_value = manager.get("users", user_key)?.unwrap();
+    let user_value = manager.get_async("users", user_key).await?.unwrap();
     println!("User Value: {}", String::from_utf8(user_value).unwrap());
 
-    manager.delete("users", user_key)?;
+    manager.delete_async("users", user_key).await?;
 
     let item: HashMap<String, String> = [
         ("session_id".to_string(), "233".to_string()),
@@ -69,8 +71,8 @@ fn main() -> Result<(), sled::Error> {
 
     match serde_json::to_vec(&item) {
         Ok(session_value) => {
-            manager.insert("sessions", session_key, session_value)?;
-            let session_value = manager.get("sessions", session_key)?.unwrap();
+            manager.insert_async("sessions", session_key, session_value).await?;
+            let session_value = manager.get_async("sessions", session_key).await?.unwrap();
             println!("Session Value: {}", String::from_utf8(session_value).unwrap());
         }
         Err(err) => {
