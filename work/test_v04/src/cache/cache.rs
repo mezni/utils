@@ -1,6 +1,6 @@
 use sled::{Db, Tree};
-use std::path::Path;
 use std::collections::HashMap;
+use std::path::Path;
 
 pub struct CacheManager {
     db: Db,
@@ -25,21 +25,34 @@ impl CacheManager {
         Ok(tree)
     }
 
-    pub async fn insert_async<K: AsRef<[u8]>, V: AsRef<[u8]>>(&mut self, table: &str, key: K, value: V) -> Result<(), sled::Error> {
+    pub async fn insert_async<K: AsRef<[u8]>, V: AsRef<[u8]>>(
+        &mut self,
+        table: &str,
+        key: K,
+        value: V,
+    ) -> Result<(), sled::Error> {
         let tree = self.get_or_create_table(table)?;
         let value = value.as_ref().to_vec();
         tree.insert(key, value)?;
         Ok(())
     }
 
-    pub async fn get_async<K: AsRef<[u8]>>(&mut self, table: &str, key: K) -> Result<Option<Vec<u8>>, sled::Error> {
+    pub async fn get_async<K: AsRef<[u8]>>(
+        &mut self,
+        table: &str,
+        key: K,
+    ) -> Result<Option<Vec<u8>>, sled::Error> {
         let tree = self.get_or_create_table(table)?;
         let value = tree.get(key)?;
         let value = value.map(|ivec| ivec.to_vec());
         Ok(value)
     }
 
-    pub async fn delete_async<K: AsRef<[u8]>>(&mut self, table: &str, key: K) -> Result<(), sled::Error> {
+    pub async fn delete_async<K: AsRef<[u8]>>(
+        &mut self,
+        table: &str,
+        key: K,
+    ) -> Result<(), sled::Error> {
         let tree = self.get_or_create_table(table)?;
         tree.remove(key)?;
         Ok(())
