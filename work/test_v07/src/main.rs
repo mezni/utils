@@ -1,19 +1,19 @@
 use chrono::{DateTime, Duration, Utc};
+use rand::Rng;
+use rand::thread_rng;
+use serde::Serialize;
+use std::cmp;
+use std::sync::Arc;
 use datafusion::arrow::{
     array::{Float64Array, StringArray},
     datatypes::{DataType, Field, Schema},
     record_batch::RecordBatch,
 };
-use datafusion::dataframe::DataFrameWriteOptions;
+use datafusion::prelude::*;
 use datafusion::datasource::memory::MemTable;
 use datafusion::error::{DataFusionError, Result};
 use datafusion::execution::context::SessionContext;
-use datafusion::prelude::*;
-use rand::thread_rng;
-use rand::Rng;
-use serde::Serialize;
-use std::cmp;
-use std::sync::Arc;
+use datafusion::dataframe::DataFrameWriteOptions;
 const BATCH_SIZE: u32 = 2000;
 
 #[derive(Serialize, Debug, Clone)]
@@ -141,6 +141,7 @@ impl SyslogMessageBatch {
         Ok((open_out, close_out))
     }
 
+
     pub async fn generate(&mut self) -> Result<(Vec<SyslogMessage>, Vec<SyslogMessage>), String> {
         let mut all_open_out = Vec::new();
         let mut all_close_out = Vec::new();
@@ -156,6 +157,51 @@ impl SyslogMessageBatch {
         Ok((all_open_out, all_close_out))
     }
 }
+
+
+pub fn create_string_arrays_from_messages(
+        input: &Vec<SyslogMessage>,
+    ) -> (StringArray, StringArray, StringArray, StringArray, StringArray, StringArray, StringArray, StringArray, StringArray) {
+        let session_ids = StringArray::from(
+            input.iter().map(|msg| msg.session_id.clone()).collect::<Vec<String>>()
+        );
+        let source_ips = StringArray::from(
+            input.iter().map(|msg| msg.source_ip_address.clone()).collect::<Vec<String>>()
+        );
+        let source_ports = StringArray::from(
+            input.iter().map(|msg| msg.source_port.clone()).collect::<Vec<String>>()
+        );
+        let dest_ips = StringArray::from(
+            input.iter().map(|msg| msg.dest_ip_address.clone()).collect::<Vec<String>>()
+        );
+        let dest_ports = StringArray::from(
+            input.iter().map(|msg| msg.dest_port.clone()).collect::<Vec<String>>()
+        );
+        let start_ts = StringArray::from(
+            input.iter().map(|msg| msg.start_ts.clone()).collect::<Vec<String>>()
+        );
+        let end_ts = StringArray::from(
+            input.iter().map(|msg| msg.end_ts.clone()).collect::<Vec<String>>()
+        );
+        let durations = StringArray::from(
+            input.iter().map(|msg| msg.duration.clone()).collect::<Vec<String>>()
+        );
+        let msg_types = StringArray::from(
+            input.iter().map(|msg| msg.msg_type.clone()).collect::<Vec<String>>()
+        );
+
+        (
+            session_ids,
+            source_ips,
+            source_ports,
+            dest_ips,
+            dest_ports,
+            start_ts,
+            end_ts,
+            durations,
+            msg_types,
+        )
+    }
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -179,77 +225,21 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Generate open and close syslog messages
     let (open_out, close_out) = batch.generate().await.unwrap();
 
-    // Create StringArray for each field in SyslogMessage
-    let session_ids = StringArray::from(
-        open_out
-            .iter()
-            .map(|msg| msg.session_id.clone())
-            .collect::<Vec<String>>(),
-    );
-    let source_ips = StringArray::from(
-        open_out
-            .iter()
-            .map(|msg| msg.source_ip_address.clone())
-            .collect::<Vec<String>>(),
-    );
-    let source_ports = StringArray::from(
-        open_out
-            .iter()
-            .map(|msg| msg.source_port.clone())
-            .collect::<Vec<String>>(),
-    );
-    let dest_ips = StringArray::from(
-        open_out
-            .iter()
-            .map(|msg| msg.dest_ip_address.clone())
-            .collect::<Vec<String>>(),
-    );
-    let dest_ports = StringArray::from(
-        open_out
-            .iter()
-            .map(|msg| msg.dest_port.clone())
-            .collect::<Vec<String>>(),
-    );
-    let start_ts = StringArray::from(
-        open_out
-            .iter()
-            .map(|msg| msg.start_ts.clone())
-            .collect::<Vec<String>>(),
-    );
-    let end_ts = StringArray::from(
-        open_out
-            .iter()
-            .map(|msg| msg.end_ts.clone())
-            .collect::<Vec<String>>(),
-    );
-    let durations = StringArray::from(
-        open_out
-            .iter()
-            .map(|msg| msg.duration.clone())
-            .collect::<Vec<String>>(),
-    );
-    let msg_types = StringArray::from(
-        open_out
-            .iter()
-            .map(|msg| msg.msg_type.clone())
-            .collect::<Vec<String>>(),
-    );
+let (session_ids, source_ips, source_ports, dest_ips, dest_ports, start_ts, end_ts, durations, msg_types) =
+    SyslogMessageBatch::create_string_arrays_from_messages(&open_out);
 
     // Create the RecordBatch
-    let batch = RecordBatch::try_new(
-        schema.clone(),
-        vec![
-            Arc::new(session_ids),
-            Arc::new(source_ips),
-            Arc::new(source_ports),
-            Arc::new(dest_ips),
-            Arc::new(dest_ports),
-            Arc::new(start_ts),
-            Arc::new(end_ts),
-            Arc::new(durations),
-            Arc::new(msg_types),
-        ],
-    )
+    let batch = RecordBatch::try_new(schema.clone(), vec![
+        Arc::new(session_ids),
+        Arc::new(source_ips),
+        Arc::new(source_ports),
+        Arc::new(dest_ips),
+        Arc::new(dest_ports),
+        Arc::new(start_ts),
+        Arc::new(end_ts),
+        Arc::new(durations),
+        Arc::new(msg_types),
+    ])
     .map_err(|e| DataFusionError::ArrowError(e, None))?;
 
     // Step 3: Create a MemTable
@@ -263,13 +253,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let df = ctx.sql("SELECT * FROM my_table").await?;
     df.clone().show().await?;
 
-    let target_path = "data.parquet";
+    let target_path =  "data.parquet";
     df.write_parquet(
         target_path,
         DataFrameWriteOptions::new(),
         None, // writer_options
-    )
-    .await;
+    ).await;
 
     Ok(())
 }
