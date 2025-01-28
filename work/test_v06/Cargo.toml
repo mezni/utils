@@ -1,0 +1,9 @@
+[package]
+name = "test_v06"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+arrow = "54.0.0"
+datafusion = "44.0.0"
+tokio = { version = "1.43.0", features = ["full"] }
