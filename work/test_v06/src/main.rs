@@ -4,10 +4,15 @@ use datafusion::arrow::{
     datatypes::{DataType, Field, Schema},
     record_batch::RecordBatch,
 };
+use datafusion::prelude::*;
 use datafusion::datasource::memory::MemTable;
 use datafusion::error::{DataFusionError, Result};
 use datafusion::execution::context::SessionContext;
+use datafusion::dataframe::DataFrameWriteOptions;
 use tokio;
+
+
+
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -27,11 +32,21 @@ async fn main() -> Result<()> {
     let table = MemTable::try_new(schema, vec![vec![batch]])?;
 
     // Step 4: Create a SessionContext and register the table
-    let mut ctx = SessionContext::new();
+    let ctx = SessionContext::new();
     ctx.register_table("my_table", Arc::new(table))?;
 
     // Step 5: Query the DataFrame
     let df = ctx.sql("SELECT * FROM my_table").await?;
+    df.clone().show().await?;
+
+    let target_path =  "data.parquet";
+    df.write_parquet(
+        target_path,
+        DataFrameWriteOptions::new(),
+        None, // writer_options
+    ).await;
+
+    let df = ctx.read_parquet("data.parquet", ParquetReadOptions::new()).await?;
     df.show().await?;
 
     Ok(())
