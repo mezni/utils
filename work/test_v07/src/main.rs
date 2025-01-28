@@ -160,48 +160,52 @@ impl SyslogMessageBatch {
 
 
 pub fn create_string_arrays_from_messages(
-        input: &Vec<SyslogMessage>,
-    ) -> (StringArray, StringArray, StringArray, StringArray, StringArray, StringArray, StringArray, StringArray, StringArray) {
-        let session_ids = StringArray::from(
-            input.iter().map(|msg| msg.session_id.clone()).collect::<Vec<String>>()
-        );
-        let source_ips = StringArray::from(
-            input.iter().map(|msg| msg.source_ip_address.clone()).collect::<Vec<String>>()
-        );
-        let source_ports = StringArray::from(
-            input.iter().map(|msg| msg.source_port.clone()).collect::<Vec<String>>()
-        );
-        let dest_ips = StringArray::from(
-            input.iter().map(|msg| msg.dest_ip_address.clone()).collect::<Vec<String>>()
-        );
-        let dest_ports = StringArray::from(
-            input.iter().map(|msg| msg.dest_port.clone()).collect::<Vec<String>>()
-        );
-        let start_ts = StringArray::from(
-            input.iter().map(|msg| msg.start_ts.clone()).collect::<Vec<String>>()
-        );
-        let end_ts = StringArray::from(
-            input.iter().map(|msg| msg.end_ts.clone()).collect::<Vec<String>>()
-        );
-        let durations = StringArray::from(
-            input.iter().map(|msg| msg.duration.clone()).collect::<Vec<String>>()
-        );
-        let msg_types = StringArray::from(
-            input.iter().map(|msg| msg.msg_type.clone()).collect::<Vec<String>>()
-        );
+    input: &Vec<SyslogMessage>,
+    schema: Arc<Schema>,
+) -> Result<RecordBatch, DataFusionError> {
+    let session_ids = StringArray::from(
+        input.iter().map(|msg| msg.session_id.clone()).collect::<Vec<String>>(),
+    );
+    let source_ips = StringArray::from(
+        input.iter().map(|msg| msg.source_ip_address.clone()).collect::<Vec<String>>(),
+    );
+    let source_ports = StringArray::from(
+        input.iter().map(|msg| msg.source_port.clone()).collect::<Vec<String>>(),
+    );
+    let dest_ips = StringArray::from(
+        input.iter().map(|msg| msg.dest_ip_address.clone()).collect::<Vec<String>>(),
+    );
+    let dest_ports = StringArray::from(
+        input.iter().map(|msg| msg.dest_port.clone()).collect::<Vec<String>>(),
+    );
+    let start_ts = StringArray::from(
+        input.iter().map(|msg| msg.start_ts.clone()).collect::<Vec<String>>(),
+    );
+    let end_ts = StringArray::from(
+        input.iter().map(|msg| msg.end_ts.clone()).collect::<Vec<String>>(),
+    );
+    let durations = StringArray::from(
+        input.iter().map(|msg| msg.duration.clone()).collect::<Vec<String>>(),
+    );
+    let msg_types = StringArray::from(
+        input.iter().map(|msg| msg.msg_type.clone()).collect::<Vec<String>>(),
+    );
 
-        (
-            session_ids,
-            source_ips,
-            source_ports,
-            dest_ips,
-            dest_ports,
-            start_ts,
-            end_ts,
-            durations,
-            msg_types,
-        )
-    }
+    // Create the RecordBatch
+    RecordBatch::try_new(schema, vec![
+        Arc::new(session_ids),
+        Arc::new(source_ips),
+        Arc::new(source_ports),
+        Arc::new(dest_ips),
+        Arc::new(dest_ports),
+        Arc::new(start_ts),
+        Arc::new(end_ts),
+        Arc::new(durations),
+        Arc::new(msg_types),
+    ])
+    .map_err(|e| DataFusionError::ArrowError(e, None))
+}
+
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -225,25 +229,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Generate open and close syslog messages
     let (open_out, close_out) = batch.generate().await.unwrap();
 
-let (session_ids, source_ips, source_ports, dest_ips, dest_ports, start_ts, end_ts, durations, msg_types) =
-    SyslogMessageBatch::create_string_arrays_from_messages(&open_out);
-
-    // Create the RecordBatch
-    let batch = RecordBatch::try_new(schema.clone(), vec![
-        Arc::new(session_ids),
-        Arc::new(source_ips),
-        Arc::new(source_ports),
-        Arc::new(dest_ips),
-        Arc::new(dest_ports),
-        Arc::new(start_ts),
-        Arc::new(end_ts),
-        Arc::new(durations),
-        Arc::new(msg_types),
-    ])
-    .map_err(|e| DataFusionError::ArrowError(e, None))?;
+    // Create RecordBatch from open_out
+    let record_batch = create_string_arrays_from_messages(&open_out, schema.clone())?;
 
     // Step 3: Create a MemTable
-    let table = MemTable::try_new(schema, vec![vec![batch]])?;
+    let table = MemTable::try_new(schema.clone(), vec![vec![record_batch]])?;
 
     // Step 4: Create a SessionContext and register the table
     let ctx = SessionContext::new();
