@@ -5,8 +5,10 @@ use datafusion::arrow::{
     record_batch::RecordBatch,
 };
 use datafusion::datasource::memory::MemTable;
+use datafusion::dataframe::{DataFrame, DataFrameWriteOptions};
 use datafusion::error::{DataFusionError, Result};
 use datafusion::execution::context::SessionContext;
+use datafusion::parquet::table::{TableParquetOptions, WriteOptions};
 use tokio;
 
 #[tokio::main]
@@ -32,7 +34,14 @@ async fn main() -> Result<()> {
 
     // Step 5: Query the DataFrame
     let df = ctx.sql("SELECT * FROM my_table").await?;
-    df.show().await?;
+
+    // Step 6: Write the DataFrame to a Parquet file
+    let parquet_path = "data.parquet";
+    let options = DataFrameWriteOptions::parquet_default();
+    let write_options = TableParquetOptions::default();
+    df.write_parquet(parquet_path, options, Some(write_options)).await?;
+
+    println!("Data written to {}", parquet_path);
 
     Ok(())
 }
