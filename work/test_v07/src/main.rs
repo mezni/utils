@@ -1,6 +1,6 @@
 use chrono::{DateTime, Datelike, Duration, Timelike, Utc};
 use datafusion::arrow::{
-    array::{Float64Array, StringArray},
+    array::{ StringArray},
     datatypes::{DataType, Field, Schema},
     record_batch::RecordBatch,
 };
@@ -9,14 +9,16 @@ use datafusion::datasource::memory::MemTable;
 use datafusion::error::{DataFusionError, Result};
 use datafusion::execution::context::SessionContext;
 use datafusion::prelude::*;
-use rand::thread_rng;
+
 use rand::Rng;
 use serde::Serialize;
 use std::cmp;
 use std::sync::Arc;
-const BATCH_SIZE: u32 = 2000;
 use env_logger;
 use log::{error, info};
+
+const BATCH_SIZE: u32 = 2000;
+
 
 #[derive(Serialize, Debug, Clone)]
 pub struct SyslogMessage {
@@ -45,21 +47,21 @@ impl SyslogMessageBatch {
     }
 
     pub async fn load(&mut self, count: u32) -> Result<(), String> {
-        let mut rng = rand::thread_rng();
+        let mut rng = rand::rng();
 
         for _ in 0..count {
             let now = Utc::now();
             let start_interval = now - Duration::minutes(1);
-            let random_seconds = rng.gen_range(0..120);
+            let random_seconds = rng.random_range(0..120);
             let start_ts = start_interval + Duration::seconds(random_seconds as i64);
-            let duration = rng.gen_range(0..120);
+            let duration = rng.random_range(0..120);
             let end_ts = start_ts + Duration::seconds(duration as i64);
 
-            let session_id = format!("{}", rng.gen_range(10000000..99999999));
+            let session_id = format!("{}", rng.random_range(10000000..99999999));
             let source_ip_address = Self::generate_ip_address(&mut rng);
-            let source_port = format!("{}", rng.gen_range(1024..65535));
+            let source_port = format!("{}", rng.random_range(1024..65535));
             let dest_ip_address = Self::generate_ip_address(&mut rng);
-            let dest_port = format!("{}", rng.gen_range(1024..65535));
+            let dest_port = format!("{}", rng.random_range(1024..65535));
 
             let start_ts_str = start_ts.to_rfc3339();
             let end_ts_str = end_ts.to_rfc3339();
@@ -99,17 +101,16 @@ impl SyslogMessageBatch {
     fn generate_ip_address(rng: &mut rand::rngs::ThreadRng) -> String {
         format!(
             "{}.{}.{}.{}",
-            rng.gen_range(1..256),
-            rng.gen_range(0..256),
-            rng.gen_range(0..256),
-            rng.gen_range(0..256)
+            rng.random_range(1..256),
+            rng.random_range(0..256),
+            rng.random_range(0..256),
+            rng.random_range(0..256)
         )
     }
 
     pub async fn generate_chunk(
         &mut self,
     ) -> Result<(Vec<SyslogMessage>, Vec<SyslogMessage>), String> {
-        let now = Utc::now();
         let mut open_out = Vec::new();
         let mut close_out = Vec::new();
 
@@ -244,7 +245,7 @@ pub async fn generate_file(
 
     // Step 5: Query the DataFrame
     let df = ctx.sql("SELECT * FROM my_table").await?;
-    df.clone().show().await?;
+//    df.clone().show().await?;
 
     // Step 6: Write to a Parquet file
     df.write_parquet(output_path, DataFrameWriteOptions::new(), None)
@@ -291,7 +292,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut batch = SyslogMessageBatch::new();
     batch.load(BATCH_SIZE).await.unwrap();
 
-    for i in 0..5 {
+    for _ in 0..5 {
         // Generate open and close syslog messages
         let (open_out, close_out) = batch.generate().await.unwrap();
 
