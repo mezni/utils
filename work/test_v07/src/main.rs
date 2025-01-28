@@ -1,20 +1,22 @@
-use chrono::{DateTime, Duration, Utc};
-use rand::Rng;
-use rand::thread_rng;
-use serde::Serialize;
-use std::cmp;
-use std::sync::Arc;
+use chrono::{DateTime, Datelike, Duration, Timelike, Utc};
 use datafusion::arrow::{
     array::{Float64Array, StringArray},
     datatypes::{DataType, Field, Schema},
     record_batch::RecordBatch,
 };
-use datafusion::prelude::*;
+use datafusion::dataframe::DataFrameWriteOptions;
 use datafusion::datasource::memory::MemTable;
 use datafusion::error::{DataFusionError, Result};
 use datafusion::execution::context::SessionContext;
-use datafusion::dataframe::DataFrameWriteOptions;
+use datafusion::prelude::*;
+use rand::thread_rng;
+use rand::Rng;
+use serde::Serialize;
+use std::cmp;
+use std::sync::Arc;
 const BATCH_SIZE: u32 = 2000;
+use env_logger;
+use log::{error, info};
 
 #[derive(Serialize, Debug, Clone)]
 pub struct SyslogMessage {
@@ -141,7 +143,6 @@ impl SyslogMessageBatch {
         Ok((open_out, close_out))
     }
 
-
     pub async fn generate(&mut self) -> Result<(Vec<SyslogMessage>, Vec<SyslogMessage>), String> {
         let mut all_open_out = Vec::new();
         let mut all_close_out = Vec::new();
@@ -158,79 +159,81 @@ impl SyslogMessageBatch {
     }
 }
 
-
-pub fn create_string_arrays_from_messages(
+pub async fn generate_file(
     input: &Vec<SyslogMessage>,
     schema: Arc<Schema>,
-) -> Result<RecordBatch, DataFusionError> {
+    output_path: &str,
+) -> Result<(), Box<dyn std::error::Error>> {
     let session_ids = StringArray::from(
-        input.iter().map(|msg| msg.session_id.clone()).collect::<Vec<String>>(),
+        input
+            .iter()
+            .map(|msg| msg.session_id.clone())
+            .collect::<Vec<String>>(),
     );
     let source_ips = StringArray::from(
-        input.iter().map(|msg| msg.source_ip_address.clone()).collect::<Vec<String>>(),
+        input
+            .iter()
+            .map(|msg| msg.source_ip_address.clone())
+            .collect::<Vec<String>>(),
     );
     let source_ports = StringArray::from(
-        input.iter().map(|msg| msg.source_port.clone()).collect::<Vec<String>>(),
+        input
+            .iter()
+            .map(|msg| msg.source_port.clone())
+            .collect::<Vec<String>>(),
     );
     let dest_ips = StringArray::from(
-        input.iter().map(|msg| msg.dest_ip_address.clone()).collect::<Vec<String>>(),
+        input
+            .iter()
+            .map(|msg| msg.dest_ip_address.clone())
+            .collect::<Vec<String>>(),
     );
     let dest_ports = StringArray::from(
-        input.iter().map(|msg| msg.dest_port.clone()).collect::<Vec<String>>(),
+        input
+            .iter()
+            .map(|msg| msg.dest_port.clone())
+            .collect::<Vec<String>>(),
     );
     let start_ts = StringArray::from(
-        input.iter().map(|msg| msg.start_ts.clone()).collect::<Vec<String>>(),
+        input
+            .iter()
+            .map(|msg| msg.start_ts.clone())
+            .collect::<Vec<String>>(),
     );
     let end_ts = StringArray::from(
-        input.iter().map(|msg| msg.end_ts.clone()).collect::<Vec<String>>(),
+        input
+            .iter()
+            .map(|msg| msg.end_ts.clone())
+            .collect::<Vec<String>>(),
     );
     let durations = StringArray::from(
-        input.iter().map(|msg| msg.duration.clone()).collect::<Vec<String>>(),
+        input
+            .iter()
+            .map(|msg| msg.duration.clone())
+            .collect::<Vec<String>>(),
     );
     let msg_types = StringArray::from(
-        input.iter().map(|msg| msg.msg_type.clone()).collect::<Vec<String>>(),
+        input
+            .iter()
+            .map(|msg| msg.msg_type.clone())
+            .collect::<Vec<String>>(),
     );
 
     // Create the RecordBatch
-    RecordBatch::try_new(schema, vec![
-        Arc::new(session_ids),
-        Arc::new(source_ips),
-        Arc::new(source_ports),
-        Arc::new(dest_ips),
-        Arc::new(dest_ports),
-        Arc::new(start_ts),
-        Arc::new(end_ts),
-        Arc::new(durations),
-        Arc::new(msg_types),
-    ])
-    .map_err(|e| DataFusionError::ArrowError(e, None))
-}
-
-
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // Define schema using Arrow
-    let schema = Arc::new(Schema::new(vec![
-        Field::new("session_id", DataType::Utf8, false),
-        Field::new("source_ip_address", DataType::Utf8, false),
-        Field::new("source_port", DataType::Utf8, false),
-        Field::new("dest_ip_address", DataType::Utf8, false),
-        Field::new("dest_port", DataType::Utf8, false),
-        Field::new("start_ts", DataType::Utf8, false), // Adjust the data type as needed
-        Field::new("end_ts", DataType::Utf8, false),   // Adjust the data type as needed
-        Field::new("duration", DataType::Utf8, false),
-        Field::new("msg_type", DataType::Utf8, false),
-    ]));
-
-    // Create SyslogMessageBatch and load data
-    let mut batch = SyslogMessageBatch::new();
-    batch.load(BATCH_SIZE).await.unwrap();
-
-    // Generate open and close syslog messages
-    let (open_out, close_out) = batch.generate().await.unwrap();
-
-    // Create RecordBatch from open_out
-    let record_batch = create_string_arrays_from_messages(&open_out, schema.clone())?;
+    let record_batch = RecordBatch::try_new(
+        schema.clone(),
+        vec![
+            Arc::new(session_ids),
+            Arc::new(source_ips),
+            Arc::new(source_ports),
+            Arc::new(dest_ips),
+            Arc::new(dest_ports),
+            Arc::new(start_ts),
+            Arc::new(end_ts),
+            Arc::new(durations),
+            Arc::new(msg_types),
+        ],
+    )?;
 
     // Step 3: Create a MemTable
     let table = MemTable::try_new(schema.clone(), vec![vec![record_batch]])?;
@@ -243,12 +246,65 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let df = ctx.sql("SELECT * FROM my_table").await?;
     df.clone().show().await?;
 
-    let target_path =  "data.parquet";
-    df.write_parquet(
-        target_path,
-        DataFrameWriteOptions::new(),
-        None, // writer_options
-    ).await;
+    // Step 6: Write to a Parquet file
+    df.write_parquet(output_path, DataFrameWriteOptions::new(), None)
+        .await?;
 
+    Ok(())
+}
+
+fn generate_parquet_filename(prefix: &str, directory: &str) -> String {
+    let now = Utc::now();
+    format!(
+        "{}/{}{:04}{:02}{:02}{:02}{:02}{:02}.parquet",
+        directory,
+        prefix,
+        now.year(),
+        now.month(),
+        now.day(),
+        now.hour(),
+        now.minute(),
+        now.second()
+    )
+}
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    env_logger::init();
+
+    info!("Start");
+
+    // Define schema using Arrow
+    let schema = Arc::new(Schema::new(vec![
+        Field::new("session_id", DataType::Utf8, false),
+        Field::new("source_ip_address", DataType::Utf8, false),
+        Field::new("source_port", DataType::Utf8, false),
+        Field::new("dest_ip_address", DataType::Utf8, false),
+        Field::new("dest_port", DataType::Utf8, false),
+        Field::new("start_ts", DataType::Utf8, false),
+        Field::new("end_ts", DataType::Utf8, false),
+        Field::new("duration", DataType::Utf8, false),
+        Field::new("msg_type", DataType::Utf8, false),
+    ]));
+
+    // Create SyslogMessageBatch and load data
+    let mut batch = SyslogMessageBatch::new();
+    batch.load(BATCH_SIZE).await.unwrap();
+
+    for i in 0..5 {
+        // Generate open and close syslog messages
+        let (open_out, close_out) = batch.generate().await.unwrap();
+
+        // Generate filenames using the helper function
+        let open_filename = generate_parquet_filename("OPEN", "minidl/RAW");
+        generate_file(&open_out, schema.clone(), &open_filename).await?;
+        info!("Generated open {}", open_filename);
+
+        let close_filename = generate_parquet_filename("CLOSE", "minidl/RAW");
+        generate_file(&close_out, schema.clone(), &close_filename).await?;
+        info!("Generated close {}", close_filename);
+    }
+
+    info!("End");
     Ok(())
 }
