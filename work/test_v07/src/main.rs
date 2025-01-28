@@ -1,8 +1,19 @@
 use chrono::{DateTime, Duration, Utc};
-use rand::{thread_rng, Rng};
+use datafusion::arrow::{
+    array::{Float64Array, StringArray},
+    datatypes::{DataType, Field, Schema},
+    record_batch::RecordBatch,
+};
+use datafusion::dataframe::DataFrameWriteOptions;
+use datafusion::datasource::memory::MemTable;
+use datafusion::error::{DataFusionError, Result};
+use datafusion::execution::context::SessionContext;
+use datafusion::prelude::*;
+use rand::thread_rng;
+use rand::Rng;
 use serde::Serialize;
 use std::cmp;
-
+use std::sync::Arc;
 const BATCH_SIZE: u32 = 2000;
 
 #[derive(Serialize, Debug, Clone)]
@@ -12,9 +23,9 @@ pub struct SyslogMessage {
     pub source_port: String,
     pub dest_ip_address: String,
     pub dest_port: String,
-    pub start_ts: DateTime<Utc>,
-    pub end_ts: DateTime<Utc>,
-    pub duration: Duration,
+    pub start_ts: String,
+    pub end_ts: String,
+    pub duration: String,
     pub msg_type: String,
 }
 
@@ -32,7 +43,7 @@ impl SyslogMessageBatch {
     }
 
     pub async fn load(&mut self, count: u32) -> Result<(), String> {
-        let mut rng = thread_rng();
+        let mut rng = rand::thread_rng();
 
         for _ in 0..count {
             let now = Utc::now();
@@ -48,15 +59,19 @@ impl SyslogMessageBatch {
             let dest_ip_address = Self::generate_ip_address(&mut rng);
             let dest_port = format!("{}", rng.gen_range(1024..65535));
 
+            let start_ts_str = start_ts.to_rfc3339();
+            let end_ts_str = end_ts.to_rfc3339();
+            let duration_str = format!("{}", duration);
+
             let msg_open = SyslogMessage {
                 session_id: session_id.clone(),
                 source_ip_address: source_ip_address.clone(),
                 source_port: source_port.clone(),
                 dest_ip_address: dest_ip_address.clone(),
                 dest_port: dest_port.clone(),
-                start_ts,
-                end_ts: Utc::now(),
-                duration: Duration::seconds(0),
+                start_ts: start_ts_str,
+                end_ts: Utc::now().to_rfc3339(),
+                duration: "0".to_string(),
                 msg_type: "open".to_string(),
             };
 
@@ -66,9 +81,9 @@ impl SyslogMessageBatch {
                 source_port: source_port.clone(),
                 dest_ip_address: dest_ip_address.clone(),
                 dest_port: dest_port.clone(),
-                start_ts: Utc::now(),
-                end_ts,
-                duration: Duration::seconds(duration as i64),
+                start_ts: Utc::now().to_rfc3339(),
+                end_ts: end_ts_str,
+                duration: duration_str,
                 msg_type: "close".to_string(),
             };
 
@@ -98,7 +113,8 @@ impl SyslogMessageBatch {
 
         let mut i = 0;
         while i < self.open.len() {
-            if self.open[i].start_ts < now {
+            let start_ts = DateTime::parse_from_rfc3339(&self.open[i].start_ts).unwrap();
+            if Utc::now() > start_ts {
                 // Use swap_remove to efficiently remove and push to the output
                 open_out.push(self.open.swap_remove(i));
             } else {
@@ -108,7 +124,8 @@ impl SyslogMessageBatch {
 
         let mut j = 0;
         while j < self.close.len() {
-            if self.close[j].end_ts < now {
+            let end_ts = DateTime::parse_from_rfc3339(&self.close[j].end_ts).unwrap();
+            if Utc::now() > end_ts {
                 // Use swap_remove to efficiently remove and push to the output
                 close_out.push(self.close.swap_remove(j));
             } else {
@@ -141,23 +158,118 @@ impl SyslogMessageBatch {
 }
 
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // Define schema using Arrow
+    let schema = Arc::new(Schema::new(vec![
+        Field::new("session_id", DataType::Utf8, false),
+        Field::new("source_ip_address", DataType::Utf8, false),
+        Field::new("source_port", DataType::Utf8, false),
+        Field::new("dest_ip_address", DataType::Utf8, false),
+        Field::new("dest_port", DataType::Utf8, false),
+        Field::new("start_ts", DataType::Utf8, false), // Adjust the data type as needed
+        Field::new("end_ts", DataType::Utf8, false),   // Adjust the data type as needed
+        Field::new("duration", DataType::Utf8, false),
+        Field::new("msg_type", DataType::Utf8, false),
+    ]));
+
+    // Create SyslogMessageBatch and load data
     let mut batch = SyslogMessageBatch::new();
     batch.load(BATCH_SIZE).await.unwrap();
 
-    loop {
-        // Call the `generate` method with the correct argument (iterations)
-        let (open_out, close_out) = batch.generate().await.unwrap();
+    // Generate open and close syslog messages
+    let (open_out, close_out) = batch.generate().await.unwrap();
 
-        println!(
-            "OUT {} open and {} close messages.",
-            open_out.len(),
-            close_out.len()
-        );
-        println!(
-            "RESTE {} open and {} close syslog messages.",
-            batch.open.len(),
-            batch.close.len()
-        );
-    }
+    // Create StringArray for each field in SyslogMessage
+    let session_ids = StringArray::from(
+        open_out
+            .iter()
+            .map(|msg| msg.session_id.clone())
+            .collect::<Vec<String>>(),
+    );
+    let source_ips = StringArray::from(
+        open_out
+            .iter()
+            .map(|msg| msg.source_ip_address.clone())
+            .collect::<Vec<String>>(),
+    );
+    let source_ports = StringArray::from(
+        open_out
+            .iter()
+            .map(|msg| msg.source_port.clone())
+            .collect::<Vec<String>>(),
+    );
+    let dest_ips = StringArray::from(
+        open_out
+            .iter()
+            .map(|msg| msg.dest_ip_address.clone())
+            .collect::<Vec<String>>(),
+    );
+    let dest_ports = StringArray::from(
+        open_out
+            .iter()
+            .map(|msg| msg.dest_port.clone())
+            .collect::<Vec<String>>(),
+    );
+    let start_ts = StringArray::from(
+        open_out
+            .iter()
+            .map(|msg| msg.start_ts.clone())
+            .collect::<Vec<String>>(),
+    );
+    let end_ts = StringArray::from(
+        open_out
+            .iter()
+            .map(|msg| msg.end_ts.clone())
+            .collect::<Vec<String>>(),
+    );
+    let durations = StringArray::from(
+        open_out
+            .iter()
+            .map(|msg| msg.duration.clone())
+            .collect::<Vec<String>>(),
+    );
+    let msg_types = StringArray::from(
+        open_out
+            .iter()
+            .map(|msg| msg.msg_type.clone())
+            .collect::<Vec<String>>(),
+    );
+
+    // Create the RecordBatch
+    let batch = RecordBatch::try_new(
+        schema.clone(),
+        vec![
+            Arc::new(session_ids),
+            Arc::new(source_ips),
+            Arc::new(source_ports),
+            Arc::new(dest_ips),
+            Arc::new(dest_ports),
+            Arc::new(start_ts),
+            Arc::new(end_ts),
+            Arc::new(durations),
+            Arc::new(msg_types),
+        ],
+    )
+    .map_err(|e| DataFusionError::ArrowError(e, None))?;
+
+    // Step 3: Create a MemTable
+    let table = MemTable::try_new(schema, vec![vec![batch]])?;
+
+    // Step 4: Create a SessionContext and register the table
+    let ctx = SessionContext::new();
+    ctx.register_table("my_table", Arc::new(table))?;
+
+    // Step 5: Query the DataFrame
+    let df = ctx.sql("SELECT * FROM my_table").await?;
+    df.clone().show().await?;
+
+    let target_path = "data.parquet";
+    df.write_parquet(
+        target_path,
+        DataFrameWriteOptions::new(),
+        None, // writer_options
+    )
+    .await;
+
+    Ok(())
 }
