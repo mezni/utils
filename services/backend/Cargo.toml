@@ -1,0 +1,25 @@
+[package]
+name = "everest-backend"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+actix-web = "4"
+actix-cors = "0.7"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sqlx = { version = "0.7", features = ["runtime-tokio-rustls", "postgres", "uuid", "chrono", "json", "geo"] }
+tokio = { version = "1", features = ["full"] }
+chrono = { version = "0.4", features = ["serde"] }
+uuid = { version = "1", features = ["serde", "v4"] }
+geo-types = "0.7"
+dotenvy = "0.15"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+lapin = "2"
+reqwest = { version = "0.11", features = ["json"] }
+thiserror = "1"
+anyhow = "1"
+cookie = { version = "0.18", features = ["secure"] }
+rand = "0.8"
+sha2 = "0.10"
