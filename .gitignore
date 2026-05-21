@@ -1,0 +1,50 @@
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Rust
+target/
+**/*.rs.bk
+*.rlib
+*.prof*
+*.profraw
+*.gcda
+*.gcno
+cargo-lock.toml
+
+# Node.js / React
+node_modules/
+dist/
+build/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.npm
+.eslintcache
+coverage/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Docker
+*.pid
+
+# Database data
+infra/data/
+infra/pgdata/
+infra/mongo_data/
+infra/rabbitmq_data/
+infra/shared_media/
+
+# OS
+.DS_Store
+Thumbs.db

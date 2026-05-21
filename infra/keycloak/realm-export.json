@@ -1,0 +1,72 @@
+{
+  "id": "ev-platform",
+  "realm": "EV-Platform",
+  "enabled": true,
+  "accessTokenLifespan": 3600,
+  "ssoSessionIdleTimeout": 1800,
+  "ssoSessionMaxLifespan": 36000,
+  "clients": [
+    {
+      "clientId": "mobile-driver",
+      "name": "Mobile Driver App",
+      "enabled": true,
+      "publicClient": true,
+      "directAccessGrantsEnabled": true,
+      "standardFlowEnabled": true,
+      "redirectUris": [
+        "com.evchargingdriver://callback"
+      ],
+      "protocol": "openid-connect",
+      "attributes": {
+        "access.token.lifespan": "3600"
+      },
+      "defaultClientScopes": [
+        "openid",
+        "profile",
+        "email"
+      ]
+    },
+    {
+      "clientId": "web-admin",
+      "name": "Web Admin Dashboard",
+      "enabled": true,
+      "publicClient": false,
+      "secret": "CHANGE_ME_IN_ENV",
+      "directAccessGrantsEnabled": false,
+      "standardFlowEnabled": true,
+      "redirectUris": [
+        "http://localhost/admin/*",
+        "https://*/admin/*"
+      ],
+      "webOrigins": [
+        "+"
+      ],
+      "protocol": "openid-connect",
+      "attributes": {
+        "access.token.lifespan": "3600"
+      },
+      "defaultClientScopes": [
+        "openid",
+        "profile",
+        "email",
+        "roles"
+      ]
+    }
+  ],
+  "roles": {
+    "realm": [
+      {
+        "name": "driver",
+        "description": "EV Driver role"
+      },
+      {
+        "name": "partner",
+        "description": "Station Owner / Partner role"
+      },
+      {
+        "name": "super-admin",
+        "description": "Platform Super Admin role"
+      }
+    ]
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "exchanges": [
+    {
+      "name": "telemetry.events",
+      "type": "direct",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    }
+  ],
+  "queues": [
+    {
+      "name": "telemetry.events.queue",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-message-ttl": 86400000,
+        "x-max-length": 1000000
+      }
+    }
+  ],
+  "bindings": [
+    {
+      "source": "telemetry.events",
+      "destination": "telemetry.events.queue",
+      "destination_type": "queue",
+      "routing_key": "telemetry",
+      "arguments": {}
+    }
+  ]
+}
