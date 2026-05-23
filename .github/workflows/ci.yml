@@ -96,21 +96,29 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build images
         run: |
-          for dir in services/*/; do
-            if [ -f "$dir/Dockerfile" ]; then
-              service=$(basename "$dir")
-              docker build -t ghcr.io/${{ github.repository }}/$service:${{ github.sha }} "$dir"
-            fi
-          done
+          if [ -d services ]; then
+            for dir in services/*/; do
+              if [ -f "$dir/Dockerfile" ]; then
+                service=$(basename "$dir")
+                docker build -t ghcr.io/${{ github.repository }}/$service:${{ github.sha }} "$dir"
+              fi
+            done
+          else
+            echo "services/ directory not found — nothing to build at Phase 1"
+          fi
       - name: Push images on main merge
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: |
-          for dir in services/*/; do
-            if [ -f "$dir/Dockerfile" ]; then
-              service=$(basename "$dir")
-              docker push ghcr.io/${{ github.repository }}/$service:${{ github.sha }}
-            fi
-          done
+          if [ -d services ]; then
+            for dir in services/*/; do
+              if [ -f "$dir/Dockerfile" ]; then
+                service=$(basename "$dir")
+                docker push ghcr.io/${{ github.repository }}/$service:${{ github.sha }}
+              fi
+            done
+          else
+            echo "services/ directory not found — nothing to push at Phase 1"
+          fi
 
   health-check:
     runs-on: ubuntu-latest
