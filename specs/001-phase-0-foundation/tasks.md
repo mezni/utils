@@ -29,7 +29,7 @@ description: "Task list for Phase 0 — Foundation & Governance"
 
 **Purpose**: One-time prerequisite that all stories depend on. No code, no commands — these are GitHub-organisation actions.
 
-- [ ] T001 Create the GitHub team `mezni/bornemap-maintainers` (organisation `mezni`, team slug `bornemap-maintainers`) and assign at least one initial member; record the team handle in `docs/methodology.md` if not already present (prerequisite for FR-008, FR-014, CODEOWNERS rule C-OWN-5)
+- [X] T001 Create the GitHub team `mezni/bornemap-maintainers` (organisation `mezni`, team slug `bornemap-maintainers`) and assign at least one initial member; record the team handle in `docs/methodology.md` if not already present (prerequisite for FR-008, FR-014, CODEOWNERS rule C-OWN-5)
 
 **Checkpoint**: Maintainers team exists and is referencable in `.github/CODEOWNERS`.
 
@@ -51,11 +51,11 @@ description: "Task list for Phase 0 — Foundation & Governance"
 
 ### Implementation for User Story 1
 
-- [ ] T002 [US1] Author top-level `README.md` (new file) with: one-paragraph mission consistent with the Constitution preamble; "Documentation" section linking to `.specify/memory/constitution.md`, `docs/roadmap.md`, `docs/methodology.md`, `docs/architecture/overview.md`, `docs/adr/README.md`, `docs/operations/deployment.md`, `CONTRIBUTING.md`; a "Status" note that the project is at Phase 0 (FR-001, FR-002, FR-003)
+- [X] T002 [US1] Author top-level `README.md` (new file) with: one-paragraph mission consistent with the Constitution preamble; "Documentation" section linking to `.specify/memory/constitution.md`, `docs/roadmap.md`, `docs/methodology.md`, `docs/architecture/overview.md`, `docs/adr/README.md`, `docs/operations/deployment.md`, `CONTRIBUTING.md`; a "Status" note that the project is at Phase 0 (FR-001, FR-002, FR-003)
 
-- [ ] T003 [US1] Update `docs/adr/README.md` if needed so each of ADR-0001…ADR-0005 is listed with "Accepted" status and links to its file under `docs/adr/`; confirm the index matches the actual files on disk (FR-003)
+- [X] T003 [US1] Update `docs/adr/README.md` if needed so each of ADR-0001…ADR-0005 is listed with "Accepted" status and links to its file under `docs/adr/`; confirm the index matches the actual files on disk (FR-003)
 
-- [ ] T004 [US1] Run the link-check loop from `quickstart.md` Step 7 against the working tree; fix every dead `[text](path)` link reported and re-run until the script prints nothing (FR-011, SC-002)
+- [X] T004 [US1] Run the link-check loop from `quickstart.md` Step 7 against the working tree; fix every dead `[text](path)` link reported and re-run until the script prints nothing (FR-011, SC-002)
 
 **Checkpoint**: `README.md` exists, all seven documentation links resolve, ADR index lists all five ADRs as Accepted, link-check is clean. User Story 1 is independently testable and satisfies the Phase 0 MVP.
 
@@ -69,9 +69,9 @@ description: "Task list for Phase 0 — Foundation & Governance"
 
 ### Implementation for User Story 2
 
-- [ ] T005 [P] [US2] Create `.github/PULL_REQUEST_TEMPLATE.md` (new file) exactly matching the section order, titles, and field semantics defined in `specs/001-phase-0-foundation/contracts/pr-template.md` (Summary; Phase / Principles; Changes; Tests with the 7-item checkbox grid mirroring Constitution Principle VII; Definition of Done with the 5-item checklist; ADR Yes/No with link slot) (FR-005, FR-006)
+- [X] T005 [P] [US2] Create `.github/PULL_REQUEST_TEMPLATE.md` (new file) exactly matching the section order, titles, and field semantics defined in `specs/001-phase-0-foundation/contracts/pr-template.md` (Summary; Phase / Principles; Changes; Tests with the 7-item checkbox grid mirroring Constitution Principle VII; Definition of Done with the 5-item checklist; ADR Yes/No with link slot) (FR-005, FR-006)
 
-- [ ] T006 [P] [US2] Create `.github/CODEOWNERS` (new file) exactly matching the ruleset in `specs/001-phase-0-foundation/contracts/codeowners.md`: governance-critical path rules first (`/.specify/`, `/docs/adr/`, `/.github/`, `/CONTRIBUTING.md`, `/README.md`), then `/docs/`, then the wildcard `*` → `@mezni/bornemap-maintainers` as the **last** non-comment line; satisfy invariants C-OWN-1..C-OWN-6 (FR-007, FR-008)
+- [X] T006 [P] [US2] Create `.github/CODEOWNERS` (new file) exactly matching the ruleset in `specs/001-phase-0-foundation/contracts/codeowners.md`: governance-critical path rules first (`/.specify/`, `/docs/adr/`, `/.github/`, `/CONTRIBUTING.md`, `/README.md`), then `/docs/`, then the wildcard `*` → `@mezni/bornemap-maintainers` as the **last** non-comment line; satisfy invariants C-OWN-1..C-OWN-6 (FR-007, FR-008)
 
 - [ ] T007 [US2] Configure the `main` branch ruleset in **GitHub UI → Repository → Settings → Rules → Rulesets** per `specs/001-phase-0-foundation/contracts/branch-protection.md`, applying all six clauses C-BR-1..C-BR-6: restrict direct pushes; require PR with ≥1 approving review and require code-owner review and dismiss stale approvals on push; require status checks (list empty at Phase 0); block force pushes; require linear history; empty bypass list (admins NOT in bypass); name the ruleset `main-protection`; target `refs/heads/main`; state Active (FR-013)
 
@@ -91,11 +91,11 @@ description: "Task list for Phase 0 — Foundation & Governance"
 
 ### Implementation for User Story 3
 
-- [ ] T010 [US3] Author top-level `CONTRIBUTING.md` (new file) with all nine sections enumerated in `quickstart.md` Step 2 (Welcome; Before you start — lists Constitution + Roadmap as required reading; Repository governance — defines Maintainer + Contributor roles, names current Maintainers, states ADR/Constitution amendments require Maintainer sign-off; How to propose a change; Branch strategy — base branch, feature/ADR/hotfix naming, merge style, auto-delete + stale >30d flagged; Commit messages — Conventional Commits + DCO `Signed-off-by:` with `git commit -s` example; Pull-request workflow — references PR template + DoD; Filing or amending an ADR — links MADR template + Constitution amendment policy; Reporting issues) (FR-004, FR-009, FR-014, FR-015, FR-016)
+- [X] T010 [US3] Author top-level `CONTRIBUTING.md` (new file) with all nine sections enumerated in `quickstart.md` Step 2 (Welcome; Before you start — lists Constitution + Roadmap as required reading; Repository governance — defines Maintainer + Contributor roles, names current Maintainers, states ADR/Constitution amendments require Maintainer sign-off; How to propose a change; Branch strategy — base branch, feature/ADR/hotfix naming, merge style, auto-delete + stale >30d flagged; Commit messages — Conventional Commits + DCO `Signed-off-by:` with `git commit -s` example; Pull-request workflow — references PR template + DoD; Filing or amending an ADR — links MADR template + Constitution amendment policy; Reporting issues) (FR-004, FR-009, FR-014, FR-015, FR-016)
 
-- [ ] T011 [US3] Cross-check `CONTRIBUTING.md` against `docs/methodology.md` for any contradiction on base branch name, feature branch format, ADR branch format, hotfix branch format, merge style, or branch-deletion policy; if a contradiction is found, update `CONTRIBUTING.md` (NOT the methodology — methodology is the authority unless the contradiction reveals a methodology bug, in which case file an ADR) until both documents agree (FR-010)
+- [X] T011 [US3] Cross-check `CONTRIBUTING.md` against `docs/methodology.md` for any contradiction on base branch name, feature branch format, ADR branch format, hotfix branch format, merge style, or branch-deletion policy; if a contradiction is found, update `CONTRIBUTING.md` (NOT the methodology — methodology is the authority unless the contradiction reveals a methodology bug, in which case file an ADR) until both documents agree (FR-010)
 
-- [ ] T012 [US3] Re-run the link-check loop from `quickstart.md` Step 7 against the working tree (now including `CONTRIBUTING.md`); fix every dead link reported and re-run until the script prints nothing (FR-011)
+- [X] T012 [US3] Re-run the link-check loop from `quickstart.md` Step 7 against the working tree (now including `CONTRIBUTING.md`); fix every dead link reported and re-run until the script prints nothing (FR-011)
 
 **Checkpoint**: `CONTRIBUTING.md` covers every mandated section, contradicts nothing in `docs/methodology.md`, and links cleanly to the Constitution / Roadmap / ADRs. User Story 3 is independently testable.
 
@@ -109,7 +109,7 @@ description: "Task list for Phase 0 — Foundation & Governance"
 
 - [ ] T014 Manually re-check FR-012 (no contradiction with Constitution): for FR-008, FR-013, FR-014, FR-015, FR-016, re-read the Constitution and confirm no Principle I–VII or governance clause is violated; record the reviewer and date in the closing PR description (`quickstart.md` Step 8)
 
-- [ ] T015 [P] Update `specs/001-phase-0-foundation/plan.md` "Progress Tracking" section: tick Phase 0 (Outline & Research), Phase 1 (Design & Contracts), Phase 2 (Task generation via /speckit.tasks), and after T013 passes also tick "Constitution Check: initial (PASS)" and "Constitution Check: post-design (PASS)"
+- [X] T015 [P] Update `specs/001-phase-0-foundation/plan.md` "Progress Tracking" section: tick Phase 0 (Outline & Research), Phase 1 (Design & Contracts), Phase 2 (Task generation via /speckit.tasks), and after T013 passes also tick "Constitution Check: initial (PASS)" and "Constitution Check: post-design (PASS)"
 
 - [ ] T016 [P] Update `docs/roadmap.md` Phase 0 row to status "Ratified" with the merge date, once the closing PR has been merged
 

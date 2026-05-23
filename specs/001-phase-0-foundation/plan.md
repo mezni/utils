@@ -150,6 +150,14 @@ web-app, mobile+API). The selected structure is the **repository-root
 artefacts** inventory above, mapped 1:1 to functional requirements in
 the spec. No `src/` or `tests/` directories are created.
 
+## Progress Tracking
+
+- [X] Constitution Check: initial (PASS)
+- [X] Phase 0 — Outline & Research
+- [X] Phase 1 — Design & Contracts
+- [X] Phase 2 — Task generation via /speckit.tasks
+- [ ] Constitution Check: post-design (PASS) — run after T013 passes
+
 ## Complexity Tracking
 
 > No Constitution Check violations. This table intentionally left empty.

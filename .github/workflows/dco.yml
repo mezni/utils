@@ -1,0 +1,33 @@
+name: DCO
+
+on:
+  pull_request:
+    branches:
+      - "main"
+
+jobs:
+  dco-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Check DCO sign-off
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { repo, owner } = context.repo;
+            const { data: commits } = await github.rest.pulls.listCommits({
+              owner, repo,
+              pull_number: context.payload.pull_request.number,
+            });
+            const unsigned = commits.filter(c => {
+              const msg = c.commit.message;
+              return !msg.includes('Signed-off-by:');
+            });
+            if (unsigned.length > 0) {
+              core.setFailed(
+                `DCO check failed: ${unsigned.length} commit(s) missing Signed-off-by:\n` +
+                unsigned.map(c => `  ${c.sha.slice(0, 7)} ${c.commit.message.split('\n')[0]}`).join('\n')
+              );
+            }
