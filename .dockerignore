@@ -1,8 +1,46 @@
+# Rust
+target/
+debug/
+release/
+*.rs.bk
+*.rlib
+*.prof*
+.idea/
+
+# Node.js (if present)
 node_modules/
+
+# Git
 .git/
 .gitignore
+
+# Environment
 .env*
+
+# Logs
 *.log
+
+# Docker
 Dockerfile*
 .dockerignore
+
+# Coverage
 coverage/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary
+*.tmp
+*.swp
+
+# Dependencies
+Cargo.lock
+
+# Build artifacts
+*.o
+*.so
+*.a
+*.exe
+*.dll

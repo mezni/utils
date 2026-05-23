@@ -64,7 +64,7 @@ following Clean Architecture boundaries. Service responsibilities are fixed:
 - `core-service`: companies, stations, chargers, favorites, reviews,
   moderation, outbox, and audit event publishing. Sole event producer.
 - `geo-service`: nearby search, bounding-box queries, routing, ETA
-  calculation. Implemented in Rust (ADR-002).
+  calculation. All backend services implemented in Rust (ADR-002).
 - `analytics-service`: event consumption, analytics aggregation, audit log
   persistence.
 
@@ -74,7 +74,7 @@ MongoDB is reserved for analytics and audit logs only. Direct cross-service
 database access is forbidden.
 
 **Rationale**: Bounded contexts and a single source of truth prevent
-coupling drift, enable independent scaling of geospatial workloads in Rust,
+coupling drift, enable independent scaling of all services in Rust,
 and keep audit/analytics workloads off the transactional path.
 
 ### II. Domain Model Integrity
@@ -204,8 +204,8 @@ fraud; making them mandatory closes that gap.
 
 **Approved technology stack** — substitutions require an ADR:
 
-- Backend: NestJS (TypeScript services), Rust + Actix-Web (`geo-service`),
-  PostgreSQL + PostGIS, MongoDB, RabbitMQ, Keycloak.
+- Backend: Rust + Actix-Web (all services), PostgreSQL + PostGIS, MongoDB,
+  RabbitMQ, Keycloak.
 - Frontend: React + Vite, Tailwind CSS, shadcn/ui, React Query, React
   Router, Framer Motion, Leaflet.
 
@@ -240,7 +240,7 @@ begins. PRs that violate this rule MUST be blocked at review.
 **ADR Registry (pre-existing, binding at ratification):**
 
 - ADR-001: Drop `networks`; use companies as the top-level grouping.
-- ADR-002: `geo-service` implemented in Rust.
+- ADR-002: All backend services implemented in Rust.
 - ADR-003: Keycloak as sole identity provider.
 - ADR-004: Outbox pattern for reliable event publishing.
 - ADR-005: Soft delete on infrastructure entities only.

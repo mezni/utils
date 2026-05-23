@@ -64,10 +64,29 @@ services:
       timeout: 5s
       retries: 10
 
-  # Phase 2+ will add: auth-service, core-service, geo-service, analytics-service
-  # with `build` contexts pointing to services/*/Dockerfile and `image:` tags
-  # pointing to GHCR. Uncomment the blocks below and create service directories
-  # when implementing each service.
+  # Core Service
+  core-service:
+    build:
+      context: ./services/core-service
+      dockerfile: Dockerfile
+    image: bornemap/core-service:latest
+    ports:
+      - "8081:8080"
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-bornemap}:${POSTGRES_PASSWORD:-bornemap_dev}@postgres:5432/${POSTGRES_DB:-bornemap}
+      - RUST_LOG=info
+      - JWT_SECRET=${JWT_SECRET:-your-secret-key-here}
+      - SERVER_HOST=0.0.0.0
+      - SERVER_PORT=8080
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health/core-service"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
 
   nginx:
     image: nginx:alpine
