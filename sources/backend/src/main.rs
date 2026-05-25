@@ -1,4 +1,4 @@
-use actix_web::{web, App, HttpResponse, HttpServer, Responder, get};
+use actix_web::{get, web, App, HttpResponse, HttpServer, Responder};
 use tracing_subscriber::EnvFilter;
 
 mod domain;
@@ -20,11 +20,8 @@ async fn main() -> std::io::Result<()> {
 
     tracing::info!("Starting BorneMap backend on :8080");
 
-    HttpServer::new(|| {
-        App::new()
-            .service(health)
-    })
-    .bind("0.0.0.0:8080")?
-    .run()
-    .await
+    HttpServer::new(|| App::new().service(health))
+        .bind("0.0.0.0:8080")?
+        .run()
+        .await
 }

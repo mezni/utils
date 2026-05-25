@@ -10,10 +10,8 @@
 /// ```
 pub fn generate_id(prefix: &str) -> String {
     let alphabet: [char; 36] = [
-        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-        'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
-        'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
-        'u', 'v', 'w', 'x', 'y', 'z',
+        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h',
+        'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
     ];
     let id: String = (0..12)
         .map(|_| alphabet[fastrand::usize(..alphabet.len())])
@@ -36,7 +34,9 @@ mod tests {
     fn test_generate_id_alphabet() {
         let id = generate_id("STN");
         let suffix = &id[4..];
-        assert!(suffix.chars().all(|c| c.is_ascii_lowercase() || c.is_ascii_digit()));
+        assert!(suffix
+            .chars()
+            .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit()));
     }
 
     #[test]
