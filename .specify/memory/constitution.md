@@ -1,259 +1,217 @@
 <!--
 SYNC IMPACT REPORT
 ==================
-Version change: (unratified template) → 1.0.0
-Bump rationale: Initial ratification. Previous file contained only unfilled
-template placeholders; this is the first populated, governing version.
+Version change: 1.0.0 → 2.0.0
+Bump rationale: MAJOR — backward-incompatible redefinition of architecture
+and principles. The platform has fundamentally shifted from a multi-service
+deployment (4 Rust microservices, Keycloak, RabbitMQ, MongoDB) to a
+modular monorepo with a single Rust backend binary. Principles I–VII have
+been removed and replaced with new principles I–V reflecting the revised
+architecture. ID prefix system changed (CMP-/STA-/CHR- → USR-/PRT-/STN-
+/CHG-/CNT-/REV-). Governance model simplified.
 
-Modified principles:
-  - [PRINCIPLE_1_NAME] → I. Clean Modular Architecture
-  - [PRINCIPLE_2_NAME] → II. Domain Model Integrity
-  - [PRINCIPLE_3_NAME] → III. Event Integrity via Outbox (NON-NEGOTIABLE)
-  - [PRINCIPLE_4_NAME] → IV. Soft-Delete Discipline
-  - [PRINCIPLE_5_NAME] → V. Security & Identity
-  Added principles (beyond template's 5):
-  - VI. Observability
-  - VII. Quality & Testing Discipline
+Modified principles (removed → replaced):
+  - I. Clean Modular Architecture → I. Modular Monorepo Architecture
+  - II. Domain Model Integrity → II. Semantic Identity & Data Isolation
+  - III. Event Integrity via Outbox (NON-NEGOTIABLE) → REMOVED
+  - IV. Soft-Delete Discipline → Merged into Principle II
+  - V. Security & Identity → Merged into Principle II
+  - VI. Observability → REMOVED (deferred to future phase)
+  - VII. Quality & Testing Discipline → REMOVED (deferred to future phase)
+
+Added principles:
+  - III. Administrative UX Discipline
+  - IV. Mobile & Discovery Constraints
+  - V. Deterministic Implementation
 
 Added sections:
-  - Platform Constraints & Technology Stack (replaces [SECTION_2_NAME])
-  - Development Workflow & Governance (replaces [SECTION_3_NAME])
-  - Non-Goals (explicit exclusions)
-  - ADR Registry (pre-existing ADR-001..005)
+  - Platform Constraints & Technology Stack (replaces multi-service stack)
+  - Governance (amendment, versioning, compliance)
 
-Removed sections: none (template was empty placeholders only).
+Removed sections:
+  - ADR Registry (pre-existing ADR-001..005) — ADRs from the prior
+    architecture are no longer binding. New ADRs must be filed under the
+    revised constitution if architectural boundaries are affected.
+  - Non-Goals (narrowed scope under new architecture)
 
 Templates requiring updates:
-  - ✅ .specify/templates/plan-template.md — Constitution Check section now
-    has concrete gates derived from this file; existing placeholder language
-    ("Gates determined based on constitution file") still resolves correctly
-    against this constitution. No structural edit required at ratification
-    time; reviewers MUST validate each plan against principles I–VII.
-  - ✅ .specify/templates/spec-template.md — No mandated section change
-    introduced by this constitution beyond what the template already covers
-    (User Scenarios, Requirements, Success Criteria, Assumptions).
-  - ✅ .specify/templates/tasks-template.md — Task categories already cover
-    setup, foundational, per-story, polish. Principle VII (testing
-    discipline) and Principle VI (observability) MUST be reflected as
-    concrete tasks per feature; no template structural change required.
-  - ⚠ .specify/templates/commands/*.md — Directory does not exist in this
-    repository; no command-template references to update.
-  - ⚠ README.md / docs/quickstart.md — Not present in repo root at
-    ratification time. When created, they MUST reference this constitution.
+  - ✅ .specify/templates/plan-template.md — Constitution Check section
+    resolves dynamically against this file; no structural edit required.
+  - ✅ .specify/templates/spec-template.md — No mandated section change.
+  - ✅ .specify/templates/tasks-template.md — No structural change required.
+  - ⚠ docs/constitution.md — Standalone public constitution doc exists;
+    should be updated to align with this ratified version.
+  - ⚠ .specify/templates/commands/ — Directory does not exist; no
+    references to update.
 
 Follow-up TODOs:
-  - None. All placeholder tokens resolved.
+  - Update docs/constitution.md to reflect v2.0.0 principles.
+  - ADR-001..005 from v1.0.0 are void under this constitution; file new
+    ADRs as architectural decisions arise.
+  - Observability and testing discipline principles were deferred; consider
+    re-introducing them as MINOR amendments when Phase 2 matures.
 -->
 
-# BorneMap Constitution
+# BorneMap Ecosystem Constitution
 
-BorneMap is a geospatial EV charging discovery platform built for Tunisia. Its
-mission is to give EV drivers a fast, accurate, and visually rich way to
-discover and evaluate charging stations — while giving companies, operators,
-and administrators the tools to manage infrastructure data and monitor
-platform health.
+## 1. Project Overview
+
+BorneMap is a high-performance, multi-tenant geospatial ecosystem designed
+for the Tunisian market. The platform focuses on rapid EV charging station
+discovery and management, utilizing a modular monorepo pattern to ensure
+development speed, system integrity, and strict data isolation.
 
 ## Core Principles
 
-### I. Clean Modular Architecture
+### I. Modular Monorepo Architecture
 
-The platform MUST be built as a set of independently deployable services
-following Clean Architecture boundaries. Service responsibilities are fixed:
+All services exist within the `sources/` directory as a single workspace.
+The backend is a Rust compiled binary using Actix-web for async HTTP,
+SQLx for compile-time verified SQL, and Tokio as the multi-threaded
+runtime. The database is PostgreSQL 16+ with PostGIS; all coordinates
+use `GEOGRAPHY(Point, 4326)` in longitude-first notation. All API
+endpoints are mounted strictly behind `/api/v1/*`. Spatial queries
+(`ST_DWithin`) MUST resolve in ≤200ms under concurrent production
+workloads. Domain layers under `/backend/src/domain/` MUST be structured
+for clean extraction into standalone microservices when scale demands it.
 
-- `auth-service`: Keycloak integration, JWT validation, OAuth handling.
-- `core-service`: companies, stations, chargers, favorites, reviews,
-  moderation, outbox, and audit event publishing. Sole event producer.
-- `geo-service`: nearby search, bounding-box queries, routing, ETA
-  calculation. All backend services implemented in Rust (ADR-002).
-- `analytics-service`: event consumption, analytics aggregation, audit log
-  persistence.
+**Rationale**: A monorepo maximizes development velocity for a small team
+while preserving modular boundaries that allow surgical service extraction
+without rewrites.
 
-Inter-service communication MUST use REST for synchronous calls and RabbitMQ
-for asynchronous events. PostgreSQL + PostGIS is the system of record;
-MongoDB is reserved for analytics and audit logs only. Direct cross-service
-database access is forbidden.
+### II. Semantic Identity & Data Isolation
 
-**Rationale**: Bounded contexts and a single source of truth prevent
-coupling drift, enable independent scaling of all services in Rust,
-and keep audit/analytics workloads off the transactional path.
+No UUIDs. All primary and foreign keys MUST use the format
+`[PREFIX]-[12-char-lowercase-alphanumeric-nanoid]`. The prefix registry
+is fixed: `USR-` (users), `PRT-` (partner operators), `STN-` (stations),
+`CHG-` (chargers), `CNT-` (connector types), `REV-` (reviews).
 
-### II. Domain Model Integrity
+Multi-tenancy is enforced at the database extraction tier. Partner
+Dashboard API requests MUST inject the verified `owner_id` context
+(mapped to a `USR-` token) into all queries automatically. No
+partner-scoped endpoint MAY omit the `owner_id` constraint.
 
-The infrastructure hierarchy is fixed and MUST be enforced at the schema and
-API layers:
+Sandbox isolation: records marked `is_test = true` are strictly excluded
+from production mobile discovery and analytics reporting via
+repository-level filtering (`AND ($4 = TRUE OR s.is_test = FALSE)`).
+The `include_test` parameter defaults to `false` on all public-facing
+endpoints.
 
-```
-Company (CMP-<nanoid>)
-└── Station (STA-<nanoid>)
-    └── Charger (CHR-<nanoid>)
-```
+Soft delete applies to `users`, `partner_profiles`, and `stations`.
+These tables MUST carry a `deleted_at TIMESTAMPTZ` column and every read
+query MUST include `WHERE deleted_at IS NULL` unless the caller is an
+explicit admin/audit path.
 
-Rules:
+**Rationale**: Human-readable prefixed identifiers make ownership and
+audit trails unambiguous. Repository-level multi-tenancy and test-flag
+filtering prevent data leaks at the SQL boundary where they are
+enforceable and testable.
 
-- Companies are created by Admin only.
-- A station MUST be owned by exactly one company OR by a private individual.
-- A charger MUST belong to exactly one station.
-- "Company" replaces the legacy "network" concept (ADR-001); the term
-  `network` MUST NOT be reintroduced as a top-level grouping.
-- Entity identifiers MUST use the typed-prefix + nanoid format shown above.
+### III. Administrative UX Discipline
 
-**Rationale**: A single, prefixed identifier scheme and a strict hierarchy
-make ownership, cascading operations, and audit trails unambiguous.
+The Admin Portal is partitioned into dedicated routing zones: Overview,
+Users, Data, Analytics, Security, and Settings. Design tokens are driven
+by a centralized `tailwind.config.ts`; hardcoded hex codes are banned
+in view files.
 
-### III. Event Integrity via Outbox (NON-NEGOTIABLE)
+Defensive UI rules are non-negotiable:
+- `<ScrollableTable />` is required for any data matrix containing
+  relational keys, enforcing a minimum content width of 800px to
+  prevent horizontal layout breakage.
+- Destructive actions require a confirmation modal where the operator
+  must manually type the full resource ID (e.g., `STN-4f7d2a8b9c02`)
+  before the execution button unlocks. Simple click-to-delete is
+  forbidden.
 
-`core-service` is the sole event producer. All domain events MUST be written
-to the PostgreSQL `outbox` table inside the same database transaction as the
-business mutation that produced them. A relay worker publishes outbox rows
-to RabbitMQ. Consumers MUST treat delivery as at-least-once and MUST
-implement idempotency (e.g., dedupe key on event id).
+When the Sandbox Workspace Selector is active, a persistent
+`border-t-4 border-sky-500` visual indicator MUST illuminate to
+separate test views from production data.
 
-No service MAY publish domain events to RabbitMQ outside the outbox
-pipeline. Direct `channel.publish` calls from business logic are forbidden.
+**Rationale**: Administrative errors on production data are
+irreversible without strong interlocks. Centralized design tokens
+prevent visual drift across the three client applications.
 
-**Rationale**: The outbox pattern (ADR-004) is the only way to guarantee
-that what consumers see matches what the database committed; bypassing it
-silently corrupts analytics, audit logs, and downstream state.
+### IV. Mobile & Discovery Constraints
 
-### IV. Soft-Delete Discipline
+The mobile driver app MUST use a managed Expo Go workflow. Ejection
+(`expo eject` / `expo prebuild`) is prohibited. Dependencies MUST be
+locked to exact versions to prevent native runtime drift.
 
-Soft delete applies exclusively to infrastructure entities: `companies`,
-`stations`, `chargers`. These tables MUST carry a `deleted_at TIMESTAMPTZ`
-column and every read query MUST include `WHERE deleted_at IS NULL` unless
-the caller is an explicit admin/audit path that opts in.
+Discovery invariants:
+- Nearby search default radius: 20km (`radius=20000.0`).
+- Pagination hard-cap: 50 records per request (`LIMIT 50`).
+- Test records (`is_test = true`) are completely hidden from
+  production mobile instances.
 
-Cascading semantics:
+The map canvas takes the entire viewport. Details grids, action sheets,
+and filters MUST layer as top-level overlays; no side-panel layout that
+clips the map viewport is permitted.
 
-- Deleting a company MUST soft-delete its stations and their chargers.
-- Deleting a station MUST soft-delete its chargers.
+**Rationale**: Managed Expo eliminates native build complexity. Strict
+pagination and radius caps keep map rendering performant on mobile
+devices. Test-record isolation protects driver-facing data integrity.
 
-Non-infrastructure entities (favorites, reviews, moderation records, outbox
-rows, audit logs) MUST NOT use soft delete; they follow their own retention
-or hard-delete policies (ADR-005).
+### V. Deterministic Implementation
 
-**Rationale**: Reversibility and audit reconstruction on infrastructure
-data; avoiding soft-delete sprawl on transient or append-only data.
+All domain layers (`/backend/src/domain/`) MUST be built to be easily
+split into standalone microservices. Cross-domain dependencies are
+expressed through clean interfaces, not shared mutable state.
 
-### V. Security & Identity
+Sandbox environments use a shared seed script
+(`20260525000001_seed_sandbox.up.sql`) that populates 5 partner
+profiles, 100 test stations, and 300 chargers with compliant semantic
+identifiers. All seed records carry `is_test = true`. The seed data
+is deterministic and repeatable across environments.
 
-Keycloak is the sole identity provider (ADR-003). The following are
-non-negotiable:
+Admin web sessions MUST display a `border-t-4 border-sky-500` visual
+indicator when testing sandbox data.
 
-- Keycloak MUST NOT be publicly exposed; access is via the NGINX gateway.
-- JWTs MUST be validated at the gateway AND independently at each service.
-- The OAuth PKCE flow MUST be used for all interactive clients.
-- TLS termination MUST occur at NGINX (Let's Encrypt).
-- Rate limiting MUST be applied at the gateway for all public endpoints.
-- Secrets MUST be supplied via environment variables only; no secret value
-  may be committed to the repository.
-
-**Rationale**: A single, externally-managed IdP plus defense-in-depth JWT
-validation is the only sustainable posture for a multi-service deployment.
-
-### VI. Observability
-
-Every service MUST expose:
-
-- Structured JSON logs with a correlation ID propagated from the gateway
-  through all downstream calls and event consumers.
-- A `/health` endpoint (liveness + readiness signaling).
-- A `/metrics` endpoint exposing Prometheus-compatible metrics.
-
-Logs MUST NOT contain raw secrets, JWTs, or PII beyond what is strictly
-required for support.
-
-**Rationale**: Without correlation IDs and uniform health/metrics surfaces,
-incident response across four services becomes guesswork.
-
-### VII. Quality & Testing Discipline
-
-The following test categories are mandatory and MUST exist before a feature
-is considered done:
-
-- Unit tests for domain logic.
-- Integration tests for cross-component behavior (DB, queue, HTTP).
-- Transaction tests proving atomicity of business-mutation + outbox writes.
-- Outbox tests proving relay-worker delivery semantics.
-- Audit-log tests proving the audit event was persisted with the expected
-  shape.
-- Soft-delete tests proving `deleted_at IS NULL` filtering and cascade.
-- Spatial correctness tests for any geo-service query (nearby,
-  bounding-box, routing, ETA).
-
-Definition of Done (all MUST hold):
-
-1. All applicable tests above pass in CI.
-2. OpenAPI specs are updated for any REST surface change.
-3. Security review confirms Principle V is upheld.
-4. Logging/metrics/health for the changed path comply with Principle VI.
-5. An ADR is filed if a constitutional boundary is affected.
-
-**Rationale**: The hard-to-test categories (outbox, audit, soft-delete,
-spatial) are exactly the ones whose silent regressions cause data loss or
-fraud; making them mandatory closes that gap.
+**Rationale**: Deterministic seeding enables reliable end-to-end
+testing and developer onboarding. Modular domain boundaries future-proof
+the architecture for service extraction without requiring it prematurely.
 
 ## Platform Constraints & Technology Stack
 
-**Non-Goals (out of scope in all phases unless this constitution is amended):**
-
-- OCPP / charging-session control.
-- Billing or payment processing.
-- Energy management or smart-charging optimization.
-- Direct hardware/charger communication.
-- Real-time charger availability polling (deferred post-MVP).
-
 **Approved technology stack** — substitutions require an ADR:
 
-- Backend: Rust + Actix-Web (all services), PostgreSQL + PostGIS, MongoDB,
-  RabbitMQ, Keycloak.
-- Frontend: React + Vite, Tailwind CSS, shadcn/ui, React Query, React
-  Router, Framer Motion, Leaflet.
+- Backend: Rust + Actix-web, SQLx, Tokio runtime
+- Database: PostgreSQL 16+ with PostGIS
+- Frontend (Web): React + Vite, Tailwind CSS, Leaflet
+- Mobile: Expo Go (managed workflow), React Native
+- Deployment: `docker-compose.dev.yml` with `postgis/postgis:16-3.4-alpine`
+  and a Rust backend container
 
-**Deployment** — on-premises only at ratification:
+**Non-Goals** (out of scope unless this constitution is amended):
 
-- Orchestrated by a single `docker-compose.yml`.
-- NGINX as the gateway with Let's Encrypt TLS.
-- Required containers: `nginx`, `keycloak`, `auth-service`, `core-service`,
-  `geo-service`, `analytics-service`, `postgres`, `mongodb`, `rabbitmq`.
+- OCPP / charging-session control
+- Billing or payment processing
+- Energy management or smart-charging optimization
+- Direct hardware/charger communication
+- Real-time charger availability polling (deferred post-MVP)
 
 **Repository structure** — top-level layout is fixed:
 
 ```
-bornemap/
-├── docs/
-├── services/
-├── frontend/
-├── infra/
-├── docker-compose.yml
-├── Makefile
-└── CONTRIBUTING.md
+bornemap-monorepo/
+├── Cargo.toml
+├── docker-compose.dev.yml
+└── sources/
+    ├── backend/
+    └── frontend/
+        ├── packages/ui/
+        └── apps/
+            ├── admin-portal/
+            ├── partner-dashboard/
+            └── mobile-driver/
 ```
 
-## Development Workflow & Governance
+## Governance
 
-**ADR Governance Rule.** Any architectural change that affects a
-constitutional boundary (service responsibilities, data ownership, identity
-provider, event pipeline, soft-delete scope, deployment topology, approved
-stack) MUST be documented as an ADR under `docs/adr/` before implementation
-begins. PRs that violate this rule MUST be blocked at review.
-
-**ADR Registry (pre-existing, binding at ratification):**
-
-- ADR-001: Drop `networks`; use companies as the top-level grouping.
-- ADR-002: All backend services implemented in Rust.
-- ADR-003: Keycloak as sole identity provider.
-- ADR-004: Outbox pattern for reliable event publishing.
-- ADR-005: Soft delete on infrastructure entities only.
-
-**Code review.** Every PR MUST verify compliance with Principles I–VII and
-the Definition of Done in Principle VII. Reviewers MUST cite the principle
-number when blocking a change.
-
-**Amendment & versioning policy.** This constitution supersedes ad-hoc
-practices. Amendments MUST:
+**Amendment policy.** This constitution supersedes all prior practices.
+Amendments MUST:
 
 1. Land as a PR editing this file (and any dependent templates) together
-   with the ADR that justifies the change.
+   with an ADR that justifies the change.
 2. Bump `Version` using semantic versioning:
    - **MAJOR**: principle removed, redefined incompatibly, or governance
      model changed.
@@ -265,8 +223,23 @@ practices. Amendments MUST:
    `spec-template.md`, and `tasks-template.md` where their gates or
    sections depend on the change.
 
+**Code review.** Every PR MUST verify compliance with Principles I–V.
+Reviewers MUST cite the principle number when blocking a change.
+
 **Compliance review.** A quarterly review MUST confirm that running
 services, schemas, and CI gates still match this document; deltas become
 ADRs or amendments.
 
-**Version**: 1.0.0 | **Ratified**: 2026-05-22 | **Last Amended**: 2026-05-22
+**ADR governance.** Any architectural change that affects a
+constitutional boundary (repository structure, identity scheme,
+multi-tenancy enforcement, UI guardrails, mobile constraints, approved
+stack) MUST be documented as an ADR under `docs/adr/` before
+implementation begins. PRs that violate this rule MUST be blocked at
+review.
+
+**Prior ADRs voided.** ADR-001 through ADR-005 from the v1.0.0
+constitution (multi-service architecture) are no longer binding. New
+ADRs must be filed under this constitution when architectural
+boundaries are affected.
+
+**Version**: 2.0.0 | **Ratified**: 2026-05-25 | **Last Amended**: 2026-05-25

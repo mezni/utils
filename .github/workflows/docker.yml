@@ -1,0 +1,16 @@
+name: Docker Smoke Test
+on:
+  push:
+    paths: ['docker-compose.dev.yml', 'sources/backend/Dockerfile.dev']
+  pull_request:
+    paths: ['docker-compose.dev.yml', 'sources/backend/Dockerfile.dev']
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker compose -f docker-compose.dev.yml up -d --wait
+      - run: |
+          curl -sf --retry 10 --retry-delay 3 http://localhost:8080/api/v1/health || exit 1
+      - run: docker compose -f docker-compose.dev.yml down -v

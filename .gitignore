@@ -40,6 +40,20 @@ Thumbs.db
 
 # Docker
 .docker/
+*.log*
+
+# Expo / React Native
+.expo/
+dist/
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*
+
+# pnpm
+pnpm-lock.yaml
 
 # Coverage
 coverage/
