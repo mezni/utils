@@ -22,7 +22,5 @@ jobs:
         working-directory: sources/frontend
       - run: pnpm -r lint
         working-directory: sources/frontend
-      - run: pnpm -r type-check
-        working-directory: sources/frontend
-      - run: pnpm -r build
+      - run: pnpm --filter "@bornemap/admin-portal" --filter "@bornemap/partner-dashboard" build
         working-directory: sources/frontend

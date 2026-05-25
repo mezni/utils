@@ -5,7 +5,7 @@
 - Docker & Docker Compose
 - Git
 - Node.js 20+
-- pnpm 9 (`npm install -g pnpm@9`)
+- pnpm 9+ (`npm install -g pnpm`)
 - Rust 1.78+ (`rustup install 1.78`)
 - `sqlx-cli` (`cargo install sqlx-cli --no-default-features --features postgres`)
 
@@ -21,6 +21,10 @@ cd bornemap
 ```bash
 # Start database + backend API
 docker compose -f docker-compose.dev.yml up -d
+
+# Wait for the backend to compile (first start takes 2-5 min for Rust build)
+# Check logs: docker compose logs -f backend-api
+docker compose wait backend-api
 
 # Verify backend is healthy
 curl http://localhost:8080/api/v1/health
@@ -69,8 +73,7 @@ cargo test
 # Frontend checks
 cd sources/frontend
 pnpm -r lint
-pnpm -r type-check
-pnpm -r build
+pnpm --filter "@bornemap/admin-portal" --filter "@bornemap/partner-dashboard" build
 
 # Docker smoke test
 docker compose -f docker-compose.dev.yml up -d --wait

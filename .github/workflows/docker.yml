@@ -1,9 +1,9 @@
 name: Docker Smoke Test
 on:
   push:
-    paths: ['docker-compose.dev.yml', 'sources/backend/Dockerfile.dev']
+    paths: ['docker-compose.dev.yml', 'sources/backend/Dockerfile.dev', 'sources/backend/src/**']
   pull_request:
-    paths: ['docker-compose.dev.yml', 'sources/backend/Dockerfile.dev']
+    paths: ['docker-compose.dev.yml', 'sources/backend/Dockerfile.dev', 'sources/backend/src/**']
 
 jobs:
   smoke:

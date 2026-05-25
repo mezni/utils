@@ -1,10 +1,5 @@
-import type { Config } from "tailwindcss"
-
-const config: Config = {
-  content: [
-    "./apps/**/*.{js,ts,jsx,tsx}",
-    "./packages/**/*.{js,ts,jsx,tsx}",
-  ],
+/** @type {import('tailwindcss').Config} */
+const config = {
   theme: {
     extend: {
       colors: {
@@ -21,15 +16,15 @@ const config: Config = {
         },
       },
       borderRadius: {
-        'md': '6px',
-        'lg': '8px',
-        'xl': '0.75rem',
-        '2xl': '1rem',
+        md: "6px",
+        lg: "8px",
+        xl: "0.75rem",
+        "2xl": "1rem",
       },
       spacing: {
-        'component-gap': '16px',
-        'internal-pad': '24px',
-        'section-gap': '32px',
+        "component-gap": "16px",
+        "internal-pad": "24px",
+        "section-gap": "32px",
       },
       boxShadow: {
         float: "0 4px 24px rgba(0,0,0,0.10)",
@@ -39,4 +34,5 @@ const config: Config = {
   },
   plugins: [],
 }
-export default config
+
+module.exports = config
