@@ -8,6 +8,7 @@
 /// assert_eq!(id.len(), 16); // "STN-" (4) + 12 chars
 /// assert!(id.starts_with("STN-"));
 /// ```
+#[allow(dead_code)]
 pub fn generate_id(prefix: &str) -> String {
     let alphabet: [char; 36] = [
         '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h',
