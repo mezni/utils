@@ -124,8 +124,8 @@ Merging is blocked if any check fails.
 - [X] T025 Validate docker compose stack starts and responds to health checks
 - [X] T026 Validate pnpm install resolves all workspace packages with no peer dependency warnings
 - [X] T027 Run quickstart.md end-to-end from clean state
-- [ ] T028 [P] Measure CI backend pipeline end-to-end duration and document baseline in docs/performance-baseline.md
-- [ ] T029 Configure GitHub branch protection on main branch requiring all CI status checks to pass before merge
+- [X] T028 [P] Measure CI backend pipeline end-to-end duration and document baseline in docs/performance-baseline.md
+- [X] T029 Configure GitHub branch protection on main branch requiring all CI status checks to pass before merge
 
 ---
 
