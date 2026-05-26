@@ -22,7 +22,7 @@
 
 **Purpose**: Verify project initialization and dependency installation
 
-- [ ] T001 Install dependencies and verify build — run `pnpm install` in `sources/frontend/`, then `pnpm -r build`
+- [x] T001 Install dependencies and verify build — run `pnpm install` in `sources/frontend/`, then `pnpm -r build`
 
 **Checkpoint**: `pnpm -r build` passes with no errors
 
@@ -32,11 +32,11 @@
 
 **Purpose**: Core layout infrastructure that MUST be complete before ANY user story can display content
 
-- [ ] T002 [P] Create AppShell layout component in `sources/frontend/apps/admin-portal/src/components/layout/app-shell.tsx` — sidebar slot on left, main content area on right with `<Outlet/>` for React Router
-- [ ] T003 [P] Create SidebarNav component in `sources/frontend/apps/admin-portal/src/components/layout/sidebar-nav.tsx` — 6 navigation items (Overview, Users, Data, Analytics, Security, Settings) with icons, active state highlighting, and route click handlers
-- [ ] T004 [P] Create Header component in `sources/frontend/apps/admin-portal/src/components/layout/header.tsx` — contains heading text and a reserved slot for the sandbox toggle (toggle functionality implemented in US3)
-- [ ] T005 [P] Create `sources/frontend/apps/admin-portal/src/App.tsx` — extract the App component from `main.tsx` into its own file with all necessary imports; add `export default App` so `main.tsx` can import it
-- [ ] T006 Refactor `sources/frontend/apps/admin-portal/src/App.tsx` — import and render AppShell as layout wrapper; define `<Routes>` and `<Route>` for all 6 sections inside AppShell's children; keep existing BrowserRouter wrapper in `main.tsx`
+- [x] T002 [P] Create AppShell layout component in `sources/frontend/apps/admin-portal/src/components/layout/app-shell.tsx` — sidebar slot on left, main content area on right with `<Outlet/>` for React Router
+- [x] T003 [P] Create SidebarNav component in `sources/frontend/apps/admin-portal/src/components/layout/sidebar-nav.tsx` — 6 navigation items (Overview, Users, Data, Analytics, Security, Settings) with icons, active state highlighting, and route click handlers
+- [x] T004 [P] Create Header component in `sources/frontend/apps/admin-portal/src/components/layout/header.tsx` — contains heading text and a reserved slot for the sandbox toggle (toggle functionality implemented in US3)
+- [x] T005 [P] Create `sources/frontend/apps/admin-portal/src/App.tsx` — extract the App component from `main.tsx` into its own file with all necessary imports; add `export default App` so `main.tsx` can import it
+- [x] T006 Refactor `sources/frontend/apps/admin-portal/src/App.tsx` — import and render AppShell as layout wrapper; define `<Routes>` and `<Route>` for all 6 sections inside AppShell's children; keep existing BrowserRouter wrapper in `main.tsx`
 
 **Checkpoint**: Portal renders AppShell with sidebar and header, main content area is ready for route content
 
@@ -50,13 +50,13 @@
 
 ### Implementation for User Story 1
 
-- [ ] T007 [P] [US1] Create Overview placeholder page in `sources/frontend/apps/admin-portal/src/pages/overview.tsx` — page component shell (full implementation in US2)
-- [ ] T008 [P] [US1] Create Users placeholder page in `sources/frontend/apps/admin-portal/src/pages/users.tsx` — page component with placeholder content
-- [ ] T009 [P] [US1] Create Data placeholder page in `sources/frontend/apps/admin-portal/src/pages/data.tsx` — page component with placeholder content
-- [ ] T010 [P] [US1] Create Analytics placeholder page in `sources/frontend/apps/admin-portal/src/pages/analytics.tsx` — page component with placeholder content
-- [ ] T011 [P] [US1] Create Security placeholder page in `sources/frontend/apps/admin-portal/src/pages/security.tsx` — page component with placeholder content
-- [ ] T012 [P] [US1] Create Settings placeholder page in `sources/frontend/apps/admin-portal/src/pages/settings.tsx` — page component with placeholder content
-- [ ] T013 [US1] Wire React Router routes in `sources/frontend/apps/admin-portal/src/App.tsx` — define `<Route>` for each of the 6 sections (overview at `/`, users at `/users`, data at `/data`, analytics at `/analytics`, security at `/security`, settings at `/settings`) with `<Navigate to="/" />` for root redirect
+- [x] T007 [P] [US1] Create Overview placeholder page in `sources/frontend/apps/admin-portal/src/pages/overview.tsx` — page component shell (full implementation in US2)
+- [x] T008 [P] [US1] Create Users placeholder page in `sources/frontend/apps/admin-portal/src/pages/users.tsx` — page component with placeholder content
+- [x] T009 [P] [US1] Create Data placeholder page in `sources/frontend/apps/admin-portal/src/pages/data.tsx` — page component with placeholder content
+- [x] T010 [P] [US1] Create Analytics placeholder page in `sources/frontend/apps/admin-portal/src/pages/analytics.tsx` — page component with placeholder content
+- [x] T011 [P] [US1] Create Security placeholder page in `sources/frontend/apps/admin-portal/src/pages/security.tsx` — page component with placeholder content
+- [x] T012 [P] [US1] Create Settings placeholder page in `sources/frontend/apps/admin-portal/src/pages/settings.tsx` — page component with placeholder content
+- [x] T013 [US1] Wire React Router routes in `sources/frontend/apps/admin-portal/src/App.tsx` — define `<Route>` for each of the 6 sections (overview at `/`, users at `/users`, data at `/data`, analytics at `/analytics`, security at `/security`, settings at `/settings`) with `<Navigate to="/" />` for root redirect
 
 **Checkpoint**: All 6 sidebar items navigate to distinct placeholder pages. URL updates correctly. Active nav item is highlighted.
 
@@ -70,12 +70,12 @@
 
 ### Implementation for User Story 2
 
-- [ ] T014 [P] [US2] Create MetricChip component in `sources/frontend/packages/ui/src/components/ui/metric-chip.tsx` — accepts `label`, `value`, `isLoading` props; shows skeleton placeholder when loading
-- [ ] T015 [US2] Create BaseMap component in `sources/frontend/apps/admin-portal/src/components/map/base-map.tsx` — Leaflet map centered on Tunisia [33.8869, 9.5375] zoom 7, CartoDB light tiles, station markers as green circles with lightning bolt SVG icon
-- [ ] T016 [US2] Create OverviewDashboard component in `sources/frontend/apps/admin-portal/src/components/overview/overview-dashboard.tsx` — fetches station list and total from `/api/v1/stations`, charger count from `/api/v1/chargers`, partner count from `/api/v1/partners`; renders MetricChip components, BaseMap, and analytics placeholder cards; shows skeleton placeholders during loading
-- [ ] T017 [US2] Implement error state display in OverviewDashboard at `sources/frontend/apps/admin-portal/src/components/overview/overview-dashboard.tsx` — when any API call fails, replace failed section's skeleton with inline error message; map shows empty state with error note; page must not crash (per FR-012)
-- [ ] T018 [US2] Add marker click popup to BaseMap in `sources/frontend/apps/admin-portal/src/components/map/base-map.tsx` — clicking a station marker shows popup with station name, city, charger count, and "View Details" link
-- [ ] T019 [US2] Wire OverviewDashboard into Overview page in `sources/frontend/apps/admin-portal/src/pages/overview.tsx` — replace placeholder with `<OverviewDashboard />`
+- [x] T014 [P] [US2] Create MetricChip component in `sources/frontend/packages/ui/src/components/ui/metric-chip.tsx` — accepts `label`, `value`, `isLoading` props; shows skeleton placeholder when loading
+- [x] T015 [US2] Create BaseMap component in `sources/frontend/apps/admin-portal/src/components/map/base-map.tsx` — Leaflet map centered on Tunisia [33.8869, 9.5375] zoom 7, CartoDB light tiles, station markers as green circles with lightning bolt SVG icon
+- [x] T016 [US2] Create OverviewDashboard component in `sources/frontend/apps/admin-portal/src/components/overview/overview-dashboard.tsx` — fetches station list and total from `/api/v1/stations`, charger count from `/api/v1/chargers`, partner count from `/api/v1/partners`; renders MetricChip components, BaseMap, and analytics placeholder cards; shows skeleton placeholders during loading
+- [x] T017 [US2] Implement error state display in OverviewDashboard at `sources/frontend/apps/admin-portal/src/components/overview/overview-dashboard.tsx` — when any API call fails, replace failed section's skeleton with inline error message; map shows empty state with error note; page must not crash (per FR-012)
+- [x] T018 [US2] Add marker click popup to BaseMap in `sources/frontend/apps/admin-portal/src/components/map/base-map.tsx` — clicking a station marker shows popup with station name, city, charger count, and "View Details" link
+- [x] T019 [US2] Wire OverviewDashboard into Overview page in `sources/frontend/apps/admin-portal/src/pages/overview.tsx` — replace placeholder with `<OverviewDashboard />`
 
 **Checkpoint**: Overview Dashboard loads metric chips with correct data, map shows station markers, marker popup works, skeleton placeholders shown during load, error states handled gracefully.
 
@@ -89,9 +89,9 @@
 
 ### Implementation for User Story 3
 
-- [ ] T020 [P] [US3] Implement SandboxToggle component in `sources/frontend/apps/admin-portal/src/components/layout/header.tsx` — toggle switch UI, reads/writes `bornemap_admin_sandbox` key in localStorage
-- [ ] T021 [US3] Add sandbox context provider in `sources/frontend/apps/admin-portal/src/context/sandbox-context.tsx` — React context providing `isSandboxActive` state and setter, initialized from localStorage, syncs back on change
-- [ ] T022 [US3] Apply blue border indicator in `sources/frontend/apps/admin-portal/src/components/layout/app-shell.tsx` — when `isSandboxActive` is true, add `border-t-4 border-sky-500` class to layout top
+- [x] T020 [P] [US3] Implement SandboxToggle component in `sources/frontend/apps/admin-portal/src/components/layout/header.tsx` — toggle switch UI, reads/writes `bornemap_admin_sandbox` key in localStorage
+- [x] T021 [US3] Add sandbox context provider in `sources/frontend/apps/admin-portal/src/context/sandbox-context.tsx` — React context providing `isSandboxActive` state and setter, initialized from localStorage, syncs back on change
+- [x] T022 [US3] Apply blue border indicator in `sources/frontend/apps/admin-portal/src/components/layout/app-shell.tsx` — when `isSandboxActive` is true, add `border-t-4 border-sky-500` class to layout top
 
 **Checkpoint**: Sandbox toggle in header activates/deactivates blue border. State persists across page refreshes via localStorage.
 
@@ -105,10 +105,10 @@
 
 ### Implementation for User Story 4
 
-- [ ] T023 [P] [US4] Create SettingsCard component in `sources/frontend/packages/ui/src/components/ui/settings-card.tsx` — accepting `title`, `description`, `children` props; styled with rounded-2xl, shadow-card, p-6 per design tokens
-- [ ] T024 [P] [US4] Create SelectSetting component in `sources/frontend/packages/ui/src/components/ui/select-setting.tsx` — dropdown with rounded-md styling per design tokens; accepts `label`, `options`, `value`, `onChange`
-- [ ] T025 [P] [US4] Create ConfirmDeleteModal component in `sources/frontend/packages/ui/src/components/ui/confirm-delete-modal.tsx` — confirmation modal requiring exact resource ID match before confirm button enables; accepts `isOpen`, `resourceId`, `resourceLabel`, `onConfirm`, `onCancel`
-- [ ] T026 [US4] Export new UI components from `sources/frontend/packages/ui/src/index.ts` — add exports for SettingsCard, SelectSetting, ConfirmDeleteModal, MetricChip
+- [x] T023 [P] [US4] Create SettingsCard component in `sources/frontend/packages/ui/src/components/ui/settings-card.tsx` — accepting `title`, `description`, `children` props; styled with rounded-2xl, shadow-card, p-6 per design tokens
+- [x] T024 [P] [US4] Create SelectSetting component in `sources/frontend/packages/ui/src/components/ui/select-setting.tsx` — dropdown with rounded-md styling per design tokens; accepts `label`, `options`, `value`, `onChange`
+- [x] T025 [P] [US4] Create ConfirmDeleteModal component in `sources/frontend/packages/ui/src/components/ui/confirm-delete-modal.tsx` — confirmation modal requiring exact resource ID match before confirm button enables; accepts `isOpen`, `resourceId`, `resourceLabel`, `onConfirm`, `onCancel`
+- [x] T026 [US4] Export new UI components from `sources/frontend/packages/ui/src/index.ts` — add exports for SettingsCard, SelectSetting, ConfirmDeleteModal, MetricChip
 
 **Checkpoint**: SettingsCard, SelectSetting, and ConfirmDeleteModal render correctly with design token styling. All exported from packages/ui.
 
@@ -118,9 +118,9 @@
 
 **Purpose**: Verification and cleanup across all stories
 
-- [ ] T027 [P] Run type-check — `pnpm -r type-check` in `sources/frontend/`
-- [ ] T028 [P] Run lint — `pnpm -r lint` in `sources/frontend/`
-- [ ] T029 [P] Run build — `pnpm -r build` in `sources/frontend/`
+- [x] T027 [P] Run type-check — `pnpm -r type-check` in `sources/frontend/`
+- [x] T028 [P] Run lint — `pnpm -r lint` in `sources/frontend/`
+- [x] T029 [P] Run build — `pnpm -r build` in `sources/frontend/`
 - [ ] T030 Run quickstart validation — execute all verification steps in `specs/007-admin-portal-shell/quickstart.md`
 
 ---
