@@ -149,6 +149,15 @@ pub async fn update_partner(
         return ProblemResponse::not_found(e);
     }
 
+    if auth.0.role == "partner" {
+        match repository::get_by_id(&pool, &id).await {
+            Ok(Some(profile)) if profile.user_id == auth.0.sub => {}
+            Ok(Some(_)) => return ProblemResponse::forbidden("You can only update your own partner profile"),
+            Ok(None) => return ProblemResponse::not_found(format!("Partner profile '{}' not found", &id)),
+            Err(_) => return ProblemResponse::internal_error(),
+        }
+    }
+
     if let Some(ref classification) = body.classification {
         if !["business", "private"].contains(&classification.as_str()) {
             return ProblemResponse::validation("Classification must be business or private");
