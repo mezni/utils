@@ -7,5 +7,8 @@
     "build": "pnpm -r build",
     "lint": "pnpm -r lint",
     "type-check": "pnpm -r type-check"
+  },
+  "devDependencies": {
+    "metro-runtime": "0.83.3"
   }
 }
