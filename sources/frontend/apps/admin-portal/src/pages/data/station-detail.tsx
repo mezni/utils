@@ -10,6 +10,8 @@ export function StationDetailPage() {
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; label: string } | null>(null)
   const [showCreate, setShowCreate] = useState(false)
 
+  if (!id) return null
+
   const handleDelete = async () => {
     if (!deleteTarget) return
     await fetch(`/api/v1/chargers/${deleteTarget.id}`, { method: "DELETE" })
