@@ -113,11 +113,11 @@
 
 **Purpose**: Verification and cleanup across all stories
 
-- [ ] T018 [P] Run type-check — `pnpm -r type-check` in `sources/frontend/`
-- [ ] T019 [P] Run lint — `pnpm -r lint` in `sources/frontend/`
-- [ ] T020 [P] Run build — `pnpm -r build` in `sources/frontend/`
+- [X] T018 [P] Run type-check — pass
+- [X] T019 [P] Run lint — pass
+- [X] T020 [P] Run build — pass
 - [ ] T021 Verify backend compiles — `cargo build` in `sources/backend/`
-- [ ] T022 Run quickstart validation — execute all verification steps in `specs/006-mobile-driver-app/quickstart.md`
+- [ ] T022 Run quickstart validation — execute all verification steps (requires running app on device)
 
 ---
 
