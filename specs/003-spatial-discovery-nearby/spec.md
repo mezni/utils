@@ -49,8 +49,8 @@ must be verified before the mobile app (Phase 6) depends on it. Failure here
 blocks Phase 6 and requires query optimization before proceeding.
 
 **Independent Test**: Can be tested by running a benchmark script (wrk, oha, or
-custom Rust bench) against the nearby endpoint with concurrency 10 and 1000
-requests, then checking that p95 latency ≤ 200ms.
+custom Rust bench) against the nearby endpoint with `include_test=true`,
+concurrency 10, and 1000 requests, then checking that p95 latency ≤ 200ms.
 
 **Acceptance Scenarios**:
 
@@ -142,8 +142,9 @@ mobile app can show basic info from the nearby results and add detail later.
 
 ### Measurable Outcomes
 
-- **SC-001**: Nearby query returns results in ≤200ms p95 under 1000 requests at
-  concurrency 10 against the seeded 100-station / 300-charger dataset.
+- **SC-001**: Nearby query with `include_test=true` returns results in ≤200ms p95
+  under 1000 requests at concurrency 10 against the seeded 100-station /
+  300-charger dataset.
 - **SC-002**: Test stations never appear in nearby results when `include_test`
   is false — zero leaks across 1000 queries.
 - **SC-003**: Nearby results are always ordered by ascending distance — verified
@@ -169,7 +170,10 @@ mobile app can show basic info from the nearby results and add detail later.
   should be 0 (not null) — the `COUNT(...) FILTER (WHERE ...)` returns 0 for
   stations with no available chargers.
 - Q: Are distance values returned in meters? → A: Yes. `ST_Distance` on
-  `GEOGRAPHY` returns meters natively.
+   `GEOGRAPHY` returns meters natively.
+- Q: Since all seed stations have `is_test=true`, how should the SLO benchmark get meaningful results? → A: The benchmark uses `include_test=true` so the query operates against real data (100 stations, 300 chargers). Default driver behavior (exclude test stations) is unchanged.
+- Q: Should the public nearby endpoint have rate limiting? → A: No rate limiting for MVP0. The endpoint is read-only and cheap. Can be added post-MVP0 if abuse is observed.
+- Q: Should user GPS coordinates be logged? → A: No — coordinates are not logged in application logs to avoid storing PII. Only anonymized request counts may be logged.
 
 ## Assumptions
 
