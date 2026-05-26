@@ -52,6 +52,7 @@ fn configure_routes(cfg: &mut web::ServiceConfig) {
         .route("/api/v1/stations/{id}", web::get().to(domain::stations::handlers::get_station))
         .route("/api/v1/stations/{id}", web::patch().to(domain::stations::handlers::update_station))
         .route("/api/v1/stations/{id}", web::delete().to(domain::stations::handlers::delete_station))
+        .route("/api/v1/chargers", web::get().to(domain::chargers::handlers::list_chargers))
         .route("/api/v1/stations/{station_id}/chargers", web::post().to(domain::chargers::handlers::create_charger))
         .route("/api/v1/stations/{station_id}/chargers", web::get().to(domain::chargers::handlers::list_chargers_for_station))
         .route("/api/v1/stations/{station_id}/chargers/{id}", web::get().to(domain::chargers::handlers::get_charger))
@@ -61,7 +62,9 @@ fn configure_routes(cfg: &mut web::ServiceConfig) {
         .route("/api/v1/connector-types", web::get().to(domain::connector_types::handlers::list_connector_types))
         .route("/api/v1/connector-types/{id}", web::get().to(domain::connector_types::handlers::get_connector_type))
         .route("/api/v1/connector-types/{id}", web::patch().to(domain::connector_types::handlers::update_connector_type))
-        .route("/api/v1/connector-types/{id}", web::delete().to(domain::connector_types::handlers::delete_connector_type));
+        .route("/api/v1/connector-types/{id}", web::delete().to(domain::connector_types::handlers::delete_connector_type))
+        .route("/api/v1/partners/me", web::get().to(domain::partners::handlers::get_my_partner_profile))
+        .route("/api/v1/partners/me", web::patch().to(domain::partners::handlers::update_my_partner_profile));
 }
 
 #[actix_web::main]

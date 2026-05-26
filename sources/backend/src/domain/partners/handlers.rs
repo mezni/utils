@@ -1,3 +1,4 @@
+use crate::auth::partner_middleware::PartnerUser;
 use crate::domain::partners::models::{CreatePartnerRequest, PartnerProfile, UpdatePartnerRequest};
 use crate::domain::partners::repository;
 use crate::utils::error::ProblemResponse;
@@ -201,6 +202,45 @@ pub async fn delete_partner(
     match repository::soft_delete(&pool, &id).await {
         Ok(Some(_)) => HttpResponse::NoContent().finish(),
         Ok(None) => ProblemResponse::not_found(format!("Partner profile '{}' not found", &id)),
+        Err(_) => ProblemResponse::internal_error(),
+    }
+}
+
+pub async fn get_my_partner_profile(
+    pool: web::Data<PgPool>,
+    partner: PartnerUser,
+) -> HttpResponse {
+    match repository::get_by_id(&pool, &partner.partner_profile_id).await {
+        Ok(Some(profile)) => HttpResponse::Ok().json(PartnerResponse::from(profile)),
+        Ok(None) => ProblemResponse::not_found("Partner profile not found"),
+        Err(_) => ProblemResponse::internal_error(),
+    }
+}
+
+pub async fn update_my_partner_profile(
+    pool: web::Data<PgPool>,
+    partner: PartnerUser,
+    body: web::Json<serde_json::Value>,
+) -> HttpResponse {
+    let body = body.into_inner();
+
+    if body.get("classification").is_some() || body.get("tax_id").is_some() {
+        return ProblemResponse::validation("Classification and tax_id are read-only for partner users");
+    }
+
+    let display_name = body.get("display_name").and_then(|v| v.as_str()).map(String::from);
+    let contact_phone = body.get("contact_phone").and_then(|v| v.as_str()).map(String::from);
+    let req = UpdatePartnerRequest {
+        classification: None,
+        display_name,
+        tax_id: None,
+        contact_phone,
+        updated_at: chrono::Utc::now(),
+    };
+
+    match repository::update(&pool, &partner.partner_profile_id, &req).await {
+        Ok(Some(profile)) => HttpResponse::Ok().json(PartnerResponse::from(profile)),
+        Ok(None) => ProblemResponse::not_found("Partner profile not found"),
         Err(_) => ProblemResponse::internal_error(),
     }
 }

@@ -1,3 +1,4 @@
+use crate::auth::partner_middleware::PartnerUser;
 use crate::domain::chargers::models::{Charger, CreateChargerRequest, UpdateChargerRequest};
 use crate::domain::chargers::repository;
 use crate::utils::error::ProblemResponse;
@@ -145,6 +146,40 @@ pub async fn list_chargers_for_station(
     };
 
     match repository::list_by_station(&pool, &station_id, cursor, limit).await {
+        Ok((chargers, next_cursor, has_more)) => {
+            let data: Vec<ChargerResponse> = chargers.into_iter().map(ChargerResponse::from).collect();
+            HttpResponse::Ok().json(serde_json::json!({
+                "data": data,
+                "pagination": {
+                    "next_cursor": next_cursor,
+                    "has_more": has_more
+                }
+            }))
+        }
+        Err(e) => {
+            tracing::error!("Failed to list chargers: {:?}", e);
+            ProblemResponse::internal_error()
+        }
+    }
+}
+
+pub async fn list_chargers(
+    pool: web::Data<PgPool>,
+    partner: PartnerUser,
+    query: web::Query<ListQuery>,
+) -> HttpResponse {
+    let q = query.into_inner();
+    let limit = q.limit();
+
+    let cursor = match q.cursor.as_ref() {
+        Some(c) => match Cursor::decode(c) {
+            Ok(c) => Some(c),
+            Err(_) => return ProblemResponse::validation("Invalid cursor format"),
+        },
+        None => None,
+    };
+
+    match repository::list_by_owner_id(&pool, &partner.user_id, cursor, limit).await {
         Ok((chargers, next_cursor, has_more)) => {
             let data: Vec<ChargerResponse> = chargers.into_iter().map(ChargerResponse::from).collect();
             HttpResponse::Ok().json(serde_json::json!({

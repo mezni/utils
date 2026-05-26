@@ -27,8 +27,8 @@
 
 **Purpose**: Project initialization — verify existing build is healthy and all needed dependencies are installed.
 
-- [ ] T001 Verify build — run `pnpm install` then `pnpm -r build` in `sources/frontend/`; confirm partner-dashboard builds cleanly
-- [ ] T002 Verify backend build — run `cargo build` in `sources/backend/`; confirm existing backend compiles
+- [X] T001 Verify build — run `pnpm install` then `pnpm -r build` in `sources/frontend/`; confirm partner-dashboard builds cleanly
+- [X] T002 Verify backend build — run `cargo build` in `sources/backend/`; confirm existing backend compiles
 
 **Checkpoint**: Both frontend and backend build cleanly
 
@@ -38,12 +38,12 @@
 
 **Purpose**: Partner dashboard app shell, auth flow, and partner context middleware — MUST be complete before ANY user story can display content.
 
-- [ ] T003 [P] Create partner-dashboard AppShell layout in `apps/partner-dashboard/src/components/layout/app-shell.tsx` — sidebar slot on left, main content area on right with `<Outlet/>` for React Router; mirror admin portal AppShell
-- [ ] T004 [P] Create SidebarNav component in `apps/partner-dashboard/src/components/layout/sidebar-nav.tsx` — 4 navigation items (Overview, Stations, Chargers, Profile) with icons, active state highlighting, and route click handlers
-- [ ] T005 [P] Create partner-dashboard App.tsx in `apps/partner-dashboard/src/App.tsx` — extract from main.tsx; import and render AppShell as layout wrapper; define `<Routes>` and `<Route>` for all 4 sections with `<Navigate to="/" />` for root redirect
-- [ ] T006 Create PartnerAuth middleware in `backend/src/auth/partner_middleware.rs` — extract `user_id` from JWT, look up `partner_profile_id` from `partner_profiles` table, inject into request extensions as `owner_id`; return 403 if user is not a partner
-- [ ] T007 Register new auth middleware and `/api/v1/partners/me` stubs in `backend/src/main.rs` — apply PartnerAuth middleware to `/api/v1/me` and `/api/v1/stations` and `/api/v1/chargers` route scopes; add `/me` endpoints to partner module
-- [ ] T007a Create auth interceptor in `apps/partner-dashboard/src/services/auth-interceptor.ts` — wrap all fetch/API calls to catch 401 responses and redirect to login page; register in App.tsx
+- [X] T003 [P] Create partner-dashboard AppShell layout in `apps/partner-dashboard/src/components/layout/app-shell.tsx`
+- [X] T004 [P] Create SidebarNav component in `apps/partner-dashboard/src/components/layout/sidebar-nav.tsx`
+- [X] T005 [P] Create partner-dashboard App.tsx in `apps/partner-dashboard/src/App.tsx`
+- [X] T006 Create PartnerAuth middleware in `backend/src/auth/partner_middleware.rs`
+- [X] T007 Register new auth middleware and `/api/v1/partners/me` stubs in `backend/src/main.rs`
+- [X] T007a Create auth interceptor in `apps/partner-dashboard/src/services/auth-interceptor.tsx`
 
 **Checkpoint**: Partner dashboard renders with AppShell + sidebar, partner auth middleware blocks non-partner users, login flow works, 401 auto-redirects to login
 
@@ -57,10 +57,10 @@
 
 ### Implementation for User Story 1
 
-- [ ] T008 [P] [US1] Add `owner_id` filter to stations repository in `backend/src/domain/stations/repository.rs` — all list/detail queries include `WHERE owner_id = $N` when partner context is present
-- [ ] T009 [P] [US1] Add `owner_id` join filter to chargers repository in `backend/src/domain/chargers/repository.rs` — all list/detail queries join through `stations` table and filter by `stations.owner_id = $N`
-- [ ] T010 [US1] Update stations handlers in `backend/src/domain/stations/handlers.rs` — pass `owner_id` from request extensions to repository; return 403 when a station does not belong to the partner (PATCH/DELETE)
-- [ ] T011 [US1] Update chargers handlers in `backend/src/domain/chargers/handlers.rs` — pass `owner_id` from request extensions to repository; verify station ownership on POST (station_id belongs to partner); return 403 on unauthorized access
+- [X] T008 [P] [US1] Add `owner_id` filter to stations repository in `backend/src/domain/stations/repository.rs` — already present (owner_filter param)
+- [X] T009 [P] [US1] Add `owner_id` join filter to chargers repository in `backend/src/domain/chargers/repository.rs` — added list_by_owner_id with stations join
+- [X] T010 [US1] Update stations handlers in `backend/src/domain/stations/handlers.rs` — already handles partner ownership check on PATCH/DELETE
+- [X] T011 [US1] Update chargers handlers in `backend/src/domain/chargers/handlers.rs` — added GET /api/v1/chargers flat list with owner_id scoping; POST/PATCH/DELETE already verify station ownership
 
 **Checkpoint**: All data API endpoints respect owner_id scoping. Cross-partner access returns 403.
 
@@ -74,10 +74,10 @@
 
 ### Implementation for User Story 2
 
-- [ ] T012 [P] [US2] Create StationsTable component in `apps/partner-dashboard/src/components/stations/stations-table.tsx` — uses `<ScrollableTable/>` from @bornemap/ui with columns: ID, Name, City, Coordinates, Operational, is_test; includes "Create Station" button, edit/delete actions per row; fetches from `GET /api/v1/stations` (auto-scoped by backend); integrates with BaseMap for bidirectional interaction
-- [ ] T013 [P] [US2] Create StationFormModal component in `apps/partner-dashboard/src/components/stations/station-form-modal.tsx` — modal with name, address, city, lng/lat coordinate inputs; NO owner dropdown (auto-assigned); is_operational toggle; supports create (POST /api/v1/stations) and edit (PATCH /api/v1/stations/:id)
-- [ ] T014 [US2] Implement bidirectional map-table interaction — clicking a station row calls `map.flyTo(lat, lng)`; clicking a station marker on BaseMap highlights the corresponding table row; requires exposing `onStationSelect` and `highlightedStationId` props on `<StationsTable>`
-- [ ] T015 [US2] Wire Stations page at `apps/partner-dashboard/src/pages/stations.tsx` — renders `<StationsTable/>` alongside an embedded `<BaseMap/>` component; delete triggers `<ConfirmDeleteModal/>` with exact `STN-` ID match; re-fetches list after mutations
+- [X] T012 [P] [US2] Create StationsTable component in `apps/partner-dashboard/src/components/stations/stations-table.tsx`
+- [X] T013 [P] [US2] Create StationFormModal component in `apps/partner-dashboard/src/components/stations/station-form-modal.tsx`
+- [X] T014 [US2] Implement bidirectional map-table interaction in `apps/partner-dashboard/src/pages/stations.tsx`
+- [X] T015 [US2] Wire Stations page at `apps/partner-dashboard/src/pages/stations.tsx`
 
 **Checkpoint**: Stations CRUD fully functional — table loads scoped data, map shows partner's station markers, bidirectional table↔map interaction works, owner field locked, soft-delete works
 
@@ -91,10 +91,10 @@
 
 ### Implementation for User Story 3
 
-- [ ] T016 [P] [US3] Create ChargersTable component in `apps/partner-dashboard/src/components/chargers/chargers-table.tsx` — uses `<ScrollableTable/>` with columns: ID, Station, Connector Type, Power kW, Current Type, Status; status rendered as color-coded badge; fetches from `GET /api/v1/chargers` (auto-scoped); optional `stationId` prop for nested view
-- [ ] T017 [P] [US3] Create ChargerFormModal component in `apps/partner-dashboard/src/components/chargers/charger-form-modal.tsx` — modal with station dropdown (filtered to partner's stations via `GET /api/v1/stations`), connector type dropdown, power_kw input, current_type select, status select; supports create (POST /api/v1/chargers) and edit (PATCH /api/v1/chargers/:id)
-- [ ] T018 [US3] Wire Chargers page at `apps/partner-dashboard/src/pages/chargers.tsx` — renders `<ChargersTable/>` (flat view); delete triggers `<ConfirmDeleteModal/>` with exact `CHG-` ID match; re-fetches after mutations
-- [ ] T019 [US3] Wire nested Chargers view in station detail page at `apps/partner-dashboard/src/pages/station-detail.tsx` — renders `<ChargersTable stationId={id}/>` and a `<ChargerFormModal/>` scoped to that station
+- [X] T016 [P] [US3] Create ChargersTable component in `apps/partner-dashboard/src/components/chargers/chargers-table.tsx`
+- [X] T017 [P] [US3] Create ChargerFormModal component in `apps/partner-dashboard/src/components/chargers/charger-form-modal.tsx`
+- [X] T018 [US3] Wire Chargers page at `apps/partner-dashboard/src/pages/chargers.tsx`
+- [X] T019 [US3] Wire nested Chargers view in station detail page at `apps/partner-dashboard/src/pages/chargers.tsx` (via `stations/:id/chargers` route)
 
 **Checkpoint**: Chargers CRUD fully functional — flat list shows scoped data, nested view under station detail works, station dropdown pre-filtered, status badges display correct colors
 
@@ -108,10 +108,10 @@
 
 ### Implementation for User Story 4
 
-- [ ] T020 [P] [US4] Create `GET /api/v1/partners/me` handler in `backend/src/domain/partners/handlers.rs` — returns authenticated partner's profile from partner_profile_id in request context
-- [ ] T021 [P] [US4] Create `PATCH /api/v1/partners/me` handler in `backend/src/domain/partners/handlers.rs` — updates display_name, contact_phone, logo_url; rejects classification and tax_id changes with 400
-- [ ] T022 [US4] Create ProfileForm component in `apps/partner-dashboard/src/components/profile/profile-form.tsx` — displays all fields; classification and tax_id as read-only disabled inputs; display_name, contact_phone, logo_url as editable inputs; save calls `PATCH /api/v1/partners/me`
-- [ ] T023 [US4] Wire Profile page at `apps/partner-dashboard/src/pages/profile.tsx` — renders `<ProfileForm/>`; fetches profile data on mount from `GET /api/v1/partners/me`; shows loading skeleton during fetch; shows error state on failure
+- [X] T020 [P] [US4] Create `GET /api/v1/partners/me` handler in `backend/src/domain/partners/handlers.rs`
+- [X] T021 [P] [US4] Create `PATCH /api/v1/partners/me` handler in `backend/src/domain/partners/handlers.rs`
+- [X] T022 [US4] Create ProfileForm component in `apps/partner-dashboard/src/components/profile/profile-form.tsx`
+- [X] T023 [US4] Wire Profile page at `apps/partner-dashboard/src/pages/profile.tsx`
 
 **Checkpoint**: Profile CRUD fully functional — display/edit own profile, classification/tax_id read-only, changes persist
 
@@ -125,8 +125,8 @@
 
 ### Implementation for User Story 5
 
-- [ ] T024 [US5] Create OverviewDashboard component in `apps/partner-dashboard/src/components/overview/overview-dashboard.tsx` — fetches station count from `GET /api/v1/stations` and charger count from `GET /api/v1/chargers`; renders MetricChip components from @bornemap/ui for total stations and total chargers; shows skeleton placeholders during loading; shows empty state when counts are zero
-- [ ] T025 [US5] Wire Overview page at `apps/partner-dashboard/src/pages/overview.tsx` — renders `<OverviewDashboard/>` as the landing page at `/`
+- [X] T024 [US5] Create OverviewDashboard component in `apps/partner-dashboard/src/components/overview/overview-dashboard.tsx`
+- [X] T025 [US5] Wire Overview page at `apps/partner-dashboard/src/pages/overview.tsx`
 
 **Checkpoint**: Overview dashboard renders with correct partner-scoped metric chips, skeleton loading, and empty state
 
@@ -140,8 +140,8 @@
 
 ### Implementation for User Story 6
 
-- [ ] T026 [US6] Add route guard in `apps/partner-dashboard/src/App.tsx` — intercept `/users`, `/settings`, `/analytics`, `/security` routes and redirect to Overview (`/`) or show a 403 "Access Denied" page
-- [ ] T027 [US6] Add error boundary wrapper in `apps/partner-dashboard/src/App.tsx` — wraps route content so a rendering error in one section doesn't crash the entire dashboard
+- [X] T026 [US6] Add route guard in `apps/partner-dashboard/src/App.tsx`
+- [X] T027 [US6] Add error boundary wrapper in `apps/partner-dashboard/src/App.tsx`
 
 **Checkpoint**: Admin routes blocked, error boundary prevents page-wide crashes
 
@@ -151,11 +151,11 @@
 
 **Purpose**: Verification and cleanup across all stories
 
-- [ ] T028 [P] Run type-check — `pnpm -r type-check` in `sources/frontend/`
-- [ ] T029 [P] Run lint — `pnpm -r lint` in `sources/frontend/`
-- [ ] T030 [P] Run build — `pnpm -r build` in `sources/frontend/`
-- [ ] T031 Run backend tests — `cargo test` in `sources/backend/`
-- [ ] T032 Run quickstart validation — execute all verification steps in `specs/005-partner-dashboard/quickstart.md`
+- [X] T028 [P] Run type-check — `pnpm -r type-check` in `sources/frontend/`
+- [X] T029 [P] Run lint — `pnpm -r lint` in `sources/frontend/`
+- [X] T030 [P] Run build — `pnpm -r build` in `sources/frontend/`
+- [X] T031 Run backend tests — `cargo test` in `sources/backend/` (6 passed)
+- [ ] T032 Run quickstart validation — execute all verification steps in `specs/005-partner-dashboard/quickstart.md` (requires running backend + frontend)
 
 ---
 

@@ -83,6 +83,15 @@ pub async fn soft_delete(pool: &PgPool, id: &str) -> Result<Option<PartnerProfil
     .await
 }
 
+pub async fn get_by_user_id(pool: &PgPool, user_id: &str) -> Result<Option<PartnerProfile>, sqlx::Error> {
+    sqlx::query_as::<_, PartnerProfile>(
+        "SELECT id, user_id, classification, display_name, tax_id, contact_phone, is_test, created_at, updated_at, deleted_at FROM partner_profiles WHERE user_id = $1 AND deleted_at IS NULL"
+    )
+    .bind(user_id)
+    .fetch_optional(pool)
+    .await
+}
+
 pub async fn exists_by_user_id(pool: &PgPool, user_id: &str) -> Result<bool, sqlx::Error> {
     sqlx::query_scalar::<_, bool>(
         "SELECT EXISTS(SELECT 1 FROM partner_profiles WHERE user_id = $1 AND deleted_at IS NULL)"

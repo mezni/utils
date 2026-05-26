@@ -21,6 +21,27 @@ pub async fn create(
     .await
 }
 
+pub async fn list_by_owner_id(
+    pool: &PgPool,
+    owner_id: &str,
+    cursor: Option<Cursor>,
+    limit: i64,
+) -> Result<(Vec<Charger>, Option<String>, bool), sqlx::Error> {
+    let fetch_limit = limit + 1;
+    let mut qb: QueryBuilder<Postgres> = QueryBuilder::new(
+        "SELECT c.id, c.station_id, c.connector_type_id, c.power_kw, c.current_type::TEXT AS current_type, c.status::TEXT AS status, c.created_at, c.updated_at FROM chargers c INNER JOIN stations s ON s.id = c.station_id"
+    );
+
+    qb.push(" WHERE s.owner_id = ");
+    qb.push_bind(owner_id);
+    qb.push(" AND s.deleted_at IS NULL");
+
+    apply_cursor_pagination(&mut qb, cursor, fetch_limit);
+
+    let rows: Vec<Charger> = qb.build_query_as().fetch_all(pool).await?;
+    Ok(paginate(rows, limit, |c: &Charger| (c.created_at, c.id.clone())))
+}
+
 pub async fn list_by_station(
     pool: &PgPool,
     station_id: &str,
