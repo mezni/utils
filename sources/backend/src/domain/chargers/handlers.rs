@@ -1,11 +1,10 @@
-use crate::auth::partner_middleware::PartnerUser;
 use crate::domain::chargers::models::{Charger, CreateChargerRequest, UpdateChargerRequest};
 use crate::domain::chargers::repository;
 use crate::utils::error::ProblemResponse;
 use crate::utils::id_validator;
 use crate::utils::pagination::Cursor;
 use crate::utils::pagination::ListQuery;
-use actix_web::{web, HttpResponse};
+use actix_web::{web, HttpRequest, HttpResponse};
 use serde::Serialize;
 use sqlx::PgPool;
 
@@ -165,7 +164,7 @@ pub async fn list_chargers_for_station(
 
 pub async fn list_chargers(
     pool: web::Data<PgPool>,
-    partner: PartnerUser,
+    req: HttpRequest,
     query: web::Query<ListQuery>,
 ) -> HttpResponse {
     let q = query.into_inner();
@@ -179,20 +178,47 @@ pub async fn list_chargers(
         None => None,
     };
 
-    match repository::list_by_owner_id(&pool, &partner.user_id, cursor, limit).await {
-        Ok((chargers, next_cursor, has_more)) => {
-            let data: Vec<ChargerResponse> = chargers.into_iter().map(ChargerResponse::from).collect();
-            HttpResponse::Ok().json(serde_json::json!({
-                "data": data,
-                "pagination": {
-                    "next_cursor": next_cursor,
-                    "has_more": has_more
+    let owner_filter = crate::domain::stations::handlers::try_extract_auth_user(&req)
+        .filter(|a| a.0.role == "partner")
+        .map(|a| a.0.sub);
+
+    match owner_filter {
+        Some(user_id) => {
+            match repository::list_by_owner_id(&pool, &user_id, cursor, limit).await {
+                Ok((chargers, next_cursor, has_more)) => {
+                    let data: Vec<ChargerResponse> = chargers.into_iter().map(ChargerResponse::from).collect();
+                    HttpResponse::Ok().json(serde_json::json!({
+                        "data": data,
+                        "pagination": {
+                            "next_cursor": next_cursor,
+                            "has_more": has_more
+                        }
+                    }))
                 }
-            }))
+                Err(e) => {
+                    tracing::error!("Failed to list chargers: {:?}", e);
+                    ProblemResponse::internal_error()
+                }
+            }
         }
-        Err(e) => {
-            tracing::error!("Failed to list chargers: {:?}", e);
-            ProblemResponse::internal_error()
+        None => {
+            // Admin or unauthenticated — return all chargers
+            match repository::list_all(&pool, cursor, limit).await {
+                Ok((chargers, next_cursor, has_more)) => {
+                    let data: Vec<ChargerResponse> = chargers.into_iter().map(ChargerResponse::from).collect();
+                    HttpResponse::Ok().json(serde_json::json!({
+                        "data": data,
+                        "pagination": {
+                            "next_cursor": next_cursor,
+                            "has_more": has_more
+                        }
+                    }))
+                }
+                Err(e) => {
+                    tracing::error!("Failed to list chargers: {:?}", e);
+                    ProblemResponse::internal_error()
+                }
+            }
         }
     }
 }

@@ -42,6 +42,22 @@ pub async fn list_by_owner_id(
     Ok(paginate(rows, limit, |c: &Charger| (c.created_at, c.id.clone())))
 }
 
+pub async fn list_all(
+    pool: &PgPool,
+    cursor: Option<Cursor>,
+    limit: i64,
+) -> Result<(Vec<Charger>, Option<String>, bool), sqlx::Error> {
+    let fetch_limit = limit + 1;
+    let mut qb: QueryBuilder<Postgres> = QueryBuilder::new(
+        "SELECT id, station_id, connector_type_id, power_kw, current_type::TEXT AS current_type, status::TEXT AS status, created_at, updated_at FROM chargers"
+    );
+
+    apply_cursor_pagination(&mut qb, cursor, fetch_limit);
+
+    let rows: Vec<Charger> = qb.build_query_as().fetch_all(pool).await?;
+    Ok(paginate(rows, limit, |c: &Charger| (c.created_at, c.id.clone())))
+}
+
 pub async fn list_by_station(
     pool: &PgPool,
     station_id: &str,
