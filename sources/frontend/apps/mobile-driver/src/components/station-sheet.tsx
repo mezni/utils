@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react"
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Linking, ActivityIndicator } from "react-native"
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator } from "react-native"
+import * as Linking from "expo-linking"
 import { Station } from "../types/station"
 import { Charger } from "../types/station"
 import { fetchStationChargers } from "../services/nearby-api"
