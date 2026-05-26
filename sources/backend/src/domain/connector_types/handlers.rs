@@ -33,13 +33,20 @@ impl From<ConnectorType> for ConnectorTypeResponse {
 
 pub async fn create_connector_type(
     pool: web::Data<PgPool>,
-    _auth: crate::auth::middleware::AuthUser,
+    auth: crate::auth::middleware::AuthUser,
     body: web::Json<CreateConnectorTypeRequest>,
 ) -> HttpResponse {
+    if auth.0.role != "admin" {
+        return ProblemResponse::forbidden("Only admins can manage connector types");
+    }
+
     let req = body.into_inner();
 
     if req.name.len() < 2 || req.name.len() > 100 {
         return ProblemResponse::validation("Name must be between 2 and 100 characters");
+    }
+    if req.description.is_empty() || req.description.len() > 500 {
+        return ProblemResponse::validation("Description must be between 1 and 500 characters");
     }
 
     match repository::exists_by_name(&pool, &req.name).await {
@@ -113,10 +120,14 @@ pub async fn get_connector_type(
 
 pub async fn update_connector_type(
     pool: web::Data<PgPool>,
-    _auth: crate::auth::middleware::AuthUser,
+    auth: crate::auth::middleware::AuthUser,
     path: web::Path<String>,
     body: web::Json<UpdateConnectorTypeRequest>,
 ) -> HttpResponse {
+    if auth.0.role != "admin" {
+        return ProblemResponse::forbidden("Only admins can manage connector types");
+    }
+
     let id = path.into_inner();
 
     if let Err(e) = id_validator::validate_id_prefix(&id, "CNT") {
@@ -139,9 +150,13 @@ pub async fn update_connector_type(
 
 pub async fn delete_connector_type(
     pool: web::Data<PgPool>,
-    _auth: crate::auth::middleware::AuthUser,
+    auth: crate::auth::middleware::AuthUser,
     path: web::Path<String>,
 ) -> HttpResponse {
+    if auth.0.role != "admin" {
+        return ProblemResponse::forbidden("Only admins can manage connector types");
+    }
+
     let id = path.into_inner();
 
     if let Err(e) = id_validator::validate_id_prefix(&id, "CNT") {

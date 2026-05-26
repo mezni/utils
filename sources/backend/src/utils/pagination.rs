@@ -1,5 +1,3 @@
-#![allow(dead_code)]
-
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use base64::engine::general_purpose::URL_SAFE_NO_PAD;
@@ -41,34 +39,7 @@ impl ListQuery {
 }
 
 #[derive(Debug, Serialize)]
-pub struct PaginatedResult<T: Serialize> {
-    pub data: Vec<T>,
-    pub pagination: Pagination,
-}
-
-#[derive(Debug, Serialize)]
 pub struct Pagination {
     pub next_cursor: Option<String>,
     pub has_more: bool,
-}
-
-impl<T: Serialize> PaginatedResult<T> {
-    pub fn new(data: Vec<T>, limit: i64) -> Self {
-        let _fetch_limit = limit + 1;
-        let has_more = data.len() > limit as usize;
-        let mut items: Vec<T> = data.into_iter().collect();
-
-        if has_more {
-            items.pop();
-        }
-
-        let next_cursor: Option<String> = None;
-        Self {
-            data: items,
-            pagination: Pagination {
-                next_cursor,
-                has_more,
-            },
-        }
-    }
 }

@@ -39,8 +39,13 @@ impl From<PartnerProfile> for PartnerResponse {
 
 pub async fn create_partner(
     pool: web::Data<PgPool>,
+    auth: crate::auth::middleware::AuthUser,
     body: web::Json<CreatePartnerRequest>,
 ) -> HttpResponse {
+    if auth.0.role != "admin" {
+        return ProblemResponse::forbidden("Only admins can create partner profiles");
+    }
+
     let req = body.into_inner();
 
     if !["business", "private"].contains(&req.classification.as_str()) {
@@ -130,9 +135,14 @@ pub async fn get_partner(
 
 pub async fn update_partner(
     pool: web::Data<PgPool>,
+    auth: crate::auth::middleware::AuthUser,
     path: web::Path<String>,
     body: web::Json<UpdatePartnerRequest>,
 ) -> HttpResponse {
+    if auth.0.role != "admin" && auth.0.role != "partner" {
+        return ProblemResponse::forbidden("Only admins and partners can update partner profiles");
+    }
+
     let id = path.into_inner();
 
     if let Err(e) = id_validator::validate_id_prefix(&id, "PRT") {
@@ -166,8 +176,13 @@ pub async fn update_partner(
 
 pub async fn delete_partner(
     pool: web::Data<PgPool>,
+    auth: crate::auth::middleware::AuthUser,
     path: web::Path<String>,
 ) -> HttpResponse {
+    if auth.0.role != "admin" {
+        return ProblemResponse::forbidden("Only admins can delete partner profiles");
+    }
+
     let id = path.into_inner();
 
     if let Err(e) = id_validator::validate_id_prefix(&id, "PRT") {

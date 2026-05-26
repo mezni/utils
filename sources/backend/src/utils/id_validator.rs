@@ -1,5 +1,3 @@
-#![allow(dead_code)]
-
 pub fn validate_semantic_id(id: &str) -> Result<(), String> {
     let parts: Vec<&str> = id.splitn(2, '-').collect();
     if parts.len() != 2 {

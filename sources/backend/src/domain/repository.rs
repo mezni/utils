@@ -5,10 +5,6 @@ use sqlx::{Postgres, QueryBuilder};
 pub struct SoftDeleteFilter;
 
 impl SoftDeleteFilter {
-    pub fn and_not_deleted() -> &'static str {
-        " AND deleted_at IS NULL"
-    }
-
     pub fn where_not_deleted() -> &'static str {
         " WHERE deleted_at IS NULL"
     }

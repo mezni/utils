@@ -9,12 +9,19 @@ use actix_web::{web, HttpRequest, HttpResponse};
 use serde::Serialize;
 use sqlx::PgPool;
 
-pub fn extract_partner_owner_id(req: &HttpRequest) -> Option<String> {
+pub fn try_extract_auth_user(req: &HttpRequest) -> Option<crate::auth::middleware::AuthUser> {
     let auth_header = req.headers().get("Authorization")?.to_str().ok()?;
     let token = auth_header.strip_prefix("Bearer ")?;
-    match validate_token(token, &jwt_secret()) {
-        Ok(claims) if claims.role == "partner" => Some(claims.sub),
-        _ => None,
+    validate_token(token, &jwt_secret())
+        .ok()
+        .map(crate::auth::middleware::AuthUser)
+}
+
+fn check_admin_or_partner(auth: &crate::auth::middleware::AuthUser) -> Result<(), HttpResponse> {
+    if auth.0.role == "admin" || auth.0.role == "partner" {
+        Ok(())
+    } else {
+        Err(ProblemResponse::forbidden("Only admins and partners can manage stations"))
     }
 }
 
@@ -53,10 +60,18 @@ impl From<Station> for StationResponse {
 
 pub async fn create_station(
     pool: web::Data<PgPool>,
-    _auth: crate::auth::middleware::AuthUser,
+    auth: crate::auth::middleware::AuthUser,
     body: web::Json<CreateStationRequest>,
 ) -> HttpResponse {
-    let req = body.into_inner();
+    if let Err(resp) = check_admin_or_partner(&auth) {
+        return resp;
+    }
+
+    let mut req = body.into_inner();
+
+    if auth.0.role == "partner" {
+        req.owner_id = auth.0.sub.clone();
+    }
 
     if req.longitude < -180.0 || req.longitude > 180.0 {
         return ProblemResponse::validation("Longitude must be between -180 and 180");
@@ -66,6 +81,12 @@ pub async fn create_station(
     }
     if req.name.len() < 2 || req.name.len() > 150 {
         return ProblemResponse::validation("Name must be between 2 and 150 characters");
+    }
+    if req.address.len() < 2 || req.address.len() > 250 {
+        return ProblemResponse::validation("Address must be between 2 and 250 characters");
+    }
+    if req.city.len() < 2 || req.city.len() > 100 {
+        return ProblemResponse::validation("City must be between 2 and 100 characters");
     }
 
     if let Err(e) = id_validator::validate_id_prefix(&req.owner_id, "USR") {
@@ -109,7 +130,9 @@ pub async fn list_stations(
         None => None,
     };
 
-    let owner_filter = extract_partner_owner_id(&req);
+    let owner_filter = try_extract_auth_user(&req)
+        .filter(|a| a.0.role == "partner")
+        .map(|a| a.0.sub);
 
     match repository::list(&pool, cursor, limit, q.include_test(), owner_filter.as_deref()).await {
         Ok((stations, next_cursor, has_more)) => {
@@ -145,14 +168,27 @@ pub async fn get_station(
 
 pub async fn update_station(
     pool: web::Data<PgPool>,
-    _auth: crate::auth::middleware::AuthUser,
+    auth: crate::auth::middleware::AuthUser,
     path: web::Path<String>,
     body: web::Json<UpdateStationRequest>,
 ) -> HttpResponse {
+    if let Err(resp) = check_admin_or_partner(&auth) {
+        return resp;
+    }
+
     let id = path.into_inner();
 
     if let Err(e) = id_validator::validate_id_prefix(&id, "STN") {
         return ProblemResponse::not_found(e);
+    }
+
+    if auth.0.role == "partner" {
+        match repository::get_owner_id(&pool, &id).await {
+            Ok(Some(owner_id)) if owner_id == auth.0.sub => {}
+            Ok(Some(_)) => return ProblemResponse::forbidden("You can only update your own stations"),
+            Ok(None) => return ProblemResponse::not_found(format!("Station '{}' not found", &id)),
+            Err(_) => return ProblemResponse::internal_error(),
+        }
     }
 
     if let Some(lng) = body.longitude {
@@ -182,13 +218,26 @@ pub async fn update_station(
 
 pub async fn delete_station(
     pool: web::Data<PgPool>,
-    _auth: crate::auth::middleware::AuthUser,
+    auth: crate::auth::middleware::AuthUser,
     path: web::Path<String>,
 ) -> HttpResponse {
+    if let Err(resp) = check_admin_or_partner(&auth) {
+        return resp;
+    }
+
     let id = path.into_inner();
 
     if let Err(e) = id_validator::validate_id_prefix(&id, "STN") {
         return ProblemResponse::not_found(e);
+    }
+
+    if auth.0.role == "partner" {
+        match repository::get_owner_id(&pool, &id).await {
+            Ok(Some(owner_id)) if owner_id == auth.0.sub => {}
+            Ok(Some(_)) => return ProblemResponse::forbidden("You can only delete your own stations"),
+            Ok(None) => return ProblemResponse::not_found(format!("Station '{}' not found", &id)),
+            Err(_) => return ProblemResponse::internal_error(),
+        }
     }
 
     match repository::soft_delete(&pool, &id).await {

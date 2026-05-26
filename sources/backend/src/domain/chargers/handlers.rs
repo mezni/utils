@@ -8,6 +8,30 @@ use actix_web::{web, HttpResponse};
 use serde::Serialize;
 use sqlx::PgPool;
 
+fn check_admin_or_partner(auth: &crate::auth::middleware::AuthUser) -> Result<(), HttpResponse> {
+    if auth.0.role == "admin" || auth.0.role == "partner" {
+        Ok(())
+    } else {
+        Err(ProblemResponse::forbidden("Only admins and partners can manage chargers"))
+    }
+}
+
+async fn check_partner_owns_station(
+    pool: &PgPool,
+    auth: &crate::auth::middleware::AuthUser,
+    station_id: &str,
+) -> Result<(), HttpResponse> {
+    if auth.0.role == "admin" {
+        return Ok(());
+    }
+    match crate::domain::stations::repository::get_owner_id(pool, station_id).await {
+        Ok(Some(owner_id)) if owner_id == auth.0.sub => Ok(()),
+        Ok(Some(_)) => Err(ProblemResponse::forbidden("You can only manage chargers in your own stations")),
+        Ok(None) => Err(ProblemResponse::not_found(format!("Station '{}' not found", station_id))),
+        Err(_) => Err(ProblemResponse::internal_error()),
+    }
+}
+
 #[derive(Serialize)]
 pub struct ChargerResponse {
     pub id: String,
@@ -37,15 +61,23 @@ impl From<Charger> for ChargerResponse {
 
 pub async fn create_charger(
     pool: web::Data<PgPool>,
-    _auth: crate::auth::middleware::AuthUser,
+    auth: crate::auth::middleware::AuthUser,
     path: web::Path<String>,
     body: web::Json<CreateChargerRequest>,
 ) -> HttpResponse {
+    if let Err(resp) = check_admin_or_partner(&auth) {
+        return resp;
+    }
+
     let station_id = path.into_inner();
     let req = body.into_inner();
 
     if let Err(e) = id_validator::validate_id_prefix(&station_id, "STN") {
         return ProblemResponse::not_found(e);
+    }
+
+    if let Err(resp) = check_partner_owns_station(&pool, &auth, &station_id).await {
+        return resp;
     }
 
     if req.power_kw <= 0.0 || req.power_kw > 1000.0 {
@@ -67,7 +99,7 @@ pub async fn create_charger(
 
     let ct = crate::domain::connector_types::repository::get_by_id(&pool, &req.connector_type_id).await;
     match ct {
-        Ok(None) => return ProblemResponse::not_found(format!("Connector type '{}' not found or is deleted", &req.connector_type_id)),
+        Ok(None) => return ProblemResponse::not_found(format!("Connector type '{}' not found", &req.connector_type_id)),
         Err(_) => return ProblemResponse::internal_error(),
         _ => {}
     }
@@ -158,10 +190,14 @@ pub async fn get_charger(
 
 pub async fn update_charger(
     pool: web::Data<PgPool>,
-    _auth: crate::auth::middleware::AuthUser,
+    auth: crate::auth::middleware::AuthUser,
     path: web::Path<(String, String)>,
     body: web::Json<UpdateChargerRequest>,
 ) -> HttpResponse {
+    if let Err(resp) = check_admin_or_partner(&auth) {
+        return resp;
+    }
+
     let (station_id, id) = path.into_inner();
 
     if let Err(e) = id_validator::validate_id_prefix(&station_id, "STN") {
@@ -169,6 +205,10 @@ pub async fn update_charger(
     }
     if let Err(e) = id_validator::validate_id_prefix(&id, "CHG") {
         return ProblemResponse::not_found(e);
+    }
+
+    if let Err(resp) = check_partner_owns_station(&pool, &auth, &station_id).await {
+        return resp;
     }
 
     let body = body.into_inner();
@@ -201,9 +241,13 @@ pub async fn update_charger(
 
 pub async fn delete_charger(
     pool: web::Data<PgPool>,
-    _auth: crate::auth::middleware::AuthUser,
+    auth: crate::auth::middleware::AuthUser,
     path: web::Path<(String, String)>,
 ) -> HttpResponse {
+    if let Err(resp) = check_admin_or_partner(&auth) {
+        return resp;
+    }
+
     let (station_id, id) = path.into_inner();
 
     if let Err(e) = id_validator::validate_id_prefix(&station_id, "STN") {
@@ -211,6 +255,10 @@ pub async fn delete_charger(
     }
     if let Err(e) = id_validator::validate_id_prefix(&id, "CHG") {
         return ProblemResponse::not_found(e);
+    }
+
+    if let Err(resp) = check_partner_owns_station(&pool, &auth, &station_id).await {
+        return resp;
     }
 
     match check_charger_belongs_to_station(&pool, &station_id, &id).await {

@@ -1,6 +1,6 @@
 use crate::auth::jwt::create_token;
 use crate::domain::users::models::CreateUserRequest;
-use crate::domain::users::{handlers as user_handlers, repository as user_repo};
+use crate::domain::users::repository as user_repo;
 use crate::utils::error::ProblemResponse;
 use actix_web::{web, HttpResponse};
 use argon2::Argon2;
@@ -24,7 +24,7 @@ fn hash_password(password: &str) -> Result<String, String> {
 }
 
 fn verify_password(password: &str, hash: &str) -> Result<bool, String> {
-    let parsed_hash = password_hash::PasswordHash::new(hash)
+    let parsed_hash = PasswordHash::new(hash)
         .map_err(|e| format!("Invalid password hash format: {}", e))?;
     Ok(Argon2::default()
         .verify_password(password.as_bytes(), &parsed_hash)
@@ -50,12 +50,6 @@ pub async fn register(
     let role = "driver";
     let id = crate::utils::id_generator::generate_id("USR");
 
-    let password_hash = match tokio::task::spawn_blocking(move || hash_password(&req.password)).await {
-        Ok(Ok(hash)) => hash,
-        Ok(Err(e)) => return ProblemResponse::internal_error_with(e),
-        Err(_) => return ProblemResponse::internal_error(),
-    };
-
     match user_repo::exists_by_email(&pool, &req.email).await {
         Ok(true) => return ProblemResponse::conflict("Email already exists"),
         Err(_) => return ProblemResponse::internal_error(),
@@ -67,6 +61,12 @@ pub async fn register(
         Err(_) => return ProblemResponse::internal_error(),
         _ => {}
     }
+
+    let password_hash = match tokio::task::spawn_blocking(move || hash_password(&req.password)).await {
+        Ok(Ok(hash)) => hash,
+        Ok(Err(e)) => return ProblemResponse::internal_error_with(e),
+        Err(_) => return ProblemResponse::internal_error(),
+    };
 
     match user_repo::create(&pool, &id, &req.email, &req.username, &password_hash, role, false).await {
         Ok(user) => {
