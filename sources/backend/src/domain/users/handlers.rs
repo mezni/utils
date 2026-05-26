@@ -50,11 +50,6 @@ pub struct UserListResponse {
     pub pagination: crate::utils::pagination::Pagination,
 }
 
-#[derive(Serialize)]
-pub struct SingleUserResponse {
-    pub data: UserResponse,
-}
-
 pub async fn create_user(
     pool: web::Data<PgPool>,
     auth: crate::auth::middleware::AuthUser,
@@ -104,9 +99,7 @@ pub async fn create_user(
     };
 
     match repository::create(&pool, &id, &req.email, &req.username, &password_hash, &req.role, false).await {
-        Ok(user) => HttpResponse::Created().json(SingleUserResponse {
-            data: UserResponse::from(user),
-        }),
+        Ok(user) => HttpResponse::Created().json(UserResponse::from(user)),
         Err(_) => ProblemResponse::internal_error(),
     }
 }
@@ -162,9 +155,7 @@ pub async fn get_user(
     }
 
     match repository::get_by_id(&pool, &id).await {
-        Ok(Some(user)) => HttpResponse::Ok().json(SingleUserResponse {
-            data: UserResponse::from(user),
-        }),
+        Ok(Some(user)) => HttpResponse::Ok().json(UserResponse::from(user)),
         Ok(None) => ProblemResponse::not_found(format!("User '{}' not found", &id)),
         Err(_) => ProblemResponse::internal_error(),
     }
@@ -187,9 +178,7 @@ pub async fn update_user(
     }
 
     match repository::update(&pool, &id, &body).await {
-        Ok(Some(user)) => HttpResponse::Ok().json(SingleUserResponse {
-            data: UserResponse::from(user),
-        }),
+        Ok(Some(user)) => HttpResponse::Ok().json(UserResponse::from(user)),
         Ok(None) => {
             let exists = repository::get_by_id(&pool, &id).await.unwrap_or(None);
             if exists.is_some() {

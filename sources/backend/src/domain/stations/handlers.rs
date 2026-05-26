@@ -72,6 +72,16 @@ pub async fn create_station(
         return ProblemResponse::validation(format!("Invalid owner_id: {}", e));
     }
 
+    match crate::domain::users::repository::get_by_id(&pool, &req.owner_id).await {
+        Ok(Some(user)) => {
+            if user.role != "partner" && user.role != "admin" {
+                return ProblemResponse::validation("Station owner must have role 'partner' or 'admin'");
+            }
+        }
+        Ok(None) => return ProblemResponse::not_found(format!("Owner user '{}' not found", &req.owner_id)),
+        Err(_) => return ProblemResponse::internal_error(),
+    }
+
     let id = crate::utils::id_generator::generate_id("STN");
 
     match repository::create(&pool, &id, &req, false).await {

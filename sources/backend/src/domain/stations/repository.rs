@@ -1,3 +1,4 @@
+use crate::domain::chargers::repository as charger_repo;
 use crate::domain::repository::{apply_cursor_pagination, paginate, SoftDeleteFilter, TestFilter};
 use crate::domain::stations::models::{CreateStationRequest, Station, UpdateStationRequest};
 use crate::utils::pagination::Cursor;
@@ -93,6 +94,9 @@ pub async fn update(
 
 pub async fn soft_delete(pool: &PgPool, id: &str) -> Result<Option<Station>, sqlx::Error> {
     let now = Utc::now();
+
+    let _ = charger_repo::permanently_delete_by_station(pool, id).await?;
+
     sqlx::query_as::<_, Station>(
         "UPDATE stations SET deleted_at = $2, updated_at = $2 WHERE id = $1 AND deleted_at IS NULL RETURNING id, owner_id, name, address, city, ST_X(coordinates::geometry) AS longitude, ST_Y(coordinates::geometry) AS latitude, is_operational, is_test, created_at, updated_at, deleted_at"
     )

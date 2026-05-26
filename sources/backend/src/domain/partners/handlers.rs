@@ -50,6 +50,20 @@ pub async fn create_partner(
         return ProblemResponse::validation("Display name must be between 2 and 100 characters");
     }
 
+    if let Err(e) = id_validator::validate_id_prefix(&req.user_id, "USR") {
+        return ProblemResponse::validation(format!("Invalid user_id: {}", e));
+    }
+
+    match crate::domain::users::repository::get_by_id(&pool, &req.user_id).await {
+        Ok(Some(user)) => {
+            if user.role != "partner" {
+                return ProblemResponse::validation("User must have role 'partner' to create a partner profile");
+            }
+        }
+        Ok(None) => return ProblemResponse::not_found(format!("User '{}' not found", &req.user_id)),
+        Err(_) => return ProblemResponse::internal_error(),
+    }
+
     match repository::exists_by_user_id(&pool, &req.user_id).await {
         Ok(true) => return ProblemResponse::conflict("User already has a partner profile"),
         Err(_) => return ProblemResponse::internal_error(),
@@ -123,6 +137,17 @@ pub async fn update_partner(
 
     if let Err(e) = id_validator::validate_id_prefix(&id, "PRT") {
         return ProblemResponse::not_found(e);
+    }
+
+    if let Some(ref classification) = body.classification {
+        if !["business", "private"].contains(&classification.as_str()) {
+            return ProblemResponse::validation("Classification must be business or private");
+        }
+    }
+    if let Some(ref name) = body.display_name {
+        if name.len() < 2 || name.len() > 100 {
+            return ProblemResponse::validation("Display name must be between 2 and 100 characters");
+        }
     }
 
     match repository::update(&pool, &id, &body).await {

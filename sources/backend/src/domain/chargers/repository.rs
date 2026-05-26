@@ -77,4 +77,12 @@ pub async fn permanently_delete(pool: &PgPool, id: &str) -> Result<bool, sqlx::E
     Ok(result.rows_affected() > 0)
 }
 
+pub async fn permanently_delete_by_station(pool: &PgPool, station_id: &str) -> Result<u64, sqlx::Error> {
+    let result = sqlx::query("DELETE FROM chargers WHERE station_id = $1")
+        .bind(station_id)
+        .execute(pool)
+        .await?;
+    Ok(result.rows_affected())
+}
+
 

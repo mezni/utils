@@ -58,9 +58,16 @@ pub async fn create_charger(
         return ProblemResponse::validation(format!("Invalid connector_type_id: {}", e));
     }
 
-    let station_exists = crate::domain::stations::repository::get_by_id(&pool, &station_id).await;
-    match station_exists {
+    let station = crate::domain::stations::repository::get_by_id(&pool, &station_id).await;
+    match station {
         Ok(None) => return ProblemResponse::not_found(format!("Station '{}' not found", &station_id)),
+        Err(_) => return ProblemResponse::internal_error(),
+        _ => {}
+    }
+
+    let ct = crate::domain::connector_types::repository::get_by_id(&pool, &req.connector_type_id).await;
+    match ct {
+        Ok(None) => return ProblemResponse::not_found(format!("Connector type '{}' not found or is deleted", &req.connector_type_id)),
         Err(_) => return ProblemResponse::internal_error(),
         _ => {}
     }
@@ -86,6 +93,13 @@ pub async fn list_chargers_for_station(
         return ProblemResponse::not_found(e);
     }
 
+    let station = crate::domain::stations::repository::get_by_id(&pool, &station_id).await;
+    match station {
+        Ok(None) => return ProblemResponse::not_found(format!("Station '{}' not found", &station_id)),
+        Err(_) => return ProblemResponse::internal_error(),
+        _ => {}
+    }
+
     let cursor = match q.cursor.as_ref() {
         Some(c) => match Cursor::decode(c) {
             Ok(c) => Some(c),
@@ -109,31 +123,50 @@ pub async fn list_chargers_for_station(
     }
 }
 
+async fn check_charger_belongs_to_station(
+    pool: &PgPool,
+    station_id: &str,
+    charger_id: &str,
+) -> Result<Option<Charger>, HttpResponse> {
+    let charger = repository::get_by_id(pool, charger_id).await.map_err(|_| ProblemResponse::internal_error())?;
+    match charger {
+        Some(c) if c.station_id == station_id => Ok(Some(c)),
+        Some(_) => Ok(None),
+        None => Ok(None),
+    }
+}
+
 pub async fn get_charger(
     pool: web::Data<PgPool>,
-    path: web::Path<String>,
+    path: web::Path<(String, String)>,
 ) -> HttpResponse {
-    let id = path.into_inner();
+    let (station_id, id) = path.into_inner();
 
+    if let Err(e) = id_validator::validate_id_prefix(&station_id, "STN") {
+        return ProblemResponse::not_found(e);
+    }
     if let Err(e) = id_validator::validate_id_prefix(&id, "CHG") {
         return ProblemResponse::not_found(e);
     }
 
-    match repository::get_by_id(&pool, &id).await {
+    match check_charger_belongs_to_station(&pool, &station_id, &id).await {
         Ok(Some(charger)) => HttpResponse::Ok().json(ChargerResponse::from(charger)),
-        Ok(None) => ProblemResponse::not_found(format!("Charger '{}' not found", &id)),
-        Err(_) => ProblemResponse::internal_error(),
+        Ok(None) => ProblemResponse::not_found(format!("Charger '{}' not found in station '{}'", &id, &station_id)),
+        Err(resp) => resp,
     }
 }
 
 pub async fn update_charger(
     pool: web::Data<PgPool>,
     _auth: crate::auth::middleware::AuthUser,
-    path: web::Path<String>,
+    path: web::Path<(String, String)>,
     body: web::Json<UpdateChargerRequest>,
 ) -> HttpResponse {
-    let id = path.into_inner();
+    let (station_id, id) = path.into_inner();
 
+    if let Err(e) = id_validator::validate_id_prefix(&station_id, "STN") {
+        return ProblemResponse::not_found(e);
+    }
     if let Err(e) = id_validator::validate_id_prefix(&id, "CHG") {
         return ProblemResponse::not_found(e);
     }
@@ -144,6 +177,12 @@ pub async fn update_charger(
         if power <= 0.0 || power > 1000.0 {
             return ProblemResponse::validation("power_kw must be between 0 and 1000");
         }
+    }
+
+    match check_charger_belongs_to_station(&pool, &station_id, &id).await {
+        Ok(Some(_)) => {}
+        Ok(None) => return ProblemResponse::not_found(format!("Charger '{}' not found in station '{}'", &id, &station_id)),
+        Err(resp) => return resp,
     }
 
     match repository::update(&pool, &id, &body).await {
@@ -163,12 +202,21 @@ pub async fn update_charger(
 pub async fn delete_charger(
     pool: web::Data<PgPool>,
     _auth: crate::auth::middleware::AuthUser,
-    path: web::Path<String>,
+    path: web::Path<(String, String)>,
 ) -> HttpResponse {
-    let id = path.into_inner();
+    let (station_id, id) = path.into_inner();
 
+    if let Err(e) = id_validator::validate_id_prefix(&station_id, "STN") {
+        return ProblemResponse::not_found(e);
+    }
     if let Err(e) = id_validator::validate_id_prefix(&id, "CHG") {
         return ProblemResponse::not_found(e);
+    }
+
+    match check_charger_belongs_to_station(&pool, &station_id, &id).await {
+        Ok(Some(_)) => {}
+        Ok(None) => return ProblemResponse::not_found(format!("Charger '{}' not found in station '{}'", &id, &station_id)),
+        Err(resp) => return resp,
     }
 
     match repository::permanently_delete(&pool, &id).await {
