@@ -29,16 +29,26 @@ export function ChargerFormModal({ charger, stationId, onClose, onSaved }: Charg
   const [loadingOptions, setLoadingOptions] = useState(true)
 
   useEffect(() => {
+    let cancelled = false
     Promise.all([
-      fetch("/api/v1/stations").then((r) => r.json()).then((j) => {
+      fetch("/api/v1/stations").then(async (r) => {
+        if (!r.ok) throw new Error("Failed to load stations")
+        const j = await r.json()
         const data = j.data || j
-        setStations(data.map((s: { id: string; name: string }) => ({ id: s.id, name: s.name })))
+        if (!cancelled) setStations(data.map((s: { id: string; name: string }) => ({ id: s.id, name: s.name })))
       }),
-      fetch("/api/v1/connector-types").then((r) => r.json()).then((j) => {
+      fetch("/api/v1/connector-types").then(async (r) => {
+        if (!r.ok) throw new Error("Failed to load connector types")
+        const j = await r.json()
         const data = j.data || j
-        setConnectorTypes(data.map((c: { id: string; name: string }) => ({ id: c.id, name: c.name })))
+        if (!cancelled) setConnectorTypes(data.map((c: { id: string; name: string }) => ({ id: c.id, name: c.name })))
       }),
-    ]).finally(() => setLoadingOptions(false))
+    ]).catch(() => {
+      // options load failure is non-fatal — modal continues with empty dropdowns
+    }).finally(() => {
+      if (!cancelled) setLoadingOptions(false)
+    })
+    return () => { cancelled = true }
   }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
