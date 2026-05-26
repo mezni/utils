@@ -15,3 +15,9 @@ chrono = { version = "0.4", features = ["serde"] }
 fastrand = "2"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+jsonwebtoken = { version = "10", default-features = false, features = ["rust_crypto"] }
+argon2 = { version = "0.5", features = ["std"] }
+base64 = "0.22"
+thiserror = "2"
+validator = { version = "0.18", features = ["derive"] }
+futures-util = "0.3"

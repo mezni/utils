@@ -1,0 +1,189 @@
+use crate::auth::jwt::{validate_token, jwt_secret};
+use crate::domain::stations::models::{CreateStationRequest, Station, UpdateStationRequest};
+use crate::domain::stations::repository;
+use crate::utils::error::ProblemResponse;
+use crate::utils::id_validator;
+use crate::utils::pagination::Cursor;
+use crate::utils::pagination::ListQuery;
+use actix_web::{web, HttpRequest, HttpResponse};
+use serde::Serialize;
+use sqlx::PgPool;
+
+pub fn extract_partner_owner_id(req: &HttpRequest) -> Option<String> {
+    let auth_header = req.headers().get("Authorization")?.to_str().ok()?;
+    let token = auth_header.strip_prefix("Bearer ")?;
+    match validate_token(token, &jwt_secret()) {
+        Ok(claims) if claims.role == "partner" => Some(claims.sub),
+        _ => None,
+    }
+}
+
+#[derive(Serialize)]
+pub struct StationResponse {
+    pub id: String,
+    pub owner_id: String,
+    pub name: String,
+    pub address: String,
+    pub city: String,
+    pub longitude: f64,
+    pub latitude: f64,
+    pub is_operational: bool,
+    pub is_test: bool,
+    pub created_at: chrono::DateTime<chrono::Utc>,
+    pub updated_at: chrono::DateTime<chrono::Utc>,
+}
+
+impl From<Station> for StationResponse {
+    fn from(s: Station) -> Self {
+        Self {
+            id: s.id,
+            owner_id: s.owner_id,
+            name: s.name,
+            address: s.address,
+            city: s.city,
+            longitude: s.longitude,
+            latitude: s.latitude,
+            is_operational: s.is_operational,
+            is_test: s.is_test,
+            created_at: s.created_at,
+            updated_at: s.updated_at,
+        }
+    }
+}
+
+pub async fn create_station(
+    pool: web::Data<PgPool>,
+    _auth: crate::auth::middleware::AuthUser,
+    body: web::Json<CreateStationRequest>,
+) -> HttpResponse {
+    let req = body.into_inner();
+
+    if req.longitude < -180.0 || req.longitude > 180.0 {
+        return ProblemResponse::validation("Longitude must be between -180 and 180");
+    }
+    if req.latitude < -90.0 || req.latitude > 90.0 {
+        return ProblemResponse::validation("Latitude must be between -90 and 90");
+    }
+    if req.name.len() < 2 || req.name.len() > 150 {
+        return ProblemResponse::validation("Name must be between 2 and 150 characters");
+    }
+
+    if let Err(e) = id_validator::validate_id_prefix(&req.owner_id, "USR") {
+        return ProblemResponse::validation(format!("Invalid owner_id: {}", e));
+    }
+
+    let id = crate::utils::id_generator::generate_id("STN");
+
+    match repository::create(&pool, &id, &req, false).await {
+        Ok(station) => HttpResponse::Created().json(StationResponse::from(station)),
+        Err(e) => {
+            tracing::error!("Failed to create station: {:?}", e);
+            ProblemResponse::internal_error()
+        }
+    }
+}
+
+pub async fn list_stations(
+    pool: web::Data<PgPool>,
+    req: HttpRequest,
+    query: web::Query<ListQuery>,
+) -> HttpResponse {
+    let q = query.into_inner();
+    let limit = q.limit();
+
+    let cursor = match q.cursor.as_ref() {
+        Some(c) => match Cursor::decode(c) {
+            Ok(c) => Some(c),
+            Err(_) => return ProblemResponse::validation("Invalid cursor format"),
+        },
+        None => None,
+    };
+
+    let owner_filter = extract_partner_owner_id(&req);
+
+    match repository::list(&pool, cursor, limit, q.include_test(), owner_filter.as_deref()).await {
+        Ok((stations, next_cursor, has_more)) => {
+            let data: Vec<StationResponse> = stations.into_iter().map(StationResponse::from).collect();
+            HttpResponse::Ok().json(serde_json::json!({
+                "data": data,
+                "pagination": {
+                    "next_cursor": next_cursor,
+                    "has_more": has_more
+                }
+            }))
+        }
+        Err(_) => ProblemResponse::internal_error(),
+    }
+}
+
+pub async fn get_station(
+    pool: web::Data<PgPool>,
+    path: web::Path<String>,
+) -> HttpResponse {
+    let id = path.into_inner();
+
+    if let Err(e) = id_validator::validate_id_prefix(&id, "STN") {
+        return ProblemResponse::not_found(e);
+    }
+
+    match repository::get_by_id(&pool, &id).await {
+        Ok(Some(station)) => HttpResponse::Ok().json(StationResponse::from(station)),
+        Ok(None) => ProblemResponse::not_found(format!("Station '{}' not found", &id)),
+        Err(_) => ProblemResponse::internal_error(),
+    }
+}
+
+pub async fn update_station(
+    pool: web::Data<PgPool>,
+    _auth: crate::auth::middleware::AuthUser,
+    path: web::Path<String>,
+    body: web::Json<UpdateStationRequest>,
+) -> HttpResponse {
+    let id = path.into_inner();
+
+    if let Err(e) = id_validator::validate_id_prefix(&id, "STN") {
+        return ProblemResponse::not_found(e);
+    }
+
+    if let Some(lng) = body.longitude {
+        if lng < -180.0 || lng > 180.0 {
+            return ProblemResponse::validation("Longitude must be between -180 and 180");
+        }
+    }
+    if let Some(lat) = body.latitude {
+        if lat < -90.0 || lat > 90.0 {
+            return ProblemResponse::validation("Latitude must be between -90 and 90");
+        }
+    }
+
+    match repository::update(&pool, &id, &body).await {
+        Ok(Some(station)) => HttpResponse::Ok().json(StationResponse::from(station)),
+        Ok(None) => {
+            let exists = repository::get_by_id(&pool, &id).await.unwrap_or(None);
+            if exists.is_some() {
+                ProblemResponse::conflict("Concurrent modification detected — re-read and retry")
+            } else {
+                ProblemResponse::not_found(format!("Station '{}' not found", &id))
+            }
+        }
+        Err(_) => ProblemResponse::internal_error(),
+    }
+}
+
+pub async fn delete_station(
+    pool: web::Data<PgPool>,
+    _auth: crate::auth::middleware::AuthUser,
+    path: web::Path<String>,
+) -> HttpResponse {
+    let id = path.into_inner();
+
+    if let Err(e) = id_validator::validate_id_prefix(&id, "STN") {
+        return ProblemResponse::not_found(e);
+    }
+
+    match repository::soft_delete(&pool, &id).await {
+        Ok(Some(_)) => HttpResponse::NoContent().finish(),
+        Ok(None) => ProblemResponse::not_found(format!("Station '{}' not found", &id)),
+        Err(_) => ProblemResponse::internal_error(),
+    }
+}
