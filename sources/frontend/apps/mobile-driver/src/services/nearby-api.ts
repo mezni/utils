@@ -1,6 +1,7 @@
 import { Station, Charger } from "../types/station"
+import Constants from "expo-constants"
 
-const API_BASE = "https://api.bornemap.com/api/v1"
+const API_BASE = Constants.expoConfig?.extra?.apiUrl || "http://localhost:8080/api/v1"
 
 export async function fetchNearbyStations(
   latitude: number,
