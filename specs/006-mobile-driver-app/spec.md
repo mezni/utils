@@ -91,6 +91,7 @@ The driver can change the search radius via a slider control (5km / 10km / 20km 
 - **FR-002**: App MUST request device location permission via the operating system's standard permission dialog
 - **FR-003**: Upon receiving location, app MUST re-center the map on the user's current location
 - **FR-004**: App MUST fetch nearby stations from `/api/v1/stations/nearby` with the user's coordinates and selected radius
+- **FR-004a**: The `/api/v1/stations/nearby` endpoint MUST accept unauthenticated (anonymous) requests for the mobile discovery use case
 - **FR-005**: Station markers MUST appear as green circles with lightning bolt SVG icons matching the design system
 - **FR-006**: Tapping a station marker MUST trigger haptic feedback and open a bottom sheet
 - **FR-007**: Bottom sheet MUST display station name, address, city, distance from user, and available charger count
@@ -121,6 +122,26 @@ The driver can change the search radius via a slider control (5km / 10km / 20km 
 - **SC-004**: The app never crashes or shows a blank white screen under any error condition (no internet, API down, permission denied)
 - **SC-005**: Drivers can complete the full flow (open → discover → view details → navigate) in under 30 seconds
 - **SC-006**: Test stations (`is_test = true`) never appear in any mobile discovery result
+
+## Clarifications
+
+### Session 2026-05-26
+
+- Q: How does the mobile app authenticate for the nearby API? → A: The nearby endpoint is made publicly accessible (no JWT required). Anonymous discovery is read-only and poses no data isolation risk.
+- Q: What is explicitly out of scope for this phase? → A: User accounts/registration, saved/bookmarked stations, charging session initiation or payment, station reviews, real-time charger availability polling, push notifications.
+- Q: Should the mobile app support multiple languages? → A: English only for MVP0. Localization can be added post-MVP.
+
+## Out of Scope
+
+The following are explicitly excluded from this phase:
+
+- User registration, login, or account management — the app works anonymously
+- Saved/bookmarked stations or favorites
+- Charging session initiation or payment processing
+- Station reviews or ratings (`REV-` prefix reserved but unused)
+- Real-time charger availability polling (deferred post-MVP)
+- Push notifications
+- Offline maps or station caching
 
 ## Assumptions
 
