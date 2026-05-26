@@ -29,18 +29,20 @@ A partner operator logs into the partner dashboard and sees a filtered view cont
 
 ### User Story 2 — Partner manages their stations with locked ownership (Priority: P1)
 
-A partner operator can create, edit, and delete stations. When creating a station, the `owner_id` is automatically set to the authenticated partner's profile and cannot be changed. The partner sees only their own stations in the table.
+A partner operator can create, edit, and delete stations. When creating a station, the `owner_id` is automatically set to the authenticated partner's profile and cannot be changed. The partner sees only their own stations in the table. The stations page includes the BaseMap component (reused from admin portal) for bidirectional table↔map interaction — clicking a station row pans the map to its location, and clicking a marker on the map highlights the corresponding table row.
 
-**Why this priority**: Partners must be able to add and update their infrastructure independently. Locking the owner prevents accidental or malicious ownership changes.
+**Why this priority**: Partners must be able to add and update their infrastructure independently. Locking the owner prevents accidental or malicious ownership changes. The map provides spatial context for station placement.
 
-**Independent Test**: A partner creates a new station with coordinates and details. The station appears in their list. Another partner cannot see it. The owner field is not editable.
+**Independent Test**: A partner creates a new station with coordinates and details. The station appears in their list and on the map. Another partner cannot see it. The owner field is not editable. Clicking a table row pans the map; clicking a marker highlights the row.
 
 **Acceptance Scenarios**:
 
 1. **Given** a partner is on the stations page, **When** they click "Create Station", **Then** a modal form opens without an owner dropdown (owner is auto-assigned)
-2. **Given** a partner submits a new station with valid data, **When** the creation succeeds, **Then** the station appears in their list with their partner profile as the owner
+2. **Given** a partner submits a new station with valid data, **When** the creation succeeds, **Then** the station appears in their list with their partner profile as the owner and a marker appears on the map
 3. **Given** a partner edits an existing station, **When** the edit modal opens, **Then** the owner field is either hidden or displayed as read-only
 4. **Given** a partner attempts to delete a station, **When** they click delete, **Then** a confirmation modal appears requiring exact `STN-` ID match before enabling the confirm button
+5. **Given** a partner views the stations page, **When** they click a station row, **Then** the map pans to that station's coordinates
+6. **Given** a partner views the stations page, **When** they click a station marker on the map, **Then** the corresponding table row is highlighted
 
 ---
 
@@ -79,17 +81,33 @@ A partner operator can see their partner profile details and update certain fiel
 
 ---
 
-### User Story 5 — Partner dashboard UI scales down from admin portal (Priority: P2)
+### User Story 5 — Partner sees an Overview dashboard on login (Priority: P2)
 
-The partner dashboard presents a simplified layout compared to the admin portal. Sidebar navigation includes only Station List, Chargers, and Profile sections. No Settings, Users, Analytics, or Security sections are shown. Design tokens and reusable components are shared from `@bornemap/ui`.
+The partner dashboard presents a simplified layout compared to the admin portal. The landing page after login is an Overview dashboard displaying metric chips (total stations, total chargers) and recent activity. This mirrors the admin portal pattern but scoped to the partner's own data.
 
-**Why this priority**: Partners should not be distracted or confused by administrative features that are irrelevant to them.
+**Why this priority**: An overview gives partners immediate insight into their infrastructure health without navigating to individual sections.
 
-**Independent Test**: A partner logs in and sees exactly three navigation items. No admin-only pages are accessible or linked.
+**Independent Test**: A partner logs in and sees an overview page with their station/charger counts. Metrics reflect only their own data.
 
 **Acceptance Scenarios**:
 
-1. **Given** a partner logs into the dashboard, **When** the app shell renders, **Then** the sidebar contains exactly three items: Stations, Chargers, and Profile
+1. **Given** a partner logs into the dashboard, **When** the app loads, **Then** the landing page at `/` is an Overview dashboard
+2. **Given** a partner views the Overview dashboard, **When** the page loads, **Then** metric chips show their total stations and total chargers
+3. **Given** a partner has zero stations, **When** the Overview dashboard loads, **Then** metric chips show 0 and an empty state is displayed
+
+---
+
+### User Story 6 — Partner dashboard UI scales down from admin portal (Priority: P2)
+
+The sidebar contains four navigation items: Overview, Stations, Chargers, Profile. No Settings, Users, Analytics, or Security sections are shown. Design tokens and reusable components are shared from `@bornemap/ui`.
+
+**Why this priority**: Partners should not be distracted or confused by administrative features that are irrelevant to them.
+
+**Independent Test**: A partner logs in and sees exactly four navigation items. No admin-only pages are accessible or linked.
+
+**Acceptance Scenarios**:
+
+1. **Given** a partner logs into the dashboard, **When** the app shell renders, **Then** the sidebar contains exactly four items: Overview, Stations, Chargers, Profile
 2. **Given** a partner navigates directly to an admin-only URL (e.g., `/settings` or `/users`), **When** the route is accessed, **Then** the system returns a 403 or redirects to the dashboard home
 
 ### Edge Cases
@@ -100,6 +118,7 @@ The partner dashboard presents a simplified layout compared to the admin portal.
 - What happens when the backend is unreachable? All pages show error states with retry options, without crashing.
 - What happens when a partner deletes all their stations? The chargers page becomes empty at the next refresh (cascading effect).
 - What happens if an admin reassigns a station to a different partner? The station immediately disappears from the original partner's view on next fetch.
+- What happens when multiple users from the same partner org edit the same station concurrently? Last-write-wins behavior applies (no optimistic locking in MVP0).
 
 ## Requirements
 
@@ -114,21 +133,23 @@ The partner dashboard presents a simplified layout compared to the admin portal.
 - **FR-007**: Partner profile page MUST display display_name, contact_phone, logo_url, classification, and tax_id
 - **FR-008**: Partner profile edit MUST allow changes to display_name, contact_phone, and logo_url only
 - **FR-009**: Classification and tax_id fields in partner profile MUST be read-only
-- **FR-010**: Partner dashboard sidebar MUST contain exactly three navigation items: Stations, Chargers, Profile
-- **FR-011**: Direct navigation to admin-only routes (`/users`, `/settings`, `/analytics`, `/security`) MUST return 403 or redirect
-- **FR-012**: All data views MUST show loading skeletons during API fetches
-- **FR-013**: All data views MUST show error states with retry option when API calls fail
-- **FR-014**: All destructive actions (delete station, delete charger) MUST use a confirmation modal requiring exact semantic ID match
-- **FR-015**: Empty states MUST be shown when a partner has zero stations or zero chargers
-- **FR-016**: Partner dashboard MUST reuse design tokens and components from `@bornemap/ui` (ScrollableTable, SettingsCard, ConfirmDeleteModal, SelectSetting, MetricChip)
-- **FR-017**: Session expiration MUST trigger redirect to login page on any 401 response
+- **FR-010**: The landing page at `/` MUST display an Overview dashboard with metric chips showing the partner's total stations and total chargers
+- **FR-011**: Partner dashboard sidebar MUST contain exactly four navigation items: Overview, Stations, Chargers, Profile
+- **FR-012**: Direct navigation to admin-only routes (`/users`, `/settings`, `/analytics`, `/security`) MUST return 403 or redirect
+- **FR-013**: All data views MUST show loading skeletons during API fetches
+- **FR-014**: All data views MUST show error states with retry option when API calls fail
+- **FR-015**: All destructive actions (delete station, delete charger) MUST use a confirmation modal requiring exact semantic ID match
+- **FR-016**: Empty states MUST be shown when a partner has zero stations or zero chargers
+- **FR-017**: Partner dashboard MUST reuse design tokens and components from `@bornemap/ui` (ScrollableTable, SettingsCard, ConfirmDeleteModal, SelectSetting, MetricChip)
+- **FR-018**: Session expiration MUST trigger redirect to login page on any 401 response
+- **FR-019**: Multiple user accounts MAY be associated with the same partner profile, with all users sharing access to the same partner's stations and chargers
 
 ### Key Entities
 
-- **Partner Profile**: Represents the business or private operator. Key attributes: display_name, classification (Business/Private), tax_id, contact_phone, logo_url. Links to a User account via `owner_id`.
-- **Station**: A physical charging location owned by a partner. Key attributes: name, address, city, coordinates (lng/lat), is_operational, is_test. Scoped by `owner_id` to enforce multi-tenancy.
+- **Partner Profile**: Represents the business or private operator. Key attributes: display_name, classification (Business/Private), tax_id, contact_phone, logo_url. May have multiple associated User accounts.
+- **Station**: A physical charging location owned by a partner. Key attributes: name, address, city, coordinates (lng/lat), is_operational, is_test. Scoped by `owner_id` to enforce multi-tenancy. Deletion is soft (sets `deleted_at`), consistent with admin portal.
 - **Charger**: An individual charging unit at a station. Key attributes: connector_type, power_kw, current_type (AC/DC), status (available/occupied/faulted/offline). Belongs to a station, transitively scoped to the station's partner owner.
-- **User**: An authenticated account. Key attributes: email, role (partner/admin/driver). Partner users have a corresponding partner profile.
+- **User**: An authenticated account. Key attributes: email, role (partner/admin/driver). Partner users have a corresponding partner profile. Multiple users can be associated with the same partner org.
 
 ## Success Criteria
 
@@ -141,6 +162,15 @@ The partner dashboard presents a simplified layout compared to the admin portal.
 - **SC-005**: A partner with zero infrastructure sees a helpful empty state (not a blank screen or error)
 - **SC-006**: All data views gracefully handle backend unavailability by showing error states without crashing the application
 - **SC-007**: Partners complete station creation in under 5 steps and under 2 minutes (including form fill)
+
+## Clarifications
+
+### Session 2026-05-26
+
+- Q: What is the landing page after a partner logs in? → A: Overview dashboard with metric chips (total stations, total chargers), mirroring the admin portal pattern
+- Q: Is partner station deletion soft-delete or hard-delete? → A: Soft-delete (consistent with admin portal behavior, recoverable by admin)
+- Q: Should the partner Stations page include the BaseMap for bidirectional table↔map interaction? → A: Yes, include the BaseMap (reused from admin portal)
+- Q: Can a partner organization have multiple user accounts? → A: Yes, multiple users per partner org. Each user has their own login and all see the same partner data.
 
 ## Assumptions
 
