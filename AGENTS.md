@@ -1,6 +1,6 @@
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read
-`specs/003-spatial-discovery-nearby/plan.md` and
-`specs/003-spatial-discovery-nearby/research.md`
+`specs/007-admin-portal-shell/plan.md` and
+`specs/007-admin-portal-shell/research.md`
 <!-- SPECKIT END -->
