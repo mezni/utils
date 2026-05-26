@@ -1,7 +1,8 @@
 import { Station, Charger } from "../types/station"
 import Constants from "expo-constants"
 
-const API_BASE = Constants.expoConfig?.extra?.apiUrl || "http://localhost:8080/api/v1"
+const host = Constants.expoConfig?.hostUri?.split(":")[0] || "localhost"
+const API_BASE = Constants.expoConfig?.extra?.apiUrl || `http://${host}:8080/api/v1`
 
 export async function fetchNearbyStations(
   latitude: number,

@@ -4,11 +4,15 @@ import * as Linking from "expo-linking"
 import { Station } from "../types/station"
 import { Charger } from "../types/station"
 import { fetchStationChargers } from "../services/nearby-api"
+import Constants from "expo-constants"
 
 interface StationSheetProps {
   station: Station
   onClose: () => void
 }
+
+const host = Constants.expoConfig?.hostUri?.split(":")[0] || "localhost"
+const API_BASE = Constants.expoConfig?.extra?.apiUrl || `http://${host}:8080/api/v1`
 
 const statusColors: Record<string, string> = {
   available: "#22c55e",
@@ -17,14 +21,37 @@ const statusColors: Record<string, string> = {
   offline: "#9ca3af",
 }
 
+async function fetchConnectorTypes(): Promise<Record<string, string>> {
+  try {
+    const res = await fetch(`${API_BASE}/connector-types`)
+    if (!res.ok) return {}
+    const json = await res.json()
+    const data = json.data || json
+    const map: Record<string, string> = {}
+    if (Array.isArray(data)) {
+      data.forEach((ct: { id: string; name: string }) => { map[ct.id] = ct.name })
+    }
+    return map
+  } catch {
+    return {}
+  }
+}
+
 export function StationSheet({ station, onClose }: StationSheetProps) {
   const [chargers, setChargers] = useState<Charger[]>([])
+  const [connectorNames, setConnectorNames] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     setLoading(true)
-    fetchStationChargers(station.id)
-      .then(setChargers)
+    Promise.all([
+      fetchStationChargers(station.id),
+      fetchConnectorTypes(),
+    ])
+      .then(([chargerData, ctMap]) => {
+        setChargers(chargerData)
+        setConnectorNames(ctMap)
+      })
       .catch(() => setChargers([]))
       .finally(() => setLoading(false))
   }, [station.id])
@@ -62,7 +89,7 @@ export function StationSheet({ station, onClose }: StationSheetProps) {
             <View key={charger.id} style={styles.chargerRow}>
               <View style={styles.chargerInfo}>
                 <Text style={styles.chargerType}>{charger.power_kw}kW · {charger.current_type}</Text>
-                <Text style={styles.chargerConnector}>{charger.connector_type_id}</Text>
+                <Text style={styles.chargerConnector}>{connectorNames[charger.connector_type_id] || charger.connector_type_id}</Text>
               </View>
               <View style={[styles.statusBadge, { backgroundColor: statusColors[charger.status] || "#9ca3af" }]}>
                 <Text style={styles.statusText}>{charger.status}</Text>
