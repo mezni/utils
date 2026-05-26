@@ -1,3 +1,10 @@
+import { NavLink, Outlet } from "react-router-dom"
+
+const tabs = [
+  { to: "/settings/infrastructure-types", label: "Infrastructure Types" },
+  { to: "/settings/app", label: "App" },
+]
+
 export function SettingsPage() {
   return (
     <div>
@@ -5,18 +12,23 @@ export function SettingsPage() {
         <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
         <p className="mt-1 text-sm text-gray-500">Platform configuration</p>
       </div>
-      <div className="grid gap-6 md:grid-cols-2">
-        <div className="rounded-2xl border border-gray-200 bg-surface-card p-6 shadow-card">
-          <h3 className="text-sm font-medium text-gray-900">Infrastructure Types</h3>
-          <p className="mt-1 text-xs text-gray-500">Manage connector type definitions.</p>
-          <p className="mt-4 text-sm text-gray-500">Coming in a future update.</p>
-        </div>
-        <div className="rounded-2xl border border-gray-200 bg-surface-card p-6 shadow-card">
-          <h3 className="text-sm font-medium text-gray-900">App Settings</h3>
-          <p className="mt-1 text-xs text-gray-500">Branding, maps, and general preferences.</p>
-          <p className="mt-4 text-sm text-gray-500">Coming in a future update.</p>
-        </div>
+      <div className="mb-6 flex gap-1 rounded-xl bg-gray-100 p-1">
+        {tabs.map((tab) => (
+          <NavLink
+            key={tab.to}
+            to={tab.to}
+            end
+            className={({ isActive }) =>
+              `rounded-lg px-4 py-2 text-sm font-medium transition ${
+                isActive ? "bg-white text-gray-900 shadow-sm" : "text-gray-600 hover:text-gray-900"
+              }`
+            }
+          >
+            {tab.label}
+          </NavLink>
+        ))}
       </div>
+      <Outlet />
     </div>
   )
 }

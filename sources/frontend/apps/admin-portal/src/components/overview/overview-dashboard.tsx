@@ -18,6 +18,17 @@ interface DashboardData {
   partnerCount: number
 }
 
+async function safeJson(res: Response, label: string) {
+  const text = await res.text()
+  try {
+    return JSON.parse(text)
+  } catch {
+    throw new Error(
+      `Invalid response from ${label}: expected JSON but received ${text.slice(0, 100)}`
+    )
+  }
+}
+
 export function OverviewDashboard() {
   const [data, setData] = useState<DashboardData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -41,9 +52,9 @@ export function OverviewDashboard() {
         if (!chargersRes.ok) throw new Error("Failed to load chargers")
         if (!partnersRes.ok) throw new Error("Failed to load partners")
 
-        const stationsBody = await stationsRes.json()
-        const chargersBody = await chargersRes.json()
-        const partnersBody = await partnersRes.json()
+        const stationsBody = await safeJson(stationsRes, "stations")
+        const chargersBody = await safeJson(chargersRes, "chargers")
+        const partnersBody = await safeJson(partnersRes, "partners")
 
         if (!cancelled) {
           setData({

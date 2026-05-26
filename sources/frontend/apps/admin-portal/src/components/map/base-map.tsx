@@ -13,6 +13,8 @@ interface BaseMapProps {
   stations: StationMarkerData[]
   center?: [number, number]
   zoom?: number
+  onStationClick?: (id: string) => void
+  onMapReady?: (map: L.Map) => void
 }
 
 const boltIconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>`
@@ -28,6 +30,8 @@ export function BaseMap({
   stations,
   center = [33.8869, 9.5375],
   zoom = 7,
+  onStationClick,
+  onMapReady,
 }: BaseMapProps) {
   const mapRef = useRef<HTMLDivElement>(null)
   const mapInstanceRef = useRef<L.Map | null>(null)
@@ -49,6 +53,7 @@ export function BaseMap({
     }).addTo(map)
 
     mapInstanceRef.current = map
+    onMapReady?.(map)
 
     return () => {
       map.remove()
@@ -71,9 +76,11 @@ export function BaseMap({
           <div style="font-weight:600;font-size:14px;margin-bottom:4px;">${station.name}</div>
           <div style="font-size:12px;color:#666;margin-bottom:4px;">${station.city}</div>
           <div style="font-size:12px;color:#888;margin-bottom:8px;">${station.chargerCount} charger(s) available</div>
-          <a href="/stations/${station.id}" style="font-size:12px;color:#22c55e;font-weight:500;text-decoration:none;">View Details →</a>
+          <a href="/stations/${station.id}/chargers" style="font-size:12px;color:#22c55e;font-weight:500;text-decoration:none;">View Chargers →</a>
         </div>
       `)
+
+      marker.on("click", () => onStationClick?.(station.id))
 
       markersRef.current.push(marker)
     })
