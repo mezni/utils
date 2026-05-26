@@ -43,8 +43,9 @@
 - [ ] T005 [P] Create partner-dashboard App.tsx in `apps/partner-dashboard/src/App.tsx` — extract from main.tsx; import and render AppShell as layout wrapper; define `<Routes>` and `<Route>` for all 4 sections with `<Navigate to="/" />` for root redirect
 - [ ] T006 Create PartnerAuth middleware in `backend/src/auth/partner_middleware.rs` — extract `user_id` from JWT, look up `partner_profile_id` from `partner_profiles` table, inject into request extensions as `owner_id`; return 403 if user is not a partner
 - [ ] T007 Register new auth middleware and `/api/v1/partners/me` stubs in `backend/src/main.rs` — apply PartnerAuth middleware to `/api/v1/me` and `/api/v1/stations` and `/api/v1/chargers` route scopes; add `/me` endpoints to partner module
+- [ ] T007a Create auth interceptor in `apps/partner-dashboard/src/services/auth-interceptor.ts` — wrap all fetch/API calls to catch 401 responses and redirect to login page; register in App.tsx
 
-**Checkpoint**: Partner dashboard renders with AppShell + sidebar, partner auth middleware blocks non-partner users, login flow works
+**Checkpoint**: Partner dashboard renders with AppShell + sidebar, partner auth middleware blocks non-partner users, login flow works, 401 auto-redirects to login
 
 ---
 
@@ -116,7 +117,7 @@
 
 ---
 
-## Phase 5: User Story 5 — Overview dashboard (Priority: P2)
+## Phase 7: User Story 5 — Overview dashboard (Priority: P2)
 
 **Goal**: Landing page at `/` shows metric chips with partner's total stations and total chargers, with empty state when zero infrastructure.
 
@@ -131,7 +132,7 @@
 
 ---
 
-## Phase 6: User Story 6 — Navigation guard & admin-route blocking (Priority: P2)
+## Phase 8: User Story 6 — Navigation guard & admin-route blocking (Priority: P2)
 
 **Goal**: Partner dashboard blocks access to admin-only routes. Sidebar shows exactly 4 navigation items.
 
@@ -146,7 +147,7 @@
 
 ---
 
-## Phase 7: Polish & Cross-Cutting Concerns
+## Phase 9: Polish & Cross-Cutting Concerns
 
 **Purpose**: Verification and cleanup across all stories
 
