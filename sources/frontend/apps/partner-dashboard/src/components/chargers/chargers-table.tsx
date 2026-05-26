@@ -31,7 +31,7 @@ export function ChargersTable({ refreshKey = 0, stationId, onDelete }: ChargersT
   const [error, setError] = useState<string | null>(null)
   const [showCreate, setShowCreate] = useState(false)
   const [editingCharger, setEditingCharger] = useState<Charger | null>(null)
-  const [deleteTarget, setDeleteTarget] = useState<{ id: string; label: string } | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; stationId: string; label: string } | null>(null)
   const [stationFilter, setStationFilter] = useState<string>("")
 
   const fetchChargers = useCallback(async () => {
@@ -73,7 +73,7 @@ export function ChargersTable({ refreshKey = 0, stationId, onDelete }: ChargersT
   const handleDelete = async () => {
     if (!deleteTarget) return
     try {
-      const url = `/api/v1/chargers/${deleteTarget.id}`
+      const url = `/api/v1/stations/${deleteTarget.stationId}/chargers/${deleteTarget.id}`
       const res = await fetch(url, { method: "DELETE" })
       if (!res.ok && res.status !== 204) throw new Error("Failed to delete charger")
       setDeleteTarget(null)
@@ -179,7 +179,7 @@ export function ChargersTable({ refreshKey = 0, stationId, onDelete }: ChargersT
                       </button>
                       <button
                         onClick={() => {
-                          const target = { id: charger.id, label: charger.station_id }
+                          const target = { id: charger.id, stationId: charger.station_id, label: charger.station_id }
                           setDeleteTarget(target)
                           onDelete?.(target)
                         }}

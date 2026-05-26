@@ -53,7 +53,15 @@ export function ChargerFormModal({ charger, stationId, onClose, onSaved }: Charg
       return
     }
 
-    const body = { connector_type_id: connectorTypeId, power_kw: kw, current_type: currentType, status }
+    const body: Record<string, unknown> = {
+      power_kw: kw,
+      current_type: currentType,
+      status,
+      updated_at: new Date().toISOString(),
+    }
+    if (!charger) {
+      body.connector_type_id = connectorTypeId
+    }
 
     try {
       let url: string

@@ -137,7 +137,9 @@ export function StationsTable({
               {stations.map((station) => (
                 <tr
                   key={station.id}
-                  className={`border-b border-gray-100 transition-colors hover:bg-gray-50 ${
+                  id={`station-row-${station.id}`}
+                  onClick={() => onStationSelect?.(station.id)}
+                  className={`cursor-pointer border-b border-gray-100 transition-colors hover:bg-gray-50 ${
                     highlightedStationId === station.id ? "bg-amber-50" : ""
                   }`}
                 >
