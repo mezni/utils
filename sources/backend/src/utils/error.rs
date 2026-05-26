@@ -64,4 +64,13 @@ impl ProblemResponse {
             detail: "An unexpected error occurred.".into(),
         })
     }
+
+    pub fn internal_error_with(detail: impl Into<String>) -> HttpResponse {
+        HttpResponse::InternalServerError().json(Self {
+            problem_type: "internal_error",
+            title: "Internal server error",
+            status: 500,
+            detail: detail.into(),
+        })
+    }
 }

@@ -8,6 +8,17 @@ use actix_web::{web, HttpResponse};
 use serde::Serialize;
 use sqlx::PgPool;
 
+fn hash_password(password: &str) -> Result<String, String> {
+    use argon2::Argon2;
+    use password_hash::{PasswordHasher, SaltString};
+    use rand_core::OsRng;
+    let salt = SaltString::generate(&mut OsRng);
+    Argon2::default()
+        .hash_password(password.as_bytes(), &salt)
+        .map(|h| h.to_string())
+        .map_err(|e| format!("Password hashing failed: {}", e))
+}
+
 #[derive(Serialize)]
 pub struct UserResponse {
     pub id: String,
@@ -46,8 +57,13 @@ pub struct SingleUserResponse {
 
 pub async fn create_user(
     pool: web::Data<PgPool>,
+    auth: crate::auth::middleware::AuthUser,
     body: web::Json<CreateUserRequest>,
 ) -> HttpResponse {
+    if auth.0.role != "admin" {
+        return ProblemResponse::forbidden("Only admins can create users");
+    }
+
     let req = body.into_inner();
 
     if req.password.len() < 8 {
@@ -79,9 +95,15 @@ pub async fn create_user(
     }
 
     let id = crate::utils::id_generator::generate_id("USR");
-    let password_hash = "[placeholder]";
 
-    match repository::create(&pool, &id, &req.email, &req.username, password_hash, &req.role, false).await {
+    let password = req.password.clone();
+    let password_hash = match tokio::task::spawn_blocking(move || hash_password(&password)).await {
+        Ok(Ok(hash)) => hash,
+        Ok(Err(e)) => return ProblemResponse::internal_error_with(e),
+        Err(_) => return ProblemResponse::internal_error(),
+    };
+
+    match repository::create(&pool, &id, &req.email, &req.username, &password_hash, &req.role, false).await {
         Ok(user) => HttpResponse::Created().json(SingleUserResponse {
             data: UserResponse::from(user),
         }),
@@ -91,8 +113,13 @@ pub async fn create_user(
 
 pub async fn list_users(
     pool: web::Data<PgPool>,
+    auth: crate::auth::middleware::AuthUser,
     query: web::Query<ListQuery>,
 ) -> HttpResponse {
+    if auth.0.role != "admin" && auth.0.role != "partner" {
+        return ProblemResponse::forbidden("Only admins and partners can list users");
+    }
+
     let q = query.into_inner();
     let limit = q.limit();
 
@@ -121,8 +148,13 @@ pub async fn list_users(
 
 pub async fn get_user(
     pool: web::Data<PgPool>,
+    auth: crate::auth::middleware::AuthUser,
     path: web::Path<String>,
 ) -> HttpResponse {
+    if auth.0.role != "admin" && auth.0.role != "partner" {
+        return ProblemResponse::forbidden("Only admins and partners can view users");
+    }
+
     let id = path.into_inner();
 
     if let Err(e) = id_validator::validate_id_prefix(&id, "USR") {
@@ -140,9 +172,14 @@ pub async fn get_user(
 
 pub async fn update_user(
     pool: web::Data<PgPool>,
+    auth: crate::auth::middleware::AuthUser,
     path: web::Path<String>,
     body: web::Json<UpdateUserRequest>,
 ) -> HttpResponse {
+    if auth.0.role != "admin" {
+        return ProblemResponse::forbidden("Only admins can update users");
+    }
+
     let id = path.into_inner();
 
     if let Err(e) = id_validator::validate_id_prefix(&id, "USR") {
@@ -167,8 +204,13 @@ pub async fn update_user(
 
 pub async fn delete_user(
     pool: web::Data<PgPool>,
+    auth: crate::auth::middleware::AuthUser,
     path: web::Path<String>,
 ) -> HttpResponse {
+    if auth.0.role != "admin" {
+        return ProblemResponse::forbidden("Only admins can delete users");
+    }
+
     let id = path.into_inner();
 
     if let Err(e) = id_validator::validate_id_prefix(&id, "USR") {

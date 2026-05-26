@@ -40,6 +40,6 @@ pub fn validate_token(token: &str, secret: &[u8]) -> Result<Claims, String> {
 
 pub fn jwt_secret() -> Vec<u8> {
     std::env::var("JWT_SECRET")
-        .unwrap_or_else(|_| "default-dev-secret-min-32-chars!!".to_string())
+        .expect("JWT_SECRET must be set")
         .into_bytes()
 }

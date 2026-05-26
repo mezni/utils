@@ -100,3 +100,12 @@ pub async fn exists_by_username(pool: &PgPool, username: &str) -> Result<bool, s
     .fetch_one(pool)
     .await
 }
+
+pub async fn get_by_email(pool: &PgPool, email: &str) -> Result<Option<User>, sqlx::Error> {
+    sqlx::query_as::<_, User>(
+        "SELECT id, email, username, password_hash, role, is_test, created_at, updated_at, deleted_at FROM users WHERE email = $1 AND deleted_at IS NULL"
+    )
+    .bind(email)
+    .fetch_optional(pool)
+    .await
+}

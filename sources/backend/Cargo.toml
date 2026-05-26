@@ -17,6 +17,8 @@ tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 jsonwebtoken = { version = "10", default-features = false, features = ["rust_crypto"] }
 argon2 = { version = "0.5", features = ["std"] }
+password-hash = "0.5"
+rand_core = "0.6"
 base64 = "0.22"
 thiserror = "2"
 validator = { version = "0.18", features = ["derive"] }
