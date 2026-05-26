@@ -34,7 +34,7 @@ export function StationDetailPage() {
       <ChargersTable refreshKey={refreshKey} onDelete={setDeleteTarget} stationId={id} />
       {showCreate && (
         <ChargerFormModal
-          stationId={id!}
+          stationId={id}
           onClose={() => setShowCreate(false)}
           onSaved={() => { setShowCreate(false); setRefreshKey((k) => k + 1) }}
         />

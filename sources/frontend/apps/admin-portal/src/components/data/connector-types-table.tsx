@@ -49,7 +49,7 @@ export function ConnectorTypesTable({ refreshKey, onDelete }: ConnectorTypesTabl
               <td className="px-4 py-3 font-mono text-xs text-gray-600">{t.id}</td>
               <td className="px-4 py-3 font-medium text-gray-900">{t.name}</td>
               <td className="px-4 py-3 text-gray-700">{t.description || "—"}</td>
-              <td className="px-4 py-3 text-gray-500">{new Date(t.created_at).toLocaleDateString()}</td>
+              <td className="px-4 py-3 text-gray-500">{new Date(t.created_at).toLocaleDateString("fr-TN")}</td>
               <td className="px-4 py-3">
                 <button onClick={() => onDelete({ id: t.id, label: t.name })} className="text-xs font-medium text-red-600 hover:text-red-800">Delete</button>
               </td>

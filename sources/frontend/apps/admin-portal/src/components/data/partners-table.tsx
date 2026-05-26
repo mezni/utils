@@ -64,7 +64,7 @@ export function PartnersTable({ refreshKey, onDelete }: PartnersTableProps) {
               <td className="px-4 py-3 text-gray-700">{p.classification}</td>
               <td className="px-4 py-3 text-gray-700">{p.tax_id || "—"}</td>
               <td className="px-4 py-3 text-gray-700">{p.contact_phone}</td>
-              <td className="px-4 py-3 text-gray-500">{new Date(p.created_at).toLocaleDateString()}</td>
+              <td className="px-4 py-3 text-gray-500">{new Date(p.created_at).toLocaleDateString("fr-TN")}</td>
               <td className="px-4 py-3">
                 <button
                   onClick={() => onDelete({ id: p.id, label: p.display_name })}
