@@ -46,6 +46,7 @@ fn configure_routes(cfg: &mut web::ServiceConfig) {
         .route("/api/v1/partners/{id}", web::get().to(domain::partners::handlers::get_partner))
         .route("/api/v1/partners/{id}", web::patch().to(domain::partners::handlers::update_partner))
         .route("/api/v1/partners/{id}", web::delete().to(domain::partners::handlers::delete_partner))
+        .route("/api/v1/stations/nearby", web::get().to(domain::infrastructure::nearby_stations))
         .route("/api/v1/stations", web::post().to(domain::stations::handlers::create_station))
         .route("/api/v1/stations", web::get().to(domain::stations::handlers::list_stations))
         .route("/api/v1/stations/{id}", web::get().to(domain::stations::handlers::get_station))

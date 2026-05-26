@@ -192,12 +192,12 @@ pub async fn update_station(
     }
 
     if let Some(lng) = body.longitude {
-        if lng < -180.0 || lng > 180.0 {
+        if !(-180.0..=180.0).contains(&lng) {
             return ProblemResponse::validation("Longitude must be between -180 and 180");
         }
     }
     if let Some(lat) = body.latitude {
-        if lat < -90.0 || lat > 90.0 {
+        if !(-90.0..=90.0).contains(&lat) {
             return ProblemResponse::validation("Latitude must be between -90 and 90");
         }
     }

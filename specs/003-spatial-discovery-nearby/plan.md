@@ -1,6 +1,6 @@
 # Implementation Plan: Spatial Discovery — Nearby API & SLO Validation
 
-**Branch**: `007-spatial-discovery-nearby` | **Date**: 2026-05-26 | **Spec**: [spec.md](./spec.md)
+**Branch**: `006-backend-schema-crud` | **Date**: 2026-05-26 | **Spec**: [spec.md](./spec.md)
 
 **Input**: Feature specification from `specs/003-spatial-discovery-nearby/spec.md`
 
@@ -92,7 +92,8 @@ sources/backend/src/domain/infrastructure/
 ```
 
 No new migrations. No new tables. No schema changes. Only the infrastructure
-module gains a new query function and route handler.
+module gains a new query function and route handler. Also modifies
+`sources/backend/src/main.rs` to wire the new route.
 
 **Structure Decision**: The infrastructure module pattern (repository + handler)
 matches all other domain modules in Phase 1. No new patterns introduced.
