@@ -1,8 +1,8 @@
+use crate::AppState;
 use crate::domain::infrastructure::repository;
 use crate::utils::error::ProblemResponse;
 use actix_web::{web, HttpResponse};
 use serde::Deserialize;
-use sqlx::PgPool;
 
 #[derive(Debug, Deserialize)]
 pub struct NearbyQuery {
@@ -19,7 +19,7 @@ fn default_radius() -> f64 {
 }
 
 pub async fn nearby_stations(
-    pool: web::Data<PgPool>,
+    state: web::Data<AppState>,
     query: web::Query<NearbyQuery>,
 ) -> HttpResponse {
     let q = query.into_inner();
@@ -35,7 +35,7 @@ pub async fn nearby_stations(
     }
 
     match repository::find_nearby_stations_bounded(
-        &pool,
+        &state.db,
         q.longitude,
         q.latitude,
         q.radius_meters,

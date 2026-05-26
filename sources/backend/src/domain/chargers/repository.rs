@@ -10,7 +10,7 @@ pub async fn create(
     req: &CreateChargerRequest,
 ) -> Result<Charger, sqlx::Error> {
     sqlx::query_as::<_, Charger>(
-        "INSERT INTO chargers (id, station_id, connector_type_id, power_kw, current_type) VALUES ($1, $2, $3, $4, $5) RETURNING id, station_id, connector_type_id, power_kw, current_type, status, created_at, updated_at"
+        "INSERT INTO chargers (id, station_id, connector_type_id, power_kw, current_type) VALUES ($1, $2, $3, $4, $5::current_type) RETURNING id, station_id, connector_type_id, power_kw, current_type::TEXT, status::TEXT, created_at, updated_at"
     )
     .bind(id)
     .bind(station_id)
@@ -29,7 +29,7 @@ pub async fn list_by_station(
 ) -> Result<(Vec<Charger>, Option<String>, bool), sqlx::Error> {
     let fetch_limit = limit + 1;
     let mut qb: QueryBuilder<Postgres> = QueryBuilder::new(
-        "SELECT id, station_id, connector_type_id, power_kw, current_type, status, created_at, updated_at FROM chargers"
+        "SELECT id, station_id, connector_type_id, power_kw, current_type::TEXT AS current_type, status::TEXT AS status, created_at, updated_at FROM chargers"
     );
 
     qb.push(" WHERE station_id = ");
@@ -43,7 +43,7 @@ pub async fn list_by_station(
 
 pub async fn get_by_id(pool: &PgPool, id: &str) -> Result<Option<Charger>, sqlx::Error> {
     sqlx::query_as::<_, Charger>(
-        "SELECT id, station_id, connector_type_id, power_kw, current_type, status, created_at, updated_at FROM chargers WHERE id = $1"
+        "SELECT id, station_id, connector_type_id, power_kw, current_type::TEXT AS current_type, status::TEXT AS status, created_at, updated_at FROM chargers WHERE id = $1"
     )
     .bind(id)
     .fetch_optional(pool)
@@ -57,7 +57,7 @@ pub async fn update(
 ) -> Result<Option<Charger>, sqlx::Error> {
     let now = chrono::Utc::now();
     sqlx::query_as::<_, Charger>(
-        "UPDATE chargers SET status = COALESCE($2, status), power_kw = COALESCE($3, power_kw), current_type = COALESCE($4, current_type), updated_at = $5 WHERE id = $1 AND updated_at = $6 RETURNING id, station_id, connector_type_id, power_kw, current_type, status, created_at, updated_at"
+        "UPDATE chargers SET status = COALESCE($2, status), power_kw = COALESCE($3, power_kw), current_type = COALESCE($4, current_type), updated_at = $5 WHERE id = $1 AND updated_at = $6 RETURNING id, station_id, connector_type_id, power_kw, current_type::TEXT AS current_type, status::TEXT AS status, created_at, updated_at"
     )
     .bind(id)
     .bind(&req.status)

@@ -8,7 +8,7 @@ INSERT INTO connector_types (id, name, description, is_test) VALUES
 
 -- Admin User
 INSERT INTO users (id, email, username, password_hash, role, is_test) VALUES
-    ('USR-seedadmin01', 'admin@bornemap.tn', 'admin', '$argon2id$v=19$m=19456,t=2,p=1$placeholder', 'admin', true);
+    ('USR-seedadmin001', 'admin@bornemap.tn', 'admin', '$argon2id$v=19$m=19456,t=2,p=1$placeholder', 'admin', true);
 
 -- Partner Users
 INSERT INTO users (id, email, username, password_hash, role, is_test) VALUES
@@ -59,6 +59,6 @@ SELECT
     'STN-seed' || LPAD(CAST(s AS TEXT), 8, '0'),
     CASE WHEN c % 2 = 0 THEN 'CNT-seed00000001' ELSE 'CNT-seed00000002' END,
     CASE WHEN c % 2 = 0 THEN 22.0 ELSE 150.0 END,
-    CASE WHEN c % 2 = 0 THEN 'AC' ELSE 'DC' END,
-    CASE WHEN c = 2 THEN 'faulted' ELSE 'available' END
+    (CASE WHEN c % 2 = 0 THEN 'AC' ELSE 'DC' END)::current_type,
+    (CASE WHEN c = 2 THEN 'faulted' ELSE 'available' END)::charger_status
 FROM generate_series(1, 100) AS s, generate_series(0, 2) AS c;

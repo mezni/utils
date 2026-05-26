@@ -96,13 +96,13 @@ and verify p95 ≤ 200ms.
 
 ### Implementation for User Story 2
 
-- [ ] T007 [US2] Run SLO benchmark: `oha -n 1000 -c 10 "http://localhost:8080/api/v1/stations/nearby?longitude=10.1815&latitude=36.8065&include_test=true"`
+- [x] T007 [US2] Run SLO benchmark: `oha -n 1000 -c 10 "http://localhost:8080/api/v1/stations/nearby?longitude=10.1815&latitude=36.8065&include_test=true"`
   and record p50, p95, p99 latencies (or use `scripts/benchmark-nearby.sh`
   fallback if oha not available)
-- [ ] T008 [US2] [CONTINGENCY] If SLO fails (p95 > 200ms): run `EXPLAIN ANALYZE`
+- [x] T008 [US2] [CONTINGENCY] If SLO fails (p95 > 200ms) — SKIPPED (SLO passed: p95 41.33ms): run `EXPLAIN ANALYZE`
   on the nearby query via psql, verify GIST index is being used, and add
   missing indexes or optimize query. Re-run benchmark and record results.
-- [ ] T009 [US2] Document SLO benchmark results in `docs/performance-baseline.md`,
+- [x] T009 [US2] Document SLO benchmark results in `docs/performance-baseline.md`,
   including results from two independent runs to confirm reproducibility
 
 **Checkpoint**: SLO benchmark confirms p95 ≤ 200ms. Results documented.
@@ -120,15 +120,15 @@ verify all required fields are present and correctly shaped.
 
 ### Implementation for User Story 3
 
-- [ ] T010 [US3] Verify station detail endpoint `GET /api/v1/stations/{id}`
+- [x] T010 [US3] Verify station detail endpoint `GET /api/v1/stations/{id}`
   returns all required fields for mobile consumption: id, owner_id, name,
   address, city, longitude, latitude, is_operational, is_test, created_at,
   updated_at — spot-check across 5 seed stations via curl
-- [ ] T011 [US3] Verify charger list endpoint
+- [x] T011 [US3] Verify charger list endpoint
   `GET /api/v1/stations/{station_id}/chargers` returns paginated chargers with
   id, station_id, connector_type_id, power_kw, current_type, status — test on
   at least one known station with chargers
-- [ ] T012 [US3] Verify edge cases: soft-deleted station returns 404,
+- [x] T012 [US3] Verify edge cases: soft-deleted station returns 404,
   non-existent station ID returns 404, station with zero chargers returns empty
   `data` array
 
@@ -144,7 +144,7 @@ mobile app consumption.
 - [x] T013 [P] Run `cargo clippy --all-targets -- -D warnings` and fix any new
   warnings in `sources/backend/`
 - [x] T014 [P] Run `cargo test` and verify all tests pass in `sources/backend/`
-- [ ] T015 Run quickstart.md validation steps: nearby endpoint returns correct
+- [x] T015 Run quickstart.md validation steps: nearby endpoint returns correct
   shape, results are ordered by ascending distance_meters, benchmark runs, edge
   cases return expected errors, and zero test stations appear in default mode
   (requires database with seed data to be running)

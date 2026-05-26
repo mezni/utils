@@ -121,6 +121,7 @@ pub async fn list_chargers_for_station(
     let q = query.into_inner();
     let limit = q.limit();
 
+
     if let Err(e) = id_validator::validate_id_prefix(&station_id, "STN") {
         return ProblemResponse::not_found(e);
     }
@@ -128,7 +129,10 @@ pub async fn list_chargers_for_station(
     let station = crate::domain::stations::repository::get_by_id(&pool, &station_id).await;
     match station {
         Ok(None) => return ProblemResponse::not_found(format!("Station '{}' not found", &station_id)),
-        Err(_) => return ProblemResponse::internal_error(),
+        Err(e) => {
+            tracing::error!("Station check failed: {:?}", e);
+            return ProblemResponse::internal_error();
+        }
         _ => {}
     }
 
@@ -151,7 +155,10 @@ pub async fn list_chargers_for_station(
                 }
             }))
         }
-        Err(_) => ProblemResponse::internal_error(),
+        Err(e) => {
+            tracing::error!("Failed to list chargers: {:?}", e);
+            ProblemResponse::internal_error()
+        }
     }
 }
 

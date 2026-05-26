@@ -81,11 +81,13 @@ async fn main() -> std::io::Result<()> {
 
     tracing::info!("Starting BorneMap backend on :8080");
 
-    let app_state = web::Data::new(AppState { db });
+    let app_state = web::Data::new(AppState { db: db.clone() });
+    let db_data = web::Data::new(db);
 
     HttpServer::new(move || {
         App::new()
             .app_data(app_state.clone())
+            .app_data(db_data.clone())
             .configure(configure_routes)
     })
         .bind("0.0.0.0:8080")?

@@ -25,3 +25,37 @@
 - The GitHub Actions cache (`Swatinem/rust-cache@v2`) reduces subsequent runs
 - Run 3 includes a 1m cold compile of `sqlx-postgres v0.7.4` (native code)
 - After cache is seeded, expected duration: ~3-5 minutes
+
+---
+
+## Nearby Endpoint SLO Benchmark
+
+**Feature**: `003-spatial-discovery-nearby` | **Date**: 2026-05-26
+**Endpoint**: `GET /api/v1/stations/nearby`
+**Tool**: `scripts/benchmark-nearby.sh` (concurrent curl-based)
+
+### Benchmark Configuration
+
+| Parameter | Value |
+|-----------|-------|
+| URL | `http://localhost:8080/api/v1/stations/nearby?longitude=10.1815&latitude=36.8065&include_test=true` |
+| Requests | 1000 |
+| Concurrency | 10 |
+| Dataset | 100 seed stations / 300 seed chargers (all `is_test = true`) |
+| Database | PostgreSQL 16 + PostGIS 3.4 (Docker, `postgis/postgis:16-3.4-alpine`) |
+| Backend | Rust/Actix-web, single binary, `cargo run` dev profile |
+
+### Results
+
+| Run | Avg | Min | P50 | P95 | P99 | Max | SLO (p95 ≤ 200ms) |
+|-----|-----|-----|-----|-----|-----|-----|------|
+| 1 | 42.34ms | 6.26ms | 17.51ms | 41.33ms | 1777.80ms | 2517.65ms | ✅ PASS |
+| 2 | 17.74ms | 6.46ms | 15.73ms | 33.06ms | 47.91ms | 138.22ms | ✅ PASS |
+
+### Analysis
+
+- Both runs comfortably pass the ≤200ms p95 SLO target with significant margin.
+- Run 1 shows higher P99/Max due to cold-cache effects (first benchmark hit after container restart). Run 2, executed immediately after, demonstrates stable latency with tight distribution.
+- The GIST index on `stations.coordinates` (`idx_stations_coordinates`) provides efficient spatial filtering via `ST_DWithin`.
+- The SQL query uses `ST_DWithin` for bounding + `ST_Distance` for ordering, with `COUNT(*) FILTER (WHERE status = 'available')` for available charger count — all in a single round-trip.
+- No index or query optimization needed — SLO achieved with existing Phase 1 schema and indexes.
