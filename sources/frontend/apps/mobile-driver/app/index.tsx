@@ -1,10 +1,20 @@
-import { View, Text } from "react-native"
+import { useState } from "react"
+import { StationMap } from "../src/components/map/station-map"
+import { StationSheet } from "../src/components/station-sheet"
+import { Station } from "../src/types/station"
 
-export default function HomeScreen() {
+export default function Index() {
+  const [selectedStation, setSelectedStation] = useState<Station | null>(null)
+
   return (
-    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-      <Text style={{ fontSize: 20, fontWeight: "bold" }}>BorneMap Driver</Text>
-      <Text>Find nearby charging stations</Text>
-    </View>
+    <>
+      <StationMap onStationSelect={setSelectedStation} />
+      {selectedStation && (
+        <StationSheet
+          station={selectedStation}
+          onClose={() => setSelectedStation(null)}
+        />
+      )}
+    </>
   )
 }
