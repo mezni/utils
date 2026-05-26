@@ -3,6 +3,7 @@ import { useState } from "react"
 interface Station {
   id: string
   name: string
+  address: string
   city: string
   latitude: number
   longitude: number
@@ -19,7 +20,7 @@ interface StationFormModalProps {
 
 export function StationFormModal({ station, onClose, onSaved }: StationFormModalProps) {
   const [name, setName] = useState(station?.name ?? "")
-  const [address, setAddress] = useState("")
+  const [address, setAddress] = useState(station?.address ?? "")
   const [city, setCity] = useState(station?.city ?? "")
   const [latitude, setLatitude] = useState(station?.latitude.toString() ?? "")
   const [longitude, setLongitude] = useState(station?.longitude.toString() ?? "")
@@ -57,6 +58,7 @@ export function StationFormModal({ station, onClose, onSaved }: StationFormModal
           latitude: lat,
           longitude: lng,
           is_operational: isOperational,
+          ...(station ? { updated_at: new Date().toISOString() } : {}),
         }),
       })
 
