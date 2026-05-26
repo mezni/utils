@@ -1,0 +1,31 @@
+{
+  "expo": {
+    "name": "BorneMap Driver",
+    "slug": "bornemap-driver",
+    "scheme": "bornemap-driver",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "platforms": [
+      "ios",
+      "android"
+    ],
+    "extra": {
+      "apiUrl": "http://localhost:8080/api/v1"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-location"
+    ],
+    "ios": {
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Show nearby charging stations"
+      }
+    },
+    "android": {
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION"
+      ]
+    }
+  }
+}

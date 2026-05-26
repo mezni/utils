@@ -1,0 +1,141 @@
+name: CI
+
+on:
+  push:
+    branches-ignore:
+      - "main"
+  pull_request:
+    branches:
+      - "main"
+
+env:
+  GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run lint
+        run: echo "Lint placeholder — add language-specific linters per service phase"
+
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run unit tests
+        run: echo "Unit tests placeholder — add per-service test commands in Phase 2+"
+
+  dco:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check DCO sign-off
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { repo, owner } = context.repo;
+            const { data: commits } = await github.rest.pulls.listCommits({
+              owner, repo,
+              pull_number: context.payload.pull_request.number,
+            });
+            const unsigned = commits.filter(c => !c.commit.message.includes('Signed-off-by:'));
+            if (unsigned.length > 0) {
+              core.setFailed(`DCO check failed: ${unsigned.length} commit(s) missing Signed-off-by:`);
+            }
+
+  integration:
+    runs-on: ubuntu-latest
+    needs: [lint]
+    services:
+      postgres:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_DB: bornemap
+          POSTGRES_USER: bornemap
+          POSTGRES_PASSWORD: bornemap_dev
+        ports:
+          - 5432:5432
+      mongodb:
+        image: mongo:7
+        ports:
+          - 27017:27017
+      rabbitmq:
+        image: rabbitmq:4-management
+        ports:
+          - 5672:5672
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run integration tests
+        run: echo "Integration tests placeholder — add per-service in Phase 2+"
+        env:
+          POSTGRES_HOST: postgres
+          POSTGRES_PORT: 5432
+          MONGO_HOST: mongodb
+          MONGO_PORT: 27017
+          RABBITMQ_HOST: rabbitmq
+          RABBITMQ_PORT: 5672
+
+  openapi-bundle:
+    runs-on: ubuntu-latest
+    needs: [lint]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Bundle and validate OpenAPI specs
+        run: echo "OpenAPI bundle placeholder — add per-service OpenAPI validation in Phase 2+"
+
+  docker-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build images
+        run: |
+          if [ -d services ]; then
+            for dir in services/*/; do
+              if [ -f "$dir/Dockerfile" ]; then
+                service=$(basename "$dir")
+                docker build -t ghcr.io/${{ github.repository }}/$service:${{ github.sha }} "$dir"
+              fi
+            done
+          else
+            echo "services/ directory not found — nothing to build at Phase 1"
+          fi
+      - name: Push images on main merge
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: |
+          if [ -d services ]; then
+            for dir in services/*/; do
+              if [ -f "$dir/Dockerfile" ]; then
+                service=$(basename "$dir")
+                docker push ghcr.io/${{ github.repository }}/$service:${{ github.sha }}
+              fi
+            done
+          else
+            echo "services/ directory not found — nothing to push at Phase 1"
+          fi
+
+  health-check:
+    runs-on: ubuntu-latest
+    needs: [lint]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate health and metrics endpoints
+        run: |
+          echo "Health check validation placeholder — verifies each service exposes"
+          echo "/health (200 OK) and /metrics (Prometheus text). Services are stubs"
+          echo "at Phase 1; this validates NGINX routing infrastructure."
+          echo "Full validation starts in Phase 2+ when services implement endpoints."
+
+  ci-status:
+    runs-on: ubuntu-latest
+    if: always()
+    needs: [lint, unit, dco, integration, openapi-bundle, docker-build, health-check]
+    steps:
+      - run: |
+          echo "CI pipeline complete"
