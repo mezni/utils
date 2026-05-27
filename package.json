@@ -1,0 +1,7 @@
+{
+  "name": "bornemap",
+  "private": true,
+  "scripts": {
+    "mobile": "pnpm --filter mobile-driver start"
+  }
+}

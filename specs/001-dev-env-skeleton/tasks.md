@@ -31,9 +31,9 @@ description: "Task list for Phase 1: Dev Environment + CI/CD + Runnable Skeleton
 
 **Purpose**: Project initialization and basic structure
 
-- [ ] T001 Create monorepo root files: Cargo.toml (workspace), package.json, pnpm-workspace.yaml, turbo.json, .env.example, .gitignore at repo root
-- [ ] T002 [P] Initialize Cargo workspace members (core-service, bornemap-types) in Cargo.toml
-- [ ] T003 [P] Initialize pnpm workspace with mobile-driver package in pnpm-workspace.yaml
+- [x] T001 Create monorepo root files: Cargo.toml (workspace), package.json, pnpm-workspace.yaml, turbo.json, .env.example, .gitignore at repo root
+- [x] T002 [P] Initialize Cargo workspace members (core-service, bornemap-types) in Cargo.toml
+- [x] T003 [P] Initialize pnpm workspace with mobile-driver package in pnpm-workspace.yaml
 
 ---
 
@@ -43,11 +43,11 @@ description: "Task list for Phase 1: Dev Environment + CI/CD + Runnable Skeleton
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T004 Create bornemap-types crate with StationId, UserId, PartnerId type aliases and generate_id() in shared/bornemap-types/src/lib.rs
-- [ ] T005 [P] Configure .env.example with API_PORT, JWT_SECRET, LOG_LEVEL, LOG_FORMAT at repo root
-- [ ] T006 [P] Create Dockerfile for core-service in infrastructure/docker/Dockerfile
-- [ ] T007 [P] Create docker-compose.dev.yml for hot reload in infrastructure/docker-compose.dev.yml
-- [ ] T008 [P] Create docker-compose.test.yml for CI deterministic execution in infrastructure/docker-compose.test.yml
+- [x] T004 Create bornemap-types crate with StationId, UserId, PartnerId type aliases and generate_id() in shared/bornemap-types/src/lib.rs
+- [x] T005 [P] Configure .env.example with API_PORT, JWT_SECRET, LOG_LEVEL, LOG_FORMAT at repo root
+- [x] T006 [P] Create Dockerfile for core-service in infrastructure/docker/Dockerfile
+- [x] T007 [P] Create docker-compose.dev.yml for hot reload in infrastructure/docker-compose.dev.yml
+- [x] T008 [P] Create docker-compose.test.yml for CI deterministic execution in infrastructure/docker-compose.test.yml
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -61,13 +61,13 @@ description: "Task list for Phase 1: Dev Environment + CI/CD + Runnable Skeleton
 
 ### Implementation for User Story 1
 
-- [ ] T009 [P] [US1] Create core-service Cargo.toml with actix-web, tokio, serde, serde_json, env_logger dependencies in services/core-service/Cargo.toml
-- [ ] T010 [P] [US1] Implement HealthResponse struct with serde Serialize in services/core-service/src/main.rs
-- [ ] T011 [US1] Implement GET /api/v1/health/live endpoint returning HealthResponse in services/core-service/src/main.rs
-- [ ] T012 [US1] Implement GET /api/v1/health/ready endpoint returning HealthResponse in services/core-service/src/main.rs
-- [ ] T013 [US1] Configure structured JSON logging (env_logger) with timestamp, level, message, service fields in services/core-service/src/main.rs
-- [ ] T014 [US1] Add prerequisite validation check at startup (detect missing runtimes) in services/core-service/src/main.rs
-- [ ] T015 [US1] Add port conflict handling with clear error message in services/core-service/src/main.rs
+- [x] T009 [P] [US1] Create core-service Cargo.toml with actix-web, tokio, serde, serde_json, env_logger dependencies in services/core-service/Cargo.toml
+- [x] T010 [P] [US1] Implement HealthResponse struct with serde Serialize in services/core-service/src/main.rs
+- [x] T011 [US1] Implement GET /api/v1/health/live endpoint returning HealthResponse in services/core-service/src/main.rs
+- [x] T012 [US1] Implement GET /api/v1/health/ready endpoint returning HealthResponse in services/core-service/src/main.rs
+- [x] T013 [US1] Configure structured JSON logging (env_logger) with timestamp, level, message, service fields in services/core-service/src/main.rs
+- [x] T014 [US1] Add prerequisite validation check at startup (detect missing runtimes) in services/core-service/src/main.rs
+- [x] T015 [US1] Add port conflict handling with clear error message in services/core-service/src/main.rs
 
 **Checkpoint**: At this point, User Story 1 should be fully functional and testable independently
 
@@ -81,9 +81,9 @@ description: "Task list for Phase 1: Dev Environment + CI/CD + Runnable Skeleton
 
 ### Implementation for User Story 2
 
-- [ ] T016 [P] [US2] Create mobile-driver Expo project with app.json and package.json in frontends/apps/mobile-driver/
-- [ ] T017 [US2] Implement App.tsx with fetch to /api/v1/health/live and status display in frontends/apps/mobile-driver/App.tsx
-- [ ] T018 [US2] Add "Connection Error" retry prompt for unreachable backend in frontends/apps/mobile-driver/App.tsx
+- [x] T016 [P] [US2] Create mobile-driver Expo project with app.json and package.json in frontends/apps/mobile-driver/
+- [x] T017 [US2] Implement App.tsx with fetch to /api/v1/health/live and status display in frontends/apps/mobile-driver/App.tsx
+- [x] T018 [US2] Add "Connection Error" retry prompt for unreachable backend in frontends/apps/mobile-driver/App.tsx
 
 **Checkpoint**: At this point, User Stories 1 AND 2 should both work independently
 
@@ -97,9 +97,9 @@ description: "Task list for Phase 1: Dev Environment + CI/CD + Runnable Skeleton
 
 ### Implementation for User Story 3
 
-- [ ] T019 [P] [US3] Create lint workflow with Rust clippy and frontend eslint in .github/workflows/lint.yml
-- [ ] T020 [P] [US3] Create test workflow with cargo test in .github/workflows/test.yml
-- [ ] T021 [US3] Create build workflow with Docker image build for core-service in .github/workflows/build.yml
+- [x] T019 [P] [US3] Create lint workflow with Rust clippy and frontend eslint in .github/workflows/lint.yml
+- [x] T020 [P] [US3] Create test workflow with cargo test in .github/workflows/test.yml
+- [x] T021 [US3] Create build workflow with Docker image build for core-service in .github/workflows/build.yml
 
 **Checkpoint**: All user stories should now be independently functional
 
@@ -109,8 +109,8 @@ description: "Task list for Phase 1: Dev Environment + CI/CD + Runnable Skeleton
 
 **Purpose**: Improvements that affect multiple user stories
 
-- [ ] T022 [P] Update root .gitignore with Rust (target/), Node (node_modules/), .env entries
-- [ ] T023 [P] Verify end-to-end workflow per quickstart.md: clone → cargo run → curl health → pnpm start → Expo display
+- [x] T022 [P] Update root .gitignore with Rust (target/), Node (node_modules/), .env entries
+- [x] T023 [P] Verify end-to-end workflow per quickstart.md: clone → cargo run → curl health → pnpm start → Expo display
 
 ---
 

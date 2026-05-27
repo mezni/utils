@@ -1,0 +1,6 @@
+[workspace]
+members = [
+    "services/core-service",
+    "shared/bornemap-types",
+]
+resolver = "2"

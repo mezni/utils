@@ -1,0 +1,26 @@
+# Rust
+target/
+debug/
+release/
+*.rs.bk
+*.rlib
+
+# Node
+node_modules/
+dist/
+build/
+*.log
+
+# Environment
+.env
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# pnpm
+pnpm-lock.yaml
