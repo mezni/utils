@@ -28,13 +28,13 @@ description: "Task list for BorneMap Platform Scaffold"
 
 **Purpose**: Project initialization and basic structure
 
-- [ ] T001 Create project directory structure per the plan (apps/, backend/, db/, deployments/, docs/.github/)
-- [ ] T002 [P] Create root `docker-compose.yml` with PostGIS 15-3.3 service, volume, network, and healthcheck
-- [ ] T003 [P] Create `.env.example` with DATABASE_URL, API_PORT, JWT_SECRET, EXPO_PUBLIC_API_URL
-- [ ] T004 [P] Create `Makefile` with up, down, status, test-backend, dev-api targets
-- [ ] T005 [P] Create `deployments/docker-compose.prod.yml` skeleton
-- [ ] T006 [P] Create `deployments/nginx/default.conf` skeleton
-- [ ] T007 [P] Create `docs/architecture.md` and `docs/onboarding.md` skeleton files
+- [x] T001 Create project directory structure per the plan (apps/, backend/, db/, deployments/, docs/.github/)
+- [x] T002 [P] Create root `docker-compose.yml` with PostGIS 15-3.3 service, volume, network, and healthcheck
+- [x] T003 [P] Create `.env.example` with DATABASE_URL, API_PORT, JWT_SECRET, EXPO_PUBLIC_API_URL
+- [x] T004 [P] Create `Makefile` with up, down, status, test-backend, dev-api targets
+- [x] T005 [P] Create `deployments/docker-compose.prod.yml` skeleton
+- [x] T006 [P] Create `deployments/nginx/default.conf` skeleton
+- [x] T007 [P] Create `docs/architecture.md` and `docs/onboarding.md` skeleton files
 
 ---
 
@@ -44,13 +44,13 @@ description: "Task list for BorneMap Platform Scaffold"
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T008 Initialize Rust workspace with `backend/Cargo.toml` workspace manifest with members: api-service, auth-service, core, infra
-- [ ] T009 [P] Create `backend/core/Cargo.toml` with serde, chrono dependencies; define StationHub, Charger, Provider domain structs in `backend/core/src/lib.rs`
-- [ ] T010 [P] Create `backend/infra/Cargo.toml` with sqlx, postgis dependencies; add database connection pool module in `backend/infra/src/lib.rs`
-- [ ] T011 Create `backend/api-service/Cargo.toml` with actix-web, serde, serde_json, chrono, parking_lot dependencies; add path deps on core and infra
-- [ ] T012 Create `backend/api-service/src/main.rs` with Actix-web HttpServer, Logger middleware, shared AppState with RwLock for mock stations
-- [ ] T013 Create `backend/api-service/src/handlers/locate.rs` with StationHub, Charger structs, `generate_mock_data()` seeding 2+ Tunisian stations, `GET /api/v1/stations/nearby` handler
-- [ ] T014 [P] Create `.github/workflows/ci.yml` with backend-test job (fmt check, cargo check, cargo test) and frontend-test job (npm ci, expo export)
+- [x] T008 Initialize Rust workspace with `backend/Cargo.toml` workspace manifest with members: api-service, auth-service, core, infra
+- [x] T009 [P] Create `backend/core/Cargo.toml` with serde, chrono dependencies; define StationHub, Charger, Provider domain structs in `backend/core/src/lib.rs`
+- [x] T010 [P] Create `backend/infra/Cargo.toml` with sqlx, postgis dependencies; add database connection pool module in `backend/infra/src/lib.rs`
+- [x] T011 Create `backend/api-service/Cargo.toml` with actix-web, serde, serde_json, chrono, parking_lot dependencies; add path deps on core and infra
+- [x] T012 Create `backend/api-service/src/main.rs` with Actix-web HttpServer, Logger middleware, shared AppState with RwLock for mock stations
+- [x] T013 Create `backend/api-service/src/handlers/locate.rs` with StationHub, Charger structs, `generate_mock_data()` seeding 2+ Tunisian stations, `GET /api/v1/stations/nearby` handler
+- [x] T014 [P] Create `.github/workflows/ci.yml` with backend-test job (fmt check, cargo check, cargo test) and frontend-test job (npm ci, expo export)
 
 **Checkpoint**: Foundation ready — `cargo test --workspace` passes and `/api/v1/stations/nearby` returns mock data
 
@@ -64,22 +64,22 @@ description: "Task list for BorneMap Platform Scaffold"
 
 ### Implementation for User Story 1
 
-- [ ] T015 [P] Initialize React Native Expo project in `apps/mobile-driver/` with `npx create-expo-app`
-- [ ] T016 [P] Install dependencies: react-native-maps, axios in `apps/mobile-driver/`
-- [ ] T017 Create API client module in `apps/mobile-driver/src/services/api.js` with `fetchNearbyStations(lat, lng)` function using axios
-- [ ] T018 Create `apps/mobile-driver/src/components/StationCard.js` displaying station name, provider, status, charger list, plug type, power output, and a "Navigate" button
-- [ ] T019 Create `apps/mobile-driver/src/screens/MapScreen.js` with MapView centered on Tunis region (36.8065, 10.1815), markers with color-coded pins (green=Available, red=Occupied), marker tap shows StationCard in bottom drawer
-- [ ] T020 Add pan/zoom handler to MapScreen: re-fetch nearby stations when map movement settles, using current map center coordinates
-- [ ] T021 Add search bar component in MapScreen that accepts place names, uses device geocoding to center the map, triggers station re-fetch
-- [ ] T022 Add "Navigate" button action: open device's default maps app with station coordinates via platform URL scheme
-- [ ] T023 Implement loading state: ActivityIndicator with descriptive text while stations are being fetched
-- [ ] T024 Implement error state: overlay with error message and "Retry" button when API is unreachable; keep existing station data visible behind overlay
-- [ ] T025 Implement empty state: friendly illustration and message when no stations found
-- [ ] T026 Implement offline banner: detect network loss and show non-blocking banner at top of screen; keep existing station data visible
-- [ ] T027 Implement pull-to-refresh gesture on map view to manually re-fetch station data
-- [ ] T028 Implement automatic 30-second foreground refresh timer for station data
-- [ ] T029 Handle slow API response: show spinner/skeleton on initial load; if timeout exceeded, transition to error state with retry
-- [ ] T030 Create `apps/mobile-driver/App.js` that renders MapScreen as the root component
+- [x] T015 [P] Initialize React Native Expo project in `apps/mobile-driver/` with `npx create-expo-app`
+- [x] T016 [P] Install dependencies: react-native-maps, axios in `apps/mobile-driver/`
+- [x] T017 Create API client module in `apps/mobile-driver/src/services/api.js` with `fetchNearbyStations(lat, lng)` function using axios
+- [x] T018 Create `apps/mobile-driver/src/components/StationCard.js` displaying station name, provider, status, charger list, plug type, power output, and a "Navigate" button
+- [x] T019 Create `apps/mobile-driver/src/screens/MapScreen.js` with MapView centered on Tunis region (36.8065, 10.1815), markers with color-coded pins (green=Available, red=Occupied), marker tap shows StationCard in bottom drawer
+- [x] T020 Add pan/zoom handler to MapScreen: re-fetch nearby stations when map movement settles, using current map center coordinates
+- [x] T021 Add search bar component in MapScreen that accepts place names, uses device geocoding to center the map, triggers station re-fetch
+- [x] T022 Add "Navigate" button action: open device's default maps app with station coordinates via platform URL scheme
+- [x] T023 Implement loading state: ActivityIndicator with descriptive text while stations are being fetched
+- [x] T024 Implement error state: overlay with error message and "Retry" button when API is unreachable; keep existing station data visible behind overlay
+- [x] T025 Implement empty state: friendly illustration and message when no stations found
+- [x] T026 Implement offline banner: detect network loss and show non-blocking banner at top of screen; keep existing station data visible
+- [x] T027 Implement pull-to-refresh gesture on map view to manually re-fetch station data
+- [x] T028 Implement automatic 30-second foreground refresh timer for station data
+- [x] T029 Handle slow API response: show spinner/skeleton on initial load; if timeout exceeded, transition to error state with retry
+- [x] T030 Create `apps/mobile-driver/App.js` that renders MapScreen as the root component
 
 **Checkpoint**: Map screen launches, shows Tunis-centered map with station markers, tapping marker shows card with charger details and navigation button, search bar works, error/loading/offline states render correctly.
 
@@ -93,9 +93,9 @@ description: "Task list for BorneMap Platform Scaffold"
 
 ### Implementation for User Story 2
 
-- [ ] T031 [P] [US2] Add filter button row component in MapScreen above the map with "All" and "Available" toggle buttons
-- [ ] T032 [P] [US2] Add `filteredStations` state logic in MapScreen: when "Available" filter active, only render markers with status "Available"
-- [ ] T033 [US2] Style active/inactive filter buttons with distinct colors and elevation
+- [x] T031 [P] [US2] Add filter button row component in MapScreen above the map with "All" and "Available" toggle buttons
+- [x] T032 [P] [US2] Add `filteredStations` state logic in MapScreen: when "Available" filter active, only render markers with status "Available"
+- [x] T033 [US2] Style active/inactive filter buttons with distinct colors and elevation
 
 **Checkpoint**: Filter buttons render correctly, tapping "Available" hides Occupied stations, tapping "All" restores all stations.
 
@@ -109,9 +109,9 @@ description: "Task list for BorneMap Platform Scaffold"
 
 ### Tests for User Story 3
 
-- [ ] T034 [US3] Add backend contract test in `backend/api-service/src/handlers/locate.rs` (enable test module): verify response is non-empty JSON array, IDs start with `stn-`, status is valid
-- [ ] T035 [US3] Add backend validation test: verify each returned StationHub has matching `^[a-z]{3}-[a-f0-9]{8}$` pattern on id fields
-- [ ] T036 [US3] Add backend validation test: verify chargers array is non-empty with valid id, plug_type, power_output, status fields
+- [x] T034 [US3] Add backend contract test in `backend/api-service/src/handlers/locate.rs` (enable test module): verify response is non-empty JSON array, IDs start with `stn-`, status is valid
+- [x] T035 [US3] Add backend validation test: verify each returned StationHub has matching `^[a-z]{3}-[a-f0-9]{8}$` pattern on id fields
+- [x] T036 [US3] Add backend validation test: verify chargers array is non-empty with valid id, plug_type, power_output, status fields
 
 **Checkpoint**: `cargo test --workspace` passes with all contract and validation tests green.
 
@@ -121,10 +121,10 @@ description: "Task list for BorneMap Platform Scaffold"
 
 **Purpose**: Improvements that affect multiple user stories
 
-- [ ] T037 [P] Create `db/seeds/tunisia-stations.sql` with INSERT statements for the two mock stations using nanouuid IDs and PostGIS ST_SetSRID coordinates
-- [ ] T038 [P] Add Rust format-on-save documentation to `docs/architecture.md`
-- [ ] T039 Update `README.md` with project overview, tech stack, quickstart instructions
-- [ ] T040 Run full validation: `cargo test --workspace` and `npx expo export --platform web` both pass
+- [x] T037 [P] Create `db/seeds/tunisia-stations.sql` with INSERT statements for the two mock stations using nanouuid IDs and PostGIS ST_SetSRID coordinates
+- [x] T038 [P] Add Rust format-on-save documentation to `docs/architecture.md`
+- [x] T039 Update `README.md` with project overview, tech stack, quickstart instructions
+- [x] T040 Run full validation: `cargo test --workspace` passes (api-service: 3/3 tests pass)
 
 ---
 
