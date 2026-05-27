@@ -24,38 +24,35 @@ async fn ready() -> impl Responder {
     })
 }
 
-fn check_prerequisites() -> Result<(), String> {
-    if env::var("API_PORT").is_err() {
-        env::set_var("API_PORT", "8080");
+fn check_prerequisites() {
+    for tool in &["cargo", "rustc"] {
+        if which::which(tool).is_err() {
+            log::warn!("{} not found on PATH — some workflows may fail", tool);
+        }
     }
-    Ok(())
 }
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     env_logger::Builder::from_env(
-        env_logger::Env::default()
-            .default_filter_or("info"),
+        env_logger::Env::default().default_filter_or("info"),
     )
     .format(|buf, record| {
         use std::io::Write;
-        let ts = chrono::Local::now()
-            .format("%Y-%m-%dT%H:%M:%S%.3f%z")
+        let ts = chrono::Utc::now()
+            .format("%Y-%m-%dT%H:%M:%S%.3fZ")
             .to_string();
-        writeln!(
-            buf,
-            r#"{{"timestamp":"{}","level":"{}","message":"{}","service":"core-service"}}"#,
-            ts,
-            record.level(),
-            record.args()
-        )
+        let msg = serde_json::json!({
+            "timestamp": ts,
+            "level": record.level().to_string(),
+            "message": record.args().to_string(),
+            "service": "core-service"
+        });
+        writeln!(buf, "{}", msg)
     })
     .init();
 
-    if let Err(e) = check_prerequisites() {
-        log::error!("Prerequisite check failed: {}", e);
-        return Err(std::io::Error::new(std::io::ErrorKind::Other, e));
-    }
+    check_prerequisites();
 
     let port: u16 = env::var("API_PORT")
         .unwrap_or_else(|_| "8080".to_string())
@@ -71,6 +68,7 @@ async fn main() -> std::io::Result<()> {
         App::new().service(web::scope("/api/v1").service(live).service(ready))
     })
     .bind(("0.0.0.0", port))?
+    .shutdown_timeout(30)
     .run()
     .await
 }

@@ -37,6 +37,15 @@ curl http://localhost:8080/api/v1/health/ready
 In a separate terminal:
 ```bash
 pnpm install
+```
+
+**On a physical device** (recommended — uses tunnel for network access):
+```bash
+npx expo start --tunnel --project frontends/apps/mobile-driver
+```
+
+**On an emulator only**:
+```bash
 pnpm --filter mobile-driver start
 ```
 
@@ -45,6 +54,12 @@ Open Expo Go on your device and scan the QR code. The app should display:
 
 If the backend is not running, the app will show:
 `Connection Error` with a retry prompt.
+
+**Note**: The app auto-detects your dev machine IP from Metro's
+debugger host. If it can't connect, set the URL explicitly:
+```bash
+EXPO_PUBLIC_API_URL=http://192.168.X.X:8080/api/v1/health/live npx expo start --tunnel --project frontends/apps/mobile-driver
+```
 
 ## Verify CI
 
@@ -61,6 +76,7 @@ All checks must pass before merge.
 | Problem | Likely Cause | Fix |
 |---------|-------------|-----|
 | Backend won't start | Missing Rust toolchain | Run `rustup install stable` |
-| Mobile can't reach backend | Backend not running | Start backend first |
+| Mobile can't reach backend | Backend not running or wrong IP | Start backend first; check the URL shown on screen |
+| Expo Go can't open app | pnpm node_modules layout | Use `npx expo start --tunnel` |
 | CI fails on lint | Clippy/eslint violations | Run locally: `cargo clippy` |
 | Port conflict | Another service on 8080 | Kill existing process |
