@@ -1,0 +1,17 @@
+{
+  "name": "mobile-driver",
+  "version": "0.1.0",
+  "scripts": {
+    "start": "ELECTRON_DISABLE_SANDBOX=1 expo start",
+    "start:lan": "ELECTRON_DISABLE_SANDBOX=1 expo start --host lan --clear",
+    "start:tunnel": "ELECTRON_DISABLE_SANDBOX=1 expo start --tunnel --clear"
+  },
+  "dependencies": {
+    "expo": "~51.0.0",
+    "expo-status-bar": "~1.12.1",
+    "react": "18.2.0",
+    "react-native": "0.74.1",
+    "react-native-maps": "1.14.0"
+  },
+  "private": true
+}
