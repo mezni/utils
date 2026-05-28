@@ -7,25 +7,38 @@ on:
     branches: [ main, develop ]
 
 jobs:
+  backend-test:
+    name: Rust Check & Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust Toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: "backend -> target"
+      - name: Format Check
+        run: cd backend && cargo fmt --all -- --check
+      - name: Compile Verification
+        run: cd backend && cargo check --workspace
+      - name: Execute Handlers Unit Tests
+        run: cd backend && cargo test --workspace
+
   frontend-test:
     name: Expo Client Lint & Build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: 'npm'
           cache-dependency-path: apps/mobile-driver/package.json
-
       - name: Install Dependencies
-        run: |
-          cd apps/mobile-driver
-          npm ci
-
+        run: cd apps/mobile-driver && npm ci
       - name: Build Verification
-        run: |
-          cd apps/mobile-driver
-          npx expo export --platform web
+        run: cd apps/mobile-driver && npx expo export --platform web

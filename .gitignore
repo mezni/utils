@@ -24,5 +24,8 @@ Thumbs.db
 *.swp
 *.swo
 
+# Rust
+backend/target/
+
 # Logs
 *.log

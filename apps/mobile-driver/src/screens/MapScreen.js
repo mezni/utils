@@ -1,119 +1,90 @@
-import React, { Component } from 'react';
-import { StyleSheet, View, Text } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, View, Text, ActivityIndicator, TouchableOpacity } from 'react-native';
 import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps';
+import { fetchNearbyStations } from '../services/api';
+import StationCard from '../components/StationCard';
 
 const TUNISIA_CENTER = {
   latitude: 36.8065,
   longitude: 10.1815,
-  latitudeDelta: 0.12,
-  longitudeDelta: 0.06,
+  latitudeDelta: 0.08,
+  longitudeDelta: 0.04,
 };
 
-class MapErrorBoundary extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { hasError: false, errorMessage: '' };
-  }
-
-  static getDerivedStateFromError(error) {
-    return { hasError: true, errorMessage: error.message || 'Map failed to initialize' };
-  }
-
-  componentDidCatch(error) {
-    this.setState({ hasError: true, errorMessage: error.message || 'Map component failed to initialize' });
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return (
-        <View style={styles.container}>
-          <View style={styles.errorContainer}>
-            <Text style={styles.errorTitle}>Map Unavailable</Text>
-            <Text style={styles.errorDescription}>{this.state.errorMessage}</Text>
-          </View>
-        </View>
-      );
-    }
-    return this.props.children;
-  }
-}
-
 export default function MapScreen() {
-  const debugOverlay = (
-    <View style={styles.debugOverlay} pointerEvents="none">
-      <Text style={styles.debugText}>BorneMap Sandbox Mode</Text>
-      <Text style={styles.subText}>Tunisia Map Layer Rendered Offline</Text>
-    </View>
-  );
+  const [stations, setStations] = useState([]);
+  const [selectedStation, setSelectedStation] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  const loadData = () => {
+    setLoading(true);
+    setError(false);
+    fetchNearbyStations()
+      .then((data) => {
+        setStations(data);
+        if (data.length > 0) setSelectedStation(data[0]);
+        setLoading(false);
+      })
+      .catch(() => {
+        setError(true);
+        setLoading(false);
+      });
+  };
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  if (loading) {
+    return (
+      <View style={styles.centered}>
+        <ActivityIndicator size="large" color="#007AFF" />
+        <Text style={styles.infoText}>Connecting to api-service...</Text>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.centered}>
+        <Text style={styles.errorText}>🚨 Unable to connect to backend service</Text>
+        <TouchableOpacity style={styles.retryButton} onPress={loadData}>
+          <Text style={styles.retryText}>Retry Connection</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
-      <MapErrorBoundary>
-        <MapView
-          provider={PROVIDER_DEFAULT}
-          style={styles.map}
-          initialRegion={TUNISIA_CENTER}
-        >
+      <MapView provider={PROVIDER_DEFAULT} style={styles.map} initialRegion={TUNISIA_CENTER}>
+        {stations.map((station) => (
           <Marker
-            coordinate={{ latitude: 36.8065, longitude: 10.1815 }}
-            title="Tunis Core Baseline"
-            description="Phase 1 Offline Isolation Landmark Checkpoint"
+            key={station.id}
+            coordinate={{ latitude: station.latitude, longitude: station.longitude }}
+            onPress={() => setSelectedStation(station)}
+            pinColor={station.status === 'Available' ? '#4CAF50' : '#F44336'}
           />
-        </MapView>
-      </MapErrorBoundary>
-      {debugOverlay}
+        ))}
+      </MapView>
+
+      {selectedStation && (
+        <View style={styles.drawer}>
+          <StationCard station={selectedStation} />
+        </View>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  map: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  errorContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-    backgroundColor: '#F5F5F5',
-  },
-  errorTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333333',
-    marginBottom: 8,
-  },
-  errorDescription: {
-    fontSize: 14,
-    color: '#666666',
-    textAlign: 'center',
-  },
-  debugOverlay: {
-    position: 'absolute',
-    top: 30,
-    left: 20,
-    right: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    padding: 14,
-    borderRadius: 12,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  debugText: {
-    fontWeight: 'bold',
-    color: '#111111',
-    fontSize: 14,
-  },
-  subText: {
-    color: '#666666',
-    fontSize: 12,
-    marginTop: 2,
-  },
+  container: { flex: 1 },
+  map: { ...StyleSheet.absoluteFillObject },
+  centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#FFFFFF' },
+  infoText: { marginTop: 10, color: '#555555', fontSize: 14 },
+  errorText: { color: '#D32F2F', fontSize: 14, fontWeight: '500', marginBottom: 12 },
+  retryButton: { backgroundColor: '#007AFF', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 8 },
+  retryText: { color: '#FFFFFF', fontWeight: '600' },
+  drawer: { position: 'absolute', bottom: 24, left: 16, right: 16, backgroundColor: '#FFFFFF', borderRadius: 16, padding: 16, elevation: 5 }
 });
