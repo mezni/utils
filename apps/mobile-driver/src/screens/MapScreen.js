@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, Component } from 'react';
 import { StyleSheet, View, Text, ActivityIndicator, TouchableOpacity } from 'react-native';
-import MapView, { Marker, PROVIDER_DEFAULT } from 'react-native-maps';
+import MapView from '../components/MapView';
 import { fetchNearbyStations } from '../services/api';
 import StationCard from '../components/StationCard';
 
@@ -96,16 +96,7 @@ export default function MapScreen() {
   return (
     <View style={styles.container}>
       <MapErrorBoundary>
-        <MapView provider={PROVIDER_DEFAULT} style={styles.map} initialRegion={TUNISIA_CENTER}>
-          {stations.map((station) => (
-            <Marker
-              key={station.id}
-              coordinate={{ latitude: station.latitude, longitude: station.longitude }}
-              onPress={() => setSelectedStation(station)}
-              pinColor={station.status === 'Available' ? '#4CAF50' : '#F44336'}
-            />
-          ))}
-        </MapView>
+        <MapView style={styles.map} initialRegion={TUNISIA_CENTER} stations={stations} onMarkerPress={setSelectedStation} />
       </MapErrorBoundary>
 
       {selectedStation && (

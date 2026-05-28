@@ -1,0 +1,49 @@
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { divIcon, Point } from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+
+const TILE_SERVER = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+const ATTRIBUTION = '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>';
+
+function toZoom(delta) {
+  return Math.max(1, Math.min(18, Math.round(Math.log(360 / Math.max(delta, 0.001)) / Math.LN2)));
+}
+
+function stationIcon(status) {
+  return divIcon({
+    className: '',
+    html: `<div style="
+      width:22px;height:22px;border-radius:50%;
+      background:${status === 'Available' ? '#4CAF50' : '#F44336'};
+      border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.3);
+    "></div>`,
+    iconSize: [22, 22],
+    iconAnchor: [11, 11],
+  });
+}
+
+export default function MapView({ stations, onMarkerPress, initialRegion, style }) {
+  const center = [initialRegion.latitude, initialRegion.longitude];
+  const zoom = toZoom(initialRegion.latitudeDelta || initialRegion.longitudeDelta);
+
+  return (
+    <div style={style}>
+      <MapContainer
+        center={center}
+        zoom={zoom}
+        style={{ width: '100%', height: '100%' }}
+        zoomControl={true}
+      >
+        <TileLayer url={TILE_SERVER} attribution={ATTRIBUTION} />
+        {stations.map((s) => (
+          <Marker
+            key={s.id}
+            position={[s.latitude, s.longitude]}
+            icon={stationIcon(s.status)}
+            eventHandlers={{ click: () => onMarkerPress(s) }}
+          />
+        ))}
+      </MapContainer>
+    </div>
+  );
+}
