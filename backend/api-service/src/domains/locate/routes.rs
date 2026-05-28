@@ -129,7 +129,11 @@ pub async fn update_station_status(
     let station_id = path.into_inner();
     let new_status = &body.status;
 
-    if new_status != "Available" && new_status != "Occupied" {
+    if new_status != "Available"
+        && new_status != "Occupied"
+        && new_status != "Offline"
+        && new_status != "Maintenance"
+    {
         return HttpResponse::BadRequest().json(serde_json::json!({"error": "invalid status"}));
     }
 
