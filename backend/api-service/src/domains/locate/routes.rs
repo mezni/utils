@@ -23,7 +23,7 @@ pub async fn get_nearby_stations(
             s.name,
             p.id AS partner_id,
             p.name AS partner_name,
-            p.type AS partner_type,
+            p.type::TEXT AS partner_type,
             ST_Y(s.geom::geometry) AS latitude,
             ST_X(s.geom::geometry) AS longitude,
             s.status,
