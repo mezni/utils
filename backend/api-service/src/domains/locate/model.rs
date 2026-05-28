@@ -1,60 +1,80 @@
-use serde::{Serialize, Deserialize};
-use chrono::{Utc, DateTime};
+use chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
-pub enum StationStatus {
-    Available,
-    Occupied,
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct PartnerSnapshot {
+    pub id: String,
+    pub name: String,
+    #[serde(rename = "type")]
+    pub partner_type: String,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Charger {
     pub id: String,
     pub plug_type: String,
-    pub power_output: u32,
-    pub status: StationStatus,
+    pub power_output: i32,
+    pub status: String,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Station {
     pub id: String,
     pub name: String,
-    pub provider_id: String,
-    pub provider_name: String,
+    pub partner: PartnerSnapshot,
     pub latitude: f64,
     pub longitude: f64,
-    pub status: StationStatus,
+    pub status: String,
     pub chargers: Vec<Charger>,
+    pub is_live: bool,
     pub updated_at: DateTime<Utc>,
 }
 
-pub fn generate_mock_data() -> Vec<Station> {
-    vec![
-        Station {
-            id: "stn-e3b0c442".to_string(),
-            name: "LES BERGES DU LAC 2 HUB".to_string(),
-            provider_id: "prv-k9x2m47a".to_string(),
-            provider_name: "TotalEnergies Tunisia".to_string(),
-            latitude: 36.8324,
-            longitude: 10.2321,
-            status: StationStatus::Available,
-            chargers: vec![
-                Charger { id: "chg-7b2a19f4".to_string(), plug_type: "CCS2".to_string(), power_output: 120, status: StationStatus::Available },
-            ],
-            updated_at: Utc::now(),
-        },
-        Station {
-            id: "stn-f4a1d553".to_string(),
-            name: "TUNIS MARINE PLAZA".to_string(),
-            provider_id: "prv-m1n8b52c".to_string(),
-            provider_name: "Ola Energy".to_string(),
-            latitude: 36.8010,
-            longitude: 10.1912,
-            status: StationStatus::Occupied,
-            chargers: vec![
-                Charger { id: "chg-3a1b2c3d".to_string(), plug_type: "CCS2".to_string(), power_output: 50, status: StationStatus::Occupied },
-            ],
-            updated_at: Utc::now(),
-        }
-    ]
+#[derive(Debug, sqlx::FromRow)]
+pub struct StationRow {
+    pub id: String,
+    pub name: String,
+    pub partner_id: String,
+    pub partner_name: String,
+    pub partner_type: String,
+    pub latitude: f64,
+    pub longitude: f64,
+    pub status: String,
+    pub is_live: bool,
+    pub updated_at: DateTime<Utc>,
+}
+
+#[derive(Debug, sqlx::FromRow)]
+pub struct ChargerRow {
+    pub id: String,
+    pub station_id: String,
+    pub plug_type: String,
+    pub power_output: i32,
+    pub status: String,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct NearbyQuery {
+    pub lat: f64,
+    pub lng: f64,
+    pub distance: Option<f64>,
+    pub show_staged: Option<bool>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct StatusUpdate {
+    pub status: String,
+}
+
+#[derive(Debug, Serialize)]
+pub struct StatusUpdateResponse {
+    pub id: String,
+    pub status: String,
+    pub updated_at: DateTime<Utc>,
+}
+
+#[derive(Debug, Serialize)]
+pub struct HealthResponse {
+    pub status: String,
+    pub database: String,
 }

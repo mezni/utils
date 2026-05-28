@@ -13,9 +13,10 @@ const STATIONS_ENDPOINT = `${API_BASE_URL}/stations/nearby`;
 
 console.log(`📡 API base URL: ${API_BASE_URL}`);
 
-export const fetchNearbyStations = async (signal) => {
+export const fetchNearbyStations = async ({ lat, lng, showStaged = false, signal }) => {
   try {
     const response = await axios.get(STATIONS_ENDPOINT, {
+      params: { lat, lng, show_staged: showStaged },
       timeout: 5000,
       signal,
     });

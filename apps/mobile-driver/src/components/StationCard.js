@@ -4,8 +4,20 @@ import { StyleSheet, View, Text } from 'react-native';
 export default function StationCard({ station }) {
   return (
     <View style={styles.card}>
-      <Text style={styles.title}>{station.name}</Text>
-      <Text style={styles.provider}>{station.provider_name}</Text>
+      <View style={styles.titleRow}>
+        <Text style={styles.title}>{station.name}</Text>
+        {!station.is_live && (
+          <View style={styles.stagedBadge}>
+            <Text style={styles.stagedBadgeText}>STAGED</Text>
+          </View>
+        )}
+      </View>
+
+      {station.partner && (
+        <Text style={styles.provider}>
+          {station.partner.name} · {station.partner.type}
+        </Text>
+      )}
 
       <View style={styles.badgeContainer}>
         <View style={[styles.statusBadge, station.status === 'Available' ? styles.bgAvailable : styles.bgOccupied]}>
@@ -28,7 +40,10 @@ export default function StationCard({ station }) {
 
 const styles = StyleSheet.create({
   card: { backgroundColor: '#FFFFFF', padding: 4 },
-  title: { fontSize: 16, fontWeight: 'bold', color: '#111111' },
+  titleRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  title: { fontSize: 16, fontWeight: 'bold', color: '#111111', flexShrink: 1 },
+  stagedBadge: { backgroundColor: '#FFF3E0', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 4 },
+  stagedBadgeText: { fontSize: 10, fontWeight: '700', color: '#E65100', letterSpacing: 0.5 },
   provider: { fontSize: 12, color: '#666666', marginTop: 2, textTransform: 'uppercase', letterSpacing: 0.5 },
   badgeContainer: { flexDirection: 'row', marginTop: 8 },
   statusBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 },

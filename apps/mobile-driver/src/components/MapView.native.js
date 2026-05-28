@@ -13,7 +13,7 @@ export default function MapView({ stations, onMarkerPress, initialRegion, style 
           key={s.id}
           coordinate={{ latitude: s.latitude, longitude: s.longitude }}
           onPress={() => onMarkerPress(s)}
-          pinColor={s.status === 'Available' ? '#4CAF50' : '#F44336'}
+          pinColor={!s.is_live ? '#FF9800' : s.status === 'Available' ? '#4CAF50' : '#F44336'}
         />
       ))}
     </RNMapView>

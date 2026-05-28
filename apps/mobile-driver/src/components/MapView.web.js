@@ -9,12 +9,19 @@ function toZoom(delta) {
   return Math.max(1, Math.min(18, Math.round(Math.log(360 / Math.max(delta, 0.001)) / Math.LN2)));
 }
 
-function stationIcon(status) {
+function stationIcon(status, isLive) {
+  const isAvailable = status === 'Available';
+  let bg;
+  if (!isLive) {
+    bg = '#FF9800';
+  } else {
+    bg = isAvailable ? '#4CAF50' : '#F44336';
+  }
   return divIcon({
     className: '',
     html: `<div style="
       width:22px;height:22px;border-radius:50%;
-      background:${status === 'Available' ? '#4CAF50' : '#F44336'};
+      background:${bg};
       border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.3);
     "></div>`,
     iconSize: [22, 22],
@@ -39,7 +46,7 @@ export default function MapView({ stations, onMarkerPress, initialRegion, style 
           <Marker
             key={s.id}
             position={[s.latitude, s.longitude]}
-            icon={stationIcon(s.status)}
+            icon={stationIcon(s.status, s.is_live)}
             eventHandlers={{ click: () => onMarkerPress(s) }}
           />
         ))}

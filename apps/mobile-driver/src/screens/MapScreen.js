@@ -50,7 +50,12 @@ export default function MapScreen() {
     setError(false);
     setSelectedStation(null);
 
-    fetchNearbyStations(controller.signal)
+    fetchNearbyStations({
+      lat: TUNISIA_CENTER.latitude,
+      lng: TUNISIA_CENTER.longitude,
+      showStaged: true,
+      signal: controller.signal,
+    })
       .then((data) => {
         if (!data) {
           setLoading(false);

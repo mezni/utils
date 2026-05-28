@@ -1,6 +1,7 @@
 [workspace]
 members = [
     "api-service",
-    "core"
+    "core",
+    "infra"
 ]
 resolver = "2"
