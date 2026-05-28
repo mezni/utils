@@ -10,7 +10,9 @@ pub struct AppState {
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    std::env::set_var("RUST_LOG", "actix_web=info");
+    if std::env::var("RUST_LOG").is_err() {
+        std::env::set_var("RUST_LOG", "actix_web=info");
+    }
     env_logger::init();
 
     let database_url = std::env::var("DATABASE_URL")

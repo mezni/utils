@@ -64,7 +64,13 @@ pub async fn get_nearby_stations(
                 for id in &station_ids {
                     q = q.bind(id);
                 }
-                q.fetch_all(pool).await.unwrap_or_default()
+                match q.fetch_all(pool).await {
+                    Ok(c) => c,
+                    Err(e) => {
+                        log::error!("Charger sub-query failed: {}", e);
+                        vec![]
+                    }
+                }
             };
 
             let charger_map: std::collections::HashMap<&str, Vec<Charger>> = {

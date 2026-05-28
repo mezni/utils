@@ -5,32 +5,37 @@ INSERT INTO partners (id, name, type, contact_email, is_live) VALUES
   ('prt-d4e5f6a7', 'Charge Tunisie',         'Business', 'hello@chargetunisie.tn',  true),
   ('prt-e5f6a7b8', 'GreenMotion Tunisia',    'Private',  'contact@greenmotion.tn',  true);
 
-WITH regions (region_name, lat, lng, station_count) AS (
+WITH regions (rid, region_name, lat, lng, station_count) AS (
   VALUES
-    ('Tunis',      36.8065, 10.1815, 15),
-    ('Sfax',       34.7400, 10.7600, 10),
-    ('Sousse',     35.8250, 10.6360, 10),
-    ('Bizerte',    37.2740,  9.8730,  8),
-    ('Gabès',      33.8810, 10.0980,  7)
+    (1, 'Tunis',      36.8065, 10.1815, 15),
+    (2, 'Sfax',       34.7400, 10.7600, 10),
+    (3, 'Sousse',     35.8250, 10.6360, 10),
+    (4, 'Bizerte',    37.2740,  9.8730,  8),
+    (5, 'Gabès',      33.8810, 10.0980,  7)
+),
+expanded AS (
+  SELECT
+    ROW_NUMBER() OVER (ORDER BY r.rid, gs) AS seq,
+    r.region_name,
+    r.lat,
+    r.lng,
+    r.rid
+  FROM regions r
+  CROSS JOIN LATERAL generate_series(1, r.station_count) AS gs
 ),
 partner_ids (id, idx) AS (
   SELECT id, ROW_NUMBER() OVER () - 1 FROM partners
 ),
 station_data AS (
   SELECT
-    'stn-' || LPAD(TO_HEX(generate_series + 1), 8, '0') AS id,
-    r.region_name || ' Station ' || (generate_series + 1) AS name,
-    (SELECT id FROM partner_ids WHERE idx = (generate_series + gs.offset) % 5) AS partner_id,
-    r.lat + (random() - 0.5) * 0.04 AS station_lat,
-    r.lng + (random() - 0.5) * 0.04 AS station_lng,
+    'stn-' || LPAD(TO_HEX(e.seq), 8, '0') AS id,
+    e.region_name || ' Station ' || (ROW_NUMBER() OVER (PARTITION BY e.rid ORDER BY e.seq)) AS name,
+    (SELECT id FROM partner_ids WHERE idx = (e.seq - 1) % 5) AS partner_id,
+    e.lat + (random() - 0.5) * 0.04 AS station_lat,
+    e.lng + (random() - 0.5) * 0.04 AS station_lng,
     CASE WHEN random() < 0.6 THEN 'Available' ELSE 'Occupied' END AS status,
     false AS is_live
-  FROM regions r
-  CROSS JOIN LATERAL (
-    SELECT generate_series, SUM(station_count) OVER (ORDER BY region_name) - station_count AS offset
-    FROM generate_series(0, r.station_count - 1)
-    WHERE generate_series < r.station_count
-  ) gs
+  FROM expanded e
 )
 INSERT INTO stations (id, name, partner_id, geom, status, is_live)
 SELECT

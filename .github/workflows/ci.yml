@@ -52,7 +52,11 @@ jobs:
       - name: Smoke Test API
         run: |
           cd backend && cargo run -p api-service &
-          sleep 3
+          for i in $(seq 1 10); do
+            curl -sf "http://localhost:8080/health" && break
+            echo "Waiting for api-service... attempt $i"
+            sleep 3
+          done
           curl -f "http://localhost:8080/health"
           curl -f "http://localhost:8080/api/v1/stations/nearby?lat=36.8065&lng=10.1815&show_staged=true" -o /dev/null -w "%{http_code}\n"
 
