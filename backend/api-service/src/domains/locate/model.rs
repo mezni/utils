@@ -1,12 +1,18 @@
 use serde::{Serialize, Deserialize};
 use chrono::{Utc, DateTime};
 
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+pub enum StationStatus {
+    Available,
+    Occupied,
+}
+
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Charger {
     pub id: String,
     pub plug_type: String,
     pub power_output: u32,
-    pub status: String,
+    pub status: StationStatus,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -17,7 +23,7 @@ pub struct Station {
     pub provider_name: String,
     pub latitude: f64,
     pub longitude: f64,
-    pub status: String,
+    pub status: StationStatus,
     pub chargers: Vec<Charger>,
     pub updated_at: DateTime<Utc>,
 }
@@ -31,9 +37,9 @@ pub fn generate_mock_data() -> Vec<Station> {
             provider_name: "TotalEnergies Tunisia".to_string(),
             latitude: 36.8324,
             longitude: 10.2321,
-            status: "Available".to_string(),
+            status: StationStatus::Available,
             chargers: vec![
-                Charger { id: "chg-7b2a19f4".to_string(), plug_type: "CCS2".to_string(), power_output: 120, status: "Available".to_string() },
+                Charger { id: "chg-7b2a19f4".to_string(), plug_type: "CCS2".to_string(), power_output: 120, status: StationStatus::Available },
             ],
             updated_at: Utc::now(),
         },
@@ -44,9 +50,9 @@ pub fn generate_mock_data() -> Vec<Station> {
             provider_name: "Ola Energy".to_string(),
             latitude: 36.8010,
             longitude: 10.1912,
-            status: "Occupied".to_string(),
+            status: StationStatus::Occupied,
             chargers: vec![
-                Charger { id: "chg-3a1b2c3d".to_string(), plug_type: "CCS2".to_string(), power_output: 50, status: "Occupied".to_string() },
+                Charger { id: "chg-3a1b2c3d".to_string(), plug_type: "CCS2".to_string(), power_output: 50, status: StationStatus::Occupied },
             ],
             updated_at: Utc::now(),
         }

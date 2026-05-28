@@ -1,4 +1,5 @@
 use actix_web::{web, App, HttpServer, middleware::Logger};
+use actix_cors::Cors;
 use parking_lot::RwLock;
 use std::sync::Arc;
 
@@ -23,7 +24,14 @@ async fn main() -> std::io::Result<()> {
     println!("⚡ api-service online and listening on http://{}:{}", host, port);
 
     HttpServer::new(move || {
+        let cors = Cors::default()
+            .allow_any_origin()
+            .allow_any_method()
+            .allow_any_header()
+            .max_age(3600);
+
         App::new()
+            .wrap(cors)
             .app_data(state.clone())
             .wrap(Logger::default())
             .service(

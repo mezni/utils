@@ -13,7 +13,7 @@ export default function StationCard({ station }) {
         </View>
       </View>
 
-      <Text style={styles.chargerHeader}>Available Connectors:</Text>
+      <Text style={styles.chargerHeader}>Connectors:</Text>
       {station.chargers.map((charger) => (
         <View key={charger.id} style={styles.chargerRow}>
           <Text style={styles.chargerText}>⚡ {charger.plug_type} ({charger.power_output} kW)</Text>
