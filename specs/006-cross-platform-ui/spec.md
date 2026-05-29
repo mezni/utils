@@ -9,7 +9,12 @@
 
 ## Clarifications
 
-> No Q&A was necessary — the specifier provided a complete, unambiguous specification covering both desktop and mobile UI requirements, shared analytics contracts, and acceptance criteria in a single input.
+### Session 2026-05-28
+- Q: Station detail panel/sheet interaction model — what states and gestures should be supported? → A: Desktop: fixed-height, non-draggable panel, dismiss via X or outside click. Mobile: bottom sheet with peek (120px) and expanded (70% height) states, draggable, swipe-to-dismiss.
+- Q: Shared API contract approach? → A: Reference an OpenAPI 3.0 schema file under `contracts/` in the feature directory; base path `/api/v1/`, three endpoint names: search, station-detail, filter-sync.
+- Q: Data volume & rendering scale — max stations in a single viewport? → A: Moderate scale — ≤200 stations per viewport. Clustering recommended; virtual rendering if exceeding threshold.
+- Q: Accessibility baseline? → A: WCAG 2.1 AA — screen reader labels on all interactive map elements, 44pt minimum touch targets on mobile, full keyboard navigation on desktop.
+- Q: Cross-platform filter sync mechanism? → A: Poll-based — client fetches `GET /api/v1/filters?session_id=` on app foreground/resume and every 60s while active. Server-timestamped, last-writer-wins.
 
 ---
 
@@ -66,7 +71,7 @@
 - **Why P2:** Search/filter is a core workflow but used less frequently than map browsing; functional parity is required, but UX polish (e.g., mobile keyboard handling) can be deferred.
 - **Acceptance:**
   - Given a search query on desktop, when submitted, then results match the same query on mobile.
-  - Given an active filter set (e.g., "Type 2 only") on one platform, when the other platform loads, then filters are synchronized.
+  - Given an active filter set (e.g., "Type 2 only") on one platform, when the other platform resumes to foreground or after a 60s poll interval, then filters are synchronized via `GET /api/v1/filters`.
 
 ### P2 — Zoom Control Parity
 > **As a** user,  
@@ -85,6 +90,9 @@
 - **Acceptance:**
   - Given a station marker tap on desktop, when the bottom panel opens, then it shows: station name, address, available/total chargers, connector types, status indicator, and a "Navigate" CTA.
   - Given a station marker tap on mobile, when the bottom sheet opens, then it shows the same six fields in the same order.
+  - Given the mobile bottom sheet, when in peek state (120px), then station name and status are visible; when dragged to expanded state (70% height), then all six fields are visible.
+  - Given the mobile bottom sheet, when the user swipes down past the peek threshold, then the sheet dismisses completely.
+  - Given the desktop bottom panel, when the user clicks outside or presses X, then the panel closes.
 
 ### P2 — Shared Analytics Events
 > **As a** product manager,  
@@ -104,6 +112,11 @@
 - **GPS unavailable (mobile) / location denied (desktop):** The locate-me button should be disabled with a tooltip explaining the missing permission.
 - **Station detail loading failure:** The detail panel/sheet shows a skeleton placeholder for 300 ms; if still loading after 2 s, show a static summary (name + address) with a "Retry" link.
 - **Rapid marker taps:** Debounce detail-open events with a 500 ms window to prevent sheet flickering.
+- **Mobile sheet drag conflict:** When the sheet is expanded and the map is visible behind it, map pan gestures should not conflict with sheet scroll/drag; the sheet captures vertical drag within its bounds.
+- **Desktop panel on narrow viewport:** Below 500 px viewport height, the bottom panel collapses to a minimized bar showing only station name and status; tap the bar to expand.
+- **Keyboard navigation (desktop):** All interactive elements (search, filters, zoom, FAB, panel close) must be reachable via Tab in a logical order. Escape closes the panel. Enter/Space activates buttons. Map markers are grouped into a single tab-stop per cluster; individual markers in expanded clusters are navigable via arrow keys.
+- **Screen reader labels (both):** All markers, buttons, and controls must have `aria-label` equivalents. Map tiles and decorative elements are marked `aria-hidden="true"`. Dynamic region updates (e.g., search results loading) use `aria-live="polite"`.
+- **Touch target size (mobile):** All tappable elements have a minimum 44×44 pt hit area. Closely packed controls (zoom ±, FAB) are spaced to meet this constraint.
 - **Cross-platform filter sync conflict:** If filters are modified on both platforms simultaneously, the last-writer-wins strategy applies (server-timestamped filter state).
 
 ---
@@ -130,9 +143,9 @@
 | FR-003 | Desktop web shall render a MapPortal layout: full-height viewport, top panel (search + filters) overlaid on map, bottom panel for station details, floating zoom controls (bottom-right), floating action button (bottom-center). | P1 |
 | FR-004 | Mobile app shall render a MapScreen layout: compact header, full-height MapView, bottom sheet for station details, floating zoom controls (bottom-right), floating action button (bottom-center). | P1 |
 | FR-005 | Both platforms shall use the same tile layer URL and marker/cluster rendering configuration for a given map region. | P1 |
-| FR-006 | Both platforms shall emit identical clickstream event payloads for marker-tap, search-submit, filter-change, zoom-in, zoom-out, and locate-me actions, conforming to the shared schema. | P2 |
-| FR-007 | Desktop search bar and mobile search bar shall query the same backend endpoint and return identical results for the same input. | P2 |
-| FR-008 | Desktop filter controls and mobile filter controls shall produce identical query parameters when the same filter set is active. | P2 |
+| FR-006 | Both platforms shall emit identical clickstream event payloads for marker-tap, search-submit, filter-change, zoom-in, zoom-out, and locate-me actions, conforming to the shared schema defined in `contracts/api.yaml`. | P2 |
+| FR-007 | Desktop search bar and mobile search bar shall call `GET /api/v1/search` and return identical results for the same input, per `contracts/api.yaml`. | P2 |
+| FR-008 | Desktop filter controls and mobile filter controls shall call `GET/PUT /api/v1/filters` and produce identical query parameters when the same filter set is active, per `contracts/api.yaml`. | P2 |
 | FR-009 | Desktop station detail (bottom panel) and mobile station detail (bottom sheet) shall display the same six fields: station name, address, available/total chargers, connector types, status indicator, "Navigate" CTA. | P2 |
 | FR-010 | Desktop zoom controls (inline group, bottom-right) and mobile zoom controls (floating buttons, bottom-right) shall perform the same zoom and locate-me operations. | P2 |
 
@@ -158,14 +171,16 @@
 | SC-003 | Identical search query on both platforms returns identical result set. | 100% match |
 | SC-004 | Clickstream events from both platforms are accepted by the shared analytics endpoint without schema validation errors. | 100% of events |
 | SC-005 | Layout passes responsive breakpoint test across 375 px, 768 px, 1024 px, and 1440 px without overlapping or clipped elements. | Lighthouse "No layout shift" |
-| SC-006 | Filter state set on one platform is reflected when the other platform reloads (last-writer-wins). | Verified via integration test |
+| SC-006 | Filter state set on one platform is reflected on the other within 60s via poll-based sync (last-writer-wins). | Verified via integration test |
 
 ---
 
 ## Assumptions
 
 1. **Breakpoint strategy**: 375–767 px = mobile layout; 768+ = desktop layout. No tablet-specific layout is required.
-2. **Tech stack**: Desktop uses React with Leaflet (via react-leaflet); mobile uses React Native with `react-native-maps` (Google Maps on iOS / Android). Both share a common API gateway.
-3. **Analytics backend**: The shared clickstream schema is enforced by a JSON Schema validator on the ingest side; events that fail validation are dropped to a dead-letter queue.
-4. **Network**: Both platforms assume a stable internet connection for map tiles, search, and detail data.
-5. **Session management**: `session_id` is generated client-side and persisted in localStorage (web) or AsyncStorage (mobile). It does not require user authentication.
+2. **Tech stack**: Desktop uses React with Leaflet (via react-leaflet); mobile uses React Native with `react-native-maps` (Google Maps on iOS / Android). Both share a common API gateway at `/api/v1/`.
+3. **API contract**: All shared endpoints are defined in `contracts/api.yaml` (OpenAPI 3.0). The server validates requests against this schema; clients must adhere to it.
+4. **Analytics backend**: The shared clickstream schema is enforced by a JSON Schema validator on the ingest side; events that fail validation are dropped to a dead-letter queue.
+5. **Network**: Both platforms assume a stable internet connection for map tiles, search, and detail data.
+6. **Data volume**: Maximum of ~200 stations per viewport at city level zoom. Clustering is recommended; platforms may switch to virtual rendering if density exceeds threshold.
+7. **Session management**: `session_id` is generated client-side and persisted in localStorage (web) or AsyncStorage (mobile). It does not require user authentication.
