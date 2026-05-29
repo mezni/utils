@@ -87,15 +87,14 @@ A mobile user opens the mobile-driver app and sees a full-screen native MapView 
 - **FR-001**: Admin dashboard MUST render a left sidebar with collapsible ENTITIES menu containing PARTNERS and STATIONS nested links
 - **FR-002**: Admin dashboard MUST render a top status bar showing the sandbox master console title and a MOCK ENGINE ACTIVE badge
 - **FR-003**: Admin dashboard MUST render an overview tab with three metric cards: Partners, Stations, and Mock Telemetry Hits
-- **FR-004**: Admin dashboard MUST render a partners data table with columns for ID, Brand Entity Name, Hubs, and Status
-- **FR-005**: Admin dashboard MUST render a stations data table with columns for Hub ID, Name Designation, Zonal Placement, and Status
-- **FR-006**: Admin dashboard MUST use client-side static mock data arrays with no backend API calls
-- **FR-007**: Web-driver MUST render a full-screen Leaflet map with a top navigation bar, centered search overlay, filter pills, and circular zoom buttons
+- **FR-004**: Admin dashboard MUST render a partners data table with columns for ID, Brand Entity Name, Hubs, and Status, with inline text search that filters rows in real time against the mock array
+- **FR-005**: Admin dashboard MUST render a stations data table with columns for Hub ID, Name Designation, Zonal Placement, and Status, with inline text search that filters rows in real time against the mock array
+- **FR-006**: All three applications (admin-dashboard, web-driver, mobile-driver) MUST operate entirely on static client-side mock data with zero backend integration
+- **FR-007**: Web-driver MUST render a full-screen interactive map with a top navigation bar, centered search overlay, filter pills, and circular zoom buttons
 - **FR-008**: Web-driver MUST open a bottom-center popover detail card when a station marker is clicked, showing station name, status, provider, and charger list
 - **FR-009**: Mobile-driver MUST render a full-screen native MapView with a floating header, search row, and circular zoom controls
 - **FR-010**: Mobile-driver MUST open a bottom sheet covering 35% of the screen when a station marker is tapped
-- **FR-011**: All three applications MUST operate entirely on static client-side mock data with zero backend integration
-- **FR-012**: ALL tabs in the admin sidebar beyond overview/partners/stations MUST display a fallback box indicating the view is mock-rendered but backend pipelines are excluded
+- **FR-011**: ALL tabs in the admin sidebar beyond overview/partners/stations MUST display a fallback box indicating the view is mock-rendered but backend pipelines are excluded
 
 ### Key Entities
 
@@ -110,8 +109,8 @@ A mobile user opens the mobile-driver app and sees a full-screen native MapView 
 - **SC-001**: Admin dashboard loads and renders the full layout (sidebar + top bar + overview) in under 3 seconds on a standard desktop browser
 - **SC-002**: Data tables for partners and stations render with correct mock data rows on the first attempt — no empty tables or loading spinners
 - **SC-003**: Desktop web-driver map and mobile-driver map both render the same mock stations at the same coordinates, demonstrating cross-platform parity
-- **SC-004**: All interactive elements (navigation links, buttons, map markers, zoom controls, detail card close) respond to user input with no errors
-- **SC-005**: Switching between all admin tabs (overview, partners, stations, users, analytics, settings, logs) completes instantly with no delays
+- **SC-004**: All interactive elements (navigation links, buttons, map markers, zoom controls, detail card close) respond to user input with no console errors or uncaught exceptions
+- **SC-005**: Switching between all admin tabs (overview, partners, stations, users, analytics, settings, logs) completes in under 100ms
 
 ## Assumptions
 
@@ -121,3 +120,13 @@ A mobile user opens the mobile-driver app and sees a full-screen native MapView 
 - Maps use standard tile layers with OpenStreetMap imagery on both platforms
 - The cross-platform blueprint matrix governs layout differences while maintaining consistent component behavior across all three applications
 - Existing web-driver and mobile-driver components are rewritten or replaced to match the new blueprint specification
+
+## Clarifications
+
+### Session 2026-05-29
+
+- Q: Terminology normalization — Station vs Hub vs Node → A: "Station" is canonical term. "Hub" and "Node" are permitted as UI synonyms in table headers and display labels only.
+- Q: Admin data table loading behavior — should tables simulate a delay? → A: Render instantly from in-memory arrays with no artificial loading simulation.
+- Q: Should admin data tables include inline text search/filter? → A: Yes — add a text input above each table that filters rows in real time from the mock array, matching the blueprint matrix spec.
+- Q: Map tile failure handling during sandbox mode? → A: Out of scope for mock sandbox. Tile loading errors are not handled in this phase.
+- Q: Quantify "completes instantly" in SC-005? → A: Target is < 100ms for tab switching.

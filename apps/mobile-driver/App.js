@@ -6,7 +6,6 @@ import { AppProvider } from './src/context/AppContext';
 import NavigationProvider from './src/context/NavigationProvider';
 import MapPortal from './src/components/MapPortal';
 import MapScreen from './src/screens/MapScreen';
-import NavBar from './src/components/NavBar';
 
 export default function App() {
   return (
@@ -22,14 +21,7 @@ export default function App() {
 }
 
 function DesktopApp() {
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100vw' }}>
-      <NavBar />
-      <div style={{ flex: 1, position: 'relative' }}>
-        <MapPortal />
-      </div>
-    </div>
-  );
+  return <MapPortal />;
 }
 
 function MobileApp() {

@@ -1,17 +1,9 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { View, Text, ActivityIndicator, TouchableOpacity, Platform, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import MapView from '../components/MapView';
-import SearchBar from '../components/SearchBar';
-import FilterControls from '../components/FilterControls';
 import ZoomControls from '../components/ZoomControls';
-import FAB from '../components/FAB';
-import { fetchNearbyStations } from '../services/api';
-import { useAppContext } from '../context/AppContext';
-import { useSearch } from '../hooks/useSearch';
-import { useFilters } from '../hooks/useFilters';
-import { useStationDetail } from '../hooks/useStationDetail';
-import { useAnalytics } from '../hooks/useAnalytics';
 import StationDetailSheet from '../components/StationDetailSheet';
+import mockStations from '../data/mockData';
 
 const TUNISIA_CENTER = {
   latitude: 36.8065,
@@ -20,128 +12,86 @@ const TUNISIA_CENTER = {
   longitudeDelta: 0.04,
 };
 
-class ErrorBoundary extends React.Component {
-  constructor(props) { super(props); this.state = { hasError: false, message: '' }; }
-  static getDerivedStateFromError(error) { return { hasError: true, message: error.message || 'Map failed' }; }
-  render() {
-    if (this.state.hasError) {
-      return (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#FFFFFF' }}>
-          <Text style={{ color: '#D32F2F', fontSize: 14, fontWeight: '500', marginBottom: 8 }}>Map Unavailable</Text>
-          <Text style={{ marginTop: 10, color: '#555555', fontSize: 14 }}>{this.state.message}</Text>
-        </View>
-      );
-    }
-    return this.props.children;
-  }
-}
-
 export default function MapScreen() {
-  const [stations, setStations] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
-  const abortRef = useRef(null);
-  const { setSelectedStation } = useAppContext();
-  const { query, results, isSearching, error: searchError, search, clear } = useSearch();
-  const { activeFilters, setActiveFilters } = useFilters();
-  const { station: detailStation, isLoading: detailLoading, error: detailError, sheetMode, setSheetMode, open: openDetail, close: closeDetail, retry: retryDetail } = useStationDetail();
-  const { track } = useAnalytics();
-  const [locationDisabled, setLocationDisabled] = useState(false);
+  const [stations] = useState(mockStations);
+  const [selectedStation, setSelectedStation] = useState(null);
+  const [sheetMode, setSheetMode] = useState('closed');
 
-  const handleMarkerPress = useCallback((station) => {
+  const handleMarkerPress = (station) => {
     setSelectedStation(station);
-    openDetail(station.id);
-    track('marker_tap', { station_id: station.id });
-  }, [setSelectedStation, openDetail, track]);
+    setSheetMode('peek');
+  };
 
-  const handleSearch = useCallback((text) => {
-    search(text);
-    if (text && text.length >= 2) {
-      track('search_submit', { query: text });
-    }
-  }, [search, track]);
-
-  const handleFilterChange = useCallback((newFilters) => {
-    setActiveFilters(newFilters);
-    track('filter_change', { filters: newFilters });
-  }, [setActiveFilters, track]);
-
-  const handleZoomIn = useCallback(() => { track('zoom_in'); }, [track]);
-  const handleZoomOut = useCallback(() => { track('zoom_out'); }, [track]);
-  const handleLocateMe = useCallback(() => {
-    if (Platform.OS === 'web') {
-      if (!navigator.geolocation) { setLocationDisabled(true); return; }
-      navigator.geolocation.getCurrentPosition(
-        () => { track('locate_me'); },
-        () => setLocationDisabled(true),
-        { timeout: 5000 }
-      );
-    }
-  }, [track]);
-
-  const displayStations = query.length >= 2 && results.length > 0 ? results : stations;
+  const closeSheet = () => {
+    setSelectedStation(null);
+    setSheetMode('closed');
+  };
 
   return (
     <View style={{ flex: 1 }}>
-      <ErrorBoundary>
-        <MapView
-          style={{ ...StyleSheet.absoluteFillObject }}
-          initialRegion={TUNISIA_CENTER}
-          stations={displayStations}
-          onMarkerPress={handleMarkerPress}
-        />
-      </ErrorBoundary>
+      <View style={styles.floatingHeader}>
+        <Text style={styles.brandText}>BorneMap</Text>
+        <TouchableOpacity style={styles.registerCapsule}>
+          <Text style={styles.registerText}>REGISTER</Text>
+        </TouchableOpacity>
+      </View>
 
-      <SearchBar
-        query={query}
-        setQuery={clear}
-        onSearch={handleSearch}
-        results={results}
-        isSearching={isSearching}
-        error={searchError}
-        onClear={clear}
-      />
-
-      <FilterControls
-        filters={activeFilters}
-        onFiltersChange={handleFilterChange}
+      <MapView
+        style={StyleSheet.absoluteFillObject}
+        initialRegion={TUNISIA_CENTER}
+        stations={stations}
+        onMarkerPress={handleMarkerPress}
       />
 
       <ZoomControls
-        onZoomIn={handleZoomIn}
-        onZoomOut={handleZoomOut}
-        onLocateMe={handleLocateMe}
-        locationDisabled={locationDisabled}
+        onZoomIn={() => {}}
+        onZoomOut={() => {}}
+        onLocateMe={() => {}}
+        locationDisabled={false}
       />
-
-      <FAB onPress={() => {}} />
 
       <StationDetailSheet
-        station={detailStation}
-        isLoading={detailLoading}
-        error={detailError}
+        station={selectedStation}
+        isLoading={false}
+        error={null}
         sheetMode={sheetMode}
         setSheetMode={setSheetMode}
-        onClose={closeDetail}
-        onRetry={retryDetail}
-        onNavigate={(url) => {}} // Linking.openURL would go here
+        onClose={closeSheet}
+        onRetry={() => {}}
+        onNavigate={() => {}}
       />
-
-      {loading && (
-        <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.8)', zIndex: 50 }}>
-          <ActivityIndicator size="large" color="#007AFF" />
-          <Text style={{ marginTop: 10, color: '#555555', fontSize: 14, fontWeight: '500' }}>Loading stations...</Text>
-        </View>
-      )}
-
-      {error && (
-        <View style={{ position: 'absolute', top: Platform.OS === 'ios' ? 90 : 60, left: 16, right: 16, backgroundColor: '#D32F2F', borderRadius: 12, padding: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', zIndex: 60, elevation: 6 }}>
-          <Text style={{ color: '#FFFFFF', fontSize: 13, fontWeight: '500', flex: 1 }}>Unable to connect to backend service</Text>
-          <TouchableOpacity style={{ backgroundColor: '#FFFFFF', paddingHorizontal: 14, paddingVertical: 6, borderRadius: 8, marginLeft: 12 }} onPress={loadData}>
-            <Text style={{ color: '#D32F2F', fontWeight: '700', fontSize: 13 }}>Retry</Text>
-          </TouchableOpacity>
-        </View>
-      )}
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  floatingHeader: {
+    position: 'absolute',
+    top: 50,
+    left: 16,
+    right: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    zIndex: 50,
+  },
+  brandText: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#FFFFFF',
+    textShadowColor: 'rgba(0,0,0,0.5)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 4,
+  },
+  registerCapsule: {
+    backgroundColor: '#00B653',
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  registerText: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+});

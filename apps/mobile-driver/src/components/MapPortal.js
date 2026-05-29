@@ -1,163 +1,220 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { View, Text, ActivityIndicator, TouchableOpacity, Platform } from 'react-native';
+import React, { useState } from 'react';
 import MapView from './MapView';
-import SearchBar from './SearchBar';
-import FilterControls from './FilterControls';
 import ZoomControls from './ZoomControls';
-import FAB from './FAB';
-import StationDetailPanel from './StationDetailPanel';
-import { fetchNearbyStations } from '../services/api';
-import { useAppContext } from '../context/AppContext';
-import { useSearch } from '../hooks/useSearch';
-import { useFilters } from '../hooks/useFilters';
-import { useStationDetail } from '../hooks/useStationDetail';
-import { useAnalytics } from '../hooks/useAnalytics';
+import mockStations from '../data/mockData';
 
-const TUNISIA_CENTER = {
-  latitude: 36.8065,
-  longitude: 10.1815,
-  latitudeDelta: 0.08,
-  longitudeDelta: 0.04,
-};
+const NAV_LINKS = [
+  { label: 'ABOUT', href: '#about' },
+  { label: 'APP', href: '#app' },
+  { label: 'MAP', href: '#map' },
+  { label: 'CONTACT', href: '#contact' },
+];
 
 export default function MapPortal() {
-  const [stations, setStations] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
-  const abortRef = useRef(null);
-  const { selectedStation, setSelectedStation, filters } = useAppContext();
-  const { query, results, isSearching, error: searchError, search, clear } = useSearch();
-  const { activeFilters, setActiveFilters } = useFilters();
-  const { station: detailStation, isLoading: detailLoading, error: detailError, open: openDetail, close: closeDetail, retry: retryDetail } = useStationDetail();
-  const { track } = useAnalytics();
-  const [locationDisabled, setLocationDisabled] = useState(false);
+  const [stations] = useState(mockStations);
+  const [selectedStation, setSelectedStation] = useState(null);
+  const [locationDisabled] = useState(false);
 
-  const handleMarkerPress = useCallback((station) => {
-    setSelectedStation(station);
-    openDetail(station.id);
-    track('marker_tap', { station_id: station.id });
-  }, [setSelectedStation, openDetail, track]);
-
-  const handleSearch = useCallback((text) => {
-    search(text);
-    if (text && text.length >= 2) {
-      track('search_submit', { query: text });
-    }
-  }, [search, track]);
-
-  const handleFilterChange = useCallback((newFilters) => {
-    setActiveFilters(newFilters);
-    track('filter_change', { filters: newFilters });
-  }, [setActiveFilters, track]);
-
-  const loadData = () => {
-    if (abortRef.current) abortRef.current.abort();
-    const controller = new AbortController();
-    abortRef.current = controller;
-
-    setLoading(true);
-    setError(false);
-
-    fetchNearbyStations({
-      lat: TUNISIA_CENTER.latitude,
-      lng: TUNISIA_CENTER.longitude,
-      showStaged: true,
-      signal: controller.signal,
-    })
-      .then((data) => {
-        if (!data) { setLoading(false); return; }
-        setStations(data);
-        setLoading(false);
-      })
-      .catch(() => {
-        setError(true);
-        setLoading(false);
-      });
-  };
-
-  useEffect(() => {
-    loadData();
-    return () => {
-      if (abortRef.current) abortRef.current.abort();
-    };
-  }, []);
-
-  const displayStations = query.length >= 2 && results.length > 0 ? results : stations;
-
-  const handleZoomIn = useCallback(() => {
-    track('zoom_in');
-  }, [track]);
-
-  const handleZoomOut = useCallback(() => {
-    track('zoom_out');
-  }, [track]);
-
-  const handleLocateMe = useCallback(() => {
-    if (!navigator.geolocation) {
-      setLocationDisabled(true);
-      return;
-    }
-    navigator.geolocation.getCurrentPosition(
-      () => { track('locate_me'); },
-      () => { setLocationDisabled(true); },
-      { timeout: 5000 }
-    );
-  }, [track]);
+  const handleMarkerPress = (station) => setSelectedStation(station);
+  const closeDetail = () => setSelectedStation(null);
 
   return (
-    <div style={{ width: '100%', height: '100%', position: 'relative' }}>
-      <MapView
-        style={{ width: '100%', height: '100%' }}
-        initialRegion={TUNISIA_CENTER}
-        stations={displayStations}
-        onMarkerPress={handleMarkerPress}
-      />
-
-      <SearchBar
-        query={query}
-        setQuery={clear}
-        onSearch={handleSearch}
-        results={results}
-        isSearching={isSearching}
-        error={searchError}
-        onClear={clear}
-      />
-
-      <FilterControls
-        filters={activeFilters}
-        onFiltersChange={handleFilterChange}
-      />
-
-      <ZoomControls
-        onZoomIn={handleZoomIn}
-        onZoomOut={handleZoomOut}
-        onLocateMe={handleLocateMe}
-        locationDisabled={locationDisabled}
-      />
-
-      <FAB onPress={() => {}} />
-
-      <StationDetailPanel
-        station={detailStation}
-        isLoading={detailLoading}
-        error={detailError}
-        onClose={closeDetail}
-        onRetry={retryDetail}
-        onNavigate={(url) => window.open(url, '_blank')}
-      />
-
-      {loading && (
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.8)', zIndex: 50 }}>
-          <Text>Loading stations...</Text>
+    <div style={{ width: '100%', height: '100%', position: 'relative', display: 'flex', flexDirection: 'column' }}>
+      <nav style={styles.navbar}>
+        <div style={styles.brand}>BorneMap</div>
+        <div style={styles.navLinks}>
+          {NAV_LINKS.map((link) => (
+            <a key={link.label} href={link.href} style={styles.navLink}>{link.label}</a>
+          ))}
         </div>
-      )}
+        <button style={styles.registerBtn}>REGISTER NOW</button>
+      </nav>
 
-      {error && (
-        <div style={{ position: 'absolute', top: 110, left: 16, right: 16, backgroundColor: '#D32F2F', borderRadius: 12, padding: 12, display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', zIndex: 60 }}>
-          <Text style={{ color: '#FFFFFF', fontSize: 13, fontWeight: '500' }}>Unable to connect to backend service</Text>
-          <button onClick={loadData} style={{ background: '#FFFFFF', border: 'none', borderRadius: 8, padding: '6px 14px', cursor: 'pointer', fontWeight: '700', color: '#D32F2F', fontSize: 13 }}>Retry</button>
+      <div style={{ flex: 1, position: 'relative' }}>
+        <MapView
+          style={{ width: '100%', height: '100%' }}
+          initialRegion={{ latitude: 36.8065, longitude: 10.1815, latitudeDelta: 0.08, longitudeDelta: 0.04 }}
+          stations={stations}
+          onMarkerPress={handleMarkerPress}
+        />
+
+        <div style={styles.searchWrapper}>
+          <input
+            type="text"
+            placeholder="Search stations..."
+            style={styles.searchInput}
+            aria-label="Search charging stations"
+          />
+          <div style={styles.filterPills}>
+            {['CCS2', 'Type2', 'Available', 'Online'].map((pill) => (
+              <button key={pill} style={styles.filterPill}>{pill}</button>
+            ))}
+          </div>
         </div>
-      )}
+
+        <ZoomControls
+          onZoomIn={() => {}}
+          onZoomOut={() => {}}
+          onLocateMe={() => {}}
+          locationDisabled={locationDisabled}
+        />
+
+        {selectedStation && (
+          <div style={styles.popoverCard}>
+            <div style={styles.popoverHeader}>
+              <div>
+                <div style={styles.popoverTitle}>{selectedStation.station_name}</div>
+                <div style={styles.popoverStatus}>
+                  <span style={{ color: selectedStation.status === 'Online' ? '#1E7E34' : '#FF9800' }}>●</span>
+                  {' '}{selectedStation.status}
+                </div>
+              </div>
+              <button onClick={closeDetail} style={styles.closeBtn}>✕</button>
+            </div>
+            <div style={styles.popoverMeta}>{selectedStation.partner_name}</div>
+            <div style={styles.chargerRow}>
+              {selectedStation.chargers.map((ch) => (
+                <span key={ch.id} style={styles.chargerChip}>
+                  {ch.plug_type} · {ch.power_output}kW · {ch.status}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
+
+const styles = {
+  navbar: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    height: 56,
+    backgroundColor: '#111111',
+    padding: '0 24px',
+    zIndex: 100,
+  },
+  brand: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#FFFFFF',
+  },
+  navLinks: {
+    display: 'flex',
+    gap: 24,
+  },
+  navLink: {
+    color: '#CCCCCC',
+    textDecoration: 'none',
+    fontSize: 13,
+    fontWeight: '600',
+    letterSpacing: 0.5,
+  },
+  registerBtn: {
+    backgroundColor: '#00B653',
+    color: '#FFFFFF',
+    border: 'none',
+    borderRadius: 4,
+    padding: '8px 16px',
+    fontSize: 13,
+    fontWeight: '700',
+    cursor: 'pointer',
+  },
+  searchInput: {
+    position: 'absolute',
+    top: 8,
+    left: '50%',
+    transform: 'translateX(-50%)',
+    width: 320,
+    height: 44,
+    padding: '0 16px',
+    border: '1px solid #E5E5E5',
+    borderRadius: 8,
+    fontSize: 14,
+    backgroundColor: '#FFFFFF',
+    zIndex: 40,
+    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+  },
+  searchWrapper: {
+    position: 'absolute',
+    top: 8,
+    left: '50%',
+    transform: 'translateX(-50%)',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    zIndex: 40,
+  },
+  filterPills: {
+    display: 'flex',
+    gap: 6,
+    marginTop: 8,
+  },
+  filterPill: {
+    background: '#FFFFFF',
+    border: '1px solid #DDDDDD',
+    borderRadius: 16,
+    padding: '4px 12px',
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#666666',
+    cursor: 'pointer',
+  },
+  popoverCard: {
+    position: 'absolute',
+    bottom: 24,
+    left: '50%',
+    transform: 'translateX(-50%)',
+    width: 400,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 20,
+    zIndex: 40,
+    boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+  },
+  popoverHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 8,
+  },
+  popoverTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#111111',
+  },
+  popoverStatus: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#666666',
+    marginTop: 2,
+  },
+  popoverMeta: {
+    fontSize: 12,
+    color: '#888888',
+    marginBottom: 12,
+  },
+  chargerRow: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: 6,
+  },
+  chargerChip: {
+    padding: '4px 10px',
+    borderRadius: 12,
+    backgroundColor: '#F5F5F5',
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#666666',
+  },
+  closeBtn: {
+    background: 'none',
+    border: 'none',
+    cursor: 'pointer',
+    fontSize: 18,
+    color: '#888888',
+    padding: 4,
+  },
+};

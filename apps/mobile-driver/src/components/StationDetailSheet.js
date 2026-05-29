@@ -2,9 +2,10 @@ import React, { useRef, useCallback } from 'react';
 import { View, Text, TouchableOpacity, ActivityIndicator, Animated, PanResponder, StyleSheet, Dimensions } from 'react-native';
 import theme from '../styles/theme';
 
-const PEEK_HEIGHT = 120;
+const PEEK_RATIO = 0.35;
 const EXPANDED_RATIO = 0.7;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
+const PEEK_HEIGHT = SCREEN_HEIGHT * PEEK_RATIO;
 const EXPANDED_HEIGHT = SCREEN_HEIGHT * EXPANDED_RATIO;
 
 export default function StationDetailSheet({ station, isLoading, error, sheetMode, setSheetMode, onClose, onRetry, onNavigate }) {
