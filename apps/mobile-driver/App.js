@@ -1,44 +1,41 @@
-import React, { useEffect } from 'react';
-import { StyleSheet, StatusBar, Platform } from 'react-native';
+import React from 'react';
+import { Platform } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-import axios from 'axios';
+import { StatusBar } from 'expo-status-bar';
+import { AppProvider } from './src/context/AppContext';
+import NavigationProvider from './src/context/NavigationProvider';
+import MapPortal from './src/components/MapPortal';
 import MapScreen from './src/screens/MapScreen';
-
-function useClickstreamTelemetry() {
-  useEffect(() => {
-    const dispatchAnalyticsTrace = async () => {
-      try {
-        const telemetryBundle = {
-          event_id: `evt-${Math.random().toString(16).slice(2, 10)}`,
-          client_platform: Platform.OS,
-          app_version: "1.14.0",
-          connected_at: new Date().toISOString(),
-        };
-        await axios.post('http://127.0.0.1:8080/api/v1/analytics/connect', telemetryBundle);
-      } catch (_err) {
-        console.log("analytics telemetry dropped silently");
-      }
-    };
-    dispatchAnalyticsTrace();
-  }, []);
-}
+import NavBar from './src/components/NavBar';
 
 export default function App() {
-  useClickstreamTelemetry();
-
   return (
     <SafeAreaProvider>
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
-      <MapScreen />
-    </SafeAreaView>
+      <AppProvider>
+        <NavigationProvider>
+          <StatusBar style="dark" />
+          {Platform.OS === 'web' ? <DesktopApp /> : <MobileApp />}
+        </NavigationProvider>
+      </AppProvider>
     </SafeAreaProvider>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-  },
-});
+function DesktopApp() {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100vw' }}>
+      <NavBar />
+      <div style={{ flex: 1, position: 'relative' }}>
+        <MapPortal />
+      </div>
+    </div>
+  );
+}
+
+function MobileApp() {
+  return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
+      <MapScreen />
+    </SafeAreaView>
+  );
+}

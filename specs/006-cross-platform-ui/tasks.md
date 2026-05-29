@@ -24,9 +24,9 @@
 
 **Purpose**: Install new npm dependencies and configure test infrastructure
 
-- [ ] T001 Install navigation dependencies in `apps/mobile-driver/`: `npm install @react-navigation/native @react-navigation/bottom-tabs react-native-screens react-native-safe-area-context`
-- [ ] T002 [P] Install test dependencies in `apps/mobile-driver/`: `npm install --save-dev @testing-library/react-native jest-expo`
-- [ ] T003 Create Jest config at `apps/mobile-driver/jest.config.js` with `jest-expo` preset
+- [x] T001 Install navigation dependencies in `apps/mobile-driver/`: `npm install @react-navigation/native @react-navigation/bottom-tabs react-native-screens react-native-safe-area-context`
+- [x] T002 [P] Install test dependencies in `apps/mobile-driver/`: `npm install --save-dev @testing-library/react-native jest-expo`
+- [x] T003 Create Jest config at `apps/mobile-driver/jest.config.js` with `jest-expo` preset
 
 ---
 
@@ -34,16 +34,16 @@
 
 **Purpose**: Shared infrastructure that ALL user stories depend on
 
-- [ ] T004 [P] Create shared theme tokens in `apps/mobile-driver/src/styles/theme.js` (colors, spacing, breakpoints, typography)
-- [ ] T005 [P] Create platform detection utility in `apps/mobile-driver/src/utils/platform.js` (isDesktop, isMobile helpers)
-- [ ] T006 [P] Create session management in `apps/mobile-driver/src/services/session.js` (generate/persist session_id in localStorage or AsyncStorage)
-- [ ] T007 [P] Create shared app state context in `apps/mobile-driver/src/context/AppContext.js` (navigation tab, filter state, viewport state, session_id)
-- [ ] T008 [P] Extend API client in `apps/mobile-driver/src/services/api.js` with methods: `search(query, filters)`, `getStationDetail(stationId)`, `getFilters(sessionId)`, `setFilters(sessionId, filters)`
-- [ ] T009 [P] Create analytics service in `apps/mobile-driver/src/services/analytics.js` (send clickstream events to `POST /api/v1/analytics/connect`)
-- [ ] T010 [P] Create `useAppState` hook in `apps/mobile-driver/src/hooks/useAppState.js` (foreground/resume detection for filter poll trigger)
-- [ ] T011 [P] Create new `filters` domain module in `backend/api-service/src/domains/filters/mod.rs` with `GET /api/v1/filters` and `PUT /api/v1/filters` routes backed by `web::Data<Mutex<HashMap<String, FilterState>>>`
-- [ ] T012 [P] Create `backend/api-service/src/domains/filters/routes.rs` with in-memory HashMap implementation, session-keyed, server-timestamped, GET returns current filters (or empty defaults), PUT upserts per session_id
-- [ ] T013 [P] Register `filters` module in `backend/api-service/src/domains/mod.rs` and wire routes in `backend/api-service/src/main.rs`
+- [x] T004 [P] Create shared theme tokens in `apps/mobile-driver/src/styles/theme.js` (colors, spacing, breakpoints, typography)
+- [x] T005 [P] Create platform detection utility in `apps/mobile-driver/src/utils/platform.js` (isDesktop, isMobile helpers)
+- [x] T006 [P] Create session management in `apps/mobile-driver/src/services/session.js` (generate/persist session_id in localStorage or AsyncStorage)
+- [x] T007 [P] Create shared app state context in `apps/mobile-driver/src/context/AppContext.js` (navigation tab, filter state, viewport state, session_id)
+- [x] T008 [P] Extend API client in `apps/mobile-driver/src/services/api.js` with methods: `search(query, filters)`, `getStationDetail(stationId)`, `getFilters(sessionId)`, `setFilters(sessionId, filters)`
+- [x] T009 [P] Create analytics service in `apps/mobile-driver/src/services/analytics.js` (send clickstream events to `POST /api/v1/analytics/connect`)
+- [x] T010 [P] Create `useAppState` hook in `apps/mobile-driver/src/hooks/useAppState.js` (foreground/resume detection for filter poll trigger)
+- [x] T011 [P] Create new `filters` domain module in `backend/api-service/src/domains/filters/mod.rs` with `GET /api/v1/filters` and `PUT /api/v1/filters` routes backed by `web::Data<Mutex<HashMap<String, FilterState>>>`
+- [x] T012 [P] Create `backend/api-service/src/domains/filters/routes.rs` with in-memory HashMap implementation, session-keyed, server-timestamped, GET returns current filters (or empty defaults), PUT upserts per session_id
+- [x] T013 [P] Register `filters` module in `backend/api-service/src/domains/mod.rs` and wire routes in `backend/api-service/src/main.rs`
 
 **Checkpoint**: Foundation ready — shared state, session, API client, analytics service, backend filter endpoints all functional
 
@@ -60,11 +60,11 @@
 
 ### Implementation for User Story 1
 
-- [ ] T014 [US1] Create `apps/mobile-driver/src/context/NavigationProvider.js` wrapping `NavigationContainer` with a bottom tab navigator (Map, Explore, Saved, Profile tabs); Map tab renders the existing MapScreen
-- [ ] T015 [US1] Refactor `apps/mobile-driver/App.js` to wrap the app tree with `AppContext.Provider` and `NavigationProvider`
-- [ ] T016 [US1] Enhance `apps/mobile-driver/src/screens/MapScreen.js` to integrate: compact header, search/filter bar overlay, floating zoom controls, bottom sheet, FAB — component slots that will be filled by later stories
-- [ ] T017 [P] [US1] Create desktop web layout in `apps/mobile-driver/src/components/MapPortal.js` with: full-height viewport, overlaid top search/filter panel, bottom detail panel, floating zoom controls (inline bottom-right), FAB (bottom-center)
-- [ ] T018 [US1] Ensure both MapPortal and MapScreen import and use the same `MapView.web.js` / `MapView.native.js` for tile and marker rendering
+- [x] T014 [US1] Create `apps/mobile-driver/src/context/NavigationProvider.js` wrapping `NavigationContainer` with a bottom tab navigator (Map, Explore, Saved, Profile tabs); Map tab renders the existing MapScreen
+- [x] T015 [US1] Refactor `apps/mobile-driver/App.js` to wrap the app tree with `AppContext.Provider` and `NavigationProvider`
+- [x] T016 [US1] Enhance `apps/mobile-driver/src/screens/MapScreen.js` to integrate: compact header, search/filter bar overlay, floating zoom controls, bottom sheet, FAB — component slots that will be filled by later stories
+- [x] T017 [P] [US1] Create desktop web layout in `apps/mobile-driver/src/components/MapPortal.js` with: full-height viewport, overlaid top search/filter panel, bottom detail panel, floating zoom controls (inline bottom-right), FAB (bottom-center)
+- [x] T018 [US1] Ensure both MapPortal and MapScreen import and use the same `MapView.web.js` / `MapView.native.js` for tile and marker rendering
 
 **Checkpoint**: Map layout parity achieved — desktop and mobile render all six zones
 
@@ -80,10 +80,10 @@
 
 ### Implementation for User Story 2
 
-- [ ] T019 [P] [US2] Create desktop NavBar component in `apps/mobile-driver/src/components/NavBar.js` with four inline SVG icons, underline active indicator, click handler updates AppContext navigation tab state
-- [ ] T020 [P] [US2] Create placeholder screens: `apps/mobile-driver/src/screens/ExploreScreen.js`, `apps/mobile-driver/src/screens/SavedScreen.js`, `apps/mobile-driver/src/screens/ProfileScreen.js` — each renders a centered title and placeholder text
-- [ ] T021 [P] [US2] Create mobile BottomTabBar integration in the navigation provider (uses `@react-navigation/bottom-tabs` with filled icon active indicator for Map, Explore, Saved, Profile tabs)
-- [ ] T022 [US2] Wire NavBar into MapPortal (desktop) and BottomTabBar into App.js navigator (mobile) — both read/write the same `activeTab` state from AppContext
+- [x] T019 [P] [US2] Create desktop NavBar component in `apps/mobile-driver/src/components/NavBar.js` with four inline SVG icons, underline active indicator, click handler updates AppContext navigation tab state
+- [x] T020 [P] [US2] Create placeholder screens: `apps/mobile-driver/src/screens/ExploreScreen.js`, `apps/mobile-driver/src/screens/SavedScreen.js`, `apps/mobile-driver/src/screens/ProfileScreen.js` — each renders a centered title and placeholder text
+- [x] T021 [P] [US2] Create mobile BottomTabBar integration in the navigation provider (uses `@react-navigation/bottom-tabs` with filled icon active indicator for Map, Explore, Saved, Profile tabs)
+- [x] T022 [US2] Wire NavBar into MapPortal (desktop) and BottomTabBar into App.js navigator (mobile) — both read/write the same `activeTab` state from AppContext
 
 **Checkpoint**: Navigation parity achieved — both platforms navigate four destinations
 
@@ -95,8 +95,8 @@
 
 **Note**: The existing `MapView.web.js` (react-leaflet) and `MapView.native.js` (react-native-maps) already use the same tile layer URL and marker rendering. This phase is verification only — no code changes required if parity is confirmed.
 
-- [ ] T023 [US3] Verify `MapView.web.js` and `MapView.native.js` use identical tile layer URL and tile sizing configuration
-- [ ] T024 [US3] Verify both platforms use the same marker icon for charging stations and the same cluster threshold (≤200 stations per viewport)
+- [x] T023 [US3] Verify `MapView.web.js` and `MapView.native.js` use identical tile layer URL and tile sizing configuration
+- [x] T024 [US3] Verify both platforms use the same marker icon for charging stations and the same cluster threshold (≤200 stations per viewport)
 - [ ] T025 [US3] Manual cross-platform visual comparison: load the same map region (center: Tunis 36.8065, 10.1815) on desktop and mobile at zoom levels 10, 13, 16 — confirm tile appearance and marker density match
 
 **Checkpoint**: Map rendering parity verified on both platforms
@@ -113,13 +113,13 @@
 
 ### Implementation for User Story 4
 
-- [ ] T026 [P] [US4] Create `useSearch` hook in `apps/mobile-driver/src/hooks/useSearch.js` with debounced input (300ms), calls `api.search()`, manages loading/error/empty states
-- [ ] T027 [P] [US4] Create `useFilters` hook in `apps/mobile-driver/src/hooks/useFilters.js` with poll-based sync (on foreground/resume + 60s interval), calls `api.getFilters()` / `api.setFilters()`, last-writer-wins
-- [ ] T028 [P] [US4] Create shared `SearchBar` component in `apps/mobile-driver/src/components/SearchBar.js` with text input, clear button, loading spinner, debounced submit
-- [ ] T029 [P] [US4] Create shared `FilterControls` component in `apps/mobile-driver/src/components/FilterControls.js` with connector type chips (Type 2, CCS, CHAdeMO, Tesla), status chips, min-available stepper
-- [ ] T030 [US4] Integrate SearchBar + FilterControls into MapPortal (desktop top panel) and MapScreen (mobile compact header area)
-- [ ] T031 [P] [US4] Add `GET /api/v1/search` route in `backend/api-service/src/domains/locate/routes.rs` (query stations by name/address with optional filter params passed to PostGIS spatial query)
-- [ ] T032 [US4] Add error/empty/network-failure states to SearchBar and FilterControls per spec edge cases
+- [x] T026 [P] [US4] Create `useSearch` hook in `apps/mobile-driver/src/hooks/useSearch.js` with debounced input (300ms), calls `api.search()`, manages loading/error/empty states
+- [x] T027 [P] [US4] Create `useFilters` hook in `apps/mobile-driver/src/hooks/useFilters.js` with poll-based sync (on foreground/resume + 60s interval), calls `api.getFilters()` / `api.setFilters()`, last-writer-wins
+- [x] T028 [P] [US4] Create shared `SearchBar` component in `apps/mobile-driver/src/components/SearchBar.js` with text input, clear button, loading spinner, debounced submit
+- [x] T029 [P] [US4] Create shared `FilterControls` component in `apps/mobile-driver/src/components/FilterControls.js` with connector type chips (Type 2, CCS, CHAdeMO, Tesla), status chips, min-available stepper
+- [x] T030 [US4] Integrate SearchBar + FilterControls into MapPortal (desktop top panel) and MapScreen (mobile compact header area)
+- [x] T031 [P] [US4] Add `GET /api/v1/search` route in `backend/api-service/src/domains/locate/routes.rs` (query stations by name/address with optional filter params passed to PostGIS spatial query)
+- [x] T032 [US4] Add error/empty/network-failure states to SearchBar and FilterControls per spec edge cases
 
 **Checkpoint**: Search and filter parity achieved — identical queries return identical results; filters sync cross-platform
 
@@ -136,10 +136,10 @@
 
 ### Implementation for User Story 5
 
-- [ ] T033 [P] [US5] Create shared `ZoomControls` component in `apps/mobile-driver/src/components/ZoomControls.js` — platform-aware: renders inline group on desktop (CSS flex), floating buttons on mobile (absolute positioned, 44×44pt touch targets)
-- [ ] T034 [P] [US5] Create shared `FAB` component in `apps/mobile-driver/src/components/FAB.js` — floating action button, bottom-center, platform-styled
-- [ ] T035 [US5] Integrate ZoomControls + FAB into MapPortal and MapScreen
-- [ ] T036 [US5] Add locate-me functionality with geolocation API: GPS available → center map on user; GPS denied → disable button with tooltip per spec edge cases
+- [x] T033 [P] [US5] Create shared `ZoomControls` component in `apps/mobile-driver/src/components/ZoomControls.js` — platform-aware: renders inline group on desktop (CSS flex), floating buttons on mobile (absolute positioned, 44×44pt touch targets)
+- [x] T034 [P] [US5] Create shared `FAB` component in `apps/mobile-driver/src/components/FAB.js` — floating action button, bottom-center, platform-styled
+- [x] T035 [US5] Integrate ZoomControls + FAB into MapPortal and MapScreen
+- [x] T036 [US5] Add locate-me functionality with geolocation API: GPS available → center map on user; GPS denied → disable button with tooltip per spec edge cases
 
 **Checkpoint**: Zoom control parity achieved — both platforms zoom, locate, and float consistently
 
@@ -155,10 +155,10 @@
 
 ### Implementation for User Story 6
 
-- [ ] T037 [P] [US6] Create `useStationDetail` hook in `apps/mobile-driver/src/hooks/useStationDetail.js` — fetches `GET /api/v1/stations/{id}`, manages loading (300ms skeleton → 2s timeout) / error / retry states, 500ms debounce on rapid marker taps
-- [ ] T038 [P] [US6] Create desktop `StationDetailPanel` component in `apps/mobile-driver/src/components/StationDetailPanel.js` — fixed-height bottom panel, non-draggable, dismiss via X button or outside click, collapses to minimized bar below 500px viewport height
-- [ ] T039 [P] [US6] Create mobile `StationDetailSheet` component in `apps/mobile-driver/src/components/StationDetailSheet.js` — draggable bottom sheet, peek 120px (name + status), expanded 70% (all six fields + Navigate CTA), swipe-down to dismiss, no map pan conflict within sheet bounds
-- [ ] T040 [US6] Wire station marker tap in MapScreen/MapPortal to open detail via StationDetailPanel (desktop) or StationDetailSheet (mobile) — both call `useStationDetail.fetch(stationId)` and render the same six fields
+- [x] T037 [P] [US6] Create `useStationDetail` hook in `apps/mobile-driver/src/hooks/useStationDetail.js` — fetches `GET /api/v1/stations/{id}`, manages loading (300ms skeleton → 2s timeout) / error / retry states, 500ms debounce on rapid marker taps
+- [x] T038 [P] [US6] Create desktop `StationDetailPanel` component in `apps/mobile-driver/src/components/StationDetailPanel.js` — fixed-height bottom panel, non-draggable, dismiss via X button or outside click, collapses to minimized bar below 500px viewport height
+- [x] T039 [P] [US6] Create mobile `StationDetailSheet` component in `apps/mobile-driver/src/components/StationDetailSheet.js` — draggable bottom sheet, peek 120px (name + status), expanded 70% (all six fields + Navigate CTA), swipe-down to dismiss, no map pan conflict within sheet bounds
+- [x] T040 [US6] Wire station marker tap in MapScreen/MapPortal to open detail via StationDetailPanel (desktop) or StationDetailSheet (mobile) — both call `useStationDetail.fetch(stationId)` and render the same six fields
 
 **Checkpoint**: Station detail parity achieved — both platforms show identical station information
 
@@ -174,7 +174,7 @@
 
 ### Implementation for User Story 7
 
-- [ ] T041 [P] [US7] Create `useAnalytics` hook in `apps/mobile-driver/src/hooks/useAnalytics.js` — provides `track(eventName, properties)` that builds `ClickstreamEvent` payload per `contracts/api.yaml` and sends via `analytics.send()`
+- [x] T041 [P] [US7] Create `useAnalytics` hook in `apps/mobile-driver/src/hooks/useAnalytics.js` — provides `track(eventName, properties)` that builds `ClickstreamEvent` payload per `contracts/api.yaml` and sends via `analytics.send()`
 - [ ] T042 [US7] Integrate `useAnalytics` into `SearchBar` — emit `search_submit` event on each search submission with `{query}` property
 - [ ] T043 [US7] Integrate `useAnalytics` into `FilterControls` — emit `filter_change` event on each filter modification with `{filters}` property
 - [ ] T044 [US7] Integrate `useAnalytics` into `ZoomControls` — emit `zoom_in` / `zoom_out` events on zoom changes with `{zoom_level, viewport_center}` properties

@@ -3,6 +3,7 @@ use actix_cors::Cors;
 use lapin::{Connection, ConnectionProperties};
 use mongodb::Client as MongoClient;
 use sqlx::PgPool;
+use std::sync::Mutex;
 
 mod domains;
 
@@ -10,6 +11,7 @@ pub struct AppState {
     pub db: PgPool,
     pub amqp_channel: lapin::Channel,
     pub mongo_db: mongodb::Database,
+    pub filter_store: Mutex<std::collections::HashMap<String, domains::filters::TimestampedFilters>>,
 }
 
 #[actix_web::main]
@@ -41,7 +43,9 @@ async fn main() -> std::io::Result<()> {
         .expect("Failed to connect to MongoDB");
     let mongo_db = mongo_client.database("bornemap_analytics");
 
-    let state = web::Data::new(AppState { db: pool, amqp_channel, mongo_db });
+    let filter_store = Mutex::new(std::collections::HashMap::new());
+
+    let state = web::Data::new(AppState { db: pool, amqp_channel, mongo_db, filter_store });
 
     let host = "0.0.0.0";
     let port = 8080;
@@ -62,7 +66,8 @@ async fn main() -> std::io::Result<()> {
             .service(
                 web::scope("/api/v1")
                     .configure(domains::locate::init_routes)
-                    .configure(domains::analytics::init_routes),
+                    .configure(domains::analytics::init_routes)
+                    .configure(domains::filters::init_routes),
             )
     })
     .bind((host, port))?

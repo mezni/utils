@@ -66,6 +66,12 @@ pub struct StatusUpdate {
     pub status: String,
 }
 
+#[derive(Debug, Deserialize)]
+pub struct SearchQuery {
+    pub q: String,
+    pub filters: Option<String>,
+}
+
 #[derive(Debug, Serialize)]
 pub struct StatusUpdateResponse {
     pub id: String,

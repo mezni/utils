@@ -2,8 +2,8 @@ use actix_web::{get, patch, web, HttpResponse, Responder};
 
 use crate::AppState;
 use crate::domains::locate::model::{
-    Charger, ChargerRow, HealthResponse, NearbyQuery, PartnerSnapshot, Station, StationRow,
-    StatusUpdate, StatusUpdateResponse,
+    Charger, ChargerRow, HealthResponse, NearbyQuery, PartnerSnapshot, SearchQuery, Station,
+    StationRow, StatusUpdate, StatusUpdateResponse,
 };
 
 #[get("/stations/nearby")]
@@ -173,5 +173,114 @@ pub async fn health(state: web::Data<AppState>) -> impl Responder {
             status: "degraded".to_string(),
             database: "disconnected".to_string(),
         })
+    }
+}
+
+#[get("/search")]
+pub async fn search_stations(
+    state: web::Data<AppState>,
+    query: web::Query<SearchQuery>,
+) -> impl Responder {
+    use sqlx::Row;
+
+    let params = query.into_inner();
+    let search_pattern = format!("%{}%", params.q);
+
+    let rows = sqlx::query(
+        r#"
+        SELECT
+            s.id, s.name,
+            ST_Y(s.geom::geometry) AS latitude,
+            ST_X(s.geom::geometry) AS longitude,
+            s.status, s.is_live
+        FROM stations s
+        WHERE s.name ILIKE $1
+        AND s.is_live = true
+        ORDER BY s.name
+        LIMIT 50
+        "#,
+    )
+    .bind(&search_pattern)
+    .fetch_all(&state.db)
+    .await;
+
+    match rows {
+        Ok(rows) => {
+            let results: Vec<serde_json::Value> = rows
+                .iter()
+                .map(|r| {
+                    serde_json::json!({
+                        "station_id": r.get::<String, _>("id"),
+                        "station_name": r.get::<String, _>("name"),
+                        "latitude": r.get::<f64, _>("latitude"),
+                        "longitude": r.get::<f64, _>("longitude"),
+                        "status": r.get::<String, _>("status"),
+                        "is_live": r.get::<bool, _>("is_live"),
+                    })
+                })
+                .collect();
+            HttpResponse::Ok().json(results)
+        }
+        Err(e) => {
+            log::error!("Search query failed: {}", e);
+            HttpResponse::InternalServerError().finish()
+        }
+    }
+}
+
+#[get("/stations/{station_id}")]
+pub async fn get_station_detail(
+    state: web::Data<AppState>,
+    path: web::Path<String>,
+) -> impl Responder {
+    let station_id = path.into_inner();
+
+    let station = sqlx::query_as::<_, StationRow>(
+        r#"
+        SELECT
+            s.id, s.name,
+            p.id AS partner_id,
+            p.name AS partner_name,
+            p.type::TEXT AS partner_type,
+            ST_Y(s.geom::geometry) AS latitude,
+            ST_X(s.geom::geometry) AS longitude,
+            s.status, s.is_live, s.updated_at
+        FROM stations s
+        JOIN partners p ON p.id = s.partner_id
+        WHERE s.id = $1
+        "#,
+    )
+    .bind(&station_id)
+    .fetch_optional(&state.db)
+    .await;
+
+    match station {
+        Ok(Some(row)) => {
+            let chargers = sqlx::query_as::<_, ChargerRow>(
+                "SELECT id, station_id, plug_type, power_output, status FROM chargers WHERE station_id = $1 ORDER BY id",
+            )
+            .bind(&station_id)
+            .fetch_all(&state.db)
+            .await
+            .unwrap_or_default();
+
+            let result = serde_json::json!({
+                "station_id": row.id,
+                "station_name": row.name,
+                "address": format!("{}, Tunisia", row.name),
+                "available_chargers": chargers.iter().filter(|c| c.status == "Available").count(),
+                "total_chargers": chargers.len(),
+                "connector_types": chargers.iter().map(|c| c.plug_type.clone()).collect::<std::collections::BTreeSet<String>>(),
+                "status": row.status,
+                "navigate_url": format!("https://www.google.com/maps/dir/?api=1&destination={},{}", row.latitude, row.longitude),
+            });
+
+            HttpResponse::Ok().json(result)
+        }
+        Ok(None) => HttpResponse::NotFound().json(serde_json::json!({"error": "station not found"})),
+        Err(e) => {
+            log::error!("Station detail query failed: {}", e);
+            HttpResponse::InternalServerError().finish()
+        }
     }
 }
