@@ -1,5 +1,6 @@
-import { MapContainer, TileLayer, Marker } from 'react-leaflet';
-import { divIcon, Point } from 'leaflet';
+import React, { useEffect } from 'react';
+import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
+import { divIcon } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
 const TILE_SERVER = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
@@ -29,7 +30,13 @@ function stationIcon(status, isLive) {
   });
 }
 
-export default function MapView({ stations, onMarkerPress, initialRegion, style }) {
+function MapInit({ onReady }) {
+  const map = useMap();
+  useEffect(() => { onReady(map); }, []);
+  return null;
+}
+
+export default function MapView({ stations, onMarkerPress, initialRegion, style, onMapReady }) {
   const center = [initialRegion.latitude, initialRegion.longitude];
   const zoom = toZoom(initialRegion.latitudeDelta || initialRegion.longitudeDelta);
 
@@ -41,6 +48,7 @@ export default function MapView({ stations, onMarkerPress, initialRegion, style 
         style={{ width: '100%', height: '100%' }}
         zoomControl={true}
       >
+        {onMapReady && <MapInit onReady={onMapReady} />}
         <TileLayer url={TILE_SERVER} attribution={ATTRIBUTION} />
         {stations.map((s) => (
           <Marker

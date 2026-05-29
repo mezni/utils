@@ -1,8 +1,11 @@
 import React from 'react';
 import theme from '../styles/theme';
 
-const LINKS = [
+const TOP_LINKS = [
   { key: 'overview', label: '📊 OVERVIEW' },
+];
+
+const FLAT_LINKS = [
   { key: 'users', label: 'USERS' },
   { key: 'analytics', label: 'ANALYTICS' },
   { key: 'settings', label: 'SETTINGS' },
@@ -17,12 +20,15 @@ const NESTED_LINKS = [
 export default function Sidebar({ activeTab, onTabChange, entitiesOpen, onEntitiesToggle }) {
   return (
     <aside style={styles.sidebar}>
-      <button
-        onClick={() => onTabChange('overview')}
-        style={activeTab === 'overview' ? styles.sideLinkActive : styles.sideLink}
-      >
-        📊 OVERVIEW
-      </button>
+      {TOP_LINKS.map((link) => (
+        <button
+          key={link.key}
+          onClick={() => onTabChange(link.key)}
+          style={activeTab === link.key ? styles.sideLinkActive : styles.sideLink}
+        >
+          {link.label}
+        </button>
+      ))}
 
       <button onClick={onEntitiesToggle} style={styles.sideLinkDropdown}>
         📦 ENTITIES {entitiesOpen ? '▼' : '▲'}
@@ -42,7 +48,7 @@ export default function Sidebar({ activeTab, onTabChange, entitiesOpen, onEntiti
         </div>
       )}
 
-      {LINKS.filter((l) => l.key !== 'overview').map((link) => (
+      {FLAT_LINKS.map((link) => (
         <button
           key={link.key}
           onClick={() => onTabChange(link.key)}

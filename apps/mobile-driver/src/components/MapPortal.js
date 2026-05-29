@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import MapView from './MapView';
 import ZoomControls from './ZoomControls';
 import mockStations from '../data/mockData';
@@ -10,10 +10,44 @@ const NAV_LINKS = [
   { label: 'CONTACT', href: '#contact' },
 ];
 
+const PILLS = ['CCS2', 'Type2', 'Available', 'Online'];
+
 export default function MapPortal() {
-  const [stations] = useState(mockStations);
+  const [query, setQuery] = useState('');
+  const [activePills, setActivePills] = useState([]);
   const [selectedStation, setSelectedStation] = useState(null);
-  const [locationDisabled] = useState(false);
+  const mapRef = useRef(null);
+
+  const togglePill = (pill) => {
+    setActivePills((prev) =>
+      prev.includes(pill) ? prev.filter((p) => p !== pill) : [...prev, pill]
+    );
+  };
+
+  const filtered = useMemo(() => {
+    let result = mockStations;
+    if (query) {
+      const q = query.toLowerCase();
+      result = result.filter(
+        (s) =>
+          s.station_name.toLowerCase().includes(q) ||
+          s.id.includes(q) ||
+          s.partner_name.toLowerCase().includes(q)
+      );
+    }
+    if (activePills.length > 0) {
+      result = result.filter((s) => {
+        return activePills.every((pill) => {
+          if (pill === 'Available')
+            return s.chargers.some((c) => c.status === 'Available');
+          if (pill === 'Online')
+            return s.status === 'Online';
+          return s.connector_types.includes(pill);
+        });
+      });
+    }
+    return result;
+  }, [query, activePills]);
 
   const handleMarkerPress = (station) => setSelectedStation(station);
   const closeDetail = () => setSelectedStation(null);
@@ -34,32 +68,51 @@ export default function MapPortal() {
         <MapView
           style={{ width: '100%', height: '100%' }}
           initialRegion={{ latitude: 36.8065, longitude: 10.1815, latitudeDelta: 0.08, longitudeDelta: 0.04 }}
-          stations={stations}
+          stations={filtered}
           onMarkerPress={handleMarkerPress}
+          onMapReady={(map) => { mapRef.current = map; }}
         />
 
         <div style={styles.searchWrapper}>
           <input
             type="text"
             placeholder="Search stations..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
             style={styles.searchInput}
             aria-label="Search charging stations"
           />
           <div style={styles.filterPills}>
-            {['CCS2', 'Type2', 'Available', 'Online'].map((pill) => (
-              <button key={pill} style={styles.filterPill}>{pill}</button>
+            {PILLS.map((pill) => (
+              <button
+                key={pill}
+                onClick={() => togglePill(pill)}
+                style={{
+                  ...styles.filterPill,
+                  ...(activePills.includes(pill) ? styles.filterPillActive : {}),
+                }}
+              >
+                {pill}
+              </button>
             ))}
           </div>
         </div>
 
         <ZoomControls
-          onZoomIn={() => {}}
-          onZoomOut={() => {}}
-          onLocateMe={() => {}}
-          locationDisabled={locationDisabled}
+          onZoomIn={() => mapRef.current?.zoomIn()}
+          onZoomOut={() => mapRef.current?.zoomOut()}
+          onLocateMe={() => {
+            if (navigator.geolocation) {
+              navigator.geolocation.getCurrentPosition(
+                (pos) => mapRef.current?.setView([pos.coords.latitude, pos.coords.longitude], 14),
+                () => {}
+              );
+            }
+          }}
+          locationDisabled={false}
         />
 
-        {selectedStation && (
+        {selectedStation && filtered.includes(selectedStation) && (
           <div style={styles.popoverCard}>
             <div style={styles.popoverHeader}>
               <div>
@@ -123,10 +176,6 @@ const styles = {
     cursor: 'pointer',
   },
   searchInput: {
-    position: 'absolute',
-    top: 8,
-    left: '50%',
-    transform: 'translateX(-50%)',
     width: 320,
     height: 44,
     padding: '0 16px',
@@ -134,8 +183,8 @@ const styles = {
     borderRadius: 8,
     fontSize: 14,
     backgroundColor: '#FFFFFF',
-    zIndex: 40,
     boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+    outline: 'none',
   },
   searchWrapper: {
     position: 'absolute',
@@ -161,6 +210,11 @@ const styles = {
     fontWeight: '600',
     color: '#666666',
     cursor: 'pointer',
+  },
+  filterPillActive: {
+    background: '#00B653',
+    borderColor: '#00B653',
+    color: '#FFFFFF',
   },
   popoverCard: {
     position: 'absolute',

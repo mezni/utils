@@ -13,7 +13,7 @@ const TUNISIA_CENTER = {
 };
 
 export default function MapScreen() {
-  const [stations] = useState(mockStations);
+  const stations = mockStations;
   const [selectedStation, setSelectedStation] = useState(null);
   const [sheetMode, setSheetMode] = useState('closed');
 
