@@ -81,19 +81,6 @@ export default function MapScreen() {
 
   const displayStations = query.length >= 2 && results.length > 0 ? results : stations;
 
-  const handleZoomIn = useCallback(() => {}, []);
-  const handleZoomOut = useCallback(() => {}, []);
-  const handleLocateMe = useCallback(() => {
-    if (Platform.OS === 'web') {
-      if (!navigator.geolocation) { setLocationDisabled(true); return; }
-      navigator.geolocation.getCurrentPosition(
-        () => {},
-        () => setLocationDisabled(true),
-        { timeout: 5000 }
-      );
-    }
-  }, []);
-
   return (
     <View style={{ flex: 1 }}>
       <ErrorBoundary>
