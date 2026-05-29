@@ -1,11 +1,15 @@
 use actix_web::{web, App, HttpServer, middleware::Logger};
 use actix_cors::Cors;
+use lapin::{Connection, ConnectionProperties};
+use mongodb::Client as MongoClient;
 use sqlx::PgPool;
 
 mod domains;
 
 pub struct AppState {
     pub db: PgPool,
+    pub amqp_channel: lapin::Channel,
+    pub mongo_db: mongodb::Database,
 }
 
 #[actix_web::main]
@@ -17,12 +21,27 @@ async fn main() -> std::io::Result<()> {
 
     let database_url = std::env::var("DATABASE_URL")
         .unwrap_or_else(|_| "postgres://borne:borne@localhost:5432/borne_map".to_string());
+    let rabbit_uri = std::env::var("RABBITMQ_URI")
+        .unwrap_or_else(|_| "amqp://guest:guest@127.0.0.1:5672/%2f".to_string());
+    let mongo_uri = std::env::var("MONGO_URI")
+        .unwrap_or_else(|_| "mongodb://admin:secret_password_change_me@127.0.0.1:27017".to_string());
 
     let pool = infra::join_database_pool(&database_url)
         .await
         .expect("Failed to connect to database");
 
-    let state = web::Data::new(AppState { db: pool });
+    let amqp_conn = Connection::connect(&rabbit_uri, ConnectionProperties::default())
+        .await
+        .expect("Failed to connect to RabbitMQ");
+    let amqp_channel = amqp_conn.create_channel().await
+        .expect("Failed to create RabbitMQ channel");
+
+    let mongo_client = MongoClient::with_uri_str(&mongo_uri)
+        .await
+        .expect("Failed to connect to MongoDB");
+    let mongo_db = mongo_client.database("bornemap_analytics");
+
+    let state = web::Data::new(AppState { db: pool, amqp_channel, mongo_db });
 
     let host = "0.0.0.0";
     let port = 8080;
@@ -42,7 +61,8 @@ async fn main() -> std::io::Result<()> {
             .route("/health", web::get().to(domains::locate::routes::health))
             .service(
                 web::scope("/api/v1")
-                    .configure(domains::locate::init_routes),
+                    .configure(domains::locate::init_routes)
+                    .configure(domains::analytics::init_routes),
             )
     })
     .bind((host, port))?

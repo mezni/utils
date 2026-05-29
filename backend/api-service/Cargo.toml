@@ -12,5 +12,9 @@ chrono = { version = "0.4", features = ["serde"] }
 env_logger = "0.11"
 log = "0.4"
 sqlx = { version = "0.8", features = ["postgres", "runtime-tokio", "tls-rustls", "chrono"] }
+lapin = "2.3"
+regex = "1.5"
+mongodb = "2.8"
+futures-util = "0.3"
 core = { path = "../core" }
 infra = { path = "../infra" }

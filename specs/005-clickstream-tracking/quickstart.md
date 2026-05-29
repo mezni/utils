@@ -64,6 +64,21 @@ curl http://localhost:8181/health
 
 Expected response: JSON with queue depth, last processed timestamp, and uptime.
 
+### Audit aggregates directly in MongoDB
+
+```bash
+docker exec -it bornemap_nosql_dev mongosh -u admin -p secret_password_change_me --authenticationDatabase admin
+```
+
+Inside the MongoDB shell:
+
+```javascript
+use bornemap_analytics
+db.connection_aggregates.find().pretty()
+```
+
+Expected response: per-platform documents with `total_connections_count`, `last_handshake_at`, and `engine_version`.
+
 ## Verification Checklist
 
 - [ ] RabbitMQ management UI accessible at `http://localhost:15672` (guest/guest)

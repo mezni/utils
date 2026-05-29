@@ -18,5 +18,34 @@ services:
       timeout: 5s
       retries: 5
 
+  rabbitmq:
+    image: rabbitmq:3.12-management
+    container_name: bornemap_queue_dev
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    networks:
+      - bornemap_network
+
+  mongodb:
+    image: mongo:6.0
+    container_name: bornemap_nosql_dev
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: secret_password_change_me
+    volumes:
+      - mongodata:/data/db
+    networks:
+      - bornemap_network
+
 volumes:
   pgdata:
+  mongodata:
+
+networks:
+  bornemap_network:
