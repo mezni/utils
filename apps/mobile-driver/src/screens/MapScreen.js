@@ -10,6 +10,7 @@ import { useAppContext } from '../context/AppContext';
 import { useSearch } from '../hooks/useSearch';
 import { useFilters } from '../hooks/useFilters';
 import { useStationDetail } from '../hooks/useStationDetail';
+import { useAnalytics } from '../hooks/useAnalytics';
 import StationDetailSheet from '../components/StationDetailSheet';
 
 const TUNISIA_CENTER = {
@@ -44,42 +45,39 @@ export default function MapScreen() {
   const { query, results, isSearching, error: searchError, search, clear } = useSearch();
   const { activeFilters, setActiveFilters } = useFilters();
   const { station: detailStation, isLoading: detailLoading, error: detailError, sheetMode, setSheetMode, open: openDetail, close: closeDetail, retry: retryDetail } = useStationDetail();
+  const { track } = useAnalytics();
   const [locationDisabled, setLocationDisabled] = useState(false);
 
   const handleMarkerPress = useCallback((station) => {
     setSelectedStation(station);
     openDetail(station.id);
-  }, [setSelectedStation, openDetail]);
+    track('marker_tap', { station_id: station.id });
+  }, [setSelectedStation, openDetail, track]);
 
-  const loadData = () => {
-    if (abortRef.current) abortRef.current.abort();
-    const controller = new AbortController();
-    abortRef.current = controller;
+  const handleSearch = useCallback((text) => {
+    search(text);
+    if (text && text.length >= 2) {
+      track('search_submit', { query: text });
+    }
+  }, [search, track]);
 
-    setLoading(true);
-    setError(false);
+  const handleFilterChange = useCallback((newFilters) => {
+    setActiveFilters(newFilters);
+    track('filter_change', { filters: newFilters });
+  }, [setActiveFilters, track]);
 
-    fetchNearbyStations({
-      lat: TUNISIA_CENTER.latitude,
-      lng: TUNISIA_CENTER.longitude,
-      showStaged: true,
-      signal: controller.signal,
-    })
-      .then((data) => {
-        if (!data) { setLoading(false); return; }
-        setStations(data);
-        setLoading(false);
-      })
-      .catch(() => {
-        setError(true);
-        setLoading(false);
-      });
-  };
-
-  useEffect(() => {
-    loadData();
-    return () => { if (abortRef.current) abortRef.current.abort(); };
-  }, []);
+  const handleZoomIn = useCallback(() => { track('zoom_in'); }, [track]);
+  const handleZoomOut = useCallback(() => { track('zoom_out'); }, [track]);
+  const handleLocateMe = useCallback(() => {
+    if (Platform.OS === 'web') {
+      if (!navigator.geolocation) { setLocationDisabled(true); return; }
+      navigator.geolocation.getCurrentPosition(
+        () => { track('locate_me'); },
+        () => setLocationDisabled(true),
+        { timeout: 5000 }
+      );
+    }
+  }, [track]);
 
   const displayStations = query.length >= 2 && results.length > 0 ? results : stations;
 
@@ -110,7 +108,7 @@ export default function MapScreen() {
       <SearchBar
         query={query}
         setQuery={clear}
-        onSearch={search}
+        onSearch={handleSearch}
         results={results}
         isSearching={isSearching}
         error={searchError}
@@ -119,7 +117,7 @@ export default function MapScreen() {
 
       <FilterControls
         filters={activeFilters}
-        onFiltersChange={setActiveFilters}
+        onFiltersChange={handleFilterChange}
       />
 
       <ZoomControls

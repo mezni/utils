@@ -31,7 +31,7 @@ export default function SearchBar({ onSearch, results, isSearching, error, query
         )}
       </View>
       {error && (
-        <View style={styles.errorRow}>
+        <View style={styles.errorRow} aria-live="polite">
           <Text style={styles.errorText}>{error}</Text>
           <TouchableOpacity
             style={styles.retryBtn}
@@ -43,7 +43,7 @@ export default function SearchBar({ onSearch, results, isSearching, error, query
         </View>
       )}
       {!isSearching && !error && query.length >= 2 && results?.length === 0 && (
-        <View style={styles.emptyRow}>
+        <View style={styles.emptyRow} aria-live="polite">
           <Text style={styles.emptyText}>No stations found. Try widening your search area.</Text>
         </View>
       )}

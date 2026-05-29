@@ -11,6 +11,7 @@ import { useAppContext } from '../context/AppContext';
 import { useSearch } from '../hooks/useSearch';
 import { useFilters } from '../hooks/useFilters';
 import { useStationDetail } from '../hooks/useStationDetail';
+import { useAnalytics } from '../hooks/useAnalytics';
 
 const TUNISIA_CENTER = {
   latitude: 36.8065,
@@ -28,12 +29,26 @@ export default function MapPortal() {
   const { query, results, isSearching, error: searchError, search, clear } = useSearch();
   const { activeFilters, setActiveFilters } = useFilters();
   const { station: detailStation, isLoading: detailLoading, error: detailError, open: openDetail, close: closeDetail, retry: retryDetail } = useStationDetail();
+  const { track } = useAnalytics();
   const [locationDisabled, setLocationDisabled] = useState(false);
 
   const handleMarkerPress = useCallback((station) => {
     setSelectedStation(station);
     openDetail(station.id);
-  }, [setSelectedStation, openDetail]);
+    track('marker_tap', { station_id: station.id });
+  }, [setSelectedStation, openDetail, track]);
+
+  const handleSearch = useCallback((text) => {
+    search(text);
+    if (text && text.length >= 2) {
+      track('search_submit', { query: text });
+    }
+  }, [search, track]);
+
+  const handleFilterChange = useCallback((newFilters) => {
+    setActiveFilters(newFilters);
+    track('filter_change', { filters: newFilters });
+  }, [setActiveFilters, track]);
 
   const loadData = () => {
     if (abortRef.current) abortRef.current.abort();
@@ -70,12 +85,12 @@ export default function MapPortal() {
   const displayStations = query.length >= 2 && results.length > 0 ? results : stations;
 
   const handleZoomIn = useCallback(() => {
-    // Map zoom handled by Leaflet's built-in zoomControl
-  }, []);
+    track('zoom_in');
+  }, [track]);
 
   const handleZoomOut = useCallback(() => {
-    // Map zoom handled by Leaflet's built-in zoomControl
-  }, []);
+    track('zoom_out');
+  }, [track]);
 
   const handleLocateMe = useCallback(() => {
     if (!navigator.geolocation) {
@@ -83,11 +98,11 @@ export default function MapPortal() {
       return;
     }
     navigator.geolocation.getCurrentPosition(
-      () => {},
-      () => setLocationDisabled(true),
+      () => { track('locate_me'); },
+      () => { setLocationDisabled(true); },
       { timeout: 5000 }
     );
-  }, []);
+  }, [track]);
 
   return (
     <div style={{ width: '100%', height: '100%', position: 'relative' }}>
@@ -101,7 +116,7 @@ export default function MapPortal() {
       <SearchBar
         query={query}
         setQuery={clear}
-        onSearch={search}
+        onSearch={handleSearch}
         results={results}
         isSearching={isSearching}
         error={searchError}
@@ -110,7 +125,7 @@ export default function MapPortal() {
 
       <FilterControls
         filters={activeFilters}
-        onFiltersChange={setActiveFilters}
+        onFiltersChange={handleFilterChange}
       />
 
       <ZoomControls

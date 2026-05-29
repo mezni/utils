@@ -11,6 +11,10 @@ export default function StationDetailSheet({ station, isLoading, error, sheetMod
   const translateY = useRef(new Animated.Value(0)).current;
   const isExpanded = sheetMode === 'expanded';
 
+  const handleKeyDown = useCallback((e) => {
+    if (e.key === 'Escape') onClose?.();
+  }, [onClose]);
+
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
@@ -41,17 +45,18 @@ export default function StationDetailSheet({ station, isLoading, error, sheetMod
     <Animated.View
       style={[styles.container, { height: containerHeight, transform: [{ translateY }] }]}
       {...panResponder.panHandlers}
+      onKeyDown={handleKeyDown}
       accessibilityLabel="Station details"
     >
       <View style={styles.handle} />
 
       {isLoading ? (
-        <View style={styles.skeleton}>
+        <View style={styles.skeleton} aria-live="polite">
           <View style={styles.skeletonTitle} />
           <View style={styles.skeletonRow} />
         </View>
       ) : error && !station ? (
-        <View style={styles.errorRow}>
+        <View style={styles.errorRow} aria-live="polite">
           <Text style={styles.errorText}>{error}</Text>
           <TouchableOpacity onPress={onRetry} style={styles.retryBtn}>
             <Text style={styles.retryText}>Retry</Text>

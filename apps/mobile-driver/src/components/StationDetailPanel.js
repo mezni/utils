@@ -1,12 +1,29 @@
-import React from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';
 import theme from '../styles/theme';
 import { isDesktop } from '../utils/platform';
 
 export default function StationDetailPanel({ station, isLoading, error, onClose, onRetry, onNavigate }) {
+  const [viewportHeight, setViewportHeight] = useState(
+    typeof window !== 'undefined' ? window.innerHeight : 700
+  );
+
+  useEffect(() => {
+    if (!isDesktop || typeof window === 'undefined') return;
+    const handle = () => setViewportHeight(window.innerHeight);
+    window.addEventListener('resize', handle);
+    return () => window.removeEventListener('resize', handle);
+  }, []);
+
+  const isMinimized = isDesktop && viewportHeight < 500;
+
+  const handleKeyDown = useCallback((e) => {
+    if (e.key === 'Escape') onClose?.();
+  }, [onClose]);
+
   if (isLoading) {
     return (
-      <View style={styles.container}>
+      <View style={styles.container} aria-live="polite" onKeyDown={handleKeyDown}>
         <View style={styles.skeleton}>
           <View style={styles.skeletonTitle} />
           <View style={styles.skeletonRow} />
@@ -18,7 +35,7 @@ export default function StationDetailPanel({ station, isLoading, error, onClose,
 
   if (error && !station) {
     return (
-      <View style={styles.container}>
+      <View style={styles.container} aria-live="polite">
         <View style={styles.errorRow}>
           <Text style={styles.errorText}>{error}</Text>
           <TouchableOpacity onPress={onRetry} style={styles.retryBtn} aria-label="Retry loading station details">
@@ -34,8 +51,22 @@ export default function StationDetailPanel({ station, isLoading, error, onClose,
 
   if (!station) return null;
 
+  if (isMinimized) {
+    return (
+      <View style={styles.minimizedBar} onKeyDown={handleKeyDown}>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.minimizedTitle} numberOfLines={1}>{station.station_name}</Text>
+          <Text style={styles.minimizedMeta}>{station.available_chargers}/{station.total_chargers} available — {station.status}</Text>
+        </View>
+        <TouchableOpacity onPress={onClose} style={styles.closeBtn} aria-label="Close detail panel">
+          <Text style={styles.closeText}>✕</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
   return (
-    <View style={styles.container}>
+    <View style={styles.container} onKeyDown={handleKeyDown}>
       <View style={styles.header}>
         <View style={{ flex: 1 }}>
           <Text style={styles.title}>{station.station_name}</Text>
@@ -130,4 +161,25 @@ const styles = StyleSheet.create({
   errorText: { flex: 1, fontSize: 13, color: '#C62828' },
   retryBtn: { paddingHorizontal: 12, paddingVertical: 6, backgroundColor: '#FFEBEE', borderRadius: 6, marginRight: 8 },
   retryText: { fontSize: 12, fontWeight: '600', color: '#C62828' },
+  minimizedBar: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
+    elevation: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    zIndex: 40,
+  },
+  minimizedTitle: { fontSize: 14, fontWeight: '700', color: theme.colors.textPrimary },
+  minimizedMeta: { fontSize: 12, color: theme.colors.textSecondary, marginTop: 2 },
 });
