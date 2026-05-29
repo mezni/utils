@@ -62,7 +62,7 @@ pub async fn get_aggregates(
 ) -> impl Responder {
     let collection = state.mongo_db.collection::<mongodb::bson::Document>("connection_aggregates");
 
-    let mut cursor = match collection.find(doc! {}).await {
+    let mut cursor = match collection.find(doc! {}, None).await {
         Ok(c) => c,
         Err(e) => {
             log::error!("MongoDB query failed: {}", e);

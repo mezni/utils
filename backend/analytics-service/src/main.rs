@@ -7,8 +7,7 @@ pub struct AnalyticsAppState {
     pub mongo_db: Database,
 }
 
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     if std::env::var("RUST_LOG").is_err() {
         std::env::set_var("RUST_LOG", "info");
     }
@@ -19,27 +18,30 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mongo_uri = std::env::var("MONGO_URI")
         .unwrap_or_else(|_| "mongodb://admin:secret_password_change_me@127.0.0.1:27017".to_string());
 
-    let rabbit_conn = Connection::connect(&rabbit_uri, ConnectionProperties::default()).await?;
-    let channel = rabbit_conn.create_channel().await?;
+    let rt = tokio::runtime::Runtime::new()?;
+    rt.block_on(async {
+        let rabbit_conn = Connection::connect(&rabbit_uri, ConnectionProperties::default()).await?;
+        let channel = rabbit_conn.create_channel().await?;
 
-    let _queue = channel
-        .queue_declare(
-            "analytics.connections",
-            QueueDeclareOptions {
-                durable: true,
-                ..Default::default()
-            },
-            FieldTable::default(),
-        )
-        .await?;
+        let _queue = channel
+            .queue_declare(
+                "analytics.connections",
+                QueueDeclareOptions {
+                    durable: true,
+                    ..Default::default()
+                },
+                FieldTable::default(),
+            )
+            .await?;
 
-    let mongo_client = Client::with_uri_str(&mongo_uri).await?;
-    let mongo_db = mongo_client.database("bornemap_analytics");
-    let state = AnalyticsAppState { mongo_db };
+        let mongo_client = Client::with_uri_str(&mongo_uri).await?;
+        let mongo_db = mongo_client.database("bornemap_analytics");
+        let state = AnalyticsAppState { mongo_db };
 
-    log::info!("analytics-service online");
+        log::info!("analytics-service online");
 
-    consumer::start(channel, state).await;
+        consumer::start(channel, state).await;
 
-    Ok(())
+        Ok::<_, Box<dyn std::error::Error>>(())
+    })
 }

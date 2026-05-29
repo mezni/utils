@@ -2,6 +2,7 @@ use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Arc;
 use std::time::Instant;
 
+use actix_web::web::Data;
 use futures_util::stream::StreamExt;
 use lapin::{options::*, types::FieldTable, Channel};
 use mongodb::bson::doc;
@@ -26,20 +27,23 @@ impl HealthState {
 
 pub async fn start(channel: Channel, state: AnalyticsAppState) {
     let health = Arc::new(HealthState::new());
-    let health_web = Arc::clone(&health);
 
     let health_addr = std::env::var("HEALTH_ADDR")
         .unwrap_or_else(|_| "0.0.0.0:8181".to_string());
 
+    let health_for_server = Arc::clone(&health);
     tokio::spawn(async move {
-        let app = actix_web::App::new().app_data(actix_web::web::Data::from(health_web))
-            .route("/health", actix_web::web::get().to(health_handler));
-        actix_web::HttpServer::new(move || app.clone())
-            .bind(&health_addr)
-            .unwrap()
-            .run()
-            .await
-            .unwrap();
+        let health_data = Data::from(health_for_server);
+        actix_web::HttpServer::new(move || {
+            actix_web::App::new()
+                .app_data(health_data.clone())
+                .route("/health", actix_web::web::get().to(health_handler))
+        })
+        .bind(&health_addr)
+        .unwrap()
+        .run()
+        .await
+        .unwrap();
     });
 
     let mut consumer = match channel
@@ -64,7 +68,7 @@ pub async fn start(channel: Channel, state: AnalyticsAppState) {
 
     while let Some(delivery) = consumer.next().await {
         match delivery {
-            Ok((_, delivery)) => {
+            Ok(delivery) => {
                 match serde_json::from_slice::<core::AnalyticsEvent>(&delivery.data) {
                     Ok(event) => {
                         let filter = doc! { "platform": &event.client_platform };
@@ -88,7 +92,7 @@ pub async fn start(channel: Channel, state: AnalyticsAppState) {
                         {
                             Ok(_) => {
                                 if let Ok(mut ts) = health.last_processed_at.lock() {
-                                    *ts = Some(event.connected_at.clone());
+                                    *ts = Some(event.connected_at);
                                 }
                                 health.processed_count.fetch_add(1, Ordering::Relaxed);
                                 let _ = delivery.ack(BasicAckOptions::default()).await;
@@ -113,16 +117,16 @@ pub async fn start(channel: Channel, state: AnalyticsAppState) {
 }
 
 async fn health_handler(
-    health: actix_web::web::Data<Arc<HealthState>>,
+    health: Data<Arc<HealthState>>,
 ) -> impl actix_web::Responder {
     let last = health
         .last_processed_at
         .lock()
-        .unwrap()
-        .clone()
+        .ok()
+        .and_then(|g| g.clone())
         .unwrap_or_else(|| "never".to_string());
     let uptime = health.start_time.elapsed().as_secs();
-    let count = health.processed_count.load(Ordering::SeqCst);
+    let count = health.processed_count.load(Ordering::Relaxed);
 
     actix_web::HttpResponse::Ok().json(serde_json::json!({
         "status": "healthy",
