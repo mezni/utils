@@ -1,0 +1,27 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build images
+        run: docker compose -f infrastructure/compose/docker-compose.yml build
+      - name: Push to GHCR
+        run: |
+          echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          docker compose -f infrastructure/compose/docker-compose.yml push
+      - name: SSH deploy
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_KEY }}
+          script: |
+            cd /opt/bornemap
+            docker compose pull
+            docker compose up -d --remove-orphans

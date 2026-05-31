@@ -1,0 +1,109 @@
+name: bornemap
+
+services:
+
+  postgis:
+    image: postgis/postgis:16-3.4
+    container_name: bornemap-postgis
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-bornemap}
+      POSTGRES_USER: ${POSTGRES_USER:-bornemap}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-bornemap}
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ./infrastructure/docker/postgres:/docker-entrypoint-initdb.d
+    networks:
+      - bornemap-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-bornemap} -d ${POSTGRES_DB:-bornemap}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  rabbitmq:
+    image: rabbitmq:4-management
+    container_name: bornemap-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:-admin}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:-admin}
+    ports:
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - bornemap-net
+    healthcheck:
+      test: ["CMD-SHELL", "timeout 2 bash -c 'echo > /dev/tcp/localhost/5672'"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 120s
+    restart: unless-stopped
+
+  keycloak:
+    image: keycloak/keycloak:latest
+    container_name: bornemap-keycloak
+    command: start-dev --import-realm
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgis:5432/${POSTGRES_DB:-bornemap}
+      KC_DB_USERNAME: ${POSTGRES_USER:-bornemap}
+      KC_DB_PASSWORD: ${POSTGRES_PASSWORD:-bornemap}
+      KC_HOSTNAME: ${DOMAIN:-localhost}
+      KC_HTTP_PORT: 8080
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
+    volumes:
+      - keycloak_data:/opt/keycloak/data
+      - ./infrastructure/docker/keycloak:/opt/keycloak/data/import
+    networks:
+      - bornemap-net
+    depends_on:
+      postgis:
+        condition: service_healthy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.keycloak.rule=PathPrefix(`/auth`)"
+      - "traefik.http.routers.keycloak.entrypoints=web"
+      - "traefik.http.services.keycloak.loadbalancer.server.port=8080"
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8080 && echo -e 'GET /health/ready HTTP/1.0\\r\\n\\r\\n' >&3 && head -1 <&3 | grep -q 200"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+      start_period: 120s
+    restart: unless-stopped
+
+  traefik:
+    image: traefik:latest
+    container_name: bornemap-traefik
+    command:
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--api.dashboard=true"
+      - "--api.insecure=true"
+    ports:
+      - "80:80"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - bornemap-net
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8080/api/version >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 30s
+    restart: unless-stopped
+
+networks:
+  bornemap-net:
+    driver: bridge
+
+volumes:
+  pg_data:
+  rabbitmq_data:
+  keycloak_data:

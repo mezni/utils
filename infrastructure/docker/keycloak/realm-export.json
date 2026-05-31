@@ -1,0 +1,41 @@
+{
+  "realm": "bornemap",
+  "enabled": true,
+  "roles": {
+    "realm": [
+      {
+        "name": "registered_driver",
+        "composite": false,
+        "clientRole": false,
+        "attributes": {}
+      },
+      {
+        "name": "partner",
+        "composite": false,
+        "clientRole": false,
+        "attributes": {}
+      },
+      {
+        "name": "admin",
+        "composite": false,
+        "clientRole": false,
+        "attributes": {}
+      }
+    ]
+  },
+  "users": [],
+  "clients": [
+    {
+      "clientId": "account",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "redirectUris": ["*"],
+      "directAccessGrantsEnabled": true
+    }
+  ],
+  "accessTokenLifespan": 300,
+  "ssoSessionMaxLifespan": 86400,
+  "loginWithEmailAllowed": true,
+  "registrationAllowed": false
+}

@@ -1,0 +1,35 @@
+# Environment
+.env
+.env.local
+*.log
+
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Rust
+target/
+Cargo.lock
+
+# Build
+dist/
+.next/
+build/
+*.tsbuildinfo
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+.docker/
+
+# Python
+__pycache__/
+*.pyc

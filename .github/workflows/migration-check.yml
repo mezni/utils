@@ -1,0 +1,33 @@
+name: Migration Check
+
+on:
+  push:
+    branches: [main]
+    paths: ["database/migrations/**"]
+  pull_request:
+    branches: [main]
+    paths: ["database/migrations/**"]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_DB: bornemap
+          POSTGRES_USER: bornemap
+          POSTGRES_PASSWORD: bornemap
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          for f in database/migrations/*/001_*.sql; do
+            psql "$DATABASE_URL" -f "$f"
+          done
+        env:
+          DATABASE_URL: postgresql://bornemap:bornemap@postgres:5432/bornemap

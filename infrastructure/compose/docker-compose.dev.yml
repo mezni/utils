@@ -1,0 +1,14 @@
+name: bornemap-dev
+
+services:
+  postgis:
+    ports:
+      - "5432:5432"
+
+  rabbitmq:
+    ports:
+      - "5672:5672"
+
+  keycloak:
+    ports:
+      - "8080:8080"

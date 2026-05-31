@@ -1,0 +1,10 @@
+[workspace]
+resolver = "2"
+members = [
+    "services/driver-service",
+    "services/admin-service",
+    "services/clickstream-service",
+    "services/gis-sync-worker",
+    "packages/shared-types",
+    "packages/auth-client",
+]
