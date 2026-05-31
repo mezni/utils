@@ -1,0 +1,77 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+env:
+  DATABASE_URL: "postgres://borne:borne@localhost:5432/borne_map"
+
+jobs:
+  backend-test:
+    name: Rust Check & Test
+    runs-on: ubuntu-latest
+    services:
+      postgis:
+        image: postgis/postgis:15-3.3
+        env:
+          POSTGRES_USER: borne
+          POSTGRES_PASSWORD: borne
+          POSTGRES_DB: borne_map
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U borne -d borne_map"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust Toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: "backend -> target"
+      - name: Format Check
+        run: cd backend && cargo fmt --all -- --check
+      - name: Run Migrations
+        run: psql "$DATABASE_URL" -f backend/db/migrations/20260528000000_init_spatial_schema.sql
+      - name: Seed Demo Data
+        run: psql "$DATABASE_URL" -f backend/db/seeds/demo_data.sql
+      - name: Validate Seed Data
+        run: psql "$DATABASE_URL" -f backend/db/seeds/validate_seed.sql
+      - name: Compile Verification
+        run: cd backend && cargo check --workspace
+      - name: Execute Handlers Unit Tests
+        run: cd backend && cargo test --workspace
+      - name: Smoke Test API
+        run: |
+          cd backend && cargo run -p api-service &
+          for i in $(seq 1 10); do
+            curl -sf "http://localhost:8080/health" && break
+            echo "Waiting for api-service... attempt $i"
+            sleep 3
+          done
+          curl -f "http://localhost:8080/health"
+          curl -f "http://localhost:8080/api/v1/stations/nearby?lat=36.8065&lng=10.1815&show_staged=true" -o /dev/null -w "%{http_code}\n"
+
+  frontend-test:
+    name: Expo Client Lint & Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: 'npm'
+          cache-dependency-path: apps/mobile-driver/package.json
+      - name: Install Dependencies
+        run: cd apps/mobile-driver && npm ci
+      - name: Build Verification
+        run: cd apps/mobile-driver && npx expo export --platform web
