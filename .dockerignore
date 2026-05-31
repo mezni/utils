@@ -1,0 +1,14 @@
+.git
+.gitignore
+.gitattributes
+node_modules/
+target/
+debug/
+release/
+dist/
+build/
+.env
+.env.*
+*.md
+.DS_Store
+.dockerignore

@@ -25,10 +25,10 @@ tasks below focus on review, validation, and finalization.
 
 **Purpose**: Ensure feature context is loaded and review framework is ready
 
-- [ ] T001 Read platform constitution at `docs/constitution.md` and `docs/epic00.md` to establish full context
-- [ ] T002 [P] Read all existing draft contracts under `specs/001-architecture-contracts/contracts/`
-- [ ] T003 [P] Read clarified specification at `specs/001-architecture-contracts/spec.md`
-- [ ] T004 [P] Read research decisions at `specs/001-architecture-contracts/research.md`
+- [X] T001 Read platform constitution at `docs/constitution.md` and `docs/epic00.md` to establish full context
+- [X] T002 [P] Read all existing draft contracts under `specs/001-architecture-contracts/contracts/`
+- [X] T003 [P] Read clarified specification at `specs/001-architecture-contracts/spec.md`
+- [X] T004 [P] Read research decisions at `specs/001-architecture-contracts/research.md`
 
 ---
 
@@ -38,13 +38,13 @@ tasks below focus on review, validation, and finalization.
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T005 Review the architectural invariant in `docs/constitution.md` section 23
+- [X] T005 Review the architectural invariant in `docs/constitution.md` section 23
       (`inventory.station` is source of truth) and ensure it is enforced in
       every contract document
-- [ ] T006 [P] Review the data ownership matrix in
+- [X] T006 [P] Review the data ownership matrix in
       `specs/001-architecture-contracts/contracts/service-matrix.md` for
       completeness and verify no ownership overlaps exist
-- [ ] T007 [P] Review the communication rules in
+- [X] T007 [P] Review the communication rules in
       `specs/001-architecture-contracts/contracts/communication-rules.md` to
       confirm cross-service DB access is forbidden everywhere
 
@@ -63,25 +63,25 @@ claim ownership of the same data write path.
 
 ### Review Existing Contracts
 
-- [ ] T008 [P] [US1] Review `specs/001-architecture-contracts/contracts/architecture-contract.md`
-      — verify all 6 services listed with correct roles, DB access, and public-facing status
-- [ ] T009 [P] [US1] Review `specs/001-architecture-contracts/contracts/service-matrix.md`
-      — verify all owned tables listed per service, no ownership overlaps
-- [ ] T010 [P] [US1] Review `specs/001-architecture-contracts/contracts/communication-rules.md`
-      — verify all communication channels documented, forbidden patterns explicit
-- [ ] T011 [P] [US1] Review `specs/001-architecture-contracts/contracts/id-strategy.md`
-      — verify all 5 prefixes documented with format rules and consistency requirements
+- [X] T008 [P] [US1] Review `specs/001-architecture-contracts/contracts/architecture-contract.md`
+      — verified: all 6 services, correct roles, DB access, public-facing status, invariant, enforcement
+- [X] T009 [P] [US1] Review `specs/001-architecture-contracts/contracts/service-matrix.md`
+      — verified: all services mapped, owned tables listed, no ownership overlaps, partner scoping
+- [X] T010 [P] [US1] Review `specs/001-architecture-contracts/contracts/communication-rules.md`
+      — verified: channel matrix complete, REST/RMQ rules, forbidden patterns explicit
+- [X] T011 [P] [US1] Review `specs/001-architecture-contracts/contracts/id-strategy.md`
+      — verified: all 5 prefixes documented, format rules, consistency + enforcement sections
 
 ### Finalize Contracts
 
-- [ ] T012 [US1] Update `specs/001-architecture-contracts/contracts/architecture-contract.md`
-      with any corrections from review and add enforcement section if missing
-- [ ] T013 [US1] Update `specs/001-architecture-contracts/contracts/service-matrix.md`
-      with any corrections from review
-- [ ] T014 [US1] Update `specs/001-architecture-contracts/contracts/communication-rules.md`
-      with any corrections from review
-- [ ] T015 [US1] Update `specs/001-architecture-contracts/contracts/id-strategy.md`
-      with any corrections from review
+- [X] T012 [US1] Update `specs/001-architecture-contracts/contracts/architecture-contract.md`
+      — verified: no corrections needed (enforcement section present)
+- [X] T013 [US1] Update `specs/001-architecture-contracts/contracts/service-matrix.md`
+      — verified: no corrections needed
+- [X] T014 [US1] Update `specs/001-architecture-contracts/contracts/communication-rules.md`
+      — verified: no corrections needed
+- [X] T015 [US1] Update `specs/001-architecture-contracts/contracts/id-strategy.md`
+      — verified: no corrections needed
 
 **Checkpoint**: At this point, User Story 1 should be fully functional and
 testable independently — all architecture boundary contracts finalized.
@@ -98,15 +98,14 @@ lists, column rules, constraint definitions, and ownership.
 
 ### Review Existing Contract
 
-- [ ] T016 [P] [US2] Review `specs/001-architecture-contracts/contracts/database-schema-contract.md`
-      — verify all 4 schemas documented with correct tables, key columns,
-      constraints (PKs, FKs, UNIQUE, GIST), and partitioning rules
+- [X] T016 [P] [US2] Review `specs/001-architecture-contracts/contracts/database-schema-contract.md`
+      — verified: all 4 schemas, correct tables, columns, PK/FK/UNIQUE/GIST constraints,
+      partitioning rules, soft delete columns, NanoID PKs, composite PKs
 
 ### Finalize Contract
 
-- [ ] T017 [US2] Update `specs/001-architecture-contracts/contracts/database-schema-contract.md`
-      with any corrections from review — ensure soft delete columns, NanoID PKs,
-      and composite PKs are accurately specified
+- [X] T017 [US2] Update `specs/001-architecture-contracts/contracts/database-schema-contract.md`
+      — verified: no corrections needed
 
 **Checkpoint**: At this point, User Stories 1 AND 2 should both work
 independently — architecture and database contracts finalized.
@@ -123,15 +122,14 @@ mock consumer can parse it without schema negotiation.
 
 ### Review Existing Contract
 
-- [ ] T018 [P] [US3] Review `specs/001-architecture-contracts/contracts/event-spec-v1.md`
-      — verify event envelope contains all 7 fields, all 9 event types listed
-      with correct payload fields, delivery rules documented
+- [X] T018 [P] [US3] Review `specs/001-architecture-contracts/contracts/event-spec-v1.md`
+      — verified: event envelope with all 7 fields, all 9 event types with payload fields,
+      delivery rules (at-least-once, no secrets, JSONB-only)
 
 ### Finalize Contract
 
-- [ ] T019 [US3] Update `specs/001-architecture-contracts/contracts/event-spec-v1.md`
-      with any corrections from review — ensure at-least-once delivery,
-      no-secrets rule, and JSONB-only payload rules are explicit
+- [X] T019 [US3] Update `specs/001-architecture-contracts/contracts/event-spec-v1.md`
+      — verified: no corrections needed
 
 **Checkpoint**: At this point, User Stories 1–3 should all work independently
 — architecture, database, and event contracts finalized.
@@ -149,15 +147,14 @@ service layer, and DB constraints.
 
 ### Review Existing Contract
 
-- [ ] T020 [P] [US4] Review `specs/001-architecture-contracts/contracts/rbac-model.md`
-      — verify exactly 3 roles defined, 3 enforcement layers documented,
-      partner isolation rule stated at repository level
+- [X] T020 [P] [US4] Review `specs/001-architecture-contracts/contracts/rbac-model.md`
+      — verified: exactly 3 roles, 3 enforcement layers (Keycloak/service/DB),
+      partner isolation rule at repository level with no API-layer exceptions
 
 ### Finalize Contract
 
-- [ ] T021 [US4] Update `specs/001-architecture-contracts/contracts/rbac-model.md`
-      with any corrections from review — ensure partner isolation rule has
-      no API-layer exception loophole
+- [X] T021 [US4] Update `specs/001-architecture-contracts/contracts/rbac-model.md`
+      — verified: no corrections needed
 
 **Checkpoint**: At this point, User Stories 1–4 should all work independently.
 
@@ -173,15 +170,14 @@ format, metric list, and cache invalidation rules are documented and unambiguous
 
 ### Review Existing Contract
 
-- [ ] T022 [P] [US5] Review `specs/001-architecture-contracts/contracts/ci-cd-contract.md`
-      — verify all 6 pipeline stages documented, build rules for backend and
-      frontend, artifact tagging strategy, and security rules
+- [X] T022 [P] [US5] Review `specs/001-architecture-contracts/contracts/ci-cd-contract.md`
+      — verified: all 6 pipeline stages (lint/test/build/contract/Docker/GHCR),
+      backend + frontend build rules, artifact tagging (git-sha), security rules
 
 ### Finalize Contract
 
-- [ ] T023 [US5] Update `specs/001-architecture-contracts/contracts/ci-cd-contract.md`
-      with any corrections from review — ensure no-auto-deployment rule and
-      manual deployment process are explicit
+- [X] T023 [US5] Update `specs/001-architecture-contracts/contracts/ci-cd-contract.md`
+      — verified: no corrections needed (no-auto-deploy and manual deploy documented)
 
 **Checkpoint**: At this point, all 5 user stories should be independently
 functional — all 8 contract documents finalized and reviewed.
@@ -192,17 +188,17 @@ functional — all 8 contract documents finalized and reviewed.
 
 **Purpose**: Final validation, consistency pass, and downstream integration
 
-- [ ] T024 [P] Run a cross-document consistency check — verify no contradicting
-      rules between any of the 8 contract documents under
-      `specs/001-architecture-contracts/contracts/`
-- [ ] T025 [P] Verify the quickstart guide at
-      `specs/001-architecture-contracts/quickstart.md` accurately references
-      all contract documents with correct file paths and reading order
-- [ ] T026 [P] Verify that `AGENTS.md` references the plan file at
+- [X] T024 [P] Run a cross-document consistency check — verified: no contradicting
+      rules across all 8 contract documents (service counts, ownership, schemas,
+      roles, IDs, events all consistent)
+- [X] T025 [P] Verify the quickstart guide at
+      `specs/001-architecture-contracts/quickstart.md` — verified: all 8 contracts
+      referenced with correct file paths and reading order
+- [X] T026 [P] Verify that `AGENTS.md` references the plan file at
       `specs/001-architecture-contracts/plan.md` and contracts directory
-- [ ] T027 [P] Verify every contract document has a Version line, Purpose
-      statement, and Enforcement section
-- [ ] T028 Update `docs/tasks.md` to reflect that EPIC 0 (Architecture Freeze)
+- [X] T027 [P] Verify every contract document has a Version line, Purpose
+      statement, and Enforcement section — verified: all 8 contracts complete
+- [X] T028 Update `docs/tasks.md` to reflect that EPIC 0 (Architecture Freeze)
       contract documents are now finalized and ready to unblock downstream EPICs
 
 ---
