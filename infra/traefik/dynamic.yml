@@ -7,6 +7,7 @@ http:
       middlewares:
         - strip-driver-prefix
         - rate-limit
+        - auth-reject
 
     admin-api:
       rule: "PathPrefix(`/api/v1/admin`)"
@@ -14,6 +15,7 @@ http:
       priority: 10
       middlewares:
         - strip-admin-prefix
+        - auth-reject
 
     events-api:
       rule: "PathPrefix(`/api/v1/events`)"
@@ -21,6 +23,7 @@ http:
       priority: 10
       middlewares:
         - strip-events-prefix
+        - auth-reject
 
     auth:
       rule: "PathPrefix(`/auth`)"
@@ -110,3 +113,11 @@ http:
       rateLimit:
         average: 100
         burst: 20
+
+    auth-reject:
+      forwardAuth:
+        address: "http://keycloak:8080/realms/ev-platform/protocol/openid-connect/userinfo"
+        trustForwardHeader: true
+        authResponseHeaders:
+          - X-Auth-User
+          - X-Auth-Roles

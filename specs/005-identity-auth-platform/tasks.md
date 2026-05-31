@@ -11,8 +11,8 @@
 
 **Purpose**: Create the shared auth libraries that all stories depend on.
 
-- [ ] T001 Create `crates/common-auth/` with `Cargo.toml`, dependencies (`jsonwebtoken`, `serde`, `reqwest`), and `src/lib.rs` skeleton
-- [ ] T002 [P] Create `packages/auth-client/` with `package.json`, TypeScript config, and `src/index.ts` skeleton
+- [X] T001 Create `crates/common-auth/` with `Cargo.toml`, dependencies (`jsonwebtoken`, `serde`, `reqwest`), and `src/lib.rs` skeleton
+- [X] T002 [P] Create `packages/auth-client/` with `package.json`, TypeScript config, and `src/index.ts` skeleton
 
 **Checkpoint**: Shared library directories ready for implementation.
 
@@ -24,14 +24,14 @@
 
 **⚠ CRITICAL**: All user stories depend on this phase.
 
-- [ ] T003 Update `infra/keycloak/realm-export.json` with realm name `ev-platform`, access token lifespan 900s, refresh token lifespan 2592000s, enable self-registration for drivers, configure admin-only provisioning for partner accounts, and enable brute-force protection
-- [ ] T004 [P] Add role definitions to realm: `registered_driver`, `partner`, `admin` with descriptions
-- [ ] T005 [P] Register client `driver-web` (public, Authorization Code + PKCE) with redirect URIs
-- [ ] T006 [P] Register client `driver-mobile` (public, Authorization Code + PKCE) with redirect URIs
-- [ ] T007 [P] Register client `admin-dashboard` (public, Authorization Code + PKCE) with redirect URIs
-- [ ] T008 [P] Register client `partner-dashboard` (public, Authorization Code + PKCE) with redirect URIs
-- [ ] T009 [P] Register client `backend-service` (confidential, Client Credentials) with service account
-- [ ] T010 [P] Configure `infra/traefik/traefik.yml` with `/auth/*` route forwarding to Keycloak at `http://keycloak:8080`
+- [X] T003 Update `infra/keycloak/realm-export.json` with realm name `ev-platform`, access token lifespan 900s, refresh token lifespan 2592000s, enable self-registration for drivers, configure admin-only provisioning for partner accounts, and enable brute-force protection
+- [X] T004 [P] Add role definitions to realm: `registered_driver`, `partner`, `admin` with descriptions
+- [X] T005 [P] Register client `driver-web` (public, Authorization Code + PKCE) with redirect URIs
+- [X] T006 [P] Register client `driver-mobile` (public, Authorization Code + PKCE) with redirect URIs
+- [X] T007 [P] Register client `admin-dashboard` (public, Authorization Code + PKCE) with redirect URIs
+- [X] T008 [P] Register client `partner-dashboard` (public, Authorization Code + PKCE) with redirect URIs
+- [X] T009 [P] Register client `backend-service` (confidential, Client Credentials) with service account
+- [X] T010 [P] Configure `infra/traefik/traefik.yml` with `/auth/*` route forwarding to Keycloak at `http://keycloak:8080`
 - [ ] T011 Validate realm export with `docker compose config --quiet` and Keycloak startup test
 
 **Checkpoint**: Keycloak realm operational with all 5 clients and 3 roles; Traefik routes `/auth/*` to Keycloak.
@@ -52,9 +52,9 @@
 - [ ] T017 [P] [US1] Implement token storage in `packages/auth-client/src/token-storage.ts` — in-memory storage with httpOnly cookie fallback for web
 - [ ] T018 [P] [US1] Implement types in `packages/auth-client/src/types.ts` — AuthenticatedUser, TokenResponse, Role type
 - [ ] T019 [P] [US1] Implement public API in `packages/auth-client/src/index.ts` — login, logout, getToken, getUser, isAuthenticated
-- [ ] T020 [US1] Integrate `packages/auth-client` into `apps/driver-web` — login button, auth guard, user context provider
-- [ ] T021 [US1] Integrate `packages/auth-client` into `apps/admin-dashboard` — immediate auth gate before app access
-- [ ] T022 [US1] Integrate `packages/auth-client` into `apps/partner-dashboard` — auth gate with role validation on entry
+- [X] T020 [US1] Integrate `packages/auth-client` into `apps/driver-web` — login button, auth guard, user context provider
+- [X] T021 [US1] Integrate `packages/auth-client` into `apps/admin-dashboard` — immediate auth gate before app access
+- [X] T022 [US1] Integrate `packages/auth-client` into `apps/partner-dashboard` — auth gate with role validation on entry
 
 **Checkpoint**: Users can log in through any web frontend and receive valid tokens.
 
@@ -66,12 +66,12 @@
 
 **Independent Test**: A user with `registered_driver` role receives a 403 error when accessing `/api/v1/admin/*`.
 
-- [ ] T023 [P] [US2] Implement role-checking middleware in `crates/common-auth/src/middleware.rs` — route-to-role mapping verification
-- [ ] T024 [US2] Integrate `common-auth` middleware into `services/admin-service` — attach middleware, configure role requirements for `/api/v1/admin/*`
-- [ ] T025 [US2] Integrate `common-auth` middleware into `services/driver-service` — attach middleware, configure role requirements for `/api/v1/driver/*`
-- [ ] T026 [US2] Integrate `common-auth` middleware into `services/clickstream-service` — attach middleware, allow all authenticated roles
-- [ ] T027 [US2] Integrate `common-auth` middleware into `services/gis-sync-worker` — attach middleware, allow all authenticated roles
-- [ ] T028 [US2] Configure Traefik middleware `infra/traefik/traefik.yml` for fast token rejection — validate expiry and signature at gateway before forwarding to services (depends on T010 — same file)
+- [X] T023 [P] [US2] Implement role-checking middleware in `crates/common-auth/src/middleware.rs` — route-to-role mapping verification
+- [X] T024 [US2] Integrate `common-auth` middleware into `services/admin-service` — attach middleware, configure role requirements for `/api/v1/admin/*`
+- [X] T025 [US2] Integrate `common-auth` middleware into `services/driver-service` — attach middleware, configure role requirements for `/api/v1/driver/*`
+- [X] T026 [US2] Integrate `common-auth` middleware into `services/clickstream-service` — attach middleware, allow all authenticated roles
+- [X] T027 [US2] Integrate `common-auth` middleware into `services/gis-sync-worker` — attach middleware, allow all authenticated roles
+- [X] T028 [US2] Configure Traefik middleware `infra/traefik/traefik.yml` for fast token rejection — validate expiry and signature at gateway before forwarding to services (depends on T010 — same file)
 
 **Checkpoint**: Protected endpoints reject unauthenticated and unauthorized requests with 401/403.
 
@@ -83,10 +83,10 @@
 
 **Independent Test**: A mobile user enters credentials in the app and receives tokens via PKCE flow.
 
-- [ ] T029 [P] [US3] Implement PKCE auth flow in `packages/auth-client/src/keycloak.ts` — code verifier generation, challenge, token exchange
-- [ ] T030 [P] [US3] Implement secure token storage in `packages/auth-client/src/token-storage.ts` — platform-native secure storage for mobile
-- [ ] T031 [US3] Integrate `packages/auth-client` into `apps/driver-mobile` — mobile login screen, PKCE auth, token storage
-- [ ] T032 [US3] Implement mobile logout flow in `apps/driver-mobile` — revoke tokens, clear secure storage, redirect to login
+- [X] T029 [P] [US3] Implement PKCE auth flow in `packages/auth-client/src/keycloak.ts` — code verifier generation, challenge, token exchange
+- [X] T030 [P] [US3] Implement secure token storage in `packages/auth-client/src/token-storage.ts` — platform-native secure storage for mobile
+- [X] T031 [US3] Integrate `packages/auth-client` into `apps/driver-mobile` — mobile login screen, PKCE auth, token storage
+- [X] T032 [US3] Implement mobile logout flow in `apps/driver-mobile` — revoke tokens, clear secure storage, redirect to login
 
 **Checkpoint**: Mobile users can authenticate without browser redirect.
 
@@ -98,10 +98,10 @@
 
 **Independent Test**: A backend service with valid client credentials receives a token and successfully calls another internal API.
 
-- [ ] T033 [P] [US4] Implement Client Credentials grant in `crates/common-auth/src/lib.rs` — token request with client_id and client_secret
-- [ ] T034 [US4] Configure `backend-service` client secret in deployment environment variables
-- [ ] T035 [US4] Add service-to-service auth helper in `crates/common-auth/src/lib.rs` — cached token management with automatic refresh
-- [ ] T036 [US4] Document internal service call pattern in `crates/common-auth/README.md`
+- [X] T033 [P] [US4] Implement Client Credentials grant in `crates/common-auth/src/lib.rs` — token request with client_id and client_secret
+- [X] T034 [US4] Configure `backend-service` client secret in deployment environment variables
+- [X] T035 [US4] Add service-to-service auth helper in `crates/common-auth/src/lib.rs` — cached token management with automatic refresh
+- [X] T036 [US4] Document internal service call pattern in `crates/common-auth/README.md`
 
 **Checkpoint**: Backend services can authenticate API calls to each other.
 
@@ -113,10 +113,10 @@
 
 **Independent Test**: A user logs in, uses the platform for an extended period with automatic token renewal, then logs out — after logout the refresh token is invalid.
 
-- [ ] T037 [P] [US5] Implement silent token refresh in `packages/auth-client/src/keycloak.ts` — refresh grant with automatic retry on 401
-- [ ] T038 [P] [US5] Implement refresh token expiry handling in `packages/auth-client/src/keycloak.ts` — detect expired refresh token, redirect to login
-- [ ] T039 [US5] Implement session timeout detection in `packages/auth-client/src/index.ts` — 30-day inactivity re-authentication
-- [ ] T040 [US5] Implement logout flow in `packages/auth-client/src/keycloak.ts` — Keycloak session revocation, refresh token invalidation
+- [X] T037 [P] [US5] Implement silent token refresh in `packages/auth-client/src/keycloak.ts` — refresh grant with automatic retry on 401
+- [X] T038 [P] [US5] Implement refresh token expiry handling in `packages/auth-client/src/keycloak.ts` — detect expired refresh token, redirect to login
+- [X] T039 [US5] Implement session timeout detection in `packages/auth-client/src/index.ts` — 30-day inactivity re-authentication
+- [X] T040 [US5] Implement logout flow in `packages/auth-client/src/keycloak.ts` — Keycloak session revocation, refresh token invalidation
 
 **Checkpoint**: Sessions auto-renew during active use and require re-login after 30 days inactivity.
 
@@ -128,10 +128,10 @@
 
 **Independent Test**: After a user logs in, the login event appears in the audit log within 5 seconds.
 
-- [ ] T041 [P] [US6] Define audit event types in `crates/common-auth/src/error.rs` — LoginSuccess, LoginFailure, Logout, TokenRefresh, RoleChange
-- [ ] T042 [US6] Implement audit event producer in `crates/common-auth/src/lib.rs` — publish auth events to RabbitMQ `events.exchange`
-- [ ] T043 [US6] Add audit logging to login flow in `packages/auth-client/src/keycloak.ts` — emit audit events on login, logout, refresh
-- [ ] T044 [US6] Add audit logging to role change operations in realm configuration documentation
+- [X] T041 [P] [US6] Define audit event types in `crates/common-auth/src/error.rs` — LoginSuccess, LoginFailure, Logout, TokenRefresh, RoleChange
+- [X] T042 [US6] Implement audit event producer in `crates/common-auth/src/lib.rs` — publish auth events to RabbitMQ `events.exchange`
+- [X] T043 [US6] Add audit logging to login flow in `packages/auth-client/src/keycloak.ts` — emit audit events on login, logout, refresh
+- [X] T044 [US6] Add audit logging to role change operations in realm configuration documentation
 
 **Checkpoint**: Authentication events appear in the audit log.
 
@@ -141,15 +141,15 @@
 
 **Purpose**: CI/CD extension, GDPR compliance, documentation, and final validation.
 
-- [ ] T045 Add auth validation tests to `.github/workflows/pr-validation.yml` — token issuance, protected endpoint rejection, role enforcement, refresh flow
-- [ ] T046 Update `AGENTS.md` to reference EPIC 4 plan
-- [ ] T047 Implement GDPR account deletion flow — user can request deletion, identity provider honors within 30 days
-- [ ] T048 Implement GDPR data export flow — user can download personal data in machine-readable format
-- [ ] T049 Add password complexity validation to Keycloak realm — minimum length, character variety requirements
-- [ ] T050 Add account lockout configuration to Keycloak realm — configurable failed-attempt threshold and lockout duration
-- [ ] T051 Run quickstart.md validation — verify all verification commands produce expected results
-- [ ] T052 End-to-end verification: login → access protected API → role enforcement → refresh → logout → audit event
-- [ ] T053 Verify HTTPS/TLS termination for auth endpoints — confirm Traefik enforces encrypted transport for `/auth/*` and all protected `/api/v1/*` routes per FR-012
+- [X] T045 Add auth validation tests to `.github/workflows/pr-validation.yml` — token issuance, protected endpoint rejection, role enforcement, refresh flow
+- [X] T046 Update `AGENTS.md` to reference EPIC 4 plan
+- [X] T047 Implement GDPR account deletion flow — user can request deletion, identity provider honors within 30 days
+- [X] T048 Implement GDPR data export flow — user can download personal data in machine-readable format
+- [X] T049 Add password complexity validation to Keycloak realm — minimum length, character variety requirements
+- [X] T050 Add account lockout configuration to Keycloak realm — configurable failed-attempt threshold and lockout duration
+- [ ] T051 Run quickstart.md validation — verify all verification commands produce expected results (requires running Docker Compose)
+- [ ] T052 End-to-end verification: login → access protected API → role enforcement → refresh → logout → audit event (requires running Docker Compose)
+- [ ] T053 Verify HTTPS/TLS termination for auth endpoints — confirm Traefik enforces encrypted transport for `/auth/*` and all protected `/api/v1/*` routes per FR-012 (requires running Docker Compose)
 
 **Checkpoint**: EPIC 4 fully complete — all 6 user stories operational.
 

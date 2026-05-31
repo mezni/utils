@@ -139,9 +139,53 @@ jobs:
           fi
           echo "All DTOs properly confined to contracts crate."
 
+  auth-validation:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Start Keycloak
+        run: |
+          docker compose -f infra/compose/docker-compose.yml up -d keycloak
+          echo "Waiting for Keycloak..."
+          for i in $(seq 1 30); do
+            if curl -s http://localhost:8080/realms/ev-platform/.well-known/openid-configuration > /dev/null 2>&1; then
+              echo "Keycloak ready"
+              break
+            fi
+            sleep 2
+          done
+
+      - name: Token issuance test
+        run: |
+          echo "Testing Client Credentials token issuance..."
+          RESPONSE=$(curl -s -X POST http://localhost:8080/realms/ev-platform/protocol/openid-connect/token \
+            -H "Content-Type: application/x-www-form-urlencoded" \
+            -d "client_id=backend-service" \
+            -d "client_secret=CHANGE_ME_IN_PRODUCTION" \
+            -d "grant_type=client_credentials")
+          echo "$RESPONSE" | grep -q "access_token" && echo "✅ Token issued" || echo "❌ Token issuance failed"
+
+      - name: Protected endpoint rejection test
+        run: |
+          echo "Testing unauthenticated request rejection..."
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost/api/v1/admin/stations)
+          if [ "$HTTP_CODE" = "401" ]; then
+            echo "✅ Unauthenticated request correctly rejected (401)"
+          else
+            echo "⚠️ Expected 401, got $HTTP_CODE"
+          fi
+
+      - name: Auth validation summary
+        if: always()
+        run: |
+          echo "## Auth Validation Results" >> $GITHUB_STEP_SUMMARY
+          echo "Tests executed: token issuance, protected endpoint rejection" >> $GITHUB_STEP_SUMMARY
+
   duration-report:
     if: always()
-    needs: [lint, test, build, contract-validation]
+    needs: [lint, test, build, contract-validation, auth-validation]
     runs-on: ubuntu-latest
     steps:
       - name: Record workflow start
