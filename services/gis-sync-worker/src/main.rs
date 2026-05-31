@@ -3,7 +3,7 @@ use std::time::Duration;
 
 #[tokio::main]
 async fn main() {
-    tracing_subscriber::init();
+    tracing_subscriber::fmt::init();
 
     let token_url =
         "http://keycloak:8080/realms/ev-platform/protocol/openid-connect/token";

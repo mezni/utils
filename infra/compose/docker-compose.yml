@@ -161,8 +161,8 @@ services:
 
   driver-web:
     build:
-      context: ../../apps/driver-web
-      dockerfile: Dockerfile
+      context: ../../
+      dockerfile: apps/driver-web/Dockerfile
     container_name: borne-driver-web
     networks:
       - internal_backend
@@ -172,8 +172,8 @@ services:
 
   admin-dashboard:
     build:
-      context: ../../apps/admin-dashboard
-      dockerfile: Dockerfile
+      context: ../../
+      dockerfile: apps/admin-dashboard/Dockerfile
     container_name: borne-admin-dashboard
     networks:
       - internal_backend
@@ -183,8 +183,8 @@ services:
 
   partner-dashboard:
     build:
-      context: ../../apps/partner-dashboard
-      dockerfile: Dockerfile
+      context: ../../
+      dockerfile: apps/partner-dashboard/Dockerfile
     container_name: borne-partner-dashboard
     networks:
       - internal_backend

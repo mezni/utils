@@ -57,7 +57,7 @@ impl ClientCredentials {
             .form(&params)
             .send()
             .await
-            .map_err(|e| AuthError::AuthUnavailable)?;
+            .map_err(|_e| AuthError::AuthUnavailable)?;
 
         let body: serde_json::Value = resp
             .json()
@@ -71,10 +71,10 @@ impl ClientCredentials {
 
         let expires_in = body["expires_in"].as_u64().unwrap_or(300);
 
-        let validated = self.validator.validate_token(&access_token).await?;
+        let _validated = self.validator.validate_token(&access_token).await?;
 
         self.cached_token = Some(CachedToken {
-            token: validated,
+            token: _validated,
             raw: access_token.clone(),
             expires_at: Instant::now()
                 + std::time::Duration::from_secs(expires_in.saturating_sub(60)),

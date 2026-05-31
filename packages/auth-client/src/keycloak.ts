@@ -1,5 +1,5 @@
 import Keycloak from 'keycloak-js';
-import { AuthConfig, AuthenticatedUser, Role } from './types';
+import type { AuthConfig, AuthenticatedUser, Role } from './types';
 import { TokenStorage } from './token-storage';
 import { startSessionTracking, stopSessionTracking, isSessionExpired } from './index';
 

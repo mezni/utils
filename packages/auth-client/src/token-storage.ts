@@ -1,4 +1,4 @@
-import { AuthenticatedUser, TokenResponse } from './types';
+import type { AuthenticatedUser, TokenResponse } from './types';
 
 interface TokenStore {
   accessToken: string | null;

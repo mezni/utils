@@ -1,5 +1,5 @@
 use crate::error::{AuthError, AuthErrorResponse};
-use crate::validator::{JwtValidator, ValidatedToken};
+use crate::validator::JwtValidator;
 use uuid::Uuid;
 
 #[derive(Debug, Clone)]

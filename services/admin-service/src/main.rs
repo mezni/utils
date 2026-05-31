@@ -85,7 +85,7 @@ async fn stations_handler(auth: AuthCtx) -> impl IntoResponse {
 
 #[tokio::main]
 async fn main() {
-    tracing_subscriber::init();
+    tracing_subscriber::fmt::init();
 
     let validator = JwtValidator::new(
         "http://keycloak:8080/realms/ev-platform/protocol/openid-connect/certs".into(),
