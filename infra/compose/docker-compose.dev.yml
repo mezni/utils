@@ -1,15 +1,25 @@
-version: "3.8"
 services:
-  # Services scaffolded in EPIC 1 — runtime configuration added in EPIC 2
-  traefik:
-    image: traefik:v3.0
+  postgres:
     ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    # Route prefixes (enforced in EPIC 2):
-    #   /api/v1/admin/*  → admin-service
-    #   /api/v1/driver/* → driver-service
-    #   /api/v1/events/* → clickstream-service
-    #   /auth/*          → keycloak
+      - "5432:5432"
+
+  rabbitmq:
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  keycloak:
+    ports:
+      - "8080:8080"
+
+  admin-service:
+    ports:
+      - "9001:8080"
+
+  driver-service:
+    ports:
+      - "9002:8080"
+
+  clickstream-service:
+    ports:
+      - "9003:8080"

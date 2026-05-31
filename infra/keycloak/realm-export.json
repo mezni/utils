@@ -1,0 +1,35 @@
+{
+  "id": "borne-map",
+  "realm": "borne-map",
+  "displayName": "BorneMap",
+  "enabled": true,
+  "sslRequired": "external",
+  "roles": {
+    "realm": [
+      {
+        "name": "registered_driver",
+        "description": "Registered driver — can discover stations, manage favorites and reviews"
+      },
+      {
+        "name": "partner",
+        "description": "Partner operator — can manage own stations and chargers"
+      },
+      {
+        "name": "admin",
+        "description": "Platform administrator — full system access"
+      }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "backend-services",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "standardFlowEnabled": false,
+      "serviceAccountsEnabled": true,
+      "directAccessGrantsEnabled": true
+    }
+  ],
+  "users": []
+}
