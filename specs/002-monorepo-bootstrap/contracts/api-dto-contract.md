@@ -4,6 +4,12 @@
 **File**: `src/dto.rs`
 **Status**: Scaffold — types defined, fields specified, to be filled per EPIC 2+
 
+## API Versioning
+
+All DTOs are served under `/api/v1/*`. No unversioned endpoints.
+- `baseURL = "/api/v1"` in all frontend clients
+- Services enforce `/api/v1/<service>/` prefix internally
+
 ## DTOs
 
 ### `StationDTO`

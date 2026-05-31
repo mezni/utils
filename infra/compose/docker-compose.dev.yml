@@ -1,0 +1,15 @@
+version: "3.8"
+services:
+  # Services scaffolded in EPIC 1 — runtime configuration added in EPIC 2
+  traefik:
+    image: traefik:v3.0
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    # Route prefixes (enforced in EPIC 2):
+    #   /api/v1/admin/*  → admin-service
+    #   /api/v1/driver/* → driver-service
+    #   /api/v1/events/* → clickstream-service
+    #   /auth/*          → keycloak

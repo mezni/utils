@@ -12,14 +12,14 @@
 
 **Independent Test**: `ls -d apps/ services/ crates/ packages/ infra/ scripts/ docs/ .github/` from repo root returns all 8 dirs; each has the expected subdirectories per FR-002 through FR-005 and FR-015/FR-016.
 
-- [ ] T001 [P] Create top-level directories: `apps/`, `services/`, `crates/`, `packages/`, `infra/`, `scripts/`, `docs/`, `.github/`
-- [ ] T002 [P] Create `apps/driver-web/`, `apps/partner-dashboard/`, `apps/admin-dashboard/`, `apps/driver-mobile/`
-- [ ] T003 [P] Create `services/admin-service/`, `services/driver-service/`, `services/clickstream-service/`, `services/gis-sync-worker/`
-- [ ] T004 [P] Create `crates/contracts/`, `crates/common-auth/`, `crates/common-config/`, `crates/common-db/`, `crates/common-errors/`, `crates/common-types/`
-- [ ] T005 [P] Create `packages/design-system/`, `packages/api-client/`, `packages/analytics-client/`, `packages/auth-client/`
-- [ ] T006 [P] Create `infra/docker/` and `infra/compose/`
-- [ ] T007 [P] Create placeholder `infra/docker/Dockerfile` for each service (admin-service, driver-service, clickstream-service, gis-sync-worker) — no build logic
-- [ ] T008 Create placeholder `infra/compose/docker-compose.dev.yml` for local dev scaffolding
+- [X] T001 [P] Create top-level directories: `apps/`, `services/`, `crates/`, `packages/`, `infra/`, `scripts/`, `docs/`, `.github/`
+- [X] T002 [P] Create `apps/driver-web/`, `apps/partner-dashboard/`, `apps/admin-dashboard/`, `apps/driver-mobile/`
+- [X] T003 [P] Create `services/admin-service/`, `services/driver-service/`, `services/clickstream-service/`, `services/gis-sync-worker/`
+- [X] T004 [P] Create `crates/contracts/`, `crates/common-auth/`, `crates/common-config/`, `crates/common-db/`, `crates/common-errors/`, `crates/common-types/`
+- [X] T005 [P] Create `packages/design-system/`, `packages/api-client/`, `packages/analytics-client/`, `packages/auth-client/`
+- [X] T006 [P] Create `infra/docker/` and `infra/compose/`
+- [X] T007 [P] Create placeholder `infra/docker/Dockerfile` for each service (admin-service, driver-service, clickstream-service, gis-sync-worker) — no build logic
+- [X] T008 Create placeholder `infra/compose/docker-compose.dev.yml` for local dev scaffolding
 
 **Checkpoint**: Directory structure matches spec — all acceptance scenarios for US1 pass.
 
@@ -31,18 +31,18 @@
 
 **Independent Test**: `cargo build --workspace` from repo root completes with zero errors; each crate compiles independently.
 
-- [ ] T009 Create root `Cargo.toml` with `[workspace]` declaring members = `services/*`, `crates/*`, resolver = "2", edition = "2021"
-- [ ] T010 [P] [US2] Scaffold `services/admin-service/Cargo.toml` (binary) with `src/main.rs` stub — println!("admin-service")
-- [ ] T011 [P] [US2] Scaffold `services/driver-service/Cargo.toml` (binary) with `src/main.rs` stub — println!("driver-service")
-- [ ] T012 [P] [US2] Scaffold `services/clickstream-service/Cargo.toml` (binary) with `src/main.rs` stub — println!("clickstream-service")
-- [ ] T013 [P] [US2] Scaffold `services/gis-sync-worker/Cargo.toml` (binary) with `src/main.rs` stub — println!("gis-sync-worker")
-- [ ] T014 [P] [US2] Scaffold `crates/contracts/Cargo.toml` (library) with `src/lib.rs` stub
-- [ ] T015 [P] [US2] Scaffold `crates/common-auth/Cargo.toml` (library) with `src/lib.rs` stub
-- [ ] T016 [P] [US2] Scaffold `crates/common-config/Cargo.toml` (library) with `src/lib.rs` stub
-- [ ] T017 [P] [US2] Scaffold `crates/common-db/Cargo.toml` (library) with `src/lib.rs` stub
-- [ ] T018 [P] [US2] Scaffold `crates/common-errors/Cargo.toml` (library) with `src/lib.rs` stub
-- [ ] T019 [P] [US2] Scaffold `crates/common-types/Cargo.toml` (library) with `src/lib.rs` stub
-- [ ] T020 [US2] Verify `cargo build --workspace` compiles with zero errors
+- [X] T009 Create root `Cargo.toml` with `[workspace]` declaring members = `services/*`, `crates/*`, resolver = "2", edition = "2021"
+- [X] T010 [P] [US2] Scaffold `services/admin-service/Cargo.toml` (binary) with `src/main.rs` stub — println!("admin-service")
+- [X] T011 [P] [US2] Scaffold `services/driver-service/Cargo.toml` (binary) with `src/main.rs` stub — println!("driver-service")
+- [X] T012 [P] [US2] Scaffold `services/clickstream-service/Cargo.toml` (binary) with `src/main.rs` stub — println!("clickstream-service")
+- [X] T013 [P] [US2] Scaffold `services/gis-sync-worker/Cargo.toml` (binary) with `src/main.rs` stub — println!("gis-sync-worker")
+- [X] T014 [P] [US2] Scaffold `crates/contracts/Cargo.toml` (library) with `src/lib.rs` stub
+- [X] T015 [P] [US2] Scaffold `crates/common-auth/Cargo.toml` (library) with `src/lib.rs` stub
+- [X] T016 [P] [US2] Scaffold `crates/common-config/Cargo.toml` (library) with `src/lib.rs` stub
+- [X] T017 [P] [US2] Scaffold `crates/common-db/Cargo.toml` (library) with `src/lib.rs` stub
+- [X] T018 [P] [US2] Scaffold `crates/common-errors/Cargo.toml` (library) with `src/lib.rs` stub
+- [X] T019 [P] [US2] Scaffold `crates/common-types/Cargo.toml` (library) with `src/lib.rs` stub
+- [X] T020 [US2] Verify `cargo build --workspace` compiles with zero errors
 
 **Checkpoint**: Rust workspace fully functional — all 4 services and 6 crates compile.
 
@@ -54,19 +54,19 @@
 
 **Independent Test**: `npm run build` succeeds in each web app; `expo doctor` passes in driver-mobile; `tsc --noEmit` passes for all packages.
 
-- [ ] T021 Create root `package.json` with `workspaces: ["apps/*", "packages/*"]` and scripts for `build`, `lint`, `format`, `test`
-- [ ] T022 Create root `tsconfig.base.json` with strict mode, ES2022 target, and shared compiler options
-- [ ] T023 [P] [US3] Scaffold `apps/driver-web/` — `npm create vite` with React + TypeScript template, add build script
-- [ ] T024 [P] [US3] Scaffold `apps/partner-dashboard/` — `npm create vite` with React + TypeScript template, add build script
-- [ ] T025 [P] [US3] Scaffold `apps/admin-dashboard/` — `npm create vite` with React + TypeScript template, add build script
-- [ ] T026 [P] [US3] Scaffold `apps/driver-mobile/` — `npx create-expo-app` with TypeScript template
-- [ ] T027 [P] [US3] Initialize `packages/design-system/` with `package.json`, `tsconfig.json`, `src/index.ts` export stub
-- [ ] T028 [P] [US3] Initialize `packages/api-client/` with `package.json`, `tsconfig.json`, `src/index.ts` export stub
-- [ ] T029 [P] [US3] Initialize `packages/analytics-client/` with `package.json`, `tsconfig.json`, `src/index.ts` export stub
-- [ ] T030 [P] [US3] Initialize `packages/auth-client/` with `package.json`, `tsconfig.json`, `src/index.ts` export stub
-- [ ] T031 [US3] Verify `npm run build` succeeds for all 3 web apps
-- [ ] T032 [US3] Verify `expo doctor` passes for driver-mobile
-- [ ] T033 [US3] Verify `npx tsc --noEmit --project tsconfig.base.json` passes for all packages
+- [X] T021 Create root `package.json` with `workspaces: ["apps/*", "packages/*"]` and scripts for `build`, `lint`, `format`, `test`
+- [X] T022 Create root `tsconfig.base.json` with strict mode, ES2022 target, and shared compiler options
+- [X] T023 [P] [US3] Scaffold `apps/driver-web/` — `npm create vite` with React + TypeScript template, add build script
+- [X] T024 [P] [US3] Scaffold `apps/partner-dashboard/` — `npm create vite` with React + TypeScript template, add build script
+- [X] T025 [P] [US3] Scaffold `apps/admin-dashboard/` — `npm create vite` with React + TypeScript template, add build script
+- [X] T026 [P] [US3] Scaffold `apps/driver-mobile/` — `npx create-expo-app` with TypeScript template
+- [X] T027 [P] [US3] Initialize `packages/design-system/` with `package.json`, `tsconfig.json`, `src/index.ts` export stub
+- [X] T028 [P] [US3] Initialize `packages/api-client/` with `package.json`, `tsconfig.json`, `src/index.ts` export stub
+- [X] T029 [P] [US3] Initialize `packages/analytics-client/` with `package.json`, `tsconfig.json`, `src/index.ts` export stub
+- [X] T030 [P] [US3] Initialize `packages/auth-client/` with `package.json`, `tsconfig.json`, `src/index.ts` export stub
+- [X] T031 [US3] Verify `npm run build` succeeds for all 3 web apps
+- [X] T032 [US3] Verify `expo doctor` passes for driver-mobile
+- [X] T033 [US3] Verify `npx tsc --noEmit --project tsconfig.base.json` passes for all packages
 
 **Checkpoint**: All frontend apps and packages compile successfully.
 
@@ -78,15 +78,15 @@
 
 **Independent Test**: A reviewer can verify no struct or DTO outside `crates/contracts/` duplicates a type defined there.
 
-- [ ] T034 [US4] Add `serde`, `chrono`, `uuid`, `nanoid` dependencies to `crates/contracts/Cargo.toml`
-- [ ] T035 [P] [US4] Define `Role` enum (`RegisteredDriver`, `Partner`, `Admin`) with `Serialize`/`Deserialize` in `crates/contracts/src/rbac.rs`
-- [ ] T036 [P] [US4] Define `StationDTO`, `UserDTO`, `PartnerDTO`, `ReviewDTO` with NanoID-prefixed `String` IDs in `crates/contracts/src/dto.rs`
-- [ ] T037 [P] [US4] Define `EventType` enum with 9 v1 variants (StationSearched, StationViewed, ChargingStarted, ChargingCompleted, ReviewSubmitted, PartnerStationCreated, PartnerStationUpdated, UserRegistered, ErrorOccurred) in `crates/contracts/src/events.rs`
-- [ ] T038 [P] [US4] Define `ClickstreamEventEnvelope` struct with `event_id`, `event_type`, `user_id`, `session_id`, `payload`, `timestamp`, `source`, `trace_id` in `crates/contracts/src/events.rs`
-- [ ] T039 [US4] Create `crates/contracts/src/lib.rs` re-exporting all public types from dto, events, rbac modules
-- [ ] T040 [US4] Verify `cargo build --workspace` still passes with contracts types populated
-- [ ] T041 [US4] Update `packages/api-client/src/index.ts` with TypeScript type stubs mirroring the Rust DTOs (StationDTO, UserDTO, PartnerDTO, ReviewDTO, EventType, ClickstreamEventEnvelope, Role)
-- [ ] T042 [US4] Verify no duplicate DTOs exist outside `crates/contracts/` — audit all service/crate `*.rs` files
+- [X] T034 [US4] Add `serde`, `chrono`, `uuid`, `nanoid` dependencies to `crates/contracts/Cargo.toml`
+- [X] T035 [P] [US4] Define `Role` enum (`RegisteredDriver`, `Partner`, `Admin`) with `Serialize`/`Deserialize` in `crates/contracts/src/rbac.rs`
+- [X] T036 [P] [US4] Define `StationDTO`, `UserDTO`, `PartnerDTO`, `ReviewDTO` with NanoID-prefixed `String` IDs in `crates/contracts/src/dto.rs`
+- [X] T037 [P] [US4] Define `EventType` enum with 9 v1 variants (StationSearched, StationViewed, ChargingStarted, ChargingCompleted, ReviewSubmitted, PartnerStationCreated, PartnerStationUpdated, UserRegistered, ErrorOccurred) in `crates/contracts/src/events.rs`
+- [X] T038 [P] [US4] Define `ClickstreamEventEnvelope` struct with `event_id`, `event_type`, `user_id`, `session_id`, `payload`, `timestamp`, `source`, `trace_id` in `crates/contracts/src/events.rs`
+- [X] T039 [US4] Create `crates/contracts/src/lib.rs` re-exporting all public types from dto, events, rbac modules
+- [X] T040 [US4] Verify `cargo build --workspace` still passes with contracts types populated
+- [X] T041 [US4] Update `packages/api-client/src/index.ts` with TypeScript type stubs mirroring the Rust DTOs (StationDTO, UserDTO, PartnerDTO, ReviewDTO, EventType, ClickstreamEventEnvelope, Role)
+- [X] T042 [US4] Verify no duplicate DTOs exist outside `crates/contracts/` — audit all service/crate `*.rs` files
 
 **Checkpoint**: Contracts crate defines all cross-service types; api-client mirrors them in TypeScript; `cargo build` passes.
 
@@ -98,14 +98,14 @@
 
 **Independent Test**: `make lint-all && make build-all && make test-all` from repo root succeeds with zero errors.
 
-- [ ] T043 [US5] Create root `Makefile` with `.PHONY` declarations and `format-all` target (cargo fmt + prettier)
-- [ ] T044 [US5] Add `lint-all` target to Makefile (cargo clippy -- -D warnings + eslint)
-- [ ] T045 [US5] Add `build-all` target to Makefile (cargo build --workspace + vite build for all web apps)
-- [ ] T046 [US5] Add `test-all` target to Makefile (cargo test --workspace)
-- [ ] T047 [US5] Verify `make format-all` runs cargo fmt and prettier without errors
-- [ ] T048 [US5] Verify `make lint-all` passes cargo clippy and eslint without errors
-- [ ] T049 [US5] Verify `make build-all` completes cargo build + vite build sequentially
-- [ ] T050 [US5] Verify `make test-all` runs cargo test --workspace
+- [X] T043 [US5] Create root `Makefile` with `.PHONY` declarations and `format-all` target (cargo fmt + prettier)
+- [X] T044 [US5] Add `lint-all` target to Makefile (cargo clippy -- -D warnings + eslint)
+- [X] T045 [US5] Add `build-all` target to Makefile (cargo build --workspace + vite build for all web apps)
+- [X] T046 [US5] Add `test-all` target to Makefile (cargo test --workspace)
+- [X] T047 [US5] Verify `make format-all` runs cargo fmt and prettier without errors
+- [X] T048 [US5] Verify `make lint-all` passes cargo clippy and eslint without errors
+- [X] T049 [US5] Verify `make build-all` completes cargo build + vite build sequentially
+- [X] T050 [US5] Verify `make test-all` runs cargo test --workspace
 
 **Checkpoint**: All 4 Makefile targets pass from repo root.
 
@@ -115,10 +115,10 @@
 
 **Purpose**: Final validation, documentation, and agent context updates.
 
-- [ ] T051 [P] Verify all 6 success criteria (SC-001 through SC-006) pass end-to-end
-- [ ] T052 Update `README.md` at repo root with monorepo overview, directory map, and build instructions
-- [ ] T053 Create `.gitignore` at repo root with Rust (`target/`), Node (`node_modules/`), and IDE entries
-- [ ] T054 Create `.editorconfig` at repo root for consistent formatting across editors
+- [X] T051 [P] Verify all 6 success criteria (SC-001 through SC-006) pass end-to-end
+- [X] T052 Update `README.md` at repo root with monorepo overview, directory map, and build instructions
+- [X] T053 Create `.gitignore` at repo root with Rust (`target/`), Node (`node_modules/`), and IDE entries
+- [X] T054 Create `.editorconfig` at repo root for consistent formatting across editors
 
 **Checkpoint**: Monorepo bootstrap fully complete and documented.
 

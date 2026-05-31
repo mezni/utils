@@ -1,42 +1,26 @@
-# Rust
+node_modules/
+dist/
+build/
 target/
 debug/
 release/
 *.rs.bk
 *.rlib
 *.prof*
-
-# Node.js / TypeScript
-node_modules/
-dist/
-build/
-*.tsbuildinfo
-
-# React Native / Expo
-.expo/
-*.jks
-*.p8
-*.p12
-*.key
-*.mobileprovision
-*.orig.*
-
-# Environment
-.env
-.env.local
-.env.*.local
-.env.production
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# OS
+*.log
+.env*
 .DS_Store
 Thumbs.db
-
-# Logs
-*.log
+*.swp
+.vscode/
+.idea/
+*.exe
+*.dll
+*.so
+*.a
+*.o
+*.obj
+*.class
+*.jar
+__pycache__/
+*.pyc

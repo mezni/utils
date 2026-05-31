@@ -200,6 +200,8 @@ from the repository root succeeds without errors.
   `Dockerfile` for each service (no build logic required — CI ready only).
 - **FR-016**: The `infra/compose/` directory MUST contain a placeholder
   `docker-compose.dev.yml` for local development scaffolding.
+- **FR-017**: All API clients MUST assume `baseURL = "/api/v1"` — no
+  unversioned paths may be hardcoded; enforced via `packages/api-client/src/index.ts`.
 
 ### Key Entities *(include if feature involves data)*
 
@@ -243,3 +245,5 @@ from the repository root succeeds without errors.
 - CI/CD pipeline configuration (GitHub Actions) is handled in EPIC 3.
 - The `contracts` crate types will evolve as services are implemented;
   this epic only establishes the initial structure and example types.
+- API versioning follows `specs/001-architecture-contracts/contracts/api-versioning-contract.md`:
+  all endpoints under `/api/v1/*`; no unversioned routes.

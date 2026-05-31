@@ -24,7 +24,7 @@ Bootstrap a Rust + TypeScript monorepo containing 4 backend services (Cargo work
 
 **Performance Goals**: N/A (scaffolding only)
 
-**Constraints**: Single-command build (`make build-all`); no duplicate DTOs outside contracts crate; no runtime business logic
+**Constraints**: Single-command build (`make build-all`); no duplicate DTOs outside contracts crate; no runtime business logic; all API routes MUST use `/api/v1` prefix per api-versioning-contract.md
 
 **Scale/Scope**: 4 services, 6 crates, 3 web apps, 1 mobile app, 4 packages
 
