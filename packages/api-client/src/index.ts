@@ -1,7 +1,7 @@
 // api-client — typed REST client mirroring crates/contracts DTOs
 // Auto-generated from Rust contracts crate — keep in sync
 
-export const API_BASE_URL = "/api/v1"
+export const API_BASE_URL = "/api/v1";
 
 export enum Role {
   RegisteredDriver = "RegisteredDriver",
