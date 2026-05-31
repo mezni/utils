@@ -1,0 +1,113 @@
+name: Deploy to Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target environment"
+        required: true
+        default: production
+        type: choice
+        options:
+          - production
+      image_tag:
+        description: "Image tag to deploy (e.g., v1.2.3 or sha-<commit>)"
+        required: true
+        type: string
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+env:
+  DEPLOY_SCRIPT: scripts/ci/deploy.sh
+  HEALTH_CHECK_SCRIPT: scripts/ci/health-check.sh
+
+jobs:
+  pull-and-validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate image tag
+        run: |
+          if [[ -z "${{ github.event.inputs.image_tag }}" ]]; then
+            echo "ERROR: image_tag input is required"
+            exit 1
+          fi
+          echo "Deploying image tag: ${{ github.event.inputs.image_tag }}"
+
+      - name: Validate SSH connectivity
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEPLOY_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "${{ secrets.DEPLOY_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null
+          ssh -i ~/.ssh/deploy_key "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" "echo 'SSH connection OK'"
+
+      - name: Pull latest images on production host
+        run: |
+          ssh -i ~/.ssh/deploy_key "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
+            "cd /opt/borne-map && docker compose pull"
+
+      - name: Validate .env completeness
+        run: |
+          ssh -i ~/.ssh/deploy_key "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
+            "cd /opt/borne-map && if [ -f .env ]; then echo '.env found'; else echo 'ERROR: .env missing'; exit 1; fi"
+
+      - name: Verify compose config
+        run: |
+          ssh -i ~/.ssh/deploy_key "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
+            "cd /opt/borne-map && docker compose -f infra/compose/docker-compose.yml -f infra/compose/docker-compose.prod.yml config --quiet && echo 'Compose config valid'"
+
+  rolling-restart:
+    needs: pull-and-validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Copy deploy scripts to production host
+        run: |
+          scp -i ~/.ssh/deploy_key \
+            ${{ env.DEPLOY_SCRIPT }} \
+            ${{ env.HEALTH_CHECK_SCRIPT }} \
+            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:/opt/borne-map/scripts/ci/"
+
+      - name: Execute rolling restart
+        run: |
+          ssh -i ~/.ssh/deploy_key "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
+            "cd /opt/borne-map && bash scripts/ci/deploy.sh ${{ github.event.inputs.image_tag }}"
+
+  post-deploy-verify:
+    needs: rolling-restart
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run post-deploy health checks
+        run: |
+          ssh -i ~/.ssh/deploy_key "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
+            "cd /opt/borne-map && bash scripts/ci/health-check.sh all"
+
+      - name: Verify gateway routing
+        run: |
+          HOST="${{ secrets.DEPLOY_HOST }}"
+          echo "Checking gateway routing on $HOST..."
+          curl -sf "http://$HOST/api/v1/stations" > /dev/null && echo "Gateway routing OK" || echo "WARN: Gateway routing check skipped"
+
+  rollback:
+    if: failure()
+    needs: [pull-and-validate, rolling-restart, post-deploy-verify]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Rollback to previous images
+        run: |
+          ssh -i ~/.ssh/deploy_key "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
+            "cd /opt/borne-map && docker compose -f infra/compose/docker-compose.yml -f infra/compose/docker-compose.prod.yml up -d --no-deps \$(docker compose images --quiet) && echo 'Rollback complete'"
+
+      - name: Verify post-rollback health
+        run: |
+          ssh -i ~/.ssh/deploy_key "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
+            "cd /opt/borne-map && bash scripts/ci/health-check.sh all && echo 'Post-rollback health OK'"

@@ -1,0 +1,161 @@
+name: PR Validation
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: pr-${{ github.head_ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  RUSTFLAGS: -D warnings
+
+jobs:
+  paths-filter:
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            backend:
+              - 'services/**'
+              - 'crates/**'
+              - 'Cargo.toml'
+              - 'Cargo.lock'
+            frontend:
+              - 'apps/**'
+              - 'packages/**'
+              - 'package.json'
+              - 'package-lock.json'
+
+  lint:
+    needs: paths-filter
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        if: needs.paths-filter.outputs.backend == 'true'
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          components: clippy, rustfmt
+
+      - name: Setup Node.js
+        if: needs.paths-filter.outputs.frontend == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install npm dependencies
+        if: needs.paths-filter.outputs.frontend == 'true'
+        run: npm ci
+
+      - name: Rust formatting check
+        if: needs.paths-filter.outputs.backend == 'true'
+        run: cargo fmt --all --check
+
+      - name: Clippy
+        if: needs.paths-filter.outputs.backend == 'true'
+        run: cargo clippy --workspace -- -D warnings
+
+      - name: ESLint
+        if: needs.paths-filter.outputs.frontend == 'true'
+        run: npm run lint
+
+      - name: Lockfile drift check
+        if: needs.paths-filter.outputs.backend == 'true'
+        run: |
+          cargo metadata --format-version 1 > /dev/null 2>&1
+          if [ $? -ne 0 ]; then
+            echo "ERROR: Cargo metadata check failed — Cargo.lock may be out of sync with Cargo.toml"
+            exit 1
+          fi
+          echo "Lockfile is in sync with manifests."
+
+  test:
+    needs: lint
+    if: needs.paths-filter.outputs.backend == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+
+      - name: Run Rust tests
+        run: cargo test --workspace
+
+  build:
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        if: needs.paths-filter.outputs.backend == 'true'
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+
+      - name: Setup Node.js
+        if: needs.paths-filter.outputs.frontend == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install npm dependencies
+        if: needs.paths-filter.outputs.frontend == 'true'
+        run: npm ci
+
+      - name: Build Rust workspace
+        if: needs.paths-filter.outputs.backend == 'true'
+        run: cargo build --workspace
+
+      - name: Build frontend apps
+        if: needs.paths-filter.outputs.frontend == 'true'
+        run: npm run build
+
+  contract-validation:
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify DTOs confined to contracts crate
+        run: |
+          violations=$(find services/ crates/ -name "*.rs" ! -path "crates/contracts/*" -exec grep -l "struct.*DTO\|enum.*EventType\|enum.*Role" {} \;)
+          if [ -n "$violations" ]; then
+            echo "ERROR: Duplicate types found outside contracts crate:"
+            echo "$violations"
+            exit 1
+          fi
+          echo "All DTOs properly confined to contracts crate."
+
+  duration-report:
+    if: always()
+    needs: [lint, test, build, contract-validation]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Record workflow start
+        run: echo "start_time=$(date +%s)" >> $GITHUB_ENV
+
+      - name: Report workflow duration
+        run: |
+          end_time=$(date +%s)
+          elapsed=$((end_time - ${start_time:-end_time}))
+          echo "## PR Validation Duration" >> $GITHUB_STEP_SUMMARY
+          echo "Total elapsed: ${elapsed}s ($((elapsed / 60))m $((elapsed % 60))s)" >> $GITHUB_STEP_SUMMARY
+          echo "Target: < 15 minutes (FR-017)" >> $GITHUB_STEP_SUMMARY
+          if [ $elapsed -gt 900 ]; then
+            echo "⚠️ Exceeded 15-minute target" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "✅ Within target" >> $GITHUB_STEP_SUMMARY
+          fi

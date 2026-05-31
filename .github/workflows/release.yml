@@ -1,0 +1,90 @@
+name: Create Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Version tag (e.g., v1.2.3)"
+        required: true
+        type: string
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  generate-notes:
+    runs-on: ubuntu-latest
+    outputs:
+      release_id: ${{ steps.create-release.outputs.id }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate release notes
+        id: create-release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ github.ref_name }}
+          name: "Release ${{ github.ref_name }}"
+          generateReleaseNotes: true
+          draft: false
+          prerelease: false
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  build-manifest:
+    needs: generate-notes
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate artifact manifest
+        run: |
+          chmod +x scripts/ci/manifest.sh
+          scripts/ci/manifest.sh "${{ github.ref_name }}" > release-manifest.json
+          echo "Manifest generated:"
+          cat release-manifest.json
+
+      - name: Upload manifest as release asset
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ github.ref_name }}
+          artifacts: "release-manifest.json"
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  image-manifest:
+    needs: build-manifest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate image manifest from GHCR
+        run: |
+          SERVICES="admin-service driver-service clickstream-service gis-sync-worker driver-web admin-dashboard partner-dashboard"
+          echo "{" > image-manifest.json
+          echo "  \"release\": \"${{ github.ref_name }}\"," >> image-manifest.json
+          echo "  \"registry\": \"ghcr.io/${{ github.repository }}\"," >> image-manifest.json
+          echo "  \"images\": [" >> image-manifest.json
+          first=true
+          for service in $SERVICES; do
+            if [ "$first" = true ]; then first=false; else echo "," >> image-manifest.json; fi
+            echo "    {" >> image-manifest.json
+            echo "      \"service\": \"$service\"," >> image-manifest.json
+            echo "      \"tags\": [\"${{ github.ref_name }}\", \"sha-${{ github.sha }}\"]" >> image-manifest.json
+            echo -n "    }" >> image-manifest.json
+          done
+          echo "" >> image-manifest.json
+          echo "  ]" >> image-manifest.json
+          echo "}" >> image-manifest.json
+          echo "Image manifest generated:"
+          cat image-manifest.json
+
+      - name: Upload image manifest as release asset
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ github.ref_name }}
+          artifacts: "image-manifest.json"
+          token: ${{ secrets.GITHUB_TOKEN }}

@@ -8,4 +8,7 @@ Architecture contracts (EPIC 0) still apply — see specs/001-architecture-contr
 API versioning rule: ALL endpoints under /api/v1/* — see specs/001-architecture-contracts/contracts/api-versioning-contract.md
 Monorepo foundation (EPIC 1) — see specs/002-monorepo-bootstrap/
 Runtime infrastructure (EPIC 2) — see specs/003-runtime-infrastructure/
+Identity & access control (EPIC 4) — see specs/005-identity-auth-platform/plan.md, the data model at
+specs/005-identity-auth-platform/data-model.md, and contracts at
+specs/005-identity-auth-platform/contracts/
 <!-- SPECKIT END -->

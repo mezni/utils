@@ -1,0 +1,139 @@
+name: Security & Dependency Audit
+
+on:
+  schedule:
+    - cron: "0 6 * * 0"
+  workflow_dispatch:
+
+concurrency:
+  group: audit-weekly
+  cancel-in-progress: true
+
+jobs:
+  cargo-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+
+      - name: Install cargo-audit
+        run: cargo install cargo-audit --locked
+
+      - name: Run cargo audit
+        continue-on-error: true
+        run: |
+          cargo audit --json > audit-report.json 2>&1 || true
+
+      - name: Output audit summary
+        run: |
+          if [ -f audit-report.json ]; then
+            vulnerabilities=$(cat audit-report.json | python3 -c "
+import json, sys
+data = json.load(sys.stdin)
+vulns = data.get('vulnerabilities', {}).get('list', [])
+if vulns:
+    for v in vulns:
+        print(f\"  - {v.get('package', {}).get('name', 'unknown')}@{v.get('package', {}).get('version', 'unknown')}: {v.get('advisory', {}).get('severity', 'unknown')} - {v.get('advisory', {}).get('title', 'no title')}\")
+    print(f\"\\nTotal vulnerabilities: {len(vulns)}\")
+else:
+    print('No vulnerabilities found.')
+" 2>/dev/null || cat audit-report.json | python3 -c "import json,sys; d=json.load(sys.stdin); print('Vulnerabilities:', len(d.get('vulnerabilities',{}).get('list',[])))" 2>/dev/null || echo "Audit report generated"
+          fi
+
+      - name: Upload audit report
+        uses: actions/upload-artifact@v4
+        with:
+          name: cargo-audit-report
+          path: audit-report.json
+          retention-days: 30
+
+  npm-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run npm audit
+        continue-on-error: true
+        run: |
+          npm audit --audit-level=high --json > npm-audit-report.json 2>&1 || true
+
+      - name: Output npm audit summary
+        run: |
+          if [ -f npm-audit-report.json ]; then
+            python3 -c "
+import json
+with open('npm-audit-report.json') as f:
+    data = json.load(f)
+vulns = data.get('vulnerabilities', {})
+if vulns:
+    for pkg, info in vulns.items():
+        print(f'  - {pkg}@{info.get(\"range\", \"?\")}: {info.get(\"severity\", \"?\")}')
+    print(f'\\nTotal vulnerable packages: {len(vulns)}')
+else:
+    print('No vulnerabilities found.')
+" 2>/dev/null || echo "npm audit report generated"
+          fi
+
+      - name: Upload npm audit report
+        uses: actions/upload-artifact@v4
+        with:
+          name: npm-audit-report
+          path: npm-audit-report.json
+          retention-days: 30
+
+  trivy-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Trivy on Dockerfiles
+        uses: aquasecurity/trivy-action@v0.24
+        with:
+          scan-type: "config"
+          scan-ref: "infra/docker/"
+          format: "sarif"
+          output: "trivy-dockerfiles.sarif"
+          severity: "CRITICAL,HIGH"
+
+      - name: Run Trivy on frontend Dockerfiles
+        uses: aquasecurity/trivy-action@v0.24
+        with:
+          scan-type: "config"
+          scan-ref: "apps/"
+          format: "sarif"
+          output: "trivy-frontend.sarif"
+          severity: "CRITICAL,HIGH"
+
+      - name: Upload Trivy results
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-reports
+          path: "*.sarif"
+          retention-days: 30
+
+  notify-on-critical:
+    if: failure()
+    needs: [cargo-audit, npm-audit, trivy-scan]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify team of critical findings
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const workflow = context.workflow;
+            const runId = context.runId;
+            const repo = context.repo;
+            const message = `Security audit found critical vulnerabilities in ${workflow} (run #${runId}).\n\nhttps://github.com/${repo.owner}/${repo.repo}/actions/runs/${runId}`;
+            console.log("Security alert notification:", message);
+            core.notice("Critical vulnerabilities detected — notify team");

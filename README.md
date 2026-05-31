@@ -50,6 +50,21 @@ make lint-all     # Clippy + ESLint
 make format-all   # cargo fmt + prettier
 ```
 
+## CI/CD Pipeline
+
+Six automated GitHub Actions workflows:
+
+| Workflow | Trigger | Purpose |
+|----------|---------|---------|
+| `pr-validation.yml` | Pull request | Lint, test, build, contract validation |
+| `build-images.yml` | Push to main / version tag | Build & publish 7 container images to GHCR |
+| `integration.yml` | Push to main / schedule | Full-stack Docker Compose boot + health checks |
+| `deploy.yml` | Manual dispatch | One-click production deployment with rollback |
+| `security-audit.yml` | Weekly (Sunday) | Rust/npm dependency audit + Trivy scan |
+| `release.yml` | Version tag push | GitHub Release + artifact/image manifests |
+
+See `specs/004-ci-cd-pipeline/` for full specification and `docs/epic03.md` for the EPIC definition.
+
 ## Architecture
 
 See `docs/epic01.md` and `specs/001-architecture-contracts/contracts/`.
