@@ -1,0 +1,66 @@
+version: "3.9"
+
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  traefik:
+    image: traefik:v3.1
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    logging: *default-logging
+
+  driver-service:
+    build:
+      context: ../../services/driver-service
+      dockerfile: Dockerfile
+    env_file: ../env/driver-service.env
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.driver.rule=PathPrefix(`/api/driver`)"
+    depends_on: []
+
+  admin-service:
+    build:
+      context: ../../services/admin-service
+      dockerfile: Dockerfile
+    env_file: ../env/admin-service.env
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.admin.rule=PathPrefix(`/api/admin`)"
+    depends_on: []
+
+  clickstream-service:
+    build:
+      context: ../../services/clickstream-service
+      dockerfile: Dockerfile
+    env_file: ../env/clickstream-service.env
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.clickstream.rule=PathPrefix(`/api/clickstream`)"
+    depends_on: []
+
+  gis-worker:
+    build:
+      context: ../../services/gis-worker
+      dockerfile: Dockerfile
+    env_file: ../env/gis-worker.env
+    depends_on: []
+
+  analytics-writer:
+    build:
+      context: ../../services/analytics-writer
+      dockerfile: Dockerfile
+    env_file: ../env/analytics-writer.env
+    depends_on: []
