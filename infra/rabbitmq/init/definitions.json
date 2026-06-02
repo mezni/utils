@@ -1,26 +1,6 @@
 {
   "rabbit_version": "4.0",
   "rabbitmq_version": "4.0",
-  "users": [
-    {
-      "name": "borne",
-      "password_hash": "change-me-in-env",
-      "hashing_algorithm": "rabbit_password_hashing_sha256",
-      "tags": "administrator"
-    }
-  ],
-  "vhosts": [
-    {"name": "/"}
-  ],
-  "permissions": [
-    {
-      "user": "borne",
-      "vhost": "/",
-      "configure": ".*",
-      "write": ".*",
-      "read": ".*"
-    }
-  ],
   "queues": [
     {"name": "clickstream.raw", "vhost": "/", "durable": true, "auto_delete": false},
     {"name": "gis.sync", "vhost": "/", "durable": true, "auto_delete": false},
