@@ -85,9 +85,9 @@
 - [ ] T026 [P] [US2] Integrate `auth_middleware` into Admin Service router in `services/admin-service/src/main.rs`
 - [ ] T027 [US2] Integrate `JwtValidator::init()` with graceful degradation into `services/driver-service/src/main.rs`
 - [ ] T028 [US2] Integrate `JwtValidator::init()` with graceful degradation into `services/admin-service/src/main.rs`
-- [ ] T029 [P] [US2] Add JWKS startup fetch to `services/clickstream-service/src/main.rs` (infrastructure only)
-- [ ] T030 [P] [US2] Add JWKS startup fetch to `services/gis-worker/src/main.rs` (infrastructure only)
-- [ ] T031 [P] [US2] Add JWKS startup fetch to `services/analytics-writer/src/main.rs` (infrastructure only)
+- [ ] T029 [P] [US2] Integrate `JwtValidator::init()` into `services/clickstream-service/src/main.rs` (infrastructure only)
+- [ ] T030 [P] [US2] Integrate `JwtValidator::init()` into `services/gis-worker/src/main.rs` (infrastructure only)
+- [ ] T031 [P] [US2] Integrate `JwtValidator::init()` into `services/analytics-writer/src/main.rs` (infrastructure only)
 - [ ] T032 [US2] Add periodic JWKS refresh background task (default 3600s with jitter) in `common-auth`
 - [ ] T033 [US2] Verify: request without token returns 401, request with valid token returns 200, request with expired token returns 401
 

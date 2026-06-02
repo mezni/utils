@@ -82,7 +82,7 @@ specs/003-identity-auth-foundation/
 │           └── error.rs            # AuthError enum with distinct error codes
 ├── infra/
 │   ├── compose/
-│   │   └── docker-compose.yml      # No changes (Keycloak already configured)
+│   │   └── docker-compose.yml      # May need admin console port restriction for FR-020
 │   ├── keycloak/
 │   │   └── realm-export/
 │   │       └── ev-platform-realm.json  # UPDATED: proper clients, roles, mappers
