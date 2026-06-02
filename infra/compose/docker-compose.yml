@@ -1,4 +1,51 @@
 services:
+  postgres:
+    image: postgis/postgis:17-3.6
+    env_file: ../../infra/env/postgres.env.example
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./postgres/init:/docker-entrypoint-initdb.d
+    networks:
+      internal: {}
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "platform_user", "-d", "platform_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+
+  rabbitmq:
+    image: rabbitmq:4.0-management
+    env_file: ../../infra/env/rabbitmq.env.example
+    volumes:
+      - rmqdata:/var/lib/rabbitmq
+    networks:
+      internal: {}
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 15s
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.1
+    command: start-dev --import-realm
+    env_file: ../../infra/env/keycloak.env.example
+    volumes:
+      - ./keycloak:/opt/keycloak/data/import:ro
+    networks:
+      internal: {}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8080 && echo -e 'GET /health/ready HTTP/1.1\r\nhost: localhost\r\nConnection: close\r\n\r\n' >&3 && cat <&3 | head -1 | grep -q 200 || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 15
+      start_period: 30s
+
   traefik:
     image: traefik:v3.3
     ports:
@@ -10,49 +57,14 @@ services:
       - ./traefik/dynamic:/etc/traefik/dynamic:ro
     networks:
       internal: {}
+    depends_on:
+      keycloak:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "traefik", "healthcheck"]
       interval: 30s
       timeout: 5s
       retries: 3
-
-  keycloak:
-    image: quay.io/keycloak/keycloak:26.1
-    command: start-dev
-    env_file: ../../infra/env/keycloak.env.example
-    networks:
-      internal: {}
-    healthcheck:
-      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8080 && echo -e 'GET /health/ready HTTP/1.1\r\nhost: localhost\r\nConnection: close\r\n\r\n' >&3 && cat <&3 | head -1 | grep -q 200"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-
-  postgres:
-    image: postgres:17
-    env_file: ../../infra/env/platform-db.env.example
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    networks:
-      internal: {}
-    healthcheck:
-      test: ["CMD", "pg_isready", "-U", "platform_user", "-d", "platform_db"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  rabbitmq:
-    image: rabbitmq:4.0-management
-    env_file: ../../infra/env/rabbitmq.env.example
-    volumes:
-      - rmqdata:/var/lib/rabbitmq
-    networks:
-      internal: {}
-    healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "ping"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
 
   driver-service:
     build:
@@ -61,11 +73,17 @@ services:
     env_file: ../../infra/env/driver-service.env.example
     networks:
       internal: {}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     healthcheck:
-      test: ["CMD", "/bin/true"]
-      interval: 30s
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8081 && echo -e 'GET /health HTTP/1.1\r\nhost: localhost\r\nConnection: close\r\n\r\n' >&3 && cat <&3 | head -1 | grep -q 200 || exit 1"]
+      interval: 10s
       timeout: 5s
-      retries: 3
+      retries: 5
+      start_period: 5s
 
   admin-service:
     build:
@@ -74,11 +92,17 @@ services:
     env_file: ../../infra/env/admin-service.env.example
     networks:
       internal: {}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     healthcheck:
-      test: ["CMD", "/bin/true"]
-      interval: 30s
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8082 && echo -e 'GET /health HTTP/1.1\r\nhost: localhost\r\nConnection: close\r\n\r\n' >&3 && cat <&3 | head -1 | grep -q 200 || exit 1"]
+      interval: 10s
       timeout: 5s
-      retries: 3
+      retries: 5
+      start_period: 5s
 
   clickstream-service:
     build:
@@ -87,23 +111,34 @@ services:
     env_file: ../../infra/env/analytics.env.example
     networks:
       internal: {}
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
     healthcheck:
-      test: ["CMD", "/bin/true"]
-      interval: 30s
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8083 && echo -e 'GET /health HTTP/1.1\r\nhost: localhost\r\nConnection: close\r\n\r\n' >&3 && cat <&3 | head -1 | grep -q 200 || exit 1"]
+      interval: 10s
       timeout: 5s
-      retries: 3
+      retries: 5
+      start_period: 5s
 
   gis-worker:
     build:
       context: ../..
       dockerfile: services/gis-worker/Dockerfile
+    env_file: ../../infra/env/gis-worker.env.example
     networks:
       internal: {}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     healthcheck:
-      test: ["CMD", "/bin/true"]
-      interval: 30s
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8084 && echo -e 'GET /health HTTP/1.1\r\nhost: localhost\r\nConnection: close\r\n\r\n' >&3 && cat <&3 | head -1 | grep -q 200 || exit 1"]
+      interval: 10s
       timeout: 5s
-      retries: 3
+      retries: 5
+      start_period: 5s
 
   analytics-writer:
     build:
@@ -112,11 +147,15 @@ services:
     env_file: ../../infra/env/analytics.env.example
     networks:
       internal: {}
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
     healthcheck:
-      test: ["CMD", "/bin/true"]
-      interval: 30s
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8085 && echo -e 'GET /health HTTP/1.1\r\nhost: localhost\r\nConnection: close\r\n\r\n' >&3 && cat <&3 | head -1 | grep -q 200 || exit 1"]
+      interval: 10s
       timeout: 5s
-      retries: 3
+      retries: 5
+      start_period: 5s
 
 networks:
   internal:
