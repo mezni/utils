@@ -2,8 +2,10 @@ FROM rust:1.81-slim-bookworm AS builder
 
 WORKDIR /app
 COPY Cargo.toml Cargo.lock ./
-COPY src ./src
-RUN cargo build --release
+COPY crates ./crates
+COPY services ./services
+
+RUN cargo build --release --package gis-worker
 
 FROM debian:bookworm-slim
 RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*

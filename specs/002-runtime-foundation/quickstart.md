@@ -15,9 +15,9 @@
 cargo build --workspace
 
 # 2. Start the full platform
-docker compose -f infra/compose/docker-compose.yml --profile docker up -d
+docker compose -f infra/compose/docker-compose.yml up -d
 
-# 3. Check container health
+# 3. Check container health (wait 60s for boot)
 docker compose -f infra/compose/docker-compose.yml ps
 
 # 4. Run smoke tests
