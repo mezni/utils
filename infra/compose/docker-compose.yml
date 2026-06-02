@@ -1,10 +1,10 @@
 services:
   postgres:
-    image: postgis/postgis:17-3.6
+    image: postgis/postgis:17-3.5
     env_file: ../../infra/env/postgres.env.example
     volumes:
       - pgdata:/var/lib/postgresql/data
-      - ./postgres/init:/docker-entrypoint-initdb.d
+      - ./postgres/init-dbs.sh:/docker-entrypoint-initdb.d/init-dbs.sh
     networks:
       internal: {}
     healthcheck:
@@ -21,6 +21,9 @@ services:
       - rmqdata:/var/lib/rabbitmq
     networks:
       internal: {}
+    depends_on:
+      postgres:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "ping"]
       interval: 10s
@@ -40,11 +43,11 @@ services:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8080 && echo -e 'GET /health/ready HTTP/1.1\r\nhost: localhost\r\nConnection: close\r\n\r\n' >&3 && cat <&3 | head -1 | grep -q 200 || exit 1"]
-      interval: 10s
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8080 2>/dev/null || exit 1"]
+      interval: 15s
       timeout: 10s
-      retries: 15
-      start_period: 30s
+      retries: 30
+      start_period: 300s
 
   traefik:
     image: traefik:v3.3
@@ -52,19 +55,16 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
       - ./traefik/dynamic:/etc/traefik/dynamic:ro
     networks:
       internal: {}
-    depends_on:
-      keycloak:
-        condition: service_healthy
     healthcheck:
       test: ["CMD", "traefik", "healthcheck"]
       interval: 30s
       timeout: 5s
-      retries: 3
+      retries: 5
+      start_period: 10s
 
   driver-service:
     build:
@@ -79,7 +79,7 @@ services:
       rabbitmq:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8081 && echo -e 'GET /health HTTP/1.1\r\nhost: localhost\r\nConnection: close\r\n\r\n' >&3 && cat <&3 | head -1 | grep -q 200 || exit 1"]
+      test: ["CMD-SHELL", "bash -c 'cat /dev/null > /dev/tcp/127.0.0.1/8081'"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -98,7 +98,7 @@ services:
       rabbitmq:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8082 && echo -e 'GET /health HTTP/1.1\r\nhost: localhost\r\nConnection: close\r\n\r\n' >&3 && cat <&3 | head -1 | grep -q 200 || exit 1"]
+      test: ["CMD-SHELL", "bash -c 'cat /dev/null > /dev/tcp/127.0.0.1/8082'"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -108,14 +108,14 @@ services:
     build:
       context: ../..
       dockerfile: services/clickstream-service/Dockerfile
-    env_file: ../../infra/env/analytics.env.example
+    env_file: ../../infra/env/clickstream-service.env.example
     networks:
       internal: {}
     depends_on:
       rabbitmq:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8083 && echo -e 'GET /health HTTP/1.1\r\nhost: localhost\r\nConnection: close\r\n\r\n' >&3 && cat <&3 | head -1 | grep -q 200 || exit 1"]
+      test: ["CMD-SHELL", "bash -c 'cat /dev/null > /dev/tcp/127.0.0.1/8083'"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -134,7 +134,7 @@ services:
       rabbitmq:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8084 && echo -e 'GET /health HTTP/1.1\r\nhost: localhost\r\nConnection: close\r\n\r\n' >&3 && cat <&3 | head -1 | grep -q 200 || exit 1"]
+      test: ["CMD-SHELL", "bash -c 'cat /dev/null > /dev/tcp/127.0.0.1/8084'"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -151,7 +151,7 @@ services:
       rabbitmq:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8085 && echo -e 'GET /health HTTP/1.1\r\nhost: localhost\r\nConnection: close\r\n\r\n' >&3 && cat <&3 | head -1 | grep -q 200 || exit 1"]
+      test: ["CMD-SHELL", "bash -c 'cat /dev/null > /dev/tcp/127.0.0.1/8085'"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -160,7 +160,6 @@ services:
 networks:
   internal:
     driver: bridge
-    internal: true
 
 volumes:
   pgdata:

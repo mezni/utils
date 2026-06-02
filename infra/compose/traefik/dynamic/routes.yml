@@ -1,66 +1,95 @@
-# Partner-dashboard runs outside Docker (Vite dev server or static build).
-# The service entry below resolves when the frontend is deployed alongside.
+# Traefik dynamic routing configuration for local development.
+# Uses PathPrefix matching for localhost-based routing.
 http:
   routers:
     driver:
-      rule: "Host(`driver.example.tn`)"
+      rule: "PathPrefix(`/api/v1/drivers`)"
+      middlewares:
+        - strip-drivers
       service: driver-service
       entryPoints:
         - web
-        - websecure
 
     admin:
-      rule: "Host(`admin.example.tn`)"
+      rule: "PathPrefix(`/api/v1/admin`)"
+      middlewares:
+        - strip-admin
       service: admin-service
       entryPoints:
         - web
-        - websecure
 
-    api:
-      rule: "Host(`api.example.tn`)"
-      service: backend
+    clickstream:
+      rule: "PathPrefix(`/api/v1/clickstream`)"
+      middlewares:
+        - strip-clickstream
+      service: clickstream-service
       entryPoints:
         - web
-        - websecure
 
-    auth:
-      rule: "Host(`auth.example.tn`)"
-      service: keycloak
+    gis:
+      rule: "PathPrefix(`/api/v1/gis`)"
+      middlewares:
+        - strip-gis
+      service: gis-worker
       entryPoints:
         - web
-        - websecure
 
-    partner:
-      rule: "Host(`partner.example.tn`)"
-      service: partner-dashboard
+    analytics:
+      rule: "PathPrefix(`/api/v1/analytics`)"
+      middlewares:
+        - strip-analytics
+      service: analytics-writer
       entryPoints:
         - web
-        - websecure
+
+  middlewares:
+    strip-drivers:
+      stripPrefix:
+        prefixes:
+          - "/api/v1/drivers"
+
+    strip-admin:
+      stripPrefix:
+        prefixes:
+          - "/api/v1/admin"
+
+    strip-clickstream:
+      stripPrefix:
+        prefixes:
+          - "/api/v1/clickstream"
+
+    strip-gis:
+      stripPrefix:
+        prefixes:
+          - "/api/v1/gis"
+
+    strip-analytics:
+      stripPrefix:
+        prefixes:
+          - "/api/v1/analytics"
 
   services:
     driver-service:
       loadBalancer:
         servers:
-          - url: "http://driver-service.internal:8081"
+          - url: "http://driver-service:8081"
 
     admin-service:
       loadBalancer:
         servers:
-          - url: "http://admin-service.internal:8082"
+          - url: "http://admin-service:8082"
 
-    backend:
+    clickstream-service:
       loadBalancer:
         servers:
-          - url: "http://clickstream-service.internal:8083"
+          - url: "http://clickstream-service:8083"
 
-    keycloak:
+    gis-worker:
       loadBalancer:
         servers:
-          - url: "http://keycloak.internal:8080"
+          - url: "http://gis-worker:8084"
 
-    # Partner-dashboard frontend; not defined in docker-compose.yml.
-    # Must be reachable on the Docker network (e.g. via HOST:PORT) when running.
-    partner-dashboard:
+    analytics-writer:
       loadBalancer:
         servers:
-          - url: "http://host.docker.internal:5173"
+          - url: "http://analytics-writer:8085"
