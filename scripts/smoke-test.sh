@@ -108,7 +108,7 @@ fi
 
 # --- Keycloak Health ---
 echo "--- Keycloak ---"
-check_http "Keycloak health" "http://localhost:8080/health/ready" "200"
+check_http "Keycloak health" "http://localhost:8090/health/ready" "200"
 
 # --- Traefik Routing ---
 echo "--- Traefik ---"

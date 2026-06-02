@@ -40,7 +40,7 @@ curl -s http://localhost:80/api/clickstream/health | jq .
 |----|-----|
 | Traefik Dashboard | http://localhost:8080/dashboard/ |
 | RabbitMQ Management | http://localhost:15672 |
-| Keycloak Admin | http://localhost:8080 |
+| Keycloak Admin | http://localhost:8090 |
 
 ## Environment Profiles
 
