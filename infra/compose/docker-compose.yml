@@ -59,6 +59,7 @@ services:
       - ./traefik/dynamic:/etc/traefik/dynamic:ro
     networks:
       internal: {}
+      public: {}
     healthcheck:
       test: ["CMD", "traefik", "healthcheck"]
       interval: 30s
@@ -159,6 +160,9 @@ services:
 
 networks:
   internal:
+    driver: bridge
+    internal: true
+  public:
     driver: bridge
 
 volumes:
