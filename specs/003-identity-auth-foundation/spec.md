@@ -173,6 +173,7 @@ A developer can run a shell-based test suite that validates the entire auth flow
 - The User entity is represented by the `AuthContext` extracted from JWT claims (sub, roles, tenant_id) — no DB persistence in this sprint. `users_db` exists (created in Sprint 2) but the `user_account` table is deferred to a future sprint when `platform_db` consolidation occurs.
 - JWT tokens use the `sub` claim for user identification and `realm_access.roles` for role information.
 - Tenant ID is conveyed via a custom `tenant_id` claim in the JWT (added by Keycloak via a user attribute mapper).
+- JWT `tenant_id` claim is a temporary bridge. The constitution requires `tenant_id` to be derived from `users.partner_membership` — this will be implemented when the `user_account` table is created in a future sprint.
 - Services already have `keycloak_url` in their env configuration from Sprint 2; additional JWKS-related env vars (`JWKS_URL`, `JWKS_REFRESH_INTERVAL`, `ALLOWED_ISSUERS`, `REQUIRED_AUDIENCE`) are added in this sprint.
 - No refresh token handling on the backend — clients manage their own token refresh.
 - No user registration flow in this sprint — users are created manually in Keycloak for testing.

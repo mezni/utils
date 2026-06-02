@@ -48,7 +48,7 @@
 - [ ] T012 [P] Implement `AuthConfig` struct with env var loading in `crates/common-auth/src/config.rs`
 - [ ] T013 [P] Implement `Role` enum and `AuthContext` struct in `crates/common-auth/src/claims.rs`
 - [ ] T014 [P] Implement `AuthError` enum with Display and IntoResponse in `crates/common-auth/src/error.rs`
-- [ ] T015 Implement `JwtValidator` — JWKS fetch, cache, token signature/expiry/issuer/audience validation in `crates/common-auth/src/jwt.rs`
+- [ ] T015 Implement `JwtValidator` — JWKS fetch, cache, token signature/expiry/issuer/audience validation, and background refresh spawn in `crates/common-auth/src/jwt.rs`
 - [ ] T016 Implement `auth_middleware` axum middleware (extract JWT, validate, inject AuthContext) in `crates/common-auth/src/middleware.rs`
 - [ ] T017 Implement `require_role` and `require_any_role` axum middleware guards in `crates/common-auth/src/middleware.rs`
 - [ ] T018 Wire up public re-exports in `crates/common-auth/src/lib.rs`
@@ -69,6 +69,7 @@
 - [ ] T022 [US1] Add confidential client `platform-service` to realm export
 - [ ] T023 [US1] Add `tenant_id` user attribute protocol mapper to realm export
 - [ ] T024 [US1] Verify realm import works: destroy Keycloak volume, `docker compose up`, validate via admin API
+- [ ] T024b [US1] Restrict Keycloak admin console to `local` profile in `infra/compose/docker-compose.yml` or env profile configuration
 
 **Checkpoint**: Keycloak `ev-platform` realm fully provisioned from code — clients, roles, and mappers ready
 
@@ -82,8 +83,8 @@
 
 - [ ] T025 [P] [US2] Integrate `auth_middleware` into Driver Service router in `services/driver-service/src/main.rs`
 - [ ] T026 [P] [US2] Integrate `auth_middleware` into Admin Service router in `services/admin-service/src/main.rs`
-- [ ] T027 [US2] Add JWKS startup fetch with graceful degradation (boot, reject auth if JWKS unavailable) to `services/driver-service/src/main.rs`
-- [ ] T028 [US2] Add JWKS startup fetch with graceful degradation to `services/admin-service/src/main.rs`
+- [ ] T027 [US2] Integrate `JwtValidator::init()` with graceful degradation into `services/driver-service/src/main.rs`
+- [ ] T028 [US2] Integrate `JwtValidator::init()` with graceful degradation into `services/admin-service/src/main.rs`
 - [ ] T029 [P] [US2] Add JWKS startup fetch to `services/clickstream-service/src/main.rs` (infrastructure only)
 - [ ] T030 [P] [US2] Add JWKS startup fetch to `services/gis-worker/src/main.rs` (infrastructure only)
 - [ ] T031 [P] [US2] Add JWKS startup fetch to `services/analytics-writer/src/main.rs` (infrastructure only)
