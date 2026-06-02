@@ -1,6 +1,7 @@
 use axum::routing::get;
 use axum::{Json, Router};
-use common_auth::{auth_middleware, set_auth_config, AuthConfig};
+use common_auth::{auth_middleware, require_role, set_auth_config, AuthConfig};
+use common_types::Role;
 use serde_json::{json, Value};
 use std::net::SocketAddr;
 use tracing_subscriber::EnvFilter;
@@ -43,10 +44,17 @@ async fn main() {
 
     common_auth::init_jwks_cache(jwks_url).await;
 
+    // Admin routes: authenticate first (innermost layer runs last), then enforce admin role.
+    // Layers run bottom-to-top, so auth_middleware executes before require_role.
+    let protected = Router::new()
+        .route("/api/v1/admin/check", get(admin_only))
+        .layer(axum::middleware::from_fn(require_role(Role::Admin)))
+        .layer(axum::middleware::from_fn(auth_middleware));
+
+    // /health is exempt from auth (liveness/readiness probes).
     let app = Router::new()
         .route("/health", get(health))
-        .route("/api/v1/admin/check", get(admin_only))
-        .layer(axum::middleware::from_fn(auth_middleware));
+        .merge(protected);
 
     let addr = SocketAddr::from(([0, 0, 0, 0], port));
     tracing::info!("admin-service listening on {}", addr);

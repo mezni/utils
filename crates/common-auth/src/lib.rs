@@ -7,7 +7,10 @@ use common_types::Role;
 use serde::{Deserialize, Serialize};
 
 pub use errors::AuthError;
-pub use guards::{auth_middleware, extract_current_user, require_authenticated, set_auth_config, AuthConfig};
+pub use guards::{
+    auth_middleware, extract_current_user, optional_auth_middleware, require_authenticated,
+    require_role, set_auth_config, AuthConfig,
+};
 pub use jwt::{init_jwks_cache, validate_token};
 pub use provisioning::provision_user;
 

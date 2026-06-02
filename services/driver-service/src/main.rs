@@ -48,10 +48,15 @@ async fn main() {
 
     common_auth::init_jwks_cache(jwks_url).await;
 
-    let app = Router::new()
-        .route("/health", get(health))
+    // Protected routes require a valid token (auth layer populates CurrentUser).
+    let protected: Router = Router::new()
         .route("/api/v1/driver/me", get(me))
         .layer(axum::middleware::from_fn(auth_middleware));
+
+    // /health is exempt from auth (liveness/readiness probes).
+    let app: Router = Router::new()
+        .route("/health", get(health))
+        .merge(protected);
 
     let addr = SocketAddr::from(([0, 0, 0, 0], port));
     tracing::info!("driver-service listening on {}", addr);

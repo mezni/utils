@@ -36,7 +36,7 @@ impl IntoResponse for AuthError {
             AuthError::Forbidden => (StatusCode::FORBIDDEN, "FORBIDDEN", self.to_string()),
             AuthError::PartnerScopeViolation => (StatusCode::FORBIDDEN, "PARTNER_SCOPE_VIOLATION", self.to_string()),
             AuthError::ValidationError(_) => (StatusCode::UNAUTHORIZED, "UNAUTHENTICATED", self.to_string()),
-            AuthError::JwksFetchError(_) => (StatusCode::SERVICE_UNAVAILABLE, "UNAUTHENTICATED", self.to_string()),
+            AuthError::JwksFetchError(_) => (StatusCode::SERVICE_UNAVAILABLE, "AUTH_UNAVAILABLE", self.to_string()),
         };
 
         let body = json!({

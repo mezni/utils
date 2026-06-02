@@ -1,11 +1,12 @@
 use crate::errors::AuthError;
 use chrono::{TimeDelta, Utc};
+use common_types::Role;
 use jsonwebtoken::{decode, decode_header, Algorithm, DecodingKey, Validation};
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::Arc;
-use tokio::sync::RwLock;
+use tokio::sync::{Mutex, RwLock};
 use tracing::{info, warn};
 
 // ---------------------------------------------------------------------------
@@ -30,12 +31,12 @@ pub struct RealmAccess {
 }
 
 impl JwtClaims {
-    pub fn role(&self) -> Option<&str> {
-        let valid = ["registered_driver", "partner", "admin"];
+    /// Extract the first matching platform role from `realm_access.roles`.
+    /// Role parsing is centralized in `common_types::Role`.
+    pub fn role(&self) -> Option<Role> {
         self.realm_access
             .as_ref()
-            .and_then(|r| r.roles.iter().find(|r| valid.contains(&r.as_str())))
-            .map(|s| s.as_str())
+            .and_then(|r| r.roles.iter().find_map(|s| Role::from_keycloak(s)))
     }
 }
 
@@ -63,6 +64,13 @@ pub struct JwksResponse {
 // JWKS Cache
 // ---------------------------------------------------------------------------
 
+/// Normal cache TTL — after this a key is considered stale and a refresh is attempted.
+const DEFAULT_TTL_SECONDS: i64 = 3600;
+/// Maximum age a stale key may reach in degraded mode (JWKS unreachable) before it is
+/// rejected. This bounds the window during which a rotated/compromised signing key
+/// could remain trusted while Keycloak is down.
+const MAX_DEGRADED_STALENESS_SECONDS: i64 = 24 * 3600;
+
 struct CachedKey {
     key: DecodingKey,
     algorithm: Algorithm,
@@ -73,6 +81,9 @@ pub struct JwksCache {
     keys: RwLock<HashMap<String, CachedKey>>,
     jwks_url: String,
     ttl_seconds: i64,
+    max_degraded_staleness_seconds: i64,
+    /// Single-flight guard so concurrent requests don't stampede the JWKS endpoint.
+    refresh_lock: Mutex<()>,
 }
 
 impl JwksCache {
@@ -80,12 +91,14 @@ impl JwksCache {
         Self {
             keys: RwLock::new(HashMap::new()),
             jwks_url,
-            ttl_seconds: 3600,
+            ttl_seconds: DEFAULT_TTL_SECONDS,
+            max_degraded_staleness_seconds: MAX_DEGRADED_STALENESS_SECONDS,
+            refresh_lock: Mutex::new(()),
         }
     }
 
     pub async fn get(&self, kid: &str) -> Result<(DecodingKey, Algorithm), AuthError> {
-        // Check cache for a non-expired key
+        // Check cache for a non-expired key (read lock dropped before any await on network).
         {
             let keys = self.keys.read().await;
             if let Some(cached) = keys.get(kid) {
@@ -96,20 +109,25 @@ impl JwksCache {
             }
         }
 
-        // Cache miss or expired — fetch JWKS
+        // Cache miss or expired — fetch JWKS (single-flight).
         self.refresh().await?;
 
         // Retry lookup
         let keys = self.keys.read().await;
         match keys.get(kid) {
             Some(cached) => Ok((cached.key.clone(), cached.algorithm)),
-            None => Err(AuthError::ValidationError(
-                format!("No JWK found for kid: {}", kid),
-            )),
+            None => Err(AuthError::ValidationError(format!(
+                "No JWK found for kid: {}",
+                kid
+            ))),
         }
     }
 
     pub async fn refresh(&self) -> Result<(), AuthError> {
+        // Single-flight: only one task fetches at a time. Others wait, then re-check
+        // whether a fresh key already arrived to avoid a redundant network round-trip.
+        let _guard = self.refresh_lock.lock().await;
+
         let resp: JwksResponse = reqwest::get(&self.jwks_url)
             .await
             .map_err(|e| AuthError::JwksFetchError(e.to_string()))?
@@ -150,11 +168,25 @@ impl JwksCache {
         Ok(())
     }
 
-    /// Degraded-mode validation: use any cached key (even stale) when JWKS is unreachable.
+    /// Degraded-mode validation: use a cached key when JWKS is unreachable, but only
+    /// within `max_degraded_staleness_seconds`. Keys older than that are rejected so a
+    /// rotated signing key cannot be trusted indefinitely during an outage.
     pub async fn validate_degraded(&self, kid: &str) -> Result<(DecodingKey, Algorithm), AuthError> {
         let keys = self.keys.read().await;
         match keys.get(kid) {
-            Some(cached) => Ok((cached.key.clone(), cached.algorithm)),
+            Some(cached) => {
+                let age = Utc::now() - cached.fetched_at;
+                if age <= TimeDelta::seconds(self.max_degraded_staleness_seconds) {
+                    Ok((cached.key.clone(), cached.algorithm))
+                } else {
+                    warn!(
+                        kid = %kid,
+                        age_seconds = age.num_seconds(),
+                        "Degraded-mode key exceeds max staleness — rejecting"
+                    );
+                    Err(AuthError::Unauthenticated)
+                }
+            }
             None => Err(AuthError::Unauthenticated),
         }
     }
@@ -181,10 +213,15 @@ pub async fn validate_token(
     issuer: &str,
     audience: &str,
 ) -> Result<JwtClaims, AuthError> {
-    let guard = JWKS_CACHE.read().await;
-    let cache = guard
-        .as_ref()
-        .ok_or_else(|| AuthError::ValidationError("JWKS cache not initialized".into()))?;
+    // Clone the Arc and drop the outer guard immediately so we never hold the
+    // global lock across the network/validation awaits below.
+    let cache = {
+        let guard = JWKS_CACHE.read().await;
+        guard
+            .as_ref()
+            .cloned()
+            .ok_or_else(|| AuthError::ValidationError("JWKS cache not initialized".into()))?
+    };
 
     // Extract kid from token header
     let header = decode_header(token)
