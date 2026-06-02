@@ -1,6 +1,6 @@
 use axum::routing::get;
 use axum::{Json, Router};
-use common_auth::{auth_middleware, set_auth_config, AuthConfig};
+use common_auth::{optional_auth_middleware, set_auth_config, AuthConfig};
 use serde_json::{json, Value};
 use std::net::SocketAddr;
 use tracing_subscriber::EnvFilter;
@@ -44,10 +44,16 @@ async fn main() {
 
     common_auth::init_jwks_cache(jwks_url).await;
 
+    // Clickstream ingestion accepts anonymous events: optional auth populates
+    // CurrentUser when a valid token is present but does not reject anonymous callers.
+    let events = Router::new()
+        .route("/api/v1/clickstream/events", get(ingest))
+        .layer(axum::middleware::from_fn(optional_auth_middleware));
+
+    // /health is exempt from auth (liveness/readiness probes).
     let app = Router::new()
         .route("/health", get(health))
-        .route("/api/v1/clickstream/events", get(ingest))
-        .layer(axum::middleware::from_fn(auth_middleware));
+        .merge(events);
 
     let addr = SocketAddr::from(([0, 0, 0, 0], port));
     tracing::info!("clickstream-service listening on {}", addr);

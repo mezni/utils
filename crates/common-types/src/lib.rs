@@ -41,7 +41,7 @@ impl EntityPrefix {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Role {
     #[serde(rename = "registered_driver")]
     RegisteredDriver,
@@ -49,6 +49,43 @@ pub enum Role {
     Partner,
     #[serde(rename = "admin")]
     Admin,
+}
+
+impl Role {
+    /// Parse a Keycloak realm role string into a platform `Role`.
+    /// Returns `None` for any value outside the exactly-3 supported roles.
+    pub fn from_keycloak(s: &str) -> Option<Self> {
+        match s {
+            "registered_driver" => Some(Role::RegisteredDriver),
+            "partner" => Some(Role::Partner),
+            "admin" => Some(Role::Admin),
+            _ => None,
+        }
+    }
+
+    /// The Keycloak realm role string for this role.
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Role::RegisteredDriver => "registered_driver",
+            Role::Partner => "partner",
+            Role::Admin => "admin",
+        }
+    }
+
+    /// Privilege rank used for hierarchical role gating
+    /// (`admin` >= `partner` >= `registered_driver`).
+    pub fn rank(&self) -> u8 {
+        match self {
+            Role::RegisteredDriver => 1,
+            Role::Partner => 2,
+            Role::Admin => 3,
+        }
+    }
+
+    /// Returns true if `self` satisfies the `required` role (equal or higher rank).
+    pub fn satisfies(&self, required: Role) -> bool {
+        self.rank() >= required.rank()
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]

@@ -8,8 +8,9 @@ use tracing::info;
 ///
 /// On first valid JWT login:
 ///   1. Look up user_account by keycloak_user_id
-///   2. If not found, create one with USR- ULID
+///   2. If not found, create one with a USR- prefixed identifier
 ///   3. If user has partner_id attribute, create partner_membership
+///      and derive `partner_id` from membership (NEVER from the client)
 ///   4. Return CurrentUser
 
 #[derive(Debug, Clone)]
@@ -21,16 +22,41 @@ pub struct ProvisionedUser {
     pub partner_id: Option<String>,
 }
 
+/// Derive a stable, collision-resistant `USR-` identifier from the Keycloak `sub`.
+///
+/// This is a deterministic stub for the pre-DB sprint. It is byte-safe (no slicing of
+/// arbitrary UTF-8) and produces a fixed-length Crockford-base32-style suffix. Sprint 4
+/// replaces this with a persisted ULID allocated at first INSERT.
+fn derive_user_id(keycloak_user_id: &str) -> String {
+    // FNV-1a 64-bit hash — dependency-free and stable across runs.
+    let mut hash: u64 = 0xcbf2_9ce4_8422_2325;
+    for b in keycloak_user_id.as_bytes() {
+        hash ^= u64::from(*b);
+        hash = hash.wrapping_mul(0x0000_0100_0000_01b3);
+    }
+
+    const ALPHABET: &[u8; 32] = b"0123456789ABCDEFGHJKMNPQRSTVWXYZ";
+    let mut suffix = [b'0'; 13];
+    let mut value = hash;
+    for slot in suffix.iter_mut().rev() {
+        *slot = ALPHABET[(value & 0x1f) as usize];
+        value >>= 5;
+    }
+    // Safe: ALPHABET is ASCII so the suffix is valid UTF-8.
+    format!("USR-{}", std::str::from_utf8(&suffix).unwrap())
+}
+
 /// Attempt to provision a user on first login.
-/// Returns CurrentUser ready for the auth layer.
+/// Returns a `ProvisionedUser` ready for the auth layer.
 pub async fn provision_user(
     keycloak_user_id: &str,
     email: Option<&str>,
     role: Role,
 ) -> ProvisionedUser {
-    // TODO(Sprint 4): Replace with actual platform_db query/insert.
-    // For now, generate a deterministic stub user_id.
-    let user_id = format!("USR-{}", &keycloak_user_id[..8].to_uppercase());
+    // TODO(Sprint 4): Replace with actual platform_db SELECT-then-INSERT.
+    //   - Look up user_account by keycloak_user_id; allocate a real ULID on insert.
+    //   - Derive partner_id from partner_membership (never accept it from the client).
+    let user_id = derive_user_id(keycloak_user_id);
 
     info!(
         user_id = %user_id,
@@ -44,6 +70,8 @@ pub async fn provision_user(
         keycloak_user_id: keycloak_user_id.to_string(),
         email: email.map(|e| e.to_string()),
         role,
+        // partner_id is ALWAYS derived from partner_membership (Sprint 4), NEVER from
+        // the client/token. Until the membership table exists it remains None.
         partner_id: None,
     }
 }
