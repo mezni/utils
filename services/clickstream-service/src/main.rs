@@ -1,28 +1,57 @@
-use std::io::{Read, Write};
-use std::net::TcpListener;
+use axum::routing::get;
+use axum::{Json, Router};
+use common_auth::{auth_middleware, set_auth_config, AuthConfig};
+use serde_json::{json, Value};
+use std::net::SocketAddr;
+use tracing_subscriber::EnvFilter;
 
-fn handle_health(mut stream: std::net::TcpStream) {
-    let mut buf = [0; 1024];
-    let _ = stream.read(&mut buf);
-    let response = "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: 15\r\n\r\n{\"status\":\"ok\"}";
-    let _ = stream.write_all(response.as_bytes());
-    let _ = stream.flush();
+async fn health() -> Json<Value> {
+    Json(json!({"status":"ok"}))
 }
 
-fn main() {
+/// Placeholder for clickstream event ingestion (Sprint 13).
+async fn ingest() -> Json<Value> {
+    Json(json!({
+        "success": true,
+        "data": {"message": "Event ingestion stub"},
+        "meta": {}
+    }))
+}
+
+#[tokio::main]
+async fn main() {
+    tracing_subscriber::fmt()
+        .with_env_filter(EnvFilter::from_default_env())
+        .init();
+
     let port: u16 = std::env::var("CLICKSTREAM_PORT")
         .unwrap_or_else(|_| "8083".into())
         .parse()
         .unwrap_or(8083);
 
-    let addr = format!("0.0.0.0:{}", port);
-    let listener = TcpListener::bind(&addr).expect("bind failed");
-    eprintln!("clickstream-service listening on {}", addr);
+    let issuer = std::env::var("AUTH_ISSUER")
+        .unwrap_or_else(|_| "http://keycloak:8080/realms/bornemap".into());
+    let jwks_url = std::env::var("AUTH_JWKS_URL")
+        .unwrap_or_else(|_| "http://keycloak:8080/realms/bornemap/protocol/openid-connect/certs".into());
+    let audience = std::env::var("AUTH_AUDIENCE")
+        .unwrap_or_else(|_| "bornemap-api".into());
 
-    for stream in listener.incoming() {
-        match stream {
-            Ok(s) => handle_health(s),
-            Err(e) => eprintln!("connection error: {}", e),
-        }
-    }
+    set_auth_config(AuthConfig {
+        issuer: issuer.clone(),
+        audience: audience.clone(),
+        jwks_url: jwks_url.clone(),
+    });
+
+    common_auth::init_jwks_cache(jwks_url).await;
+
+    let app = Router::new()
+        .route("/health", get(health))
+        .route("/api/v1/clickstream/events", get(ingest))
+        .layer(axum::middleware::from_fn(auth_middleware));
+
+    let addr = SocketAddr::from(([0, 0, 0, 0], port));
+    tracing::info!("clickstream-service listening on {}", addr);
+
+    let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
+    axum::serve(listener, app).await.unwrap();
 }

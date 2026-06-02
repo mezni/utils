@@ -24,11 +24,11 @@
 
 **Purpose**: Initialize common-auth crate, set up dependencies, and create the Keycloak realm configuration.
 
-- [ ] T001 Create `crates/common-auth/Cargo.toml` with dependencies: axum, tower, jsonwebtoken, reqwest (rustls-tls), serde, serde_json, tokio, tracing, common-types, common-errors
-- [ ] T002 [P] Create Keycloak realm export at `infra/compose/keycloak/realm-export.json` with realm `bornemap`, three roles (`registered_driver`, `partner`, `admin`), OIDC client `bornemap-api`, and stub identity providers (Google, Facebook)
-- [ ] T003 Add `/auth/*` route to `infra/compose/traefik/dynamic/routes.yml` proxying to Keycloak container on port 8080
-- [ ] T004 Add auth environment variables to each service's `.env.example` under `infra/env/`: `AUTH_ISSUER`, `AUTH_JWKS_URL`, `AUTH_AUDIENCE`
-- [ ] T005 Create `crates/common-auth/src/lib.rs` with public module declarations and re-exports
+- [x] T001 Create `crates/common-auth/Cargo.toml` with dependencies: axum, tower, jsonwebtoken, reqwest (rustls-tls), serde, serde_json, tokio, tracing, common-types, common-errors
+- [x] T002 [P] Create Keycloak realm export at `infra/compose/keycloak/realm-export.json` with realm `bornemap`, three roles (`registered_driver`, `partner`, `admin`), OIDC client `bornemap-api`, and stub identity providers (Google, Facebook)
+- [x] T003 Add `/auth/*` route to `infra/compose/traefik/dynamic/routes.yml` proxying to Keycloak container on port 8080
+- [x] T004 Add auth environment variables to each service's `.env.example` under `infra/env/`: `AUTH_ISSUER`, `AUTH_JWKS_URL`, `AUTH_AUDIENCE`
+- [x] T005 Create `crates/common-auth/src/lib.rs` with public module declarations and re-exports
 
 ---
 
@@ -38,10 +38,10 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete.
 
-- [ ] T006 Create `crates/common-auth/src/errors.rs` with `AuthError` enum mapping to standard error codes (Unauthenticated, TokenExpired, InsufficientRole) and implementing `IntoResponse` for Axum
-- [ ] T007 [P] Create `crates/common-auth/src/jwt.rs` with JWT claims struct (sub, iss, aud, exp, iat, email, realm_access.roles), JWKS key structs, and `validate_token()` function that verifies signature, issuer, audience, and expiration
-- [ ] T008 [P] Implement JWKS fetch and cache in `crates/common-auth/src/jwt.rs` with `JwksCache` struct using `tokio::sync::RwLock`, configurable TTL, and degraded mode (use stale keys when JWKS unreachable)
-- [ ] T009 Create `CurrentUser` struct in `crates/common-auth/src/lib.rs` with fields: user_id, keycloak_user_id, email, role, partner_id (Option)
+- [x] T006 Create `crates/common-auth/src/errors.rs` with `AuthError` enum mapping to standard error codes (Unauthenticated, TokenExpired, InsufficientRole) and implementing `IntoResponse` for Axum
+- [x] T007 [P] Create `crates/common-auth/src/jwt.rs` with JWT claims struct (sub, iss, aud, exp, iat, email, realm_access.roles), JWKS key structs, and `validate_token()` function that verifies signature, issuer, audience, and expiration
+- [x] T008 [P] Implement JWKS fetch and cache in `crates/common-auth/src/jwt.rs` with `JwksCache` struct using `tokio::sync::RwLock`, configurable TTL, and degraded mode (use stale keys when JWKS unreachable)
+- [x] T009 Create `CurrentUser` struct in `crates/common-auth/src/lib.rs` with fields: user_id, keycloak_user_id, email, role, partner_id (Option)
 
 **Checkpoint**: Foundation ready — `common-auth` can validate a JWT in isolation. User story implementation can now begin.
 
@@ -57,17 +57,17 @@
 
 - **Step 1**: Create first-login provisioning and auth middleware
 
-- [ ] T010 [P] [US1] Create `crates/common-auth/src/provisioning.rs` with `provision_user()` that upserts `users.user_account` on first valid JWT, mapping `keycloak_user_id = JWT.sub`
-- [ ] T011 [US1] Create `crates/common-auth/src/guards.rs` with `AuthLayer` that extracts `Authorization: Bearer <token>`, calls `validate_token()`, calls `provision_user()`, and populates request extensions with `CurrentUser`
-- [ ] T012 [US1] Wire `AuthLayer` into the Axum router builder and make it available as `common_auth::auth_layer()`
+- [x] T010 [P] [US1] Create `crates/common-auth/src/provisioning.rs` with `provision_user()` that upserts `users.user_account` on first valid JWT, mapping `keycloak_user_id = JWT.sub`
+- [x] T011 [US1] Create `crates/common-auth/src/guards.rs` with `AuthLayer` that extracts `Authorization: Bearer <token>`, calls `validate_token()`, calls `provision_user()`, and populates request extensions with `CurrentUser`
+- [x] T012 [US1] Wire `AuthLayer` into the Axum router builder and make it available as `common_auth::auth_layer()`
 
 - **Step 2**: Migrate services from raw TCP to Axum with auth middleware
 
-- [ ] T013 [US1] Refactor `services/driver-service/src/main.rs` from `TcpListener` to Axum, add `/health` route (exempt from auth), add `AuthLayer`, listen on `DRIVER_SERVICE_PORT`
-- [ ] T014 [P] [US1] Refactor `services/admin-service/src/main.rs` to Axum with `/health` exemption and `AuthLayer`
-- [ ] T015 [P] [US1] Refactor `services/clickstream-service/src/main.rs` to Axum with `/health` exemption and `AuthLayer`
-- [ ] T016 [P] [US1] Refactor `services/gis-worker/src/main.rs` to Axum with `/health` exemption
-- [ ] T017 [P] [US1] Refactor `services/analytics-writer/src/main.rs` to Axum with `/health` exemption
+- [x] T013 [US1] Refactor `services/driver-service/src/main.rs` from `TcpListener` to Axum, add `/health` route (exempt from auth), add `AuthLayer`, listen on `DRIVER_SERVICE_PORT`
+- [x] T014 [P] [US1] Refactor `services/admin-service/src/main.rs` to Axum with `/health` exemption and `AuthLayer`
+- [x] T015 [P] [US1] Refactor `services/clickstream-service/src/main.rs` to Axum with `/health` exemption and `AuthLayer`
+- [x] T016 [P] [US1] Refactor `services/gis-worker/src/main.rs` to Axum with `/health` exemption
+- [x] T017 [P] [US1] Refactor `services/analytics-writer/src/main.rs` to Axum with `/health` exemption
 
 **Checkpoint**: At this point, User Story 1 should be fully functional. Users can receive a JWT from Keycloak and access services with it. First login creates a `user_account` record.
 

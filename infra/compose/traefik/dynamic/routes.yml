@@ -2,6 +2,14 @@
 # Uses PathPrefix matching for localhost-based routing.
 http:
   routers:
+    auth:
+      rule: "PathPrefix(`/auth`)"
+      middlewares:
+        - strip-auth
+      service: keycloak
+      entryPoints:
+        - web
+
     driver:
       rule: "PathPrefix(`/api/v1/drivers`)"
       middlewares:
@@ -43,6 +51,11 @@ http:
         - web
 
   middlewares:
+    strip-auth:
+      stripPrefix:
+        prefixes:
+          - "/auth"
+
     strip-drivers:
       stripPrefix:
         prefixes:
@@ -69,6 +82,11 @@ http:
           - "/api/v1/analytics"
 
   services:
+    keycloak:
+      loadBalancer:
+        servers:
+          - url: "http://keycloak:8080"
+
     driver-service:
       loadBalancer:
         servers:
