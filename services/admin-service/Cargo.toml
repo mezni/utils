@@ -1,0 +1,14 @@
+[package]
+name = "admin-service"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+common-types = { path = "../../crates/common-types" }
+common-errors = { path = "../../crates/common-errors" }
+common-auth = { path = "../../crates/common-auth" }
+common-db = { path = "../../crates/common-db" }
+
+[[bin]]
+name = "admin-service"
+path = "src/main.rs"
