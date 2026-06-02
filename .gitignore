@@ -4,3 +4,15 @@ dist/
 .expo/
 *.pyc
 .env
+*.rs.bk
+*.rlib
+*.prof*
+debug/
+release/
+.DS_Store
+Thumbs.db
+*.tmp
+*.swp
+.vscode/
+.idea/
+*.log
