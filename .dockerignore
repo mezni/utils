@@ -1,0 +1,19 @@
+# Git
+.git/
+.gitignore
+
+# Node.js
+node_modules/
+dist/
+build/
+
+# Rust
+target/
+
+# Environment
+.env
+.env.local
+
+# OS
+.DS_Store
+*.log
