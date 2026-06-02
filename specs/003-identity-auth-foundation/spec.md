@@ -161,10 +161,16 @@ A developer can run a shell-based test suite that validates the entire auth flow
 - **SC-006**: `./scripts/auth-smoke-test.sh` passes on a fresh `docker compose up` stack with zero manual Keycloak setup.
 - **SC-007**: Keycloak realm can be fully recreated from `infra/keycloak/realm-export/ev-platform-realm.json` by destroying and restarting the Keycloak container.
 
+## Clarifications
+
+### Session 2026-06-02
+
+- Q: Should a persistent User entity (e.g., `user_account` table) be implemented this sprint? → A: No. The User entity is the `AuthContext` extracted from JWT claims. DB persistence for `user_account` is deferred to a future sprint when `platform_db` consolidation occurs.
+
 ## Assumptions
 
 - The existing Keycloak container and realm configuration from Sprint 2 are the starting point — the realm export needs to be updated with proper client configurations and role definitions.
-- `users_db` exists (created in Sprint 2) but no `platform_db` consolidation is done yet — the `user_account` table will be defined in a future sprint when the User entity is persisted in `platform_db`.
+- The User entity is represented by the `AuthContext` extracted from JWT claims (sub, roles, tenant_id) — no DB persistence in this sprint. `users_db` exists (created in Sprint 2) but the `user_account` table is deferred to a future sprint when `platform_db` consolidation occurs.
 - JWT tokens use the `sub` claim for user identification and `realm_access.roles` for role information.
 - Tenant ID is conveyed via a custom `tenant_id` claim in the JWT (added by Keycloak via a user attribute mapper).
 - Services already have `keycloak_url` in their env configuration from Sprint 2; additional JWKS-related env vars (`JWKS_URL`, `JWKS_REFRESH_INTERVAL`, `ALLOWED_ISSUERS`, `REQUIRED_AUDIENCE`) are added in this sprint.
