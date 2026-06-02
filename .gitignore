@@ -1,0 +1,31 @@
+# Rust
+target/
+**/*.rs.bk
+**/*.rlib
+**/*.prof*
+
+# Node.js / TypeScript
+node_modules/
+dist/
+build/
+.eslintcache
+*.tsbuildinfo
+
+# Environment (secrets)
+.env
+.env.local
+.env.production
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+

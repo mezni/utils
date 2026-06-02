@@ -1,0 +1,128 @@
+services:
+  traefik:
+    image: traefik:v3.3
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
+      - ./traefik/dynamic:/etc/traefik/dynamic:ro
+    networks:
+      internal: {}
+    healthcheck:
+      test: ["CMD", "traefik", "healthcheck"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.1
+    command: start-dev
+    env_file: ../../infra/env/keycloak.env.example
+    networks:
+      internal: {}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  postgres:
+    image: postgres:17
+    env_file: ../../infra/env/platform-db.env.example
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      internal: {}
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "platform_user", "-d", "platform_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  rabbitmq:
+    image: rabbitmq:4.0-management
+    env_file: ../../infra/env/rabbitmq.env.example
+    volumes:
+      - rmqdata:/var/lib/rabbitmq
+    networks:
+      internal: {}
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  driver-service:
+    build:
+      context: ../..
+      dockerfile: services/driver-service/Dockerfile
+    env_file: ../../infra/env/driver-service.env.example
+    networks:
+      internal: {}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  admin-service:
+    build:
+      context: ../..
+      dockerfile: services/admin-service/Dockerfile
+    env_file: ../../infra/env/admin-service.env.example
+    networks:
+      internal: {}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8082/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  clickstream-service:
+    build:
+      context: ../..
+      dockerfile: services/clickstream-service/Dockerfile
+    env_file: ../../infra/env/analytics.env.example
+    networks:
+      internal: {}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8083/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  gis-worker:
+    build:
+      context: ../..
+      dockerfile: services/gis-worker/Dockerfile
+    networks:
+      internal: {}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8084/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  analytics-writer:
+    build:
+      context: ../..
+      dockerfile: services/analytics-writer/Dockerfile
+    env_file: ../../infra/env/analytics.env.example
+    networks:
+      internal: {}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8085/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+networks:
+  internal:
+    driver: bridge
+    internal: true
+
+volumes:
+  pgdata:
+  rmqdata:
