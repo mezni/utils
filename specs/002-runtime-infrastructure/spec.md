@@ -75,14 +75,14 @@ An operator needs to confirm that the infrastructure dependencies (Keycloak, Pos
 - **FR-004**: Each service MUST define a health check that validates the service is ready to serve traffic before it is considered healthy.
 - **FR-005**: Service startup MUST respect a dependency chain: PostgreSQL → RabbitMQ → Keycloak → Traefik → backend services → workers.
 - **FR-006**: Each Rust backend service MUST serve an HTTP `GET /health` endpoint returning HTTP 200 with content `{"status":"ok"}`.
-- **FR-007**: The health endpoint MUST be served on the port configured via the service's `PORT` environment variable (e.g., `DRIVER_SERVICE_PORT=8081`).
+- **FR-007**: The health endpoint MUST be served on the port configured via the service's `{SERVICE}_PORT` environment variable (e.g., `DRIVER_SERVICE_PORT=8081`, `ADMIN_SERVICE_PORT=8082`, `CLICKSTREAM_SERVICE_PORT=8083`, `GIS_WORKER_PORT=8084`, `ANALYTICS_WRITER_PORT=8085`).
 - **FR-008**: PostgreSQL MUST initialize with three databases: `keycloak_db`, `platform_db` (with PostGIS extension enabled), and `analytics_db`.
 - **FR-009**: Keycloak MUST start with the `bornemap` realm pre-imported, containing the three roles (`registered_driver`, `partner`, `admin`) and the `bornemap-api` client configured as a public client.
 - **FR-010**: Keycloak MUST be configured to use the PostgreSQL instance as its database backend (not its embedded H2 database).
 - **FR-011**: Each service MUST source its configuration from a corresponding `.env.example` file in `infra/env/`, with Docker-compatible variable names for infrastructure services.
 - **FR-012**: Traefik MUST be configured with `localhost` as the single entry point, and route using path prefixes: `/api/v1/drivers/*` → driver-service:8081, `/api/v1/admin/*` → admin-service:8082, `/api/v1/clickstream/*` → clickstream-service:8083, `/api/v1/gis/*` → gis-worker:8084, `/api/v1/analytics/*` → analytics-writer:8085. Routes MUST preserve path prefix stripping so backend services receive clean paths (e.g., `/health` not `/api/v1/drivers/health`).
 - **FR-013**: The `docker-compose.override.yml` MUST expose infrastructure ports (5432, 5672, 15672, 8080) for local development convenience without modifying the base compose file.
-- **FR-014**: Rust backend services MUST read their port configuration from environment variables at runtime with sensible defaults hardcoded.
+- **FR-014**: Rust backend services MUST read their port configuration from environment variables at runtime with sensible defaults hardcoded (8081 for driver-service, 8082 for admin-service, 8083 for clickstream-service, 8084 for gis-worker, 8085 for analytics-writer).
 
 ### Key Entities *(include if feature involves data)*
 
@@ -117,3 +117,4 @@ The following decisions were made during the clarify phase (2026-06-02):
 - Keycloak 26 (Quarkus distribution) is used for compatibility with the `--import-realm` auto-import feature and `KC_*` environment variable conventions.
 - The `docker-compose.override.yml` is for local development only and is not used in production-like deployments.
 - Frontend applications (web and mobile) are not part of the Docker Compose topology in this sprint — they run outside Docker via their respective dev servers.
+- The `/health` endpoint is exempt from the constitution-mandated JSON envelope (Principle IV) because it is an operational/liveness probe, not a business API. Real business endpoints in Sprint 3+ will use the full envelope.

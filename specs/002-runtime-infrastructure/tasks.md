@@ -29,6 +29,8 @@
 
 - [ ] T001 Verify all 5 Rust services have a functioning HTTP `/health` endpoint in `services/*/src/main.rs` (driver-service, admin-service, clickstream-service, gis-worker, analytics-writer)
 - [ ] T002 [P] Verify all 5 Dockerfiles exist and EXPOSE the correct port in `services/*/Dockerfile` (8081-8085)
+
+> ⚠️ T014-T024 all modify `infra/compose/docker-compose.yml` — execute sequentially after T006 (do NOT parallelize within this file).
 - [ ] T003 [P] Verify all `.env.example` files exist under `infra/env/` with Docker-compatible variable names
 
 ---
@@ -128,6 +130,7 @@
 - [ ] T042 Run `docker compose down -v`, then `docker compose up -d` to verify deterministic fresh start (US1 edge case)
 - [ ] T043 Run `docker compose config --services` and verify output lists exactly 9 services
 - [ ] T044 Run the full quickstart verification sequence from `specs/002-runtime-infrastructure/quickstart.md`
+- [ ] T045 [P] Verify Traefik fallback behavior when Docker socket is inaccessible (edge case from spec.md) — stop Traefik container, confirm file-based routes still respond
 
 ---
 
