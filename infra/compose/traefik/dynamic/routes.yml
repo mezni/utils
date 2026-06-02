@@ -1,3 +1,5 @@
+# Partner-dashboard runs outside Docker (Vite dev server or static build).
+# The service entry below resolves when the frontend is deployed alongside.
 http:
   routers:
     driver:
@@ -56,7 +58,9 @@ http:
         servers:
           - url: "http://keycloak.internal:8080"
 
+    # Partner-dashboard frontend; not defined in docker-compose.yml.
+    # Must be reachable on the Docker network (e.g. via HOST:PORT) when running.
     partner-dashboard:
       loadBalancer:
         servers:
-          - url: "http://partner-dashboard.internal:5173"
+          - url: "http://host.docker.internal:5173"

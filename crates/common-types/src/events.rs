@@ -2,28 +2,51 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub enum EventName {
+    #[serde(rename = "page.viewed")]
     PageViewed,
+    #[serde(rename = "map.loaded")]
     MapLoaded,
+    #[serde(rename = "map.viewport_changed")]
     MapViewportChanged,
+    #[serde(rename = "search.performed")]
     SearchPerformed,
+    #[serde(rename = "stations.nearby.viewed")]
     StationsNearbyViewed,
+    #[serde(rename = "filter.applied")]
     FilterApplied,
+    #[serde(rename = "station.marker_clicked")]
     StationMarkerClicked,
+    #[serde(rename = "station.opened")]
     StationOpened,
+    #[serde(rename = "charger.opened")]
     ChargerOpened,
+    #[serde(rename = "favorite_station.added")]
     FavoriteStationAdded,
+    #[serde(rename = "favorite_station.removed")]
     FavoriteStationRemoved,
+    #[serde(rename = "review.submitted")]
     ReviewSubmitted,
+    #[serde(rename = "review.updated")]
     ReviewUpdated,
+    #[serde(rename = "auth.started")]
     AuthStarted,
+    #[serde(rename = "auth.succeeded")]
     AuthSucceeded,
+    #[serde(rename = "auth.failed")]
     AuthFailed,
+    #[serde(rename = "partner_station.created")]
     PartnerStationCreated,
+    #[serde(rename = "partner_station.updated")]
     PartnerStationUpdated,
+    #[serde(rename = "partner_availability.updated")]
     PartnerAvailabilityUpdated,
+    #[serde(rename = "admin_station.created")]
     AdminStationCreated,
+    #[serde(rename = "admin_review.moderated")]
     AdminReviewModerated,
+    #[serde(rename = "search.failed")]
     SearchFailed,
+    #[serde(rename = "station.load_failed")]
     StationLoadFailed,
 }
 
@@ -89,7 +112,7 @@ pub struct EventEnvelope {
     pub event_id: String,
     pub event_version: i32,
     pub schema_namespace: String,
-    pub event_name: String,
+    pub event_name: EventName,
     pub occurred_at: String,
     pub ingested_at: String,
     pub channel: Channel,

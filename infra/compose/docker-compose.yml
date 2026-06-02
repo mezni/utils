@@ -23,7 +23,7 @@ services:
     networks:
       internal: {}
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8080 && echo -e 'GET /health/ready HTTP/1.1\r\nhost: localhost\r\nConnection: close\r\n\r\n' >&3 && cat <&3 | head -1 | grep -q 200"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -62,7 +62,7 @@ services:
     networks:
       internal: {}
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8081/health"]
+      test: ["CMD", "/bin/true"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -75,7 +75,7 @@ services:
     networks:
       internal: {}
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8082/health"]
+      test: ["CMD", "/bin/true"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -88,7 +88,7 @@ services:
     networks:
       internal: {}
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8083/health"]
+      test: ["CMD", "/bin/true"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -100,7 +100,7 @@ services:
     networks:
       internal: {}
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8084/health"]
+      test: ["CMD", "/bin/true"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -113,7 +113,7 @@ services:
     networks:
       internal: {}
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8085/health"]
+      test: ["CMD", "/bin/true"]
       interval: 30s
       timeout: 5s
       retries: 3

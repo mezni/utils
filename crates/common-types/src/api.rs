@@ -10,11 +10,23 @@ pub struct PaginationMeta {
     pub has_prev: bool,
 }
 
+/// Always-success API response. `success` must always be `true` — construct
+/// via [`SuccessEnvelope::new`] to guarantee this invariant.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SuccessEnvelope<T = serde_json::Value> {
     pub success: bool,
     pub data: T,
     pub meta: PaginationMeta,
+}
+
+impl<T> SuccessEnvelope<T> {
+    pub fn new(data: T, meta: PaginationMeta) -> Self {
+        SuccessEnvelope {
+            success: true,
+            data,
+            meta,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -24,6 +36,7 @@ pub struct ErrorDetail {
     pub details: Option<serde_json::Value>,
 }
 
+/// Always-error API response. `success` must always be `false`.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ErrorEnvelope {
     pub success: bool,
