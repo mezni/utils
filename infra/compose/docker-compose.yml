@@ -61,6 +61,7 @@ services:
       dockerfile: Dockerfile
     container_name: keycloak
     hostname: keycloak.internal
+    command: ["start-dev"]
     networks:
       bornemap-net:
         aliases:
