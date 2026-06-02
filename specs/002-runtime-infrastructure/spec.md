@@ -4,7 +4,7 @@
 
 **Created**: 2026-06-02
 
-**Status**: Draft
+**Status**: Clarified
 
 **Input**: User description: "read docs/EXECUTION_PLAN.md and start sprint 2"
 
@@ -39,7 +39,7 @@ A developer needs to confirm that each backend service is running and responding
 
 1. **Given** all services are running, **When** a developer runs `curl -f http://<service>.internal:8081/health`, **Then** the response is HTTP 200 with `{"status":"ok"}`.
 2. **Given** the health endpoint pattern works for one service, **When** tested on all five backend services (ports 8081-8085), **Then** each returns HTTP 200.
-3. **Given** Traefik is configured, **When** a developer accesses `http://localhost/api/v1/...`, **Then** Traefik routes to the appropriate backend service.
+3. **Given** Traefik is configured with `localhost` as the entry point, **When** a developer accesses `http://localhost/api/v1/{service}/...`, **Then** Traefik routes to the appropriate backend service (e.g., `/api/v1/drivers/health` → driver-service:8081, `/api/v1/admin/health` → admin-service:8082).
 
 ---
 
@@ -80,7 +80,7 @@ An operator needs to confirm that the infrastructure dependencies (Keycloak, Pos
 - **FR-009**: Keycloak MUST start with the `bornemap` realm pre-imported, containing the three roles (`registered_driver`, `partner`, `admin`) and the `bornemap-api` client configured as a public client.
 - **FR-010**: Keycloak MUST be configured to use the PostgreSQL instance as its database backend (not its embedded H2 database).
 - **FR-011**: Each service MUST source its configuration from a corresponding `.env.example` file in `infra/env/`, with Docker-compatible variable names for infrastructure services.
-- **FR-012**: Traefik MUST be configured with static routing rules mapping each domain to its backend service on the internal network.
+- **FR-012**: Traefik MUST be configured with `localhost` as the single entry point, and route using path prefixes: `/api/v1/drivers/*` → driver-service:8081, `/api/v1/admin/*` → admin-service:8082, `/api/v1/clickstream/*` → clickstream-service:8083, `/api/v1/gis/*` → gis-worker:8084, `/api/v1/analytics/*` → analytics-writer:8085. Routes MUST preserve path prefix stripping so backend services receive clean paths (e.g., `/health` not `/api/v1/drivers/health`).
 - **FR-013**: The `docker-compose.override.yml` MUST expose infrastructure ports (5432, 5672, 15672, 8080) for local development convenience without modifying the base compose file.
 - **FR-014**: Rust backend services MUST read their port configuration from environment variables at runtime with sensible defaults hardcoded.
 
@@ -97,9 +97,17 @@ An operator needs to confirm that the infrastructure dependencies (Keycloak, Pos
 ### Measurable Outcomes
 
 - **SC-001**: `docker compose up` completes with all nine services reporting healthy within 120 seconds on a developer machine with cached Docker images.
-- **SC-002**: `curl -f http://localhost:8081/health` through Traefik returns HTTP 200 for all five backend services within 5 seconds of the stack being fully up.
+- **SC-002**: `curl -f http://localhost/api/v1/{service}/health` through Traefik returns HTTP 200 for all five backend services within 5 seconds of the stack being fully up.
 - **SC-003**: A developer can verify all three infrastructure dependencies (PostgreSQL connectivity, RabbitMQ ping, Keycloak OIDC metadata) from within the Docker network without external tools.
 - **SC-004**: `docker compose config --services` lists exactly nine services matching the canonical names from the project specification.
+
+## Clarifications
+
+The following decisions were made during the clarify phase (2026-06-02):
+
+- **Traefik routing scheme**: Single domain (`localhost`) with `/api/v1/{service}/*` path-based routing, with path prefix stripping enabled. Five routes mapping path prefixes to internal ports 8081-8085.
+- **docker-compose.override.yml**: Included in Sprint 2 scope, exposing infrastructure ports (5432, 5672, 15672, 8080) for local development.
+- **Docker image pinning**: Use `latest` tags for PostgreSQL, RabbitMQ, and Keycloak images (no version pinning in this sprint).
 
 ## Assumptions
 
