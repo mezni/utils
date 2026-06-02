@@ -49,3 +49,8 @@ Thumbs.db
 
 # Coverage
 coverage/
+
+# Docker build artifacts
+CANCELED
+ERROR
+\[*
