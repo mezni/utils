@@ -187,3 +187,6 @@ Every meaningful user interaction emits a clickstream event to the analytics pip
 - The app targets both Arabic (RTL) and French (LTR) users with the design system's RTL foundation
 - Map clustering uses Leaflet-compatible clustering (e.g., Leaflet.markercluster)
 - Loading patterns follow skeleton screens for initial content and minimal spinners for subsequent updates
+- Station detail panel appears as a **side panel** (260–400px) shrinking the map when a marker is selected
+- Favorites are accessed via an **inline map filter** toggle (no dedicated favorites page)
+- Search is a **collapsible overlay** triggered by a search icon/button in the header
