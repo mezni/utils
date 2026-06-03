@@ -25,13 +25,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   })
 
   useEffect(() => {
-    auth.initAuth().then((authenticated) => {
-      setState({
-        isInitialized: true,
-        isAuthenticated: authenticated,
-        user: authenticated ? auth.getUser() : null,
+    let cancelled = false
+    auth
+      .initAuth()
+      .then((authenticated) => {
+        if (cancelled) return
+        setState({
+          isInitialized: true,
+          isAuthenticated: authenticated,
+          user: authenticated ? auth.getUser() : null,
+        })
       })
-    })
+      .catch(() => {
+        if (cancelled) return
+        setState({
+          isInitialized: true,
+          isAuthenticated: false,
+          user: null,
+        })
+      })
+    return () => {
+      cancelled = true
+    }
   }, [])
 
   const login = useCallback(async (provider?: string) => {

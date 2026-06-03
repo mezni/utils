@@ -4,16 +4,12 @@ http:
   routers:
     auth:
       rule: "PathPrefix(`/auth`)"
-      middlewares:
-        - strip-auth
       service: keycloak
       entryPoints:
         - web
 
     driver:
-      rule: "PathPrefix(`/api/v1/drivers`)"
-      middlewares:
-        - strip-drivers
+      rule: "PathPrefix(`/api/v1/driver`)"
       service: driver-service
       entryPoints:
         - web
@@ -51,16 +47,6 @@ http:
         - web
 
   middlewares:
-    strip-auth:
-      stripPrefix:
-        prefixes:
-          - "/auth"
-
-    strip-drivers:
-      stripPrefix:
-        prefixes:
-          - "/api/v1/drivers"
-
     strip-admin:
       stripPrefix:
         prefixes:
@@ -90,7 +76,7 @@ http:
     driver-service:
       loadBalancer:
         servers:
-          - url: "http://driver-service:8081"
+          - url: "http://172.18.0.1:8081"
 
     admin-service:
       loadBalancer:

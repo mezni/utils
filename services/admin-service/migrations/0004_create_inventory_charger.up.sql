@@ -2,7 +2,7 @@ CREATE TABLE IF NOT EXISTS inventory.charger (
     id          TEXT        NOT NULL PRIMARY KEY,
     station_id  TEXT        NOT NULL REFERENCES inventory.station(id),
     type        TEXT        NOT NULL CHECK (type IN ('CCS', 'Type2', 'CHAdeMO')),
-    power_kw    NUMERIC     NULL,
+    power_kw    DOUBLE PRECISION NULL,
     status      TEXT        NOT NULL DEFAULT 'available' CHECK (status IN ('available', 'offline', 'fault')),
     created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),

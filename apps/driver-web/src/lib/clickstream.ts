@@ -1,5 +1,12 @@
 import type { EventEnvelope, EventName } from '@bornemap/event-taxonomy'
 
+// Relative by default so the request is same-origin (proxied by Vite in dev,
+// served by the gateway in prod), avoiding CORS.
+const GATEWAY_BASE_URL =
+  (import.meta.env.VITE_GATEWAY_BASE_URL as string | undefined) ?? ''
+
+const CLICKSTREAM_URL = `${GATEWAY_BASE_URL}/api/v1/clickstream/events`
+
 let sessionId: string | null = null
 
 function getSessionId(): string {
@@ -39,7 +46,7 @@ export function emitEvent(
 ): void {
   const envelope = createEnvelope(eventName, payload)
 
-  fetch('/api/v1/clickstream/events', {
+  fetch(CLICKSTREAM_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ events: [envelope] }),

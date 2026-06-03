@@ -12,7 +12,7 @@ interface SearchOverlayProps {
 
 function SearchOverlay({ isOpen, onClose, onSelectStation }: SearchOverlayProps) {
   const [query, setQuery] = useState('')
-  const { data, isLoading } = useSearch({ q: query })
+  const { data, isLoading, isError } = useSearch({ q: query })
   const { emit } = useClickstream()
 
   const prevResultCount = useRef<number | null>(null)
@@ -22,6 +22,16 @@ function SearchOverlay({ isOpen, onClose, onSelectStation }: SearchOverlayProps)
       emit('search.performed', { query, resultCount: data.totalResults })
     }
   }, [data, query, emit])
+
+  const hadError = useRef(false)
+  useEffect(() => {
+    if (isError && !hadError.current) {
+      hadError.current = true
+      emit('search.failed', { query })
+    } else if (!isError) {
+      hadError.current = false
+    }
+  }, [isError, query, emit])
 
   if (!isOpen) return null
 
@@ -49,7 +59,12 @@ function SearchOverlay({ isOpen, onClose, onSelectStation }: SearchOverlayProps)
               <div className="h-6 w-6 animate-spin rounded-full border-4 border-[var(--color-border-base)] border-t-[var(--color-primary-base)]" />
             </div>
           )}
-          {data && (
+          {isError && (
+            <p className="py-4 text-center text-sm text-[var(--color-error-base)]">
+              Search failed. Please try again.
+            </p>
+          )}
+          {data && !isError && (
             <SearchResults
               results={data.results}
               totalResults={data.totalResults}

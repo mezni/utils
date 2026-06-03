@@ -42,10 +42,10 @@ function StationMarkers({ map, stations, selectedStationId, onMarkerClick }: Sta
         icon: createStationIcon(),
       })
 
-      marker.bindTooltip(
-        `<strong>${station.name}</strong>${station.availability ? `<br/><span class="text-sm">${station.availability}</span>` : ''}`,
-        { direction: 'top' },
-      )
+      const tooltipText = station.availability
+        ? `${station.name} — ${station.availability}`
+        : station.name
+      marker.bindTooltip(tooltipText, { direction: 'top' })
 
       marker.on('click', () => onMarkerClick(station.id))
 
