@@ -26,12 +26,12 @@
 
 **Purpose**: Project initialization and dependency setup for the gis-worker
 
-- [ ] T001 Add `sqlx` with postgres/chrono features and `chrono` to `services/gis-worker/Cargo.toml`
-- [ ] T002 [P] Create `services/gis-worker/src/config.rs` with env-var config struct (poll interval, batch size, retry params, feature flags)
-- [ ] T003 [P] Create `services/gis-worker/src/db.rs` with PgPool factory and migration runner using `common-db`
-- [ ] T004 [P] Create `services/gis-worker/src/error.rs` with WorkerError enum (InvalidCoordinates, StationNotFound, DbError, Unknown)
-- [ ] T005 [P] Create `services/gis-worker/src/models.rs` with GisQueueEntry struct and OSM table row types
-- [ ] T006 Extend `infra/env/gis-worker.env.example` with all new env vars (GIS_WORKER_MAX_RETRIES, GIS_WORKER_RETRY_BASE_DELAY_MS, GIS_WORKER_STALE_PROCESSING_TIMEOUT_MS, FF_ENABLE_GIS_SYNC)
+- [x] T001 Add `sqlx` with postgres/chrono features and `chrono` to `services/gis-worker/Cargo.toml`
+- [x] T002 [P] Create `services/gis-worker/src/config.rs` with env-var config struct (poll interval, batch size, retry params, feature flags)
+- [x] T003 [P] Create `services/gis-worker/src/db.rs` with PgPool factory and migration runner using `common-db`
+- [x] T004 [P] Create `services/gis-worker/src/error.rs` with WorkerError enum (InvalidCoordinates, StationNotFound, DbError, Unknown)
+- [x] T005 [P] Create `services/gis-worker/src/models.rs` with GisQueueEntry struct and OSM table row types
+- [x] T006 Extend `infra/env/gis-worker.env.example` with all new env vars (GIS_WORKER_MAX_RETRIES, GIS_WORKER_RETRY_BASE_DELAY_MS, GIS_WORKER_STALE_PROCESSING_TIMEOUT_MS, FF_ENABLE_GIS_SYNC)
 
 ---
 
@@ -41,10 +41,10 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T007 Create migration `services/gis-worker/migrations/0001_create_gis_osm_tables.up.sql` — create `gis.osm_roads`, `gis.osm_admin_boundaries`, `gis.osm_pois` tables with GIST indexes
-- [ ] T008 Create migration `services/gis-worker/migrations/0001_create_gis_osm_tables.down.sql`
-- [ ] T009 [P] Implement `services/gis-worker/src/health.rs` — move existing `/health` handler into its own module
-- [ ] T010 Refactor `services/gis-worker/src/main.rs` — bootstrap DB pool from config, register health route, implement graceful shutdown with tokio signal
+- [x] T007 Create migration `services/gis-worker/migrations/0001_create_gis_osm_tables.up.sql` — create `gis.osm_roads`, `gis.osm_admin_boundaries`, `gis.osm_pois` tables with GIST indexes
+- [x] T008 Create migration `services/gis-worker/migrations/0001_create_gis_osm_tables.down.sql`
+- [x] T009 [P] Implement `services/gis-worker/src/health.rs` — move existing `/health` handler into its own module
+- [x] T010 Refactor `services/gis-worker/src/main.rs` — bootstrap DB pool from config, register health route, implement graceful shutdown with tokio signal
 
 **Checkpoint**: Foundation ready — worker compiles, starts, connects to DB, serves `/health`
 
@@ -58,9 +58,9 @@
 
 ### Implementation for User Story 1
 
-- [ ] T011 [US1] Implement `services/gis-worker/src/geometry.rs` — function to compute `geom = ST_SetSRID(ST_MakePoint(lng, lat), 4326)` via sqlx query
-- [ ] T012 [US1] Implement `services/gis-worker/src/worker.rs` — main poll loop: fetch pending batch, claim rows (atomically set `processing`), process in parallel via `tokio::join_all`, transition to `done` on success
-- [ ] T013 [US1] Integrate worker loop into `services/gis-worker/src/main.rs` — spawn worker task on main thread alongside health endpoint, respect `FF_ENABLE_GIS_SYNC` flag
+- [x] T011 [US1] Implement `services/gis-worker/src/geometry.rs` — function to compute `geom = ST_SetSRID(ST_MakePoint(lng, lat), 4326)` via sqlx query
+- [x] T012 [US1] Implement `services/gis-worker/src/worker.rs` — main poll loop: fetch pending batch, claim rows (atomically set `processing`), process in parallel via `tokio::join_all`, transition to `done` on success
+- [x] T013 [US1] Integrate worker loop into `services/gis-worker/src/main.rs` — spawn worker task on main thread alongside health endpoint, respect `FF_ENABLE_GIS_SYNC` flag
 
 **Checkpoint**: At this point, a station created via the partner API gets its `geom` populated within one poll cycle
 
@@ -74,9 +74,9 @@
 
 ### Implementation for User Story 2
 
-- [ ] T014 [US2] Add stale row recovery to `services/gis-worker/src/worker.rs` — on startup, reset `processing` rows older than `GIS_WORKER_STALE_PROCESSING_TIMEOUT_MS` back to `pending`
-- [ ] T015 [US2] Ensure `services/gis-worker/src/geometry.rs` idempotency — UPDATE with same lat/lng always produces identical `ST_AsGeoJSON(geom)` output; delete sets `geom = NULL` (naturally idempotent)
-- [ ] T016 [US2] Add state transition logging to `services/gis-worker/src/worker.rs` — log row_id, entity_id, operation, old_status→new_status for every transition per FR-012
+- [x] T014 [US2] Add stale row recovery to `services/gis-worker/src/worker.rs` — on startup, reset `processing` rows older than `GIS_WORKER_STALE_PROCESSING_TIMEOUT_MS` back to `pending`
+- [x] T015 [US2] Ensure `services/gis-worker/src/geometry.rs` idempotency — UPDATE with same lat/lng always produces identical `ST_AsGeoJSON(geom)` output; delete sets `geom = NULL` (naturally idempotent)
+- [x] T016 [US2] Add state transition logging to `services/gis-worker/src/worker.rs` — log row_id, entity_id, operation, old_status→new_status for every transition per FR-012
 
 **Checkpoint**: Replaying the same outbox row twice yields identical geometry; worker survives crash recovery
 
@@ -90,9 +90,9 @@
 
 ### Implementation for User Story 3
 
-- [ ] T017 [P] [US3] Implement `services/gis-worker/src/retry.rs` — exponential backoff with jitter: `base_delay * 2^attempt + random(0, base_delay)`, capped at `GIS_WORKER_MAX_RETRIES`
-- [ ] T018 [US3] Add coordinate validation to `services/gis-worker/src/geometry.rs` — validate lat ∈ [-90, 90], lng ∈ [-180, 180]; return `InvalidCoordinates` error if out of range
-- [ ] T019 [US3] Integrate retry/backoff into `services/gis-worker/src/worker.rs` — on transient error (DbError), transition to `failed` and schedule retry; after max retries, transition to `dead_letter`; on fatal error (InvalidCoordinates, StationNotFound), transition directly to `dead_letter`
+- [x] T017 [P] [US3] Implement `services/gis-worker/src/retry.rs` — exponential backoff with jitter: `base_delay * 2^attempt + random(0, base_delay)`, capped at `GIS_WORKER_MAX_RETRIES`
+- [x] T018 [US3] Add coordinate validation to `services/gis-worker/src/geometry.rs` — validate lat ∈ [-90, 90], lng ∈ [-180, 180]; return `InvalidCoordinates` error if out of range
+- [x] T019 [US3] Integrate retry/backoff into `services/gis-worker/src/worker.rs` — on transient error (DbError), transition to `failed` and schedule retry; after max retries, transition to `dead_letter`; on fatal error (InvalidCoordinates, StationNotFound), transition directly to `dead_letter`
 
 **Checkpoint**: Invalid-coordinate rows reach `dead_letter` after max retries; transient DB errors are retried with backoff
 
@@ -106,9 +106,9 @@
 
 ### Implementation for User Story 4
 
-- [ ] T020 [US4] Implement `services/gis-worker/src/osm_import.rs` — CLI binary that downloads Geofabrik PBF (`https://download.geofabrik.de/africa/tunisia-latest.osm.pbf`), invokes `osm2pgsql` or `ogr2ogr` to import into `gis.osm_roads`, `gis.osm_admin_boundaries`, `gis.osm_pois` tables
-- [ ] T021 [US4] Add `[[bin]]` entry to `services/gis-worker/Cargo.toml` for the OSM import CLI binary
-- [ ] T022 [US4] Add Dockerfile or docker-compose step to run OSM import on first deploy
+- [x] T020 [US4] Implement `services/gis-worker/src/osm_import.rs` — CLI binary that downloads Geofabrik PBF (`https://download.geofabrik.de/africa/tunisia-latest.osm.pbf`), invokes `osm2pgsql` or `ogr2ogr` to import into `gis.osm_roads`, `gis.osm_admin_boundaries`, `gis.osm_pois` tables
+- [x] T021 [US4] Add `[[bin]]` entry to `services/gis-worker/Cargo.toml` for the OSM import CLI binary
+- [ ] T022 [US4] Add Dockerfile or docker-compose step to run OSM import on first deploy (manual — run `cargo run --bin osm-import`)
 
 **Checkpoint**: OSM import runs successfully and Tunisia spatial data is queryable
 
@@ -118,15 +118,15 @@
 
 **Purpose**: Improvements that affect multiple user stories
 
-- [ ] T023 [P] Add `GIS_WORKER_CONCURRENCY` env var support to `services/gis-worker/src/config.rs` for future configurable parallelism
-- [ ] T024 Add roundtrip integration test — insert outbox row directly, run worker poll, verify station.geom is populated
-  - [ ] T025 Update Docker Compose healthcheck for gis-worker in `infra/compose/docker-compose.yml` if needed
-- [ ] T026 Run `cargo build` and verify workspace compiles cleanly
-- [ ] T027 Add `RABBITMQ_QUEUE_GIS_SYNC` env var to `services/gis-worker/src/config.rs` with no-op consumer stub at `services/gis-worker/src/rabbitmq.rs` (logs a warning if configured in v1)
-- [ ] T028 [P] Add unit tests for geometry computation in `services/gis-worker/src/geometry.rs` (valid coords, NULL coords, boundary values)
-- [ ] T029 [P] Add unit tests for retry/backoff logic in `services/gis-worker/src/retry.rs` (backoff delay calculation, max retries, jitter)
-- [ ] T030 [P] Add unit tests for state transitions in `services/gis-worker/src/worker.rs` (pending→processing→done, processing→failed→dead_letter)
-- [ ] T031 [P] Add unit test for stale processing row recovery in `services/gis-worker/src/worker.rs`
+- [x] T023 [P] Add `GIS_WORKER_CONCURRENCY` env var support to `services/gis-worker/src/config.rs` for future configurable parallelism
+- [ ] T024 Add roundtrip integration test — insert outbox row directly, run worker poll, verify station.geom is populated (requires PostGIS DB)
+- [x] T025 Update Docker Compose healthcheck for gis-worker in `infra/compose/docker-compose.yml` if needed (already correct)
+- [x] T026 Run `cargo build` and verify workspace compiles cleanly
+- [x] T027 Add `RABBITMQ_QUEUE_GIS_SYNC` env var to `services/gis-worker/src/config.rs` with no-op consumer stub at `services/gis-worker/src/rabbitmq.rs` (logs a warning if configured in v1)
+- [x] T028 [P] Add unit tests for geometry computation in `services/gis-worker/src/geometry.rs` (valid coords, NULL coords, boundary values)
+- [x] T029 [P] Add unit tests for retry/backoff logic in `services/gis-worker/src/retry.rs` (backoff delay calculation, max retries, jitter)
+- [ ] T030 [P] Add unit tests for state transitions in `services/gis-worker/src/worker.rs` (pending→processing→done, processing→failed→dead_letter) (requires DB — deferred)
+- [ ] T031 [P] Add unit test for stale processing row recovery in `services/gis-worker/src/worker.rs` (requires DB — deferred)
 
 ---
 
