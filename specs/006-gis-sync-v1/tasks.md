@@ -120,8 +120,13 @@
 
 - [ ] T023 [P] Add `GIS_WORKER_CONCURRENCY` env var support to `services/gis-worker/src/config.rs` for future configurable parallelism
 - [ ] T024 Add roundtrip integration test — insert outbox row directly, run worker poll, verify station.geom is populated
-- [ ] T025 Update Docker Compose healthcheck for gis-worker in `infra/compose/docker-compose.yml` if needed
+  - [ ] T025 Update Docker Compose healthcheck for gis-worker in `infra/compose/docker-compose.yml` if needed
 - [ ] T026 Run `cargo build` and verify workspace compiles cleanly
+- [ ] T027 Add `RABBITMQ_QUEUE_GIS_SYNC` env var to `services/gis-worker/src/config.rs` with no-op consumer stub at `services/gis-worker/src/rabbitmq.rs` (logs a warning if configured in v1)
+- [ ] T028 [P] Add unit tests for geometry computation in `services/gis-worker/src/geometry.rs` (valid coords, NULL coords, boundary values)
+- [ ] T029 [P] Add unit tests for retry/backoff logic in `services/gis-worker/src/retry.rs` (backoff delay calculation, max retries, jitter)
+- [ ] T030 [P] Add unit tests for state transitions in `services/gis-worker/src/worker.rs` (pending→processing→done, processing→failed→dead_letter)
+- [ ] T031 [P] Add unit test for stale processing row recovery in `services/gis-worker/src/worker.rs`
 
 ---
 

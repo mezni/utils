@@ -105,7 +105,7 @@ The GIS database includes a basic OSM import for Tunisia (roads, administrative 
 - **FR-010**: System MUST provide a one-time CLI command or migration script that downloads Tunisia OSM data from Geofabrik (`https://download.geofabrik.de/africa/tunisia-latest.osm.pbf`) and imports it into `gis.osm_*` tables (roads, admin boundaries)
 - **FR-011**: OSM import MUST use SRID 4326 (WGS 84) to match station geometry
 - **FR-012**: Worker MUST log each state transition with outbox row id, entity_id, operation, and error details on failure
-- **FR-013**: Worker MUST support optional RabbitMQ consumption as an alternative to DB polling — if `RABBITMQ_QUEUE_GIS_SYNC` is configured, consume from queue instead of polling
+- **FR-013**: Worker SHOULD support optional RabbitMQ consumption as an alternative to DB polling (deferred to future sprint). For v1, DB polling is the sole consumption mechanism. If `RABBITMQ_QUEUE_GIS_SYNC` is configured in v1, the worker logs a warning that RabbitMQ mode is not yet implemented and falls back to DB polling.
 - **FR-014**: Worker MUST use the standard `common-db` PgPool factory and the same `platform_db` connection config as other services
 - **FR-015**: Worker MUST respect the `FF_ENABLE_GIS_SYNC` feature flag — if false, worker exits immediately with a log message
 
