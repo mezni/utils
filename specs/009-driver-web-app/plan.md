@@ -18,7 +18,7 @@ Build the Driver Web App — a map-first single-page application for discovering
 
 **Language/Version**: TypeScript 5.x (workspace)
 
-**Primary Dependencies**: React 18+ (Vite), Leaflet + react-leaflet (map), @tanstack/react-query (server state), react-router (routing), design-tokens + UI primitives from Sprint 8, `@bornemap/api-client` (HTTP), `@bornemap/auth-client` (Keycloak auth), `@bornemap/event-taxonomy` (clickstream events)
+**Primary Dependencies**: React 18+ (Vite), Leaflet (map), @tanstack/react-query (server state), react-router (routing), design-tokens + UI primitives from Sprint 8, `@bornemap/api-client` (HTTP), `@bornemap/auth-client` (Keycloak auth), `@bornemap/event-taxonomy` (clickstream events)
 
 **Storage**: None — all data served by driver-service backend APIs (Sprint 7)
 
@@ -70,7 +70,7 @@ User Action → React Component → React Query hook → ApiClient → driver-se
 ```
 
 **Server state**: All station, search, favorite, and review data flows through React Query with:
-- `useStationMarkers(bbox)` — viewport-driven marker query (debounced 500ms)
+- `useStationMarkers(lat, lng, radiusKm)` — viewport-driven marker query (debounced 500ms)
 - `useStationDetail(id)` — single station fetch on marker click
 - `useSearch(query, filters)` — debounced search (300ms)
 - `useFavorites(userId)` — user's favorited station IDs

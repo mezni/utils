@@ -28,25 +28,7 @@ A driver opens the web app and sees a full-screen interactive map with station m
 
 ---
 
-### User Story 2 — Station Details & Search (Priority: P1)
-
-A driver selects a station marker and sees a detail panel with station information: name, description, address, charger types (CCS/Type2/CHAdeMO) with power ratings, real-time availability status, and distance from current location. The driver can also search stations by name, city, or connector type.
-
-**Why this priority**: Drivers need to evaluate stations before navigating to them. Search provides an alternative discovery path.
-
-**Independent Test**: A detail panel opens when clicking a marker. Search returns filtered results. Can be validated by comparing displayed data against known station values.
-
-**Acceptance Scenarios**:
-
-1. **Given** a station marker is selected, **When** the detail panel opens, **Then** it displays name, description, charger types with power, availability, and distance
-2. **Given** the search input, **When** the user types a query, **Then** results appear after a 300ms debounce
-3. **Given** search filters (connector type, availability), **When** applied, **Then** results are filtered accordingly
-4. **Given** the detail panel is open, **When** the user clicks outside, **Then** the panel closes
-5. **Given** a station with no chargers, **When** the detail panel renders, **Then** it shows a "No chargers available" message
-
----
-
-### User Story 2 — Map Interaction States (Priority: P1)
+### User Story 1b — Map Interaction States (Priority: P1)
 
 The map transitions through three states: Idle (initial load), Viewport Active (bbox query + clustering active as user pans/zooms), and Station Selected (detail panel visible). Each state has a distinct loading treatment.
 
@@ -62,6 +44,22 @@ The map transitions through three states: Idle (initial load), Viewport Active (
 4. **Given** the detail panel is open, **When** the user closes it, **Then** the map returns to Viewport Active state
 
 ---
+
+### User Story 2 — Station Details & Search (Priority: P1)
+
+A driver selects a station marker and sees a detail panel with station information: name, description, address, charger types (CCS/Type2/CHAdeMO) with power ratings, real-time availability status, and distance from current location. The driver can also search stations by name, city, or connector type.
+
+**Why this priority**: Drivers need to evaluate stations before navigating to them. Search provides an alternative discovery path.
+
+**Independent Test**: A detail panel opens when clicking a marker. Search returns filtered results. Can be validated by comparing displayed data against known station values.
+
+**Acceptance Scenarios**:
+
+1. **Given** a station marker is selected, **When** the detail panel opens, **Then** it displays name, description, charger types with power, availability, and distance
+2. **Given** the search input, **When** the user types a query, **Then** results appear after a 300ms debounce
+3. **Given** search filters (connector type, availability), **When** applied, **Then** results are filtered accordingly
+4. **Given** the detail panel is open, **When** the user clicks outside, **Then** the panel closes
+5. **Given** a station with no chargers, **When** the detail panel renders, **Then** it shows a "No chargers available" message
 
 ### User Story 3 — Progressive Authentication (Priority: P2)
 
@@ -91,7 +89,7 @@ A registered driver can favorite stations for quick access and submit reviews (r
 
 **Acceptance Scenarios**:
 
-1. **Given** a registered driver, **When** favoriting a station, **Then** the station appears in their favorites list
+1. **Given** a registered driver, **When** favoriting a station, **Then** the station is marked as favorited and can be filtered via the inline favorites toggle
 2. **Given** a favorited station, **When** unfavoriting, **Then** the station is removed from favorites
 3. **Given** a registered driver, **When** submitting a review with rating 1-5 and comment, **Then** the review appears on the station's detail panel
 4. **Given** an existing review, **When** the owner edits it, **Then** the updated content replaces the previous
@@ -183,6 +181,7 @@ Every meaningful user interaction emits a clickstream event to the analytics pip
 - The `@bornemap/event-taxonomy` package defines the canonical event names and envelope from the execution plan
 - The driver-service backend APIs are fully operational (Sprint 7)
 - Station data has been seeded for the Tunisia region
+- "Standard connection" in success criteria means ≥10 Mbps throughput, ≤50ms latency to the server
 - React Query is used for all server state management (caching, refetching, optimistic updates)
 - The app targets both Arabic (RTL) and French (LTR) users with the design system's RTL foundation
 - Map clustering uses Leaflet-compatible clustering (e.g., Leaflet.markercluster)

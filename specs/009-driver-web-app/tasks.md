@@ -65,6 +65,7 @@
 ## Phase 4: User Story 2 — Station Details & Search (Priority: P1)
 
 **Goal**: Side panel with full station detail on marker click; collapsible search overlay with text and filter inputs.
+**Note**: Backend `city`, `connector_type`, `availability` filter params are accepted by the route but NOT yet wired in SQL. The app passes them for future-proofing; client-side post-filtering can be added if needed.
 
 **Independent Test**: Click a marker — a side panel slides in showing name, description, charger types with power, availability, and distance. Click outside the panel to close. Click the search icon — a search overlay appears. Type a query — results appear after 300ms debounce. Filters connector type and availability.
 
