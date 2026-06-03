@@ -115,9 +115,9 @@ When a station is created, updated, or deleted through any API path (partner or 
 ### Functional Requirements
 
 - **FR-001**: System MUST provide `GET /api/v1/partner/me` returning the authenticated partner's `partner_id`, `role`, and membership info derived from `users.partner_membership`
-- **FR-002**: System MUST provide `GET /api/v1/partner/stations` returning only stations owned by the authenticated partner (scoped by `partner_id` from membership), with optional soft-deleted flag and pagination
+- **FR-002**: System MUST provide `GET /api/v1/partner/stations` returning only stations owned by the authenticated partner (scoped by `partner_id` from membership), with optional `include_deleted` query parameter and pagination
 - **FR-003**: System MUST provide `POST /api/v1/partner/stations` to create a station under the authenticated partner's ownership, requiring an `Idempotency-Key` header to prevent duplicate creation
-- **FR-004**: System MUST provide `PATCH /api/v1/partner/stations/{id}` to update a station owned by the authenticated partner only, triggering GIS outbox event and analytics event on change
+- **FR-004**: System MUST provide `PATCH /api/v1/partner/stations/{id}` to update a station owned by the authenticated partner only, triggering GIS outbox event on change
 - **FR-005**: System MUST provide `DELETE /api/v1/partner/stations/{id}` to soft-delete a station owned by the authenticated partner only (sets `deleted_at`, never hard deletes)
 - **FR-006**: System MUST provide `GET /api/v1/partner/chargers` returning only chargers at stations owned by the authenticated partner
 - **FR-007**: System MUST provide `POST /api/v1/partner/chargers` to create a charger at a station owned by the authenticated partner only
@@ -158,7 +158,7 @@ When a station is created, updated, or deleted through any API path (partner or 
 
 ### Measurable Outcomes
 
-- **SC-001**: A partner can complete the full station lifecycle (create → read → update → delete) in under 5 seconds per operation
+- **SC-001**: A partner can complete the full station lifecycle (create → read → update → delete) end-to-end in under 5 seconds total across all four operations
 - **SC-002**: Partner isolation is enforced — a partner cannot read, modify, or infer another partner's data (verified by integration test attempting cross-partner access)
 - **SC-003**: All partner-scoped endpoints reject requests with wrong ownership, returning `PARTNER_SCOPE_VIOLATION` within the standard error envelope
 - **SC-004**: Every station mutation (create, update, soft-delete) produces a corresponding `gis.sync_queue` outbox row within the same transaction

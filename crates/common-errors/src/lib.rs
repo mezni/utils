@@ -1,3 +1,6 @@
+use axum::http::StatusCode;
+use axum::response::{IntoResponse, Response};
+use axum::Json;
 use serde::{Deserialize, Serialize};
 use std::fmt;
 
@@ -29,6 +32,8 @@ pub enum ErrorCode {
     ActiveStationsExist,
     #[serde(rename = "REVIEW_STATE_INVALID")]
     ReviewStateInvalid,
+    #[serde(rename = "CONCURRENT_MODIFICATION")]
+    ConcurrentModification,
 }
 
 impl fmt::Display for ErrorCode {
@@ -47,8 +52,30 @@ impl fmt::Display for ErrorCode {
             ErrorCode::InvalidStateTransition => "INVALID_STATE_TRANSITION",
             ErrorCode::ActiveStationsExist => "ACTIVE_STATIONS_EXIST",
             ErrorCode::ReviewStateInvalid => "REVIEW_STATE_INVALID",
+            ErrorCode::ConcurrentModification => "CONCURRENT_MODIFICATION",
         };
         write!(f, "{}", s)
+    }
+}
+
+impl ErrorCode {
+    fn http_status(&self) -> StatusCode {
+        match self {
+            ErrorCode::Unauthenticated => StatusCode::UNAUTHORIZED,
+            ErrorCode::TokenExpired => StatusCode::UNAUTHORIZED,
+            ErrorCode::Forbidden => StatusCode::FORBIDDEN,
+            ErrorCode::InsufficientRole => StatusCode::FORBIDDEN,
+            ErrorCode::PartnerScopeViolation => StatusCode::FORBIDDEN,
+            ErrorCode::NotFound => StatusCode::NOT_FOUND,
+            ErrorCode::AlreadyExists => StatusCode::CONFLICT,
+            ErrorCode::ActiveStationsExist => StatusCode::CONFLICT,
+            ErrorCode::ConcurrentModification => StatusCode::CONFLICT,
+            ErrorCode::SoftDeleted => StatusCode::GONE,
+            ErrorCode::ValidationFailed => StatusCode::BAD_REQUEST,
+            ErrorCode::InvalidCoordinates => StatusCode::BAD_REQUEST,
+            ErrorCode::InvalidStateTransition => StatusCode::BAD_REQUEST,
+            ErrorCode::ReviewStateInvalid => StatusCode::BAD_REQUEST,
+        }
     }
 }
 
@@ -67,3 +94,18 @@ impl fmt::Display for ApiError {
 }
 
 impl std::error::Error for ApiError {}
+
+impl IntoResponse for ApiError {
+    fn into_response(self) -> Response {
+        let status = self.code.http_status();
+        let body = serde_json::json!({
+            "success": false,
+            "error": {
+                "code": self.code.to_string(),
+                "message": self.message,
+                "details": self.details,
+            }
+        });
+        (status, Json(body)).into_response()
+    }
+}

@@ -1,17 +1,9 @@
 use crate::CurrentUser;
+use common_types::generate_id;
+use common_types::EntityPrefix;
 use common_types::Role;
+use sqlx::PgPool;
 use tracing::info;
-
-/// Placeholder for the platform_db user_account table operations.
-/// In Sprint 4 the actual DB schema will be available; for now we
-/// use an in-memory stub that logs provisioning events.
-///
-/// On first valid JWT login:
-///   1. Look up user_account by keycloak_user_id
-///   2. If not found, create one with a USR- prefixed identifier
-///   3. If user has partner_id attribute, create partner_membership
-///      and derive `partner_id` from membership (NEVER from the client)
-///   4. Return CurrentUser
 
 #[derive(Debug, Clone)]
 pub struct ProvisionedUser {
@@ -22,13 +14,108 @@ pub struct ProvisionedUser {
     pub partner_id: Option<String>,
 }
 
-/// Derive a stable, collision-resistant `USR-` identifier from the Keycloak `sub`.
+/// Provision a user on first login.
 ///
-/// This is a deterministic stub for the pre-DB sprint. It is byte-safe (no slicing of
-/// arbitrary UTF-8) and produces a fixed-length Crockford-base32-style suffix. Sprint 4
-/// replaces this with a persisted ULID allocated at first INSERT.
-fn derive_user_id(keycloak_user_id: &str) -> String {
-    // FNV-1a 64-bit hash — dependency-free and stable across runs.
+/// When a `PgPool` is provided, this performs a real DB lookup/insert into
+/// `platform_db.user_account` and resolves `partner_id` from `partner_membership`.
+/// When `None`, falls back to the deterministic FNV-1a stub (for tests/other services).
+pub async fn provision_user(
+    pool: Option<&PgPool>,
+    keycloak_user_id: &str,
+    email: Option<&str>,
+    role: Role,
+) -> ProvisionedUser {
+    if let Some(pool) = pool {
+        let user_id = provision_user_in_db(pool, keycloak_user_id, email, role).await;
+        let partner_id = resolve_partner_id(pool, &user_id).await;
+        info!(
+            user_id = %user_id,
+            keycloak_user_id = %keycloak_user_id,
+            role = ?role,
+            partner_id = ?partner_id,
+            "User provisioned (DB)"
+        );
+        return ProvisionedUser {
+            user_id,
+            keycloak_user_id: keycloak_user_id.to_string(),
+            email: email.map(|e| e.to_string()),
+            role,
+            partner_id,
+        };
+    }
+
+    let user_id = derive_user_id_stub(keycloak_user_id);
+    info!(
+        user_id = %user_id,
+        keycloak_user_id = %keycloak_user_id,
+        role = ?role,
+        "User provisioned (stub)"
+    );
+    ProvisionedUser {
+        user_id,
+        keycloak_user_id: keycloak_user_id.to_string(),
+        email: email.map(|e| e.to_string()),
+        role,
+        partner_id: None,
+    }
+}
+
+async fn provision_user_in_db(
+    pool: &PgPool,
+    keycloak_user_id: &str,
+    email: Option<&str>,
+    role: Role,
+) -> String {
+    let existing: Option<(String,)> =
+        sqlx::query_as(
+            "SELECT user_id FROM platform_db.user_account WHERE keycloak_user_id = $1",
+        )
+        .bind(keycloak_user_id)
+        .fetch_optional(pool)
+        .await
+        .ok()
+        .flatten();
+
+    if let Some((user_id,)) = existing {
+        // Update email/role if changed
+        let _ = sqlx::query(
+            "UPDATE platform_db.user_account SET email = COALESCE($1, email), role = $2, updated_at = now() WHERE user_id = $3",
+        )
+        .bind(email)
+        .bind(role.as_str())
+        .bind(&user_id)
+        .execute(pool)
+        .await;
+        return user_id;
+    }
+
+    let user_id = generate_id(EntityPrefix::Usr);
+    let _ = sqlx::query(
+        "INSERT INTO platform_db.user_account (user_id, keycloak_user_id, email, role, created_at, updated_at) VALUES ($1, $2, $3, $4, now(), now())",
+    )
+    .bind(&user_id)
+    .bind(keycloak_user_id)
+    .bind(email)
+    .bind(role.as_str())
+    .execute(pool)
+    .await;
+    user_id
+}
+
+async fn resolve_partner_id(pool: &PgPool, user_id: &str) -> Option<String> {
+    let result: Option<(String,)> = sqlx::query_as(
+        "SELECT partner_id FROM platform_db.partner_membership WHERE user_id = $1 LIMIT 1",
+    )
+    .bind(user_id)
+    .fetch_optional(pool)
+    .await
+    .ok()
+    .flatten();
+    result.map(|(id,)| id)
+}
+
+/// FNV-1a based stub for environments without a database.
+fn derive_user_id_stub(keycloak_user_id: &str) -> String {
     let mut hash: u64 = 0xcbf2_9ce4_8422_2325;
     for b in keycloak_user_id.as_bytes() {
         hash ^= u64::from(*b);
@@ -42,41 +129,9 @@ fn derive_user_id(keycloak_user_id: &str) -> String {
         *slot = ALPHABET[(value & 0x1f) as usize];
         value >>= 5;
     }
-    // Safe: ALPHABET is ASCII so the suffix is valid UTF-8.
     format!("USR-{}", std::str::from_utf8(&suffix).unwrap())
 }
 
-/// Attempt to provision a user on first login.
-/// Returns a `ProvisionedUser` ready for the auth layer.
-pub async fn provision_user(
-    keycloak_user_id: &str,
-    email: Option<&str>,
-    role: Role,
-) -> ProvisionedUser {
-    // TODO(Sprint 4): Replace with actual platform_db SELECT-then-INSERT.
-    //   - Look up user_account by keycloak_user_id; allocate a real ULID on insert.
-    //   - Derive partner_id from partner_membership (never accept it from the client).
-    let user_id = derive_user_id(keycloak_user_id);
-
-    info!(
-        user_id = %user_id,
-        keycloak_user_id = %keycloak_user_id,
-        role = ?role,
-        "User provisioned"
-    );
-
-    ProvisionedUser {
-        user_id,
-        keycloak_user_id: keycloak_user_id.to_string(),
-        email: email.map(|e| e.to_string()),
-        role,
-        // partner_id is ALWAYS derived from partner_membership (Sprint 4), NEVER from
-        // the client/token. Until the membership table exists it remains None.
-        partner_id: None,
-    }
-}
-
-/// Return a CurrentUser from a ProvisionedUser.
 impl From<ProvisionedUser> for CurrentUser {
     fn from(p: ProvisionedUser) -> Self {
         CurrentUser {

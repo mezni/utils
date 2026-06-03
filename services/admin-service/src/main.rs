@@ -1,22 +1,21 @@
-use axum::routing::get;
-use axum::{Json, Router};
+mod config;
+mod db;
+mod error;
+pub mod extractors;
+mod models;
+mod repository;
+mod routes;
+
+use std::net::SocketAddr;
+
+use axum::http::Method;
+use axum::{middleware, Extension, Router};
 use common_auth::{auth_middleware, require_role, set_auth_config, AuthConfig};
 use common_types::Role;
-use serde_json::{json, Value};
-use std::net::SocketAddr;
+use tower_http::cors::{Any, CorsLayer};
 use tracing_subscriber::EnvFilter;
 
-async fn health() -> Json<Value> {
-    Json(json!({"status":"ok"}))
-}
-
-async fn admin_only() -> Json<Value> {
-    Json(json!({
-        "success": true,
-        "data": {"message": "Admin access granted"},
-        "meta": {}
-    }))
-}
+use self::config::AppConfig;
 
 #[tokio::main]
 async fn main() {
@@ -24,39 +23,57 @@ async fn main() {
         .with_env_filter(EnvFilter::from_default_env())
         .init();
 
-    let port: u16 = std::env::var("ADMIN_SERVICE_PORT")
-        .unwrap_or_else(|_| "8082".into())
-        .parse()
-        .unwrap_or(8082);
+    let config = AppConfig::from_env();
 
-    let issuer = std::env::var("AUTH_ISSUER")
-        .unwrap_or_else(|_| "http://keycloak:8080/realms/bornemap".into());
-    let jwks_url = std::env::var("AUTH_JWKS_URL")
-        .unwrap_or_else(|_| "http://keycloak:8080/realms/bornemap/protocol/openid-connect/certs".into());
-    let audience = std::env::var("AUTH_AUDIENCE")
-        .unwrap_or_else(|_| "bornemap-api".into());
+    let pool = db::init_db_pool(&config.database_url)
+        .await
+        .expect("Failed to init database pool");
+
+    common_db::run_migrations(&pool)
+        .await
+        .expect("Failed to run migrations");
 
     set_auth_config(AuthConfig {
-        issuer: issuer.clone(),
-        audience: audience.clone(),
-        jwks_url: jwks_url.clone(),
+        issuer: config.auth_issuer.clone(),
+        audience: config.auth_audience.clone(),
+        jwks_url: config.auth_jwks_url.clone(),
     });
 
-    common_auth::init_jwks_cache(jwks_url).await;
+    common_auth::init_jwks_cache(config.auth_jwks_url.clone()).await;
 
-    // Admin routes: authenticate first (innermost layer runs last), then enforce admin role.
-    // Layers run bottom-to-top, so auth_middleware executes before require_role.
-    let protected = Router::new()
-        .route("/api/v1/admin/check", get(admin_only))
-        .layer(axum::middleware::from_fn(require_role(Role::Admin)))
-        .layer(axum::middleware::from_fn(auth_middleware));
+    // CORS — allow everything for partner UI dev; tighten in production
+    let cors = CorsLayer::new()
+        .allow_methods([
+            Method::GET,
+            Method::POST,
+            Method::PUT,
+            Method::PATCH,
+            Method::DELETE,
+        ])
+        .allow_origin(Any)
+        .allow_headers(Any);
 
-    // /health is exempt from auth (liveness/readiness probes).
+    // Partner-facing API — authenticate + require partner role
+    let partner_routes = routes::partner_routes(pool.clone())
+        .layer(middleware::from_fn(require_role(Role::Partner)))
+        .layer(middleware::from_fn(auth_middleware));
+
+    // Admin-facing API — authenticate + require admin role
+    let admin_routes = routes::admin_routes(pool.clone())
+        .layer(middleware::from_fn(require_role(Role::Admin)))
+        .layer(middleware::from_fn(auth_middleware));
+
+    // Public routes (health)
+    let public = routes::public_routes();
+
     let app = Router::new()
-        .route("/health", get(health))
-        .merge(protected);
+        .merge(partner_routes)
+        .merge(admin_routes)
+        .merge(public)
+        .layer(Extension(pool))
+        .layer(cors);
 
-    let addr = SocketAddr::from(([0, 0, 0, 0], port));
+    let addr = SocketAddr::from(([0, 0, 0, 0], config.port));
     tracing::info!("admin-service listening on {}", addr);
 
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
