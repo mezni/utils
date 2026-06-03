@@ -8,6 +8,13 @@
 
 **Input**: User description: "Sprint 6 — GIS Sync System v1: implement gis-worker — poll/consume gis.sync_queue (or RabbitMQ), process states pending → processing → done|failed → dead_letter. Convert station lat/lng to geom. OSM Tunisia import (basic). Idempotent + replay-safe + retry/backoff."
 
+## Clarifications
+
+### Session 2026-06-02
+
+- Q: What concurrency model should the worker use for batch processing? → A: Parallel — process all rows within a batch concurrently for maximum throughput; idempotency handles any ordering concerns.
+- Q: How should OSM Tunisia data be sourced? → A: Download from Geofabrik (`https://download.geofabrik.de/africa/tunisia-latest.osm.pbf`) at migration/init time via a one-time script.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Station Geometry Auto-Syncs on Mutation (Priority: P1)
@@ -87,7 +94,7 @@ The GIS database includes a basic OSM import for Tunisia (roads, administrative 
 ### Functional Requirements
 
 - **FR-001**: System MUST provide a `gis-worker` binary that polls `gis.sync_queue` for rows with `status = 'pending'` on a configurable interval (`GIS_WORKER_POLL_INTERVAL_MS`, default 5000)
-- **FR-002**: Worker MUST process outbox rows in FIFO order (ordered by `created_at`) within a configurable batch size (`GIS_WORKER_BATCH_SIZE`, default 50)
+- **FR-002**: Worker MUST process outbox rows in parallel within each batch, using a configurable batch size (`GIS_WORKER_BATCH_SIZE`, default 50); rows are ordered by `created_at` for fair scheduling but processed concurrently
 - **FR-003**: For `insert` and `update` operations with valid lat/lng, worker MUST compute `geom = ST_SetSRID(ST_MakePoint(lng, lat), 4326)` and update `inventory.station.geom` for the matching station
 - **FR-004**: For `delete` operations, worker MUST set `inventory.station.geom = NULL` for the matching station
 - **FR-005**: Worker MUST transition outbox rows: `pending → processing → done` on success; `pending → processing → failed` on error; `failed → dead_letter` after exhausting retries
@@ -95,7 +102,7 @@ The GIS database includes a basic OSM import for Tunisia (roads, administrative 
 - **FR-007**: Worker MUST be idempotent — processing the same outbox row multiple times MUST produce identical station geometry state
 - **FR-008**: Worker MUST handle stale `processing` rows on startup — rows in `processing` for longer than `GIS_WORKER_STALE_PROCESSING_TIMEOUT_MS` (default 30000) are reset to `pending` for retry
 - **FR-009**: Worker MUST validate coordinates — lat MUST be in [-90, 90], lng in [-180, 180]; invalid coordinates set status to `failed` with `INVALID_COORDINATES`
-- **FR-010**: System MUST provide a one-time CLI command or migration script to import basic OSM Tunisia data into a `gis.osm_*` table (roads, admin boundaries)
+- **FR-010**: System MUST provide a one-time CLI command or migration script that downloads Tunisia OSM data from Geofabrik (`https://download.geofabrik.de/africa/tunisia-latest.osm.pbf`) and imports it into `gis.osm_*` tables (roads, admin boundaries)
 - **FR-011**: OSM import MUST use SRID 4326 (WGS 84) to match station geometry
 - **FR-012**: Worker MUST log each state transition with outbox row id, entity_id, operation, and error details on failure
 - **FR-013**: Worker MUST support optional RabbitMQ consumption as an alternative to DB polling — if `RABBITMQ_QUEUE_GIS_SYNC` is configured, consume from queue instead of polling
