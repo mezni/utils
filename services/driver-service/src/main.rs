@@ -63,3 +63,40 @@ async fn main() {
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
     axum::serve(listener, app).await.unwrap();
 }
+
+#[cfg(test)]
+mod tests {
+    use axum::http::StatusCode;
+    use axum::response::IntoResponse;
+    use common_auth::AuthError;
+
+    use crate::error::ServiceError;
+
+    #[test]
+    fn test_auth_error_unauthenticated_status() {
+        let err = ServiceError::Auth(AuthError::Unauthenticated);
+        let response = err.into_response();
+        assert_eq!(response.status(), StatusCode::UNAUTHORIZED);
+    }
+
+    #[test]
+    fn test_auth_error_insufficient_role_status() {
+        let err = ServiceError::Auth(AuthError::InsufficientRole);
+        let response = err.into_response();
+        assert_eq!(response.status(), StatusCode::FORBIDDEN);
+    }
+
+    #[test]
+    fn test_auth_error_token_expired_status() {
+        let err = ServiceError::Auth(AuthError::TokenExpired);
+        let response = err.into_response();
+        assert_eq!(response.status(), StatusCode::UNAUTHORIZED);
+    }
+
+    #[test]
+    fn test_auth_error_forbidden_status() {
+        let err = ServiceError::Auth(AuthError::Forbidden);
+        let response = err.into_response();
+        assert_eq!(response.status(), StatusCode::FORBIDDEN);
+    }
+}

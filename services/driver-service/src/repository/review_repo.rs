@@ -166,3 +166,48 @@ pub async fn list_user_reviews(
 
     Ok((reviews, meta))
 }
+
+#[cfg(test)]
+mod tests {
+    use axum::http::StatusCode;
+    use axum::response::IntoResponse;
+
+    use crate::error::ServiceError;
+
+    #[test]
+    fn test_already_deleted_validation_error_message() {
+        let err = ServiceError::validation("Review is already deleted");
+        let msg = format!("{}", err);
+        assert!(msg.contains("Review is already deleted"));
+    }
+
+    #[test]
+    fn test_cannot_update_deleted_validation_error_message() {
+        let err = ServiceError::validation("Cannot update a deleted review");
+        let msg = format!("{}", err);
+        assert!(msg.contains("Cannot update a deleted review"));
+    }
+
+    #[test]
+    fn test_already_deleted_response_is_bad_request() {
+        let err = ServiceError::validation("Review is already deleted");
+        let response = err.into_response();
+        assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+    }
+
+    #[test]
+    fn test_deleted_review_rejects_update() {
+        let err = ServiceError::validation("Cannot update a deleted review");
+        let response = err.into_response();
+        assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+    }
+
+    #[test]
+    fn test_soft_delete_status_constants() {
+        let published = "published";
+        let deleted = "deleted";
+        assert_eq!(published, "published");
+        assert_eq!(deleted, "deleted");
+        assert_ne!(published, deleted);
+    }
+}

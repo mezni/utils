@@ -1,3 +1,8 @@
 {
-  "feature_directory": "specs/007-driver-service-mvp"
+  "feature_directory": "specs/008-design-system-foundation",
+  "feature_spec": "specs/008-design-system-foundation/spec.md",
+  "impl_plan": "specs/008-design-system-foundation/plan.md",
+  "research": "specs/008-design-system-foundation/research.md",
+  "data_model": "specs/008-design-system-foundation/data-model.md",
+  "quickstart": "specs/008-design-system-foundation/quickstart.md"
 }
