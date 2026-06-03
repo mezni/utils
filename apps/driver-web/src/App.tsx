@@ -1,13 +1,21 @@
-import { formatId, type EntityPrefix } from "@bornemap/shared-types";
-import type { EventEnvelope } from "@bornemap/event-taxonomy";
-
-const APP_NAME = "driver-web";
-const sampleId = formatId("USR" as EntityPrefix, "01JAN1234567890");
+import Header from './components/Header'
+import MapView from './components/MapView'
+import ErrorBoundary from './components/ErrorBoundary'
+import { useState } from 'react'
 
 function App() {
-  // verify cross-stack import resolves
-  const _verify: EventEnvelope | null = null;
-  return <h1>{APP_NAME} | {sampleId} {_verify !== null ? "?" : ""}</h1>;
+  const [searchOpen, setSearchOpen] = useState(false)
+
+  return (
+    <ErrorBoundary>
+      <div className="flex h-svh w-full flex-col overflow-hidden">
+        <Header onSearchToggle={() => setSearchOpen((p) => !p)} />
+        <main className="flex flex-1 overflow-hidden">
+          <MapView searchOpen={searchOpen} onSearchClose={() => setSearchOpen(false)} />
+        </main>
+      </div>
+    </ErrorBoundary>
+  )
 }
 
-export default App;
+export default App

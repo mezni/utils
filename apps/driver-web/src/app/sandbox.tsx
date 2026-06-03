@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
+import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Modal, ModalHeader, ModalContent, ModalFooter } from "@/components/ui/modal";
 import { MapContainer } from "@/components/ui/map-container";
 
