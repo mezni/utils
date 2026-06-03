@@ -1,5 +1,5 @@
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan:
-specs/006-gis-sync-v1/plan.md
+specs/007-driver-service-mvp/plan.md
 <!-- SPECKIT END -->

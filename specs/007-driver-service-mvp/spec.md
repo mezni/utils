@@ -105,6 +105,7 @@ A logged-in driver can view and update their profile.
 - **FR-016**: System MUST provide `GET /api/v1/driver/me` returning the authenticated driver's profile (user_id, email, display_name, avatar_url, preferred_language, preferences, created_at, last_login_at)
 - **FR-017**: System MUST provide `PATCH /api/v1/driver/me` to update profile fields (display_name, avatar_url, preferred_language, preferences)
 - **FR-018**: Review endpoints (favorites, reviews, profile) MUST require `registered_driver` role; unauthenticated requests receive `UNAUTHENTICATED`
+- **FR-019**: All responses MUST use the standard envelope format — list endpoints use `{success, data, meta}` with pagination, single-item endpoints use `{success, data, meta: {}}`
 
 ### Key Entities
 
@@ -121,7 +122,7 @@ A logged-in driver can view and update their profile.
 - **SC-001**: Bbox/radius queries return only visible stations and use GIST index scan (verified via `EXPLAIN ANALYZE`)
 - **SC-002**: A duplicate review for the same station by the same user is rejected with `ALREADY_EXISTS` (409)
 - **SC-003**: A non-owner attempting to modify a review is rejected with `FORBIDDEN` (403)
-- **SC-004**: Station search returns results in under 200ms p95 on a seeded dataset
+- **SC-004**: Station search returns results in under 200ms p95 on a seeded dataset of 10,000 stations across Tunisia
 - **SC-005**: Favorites CRUD works correctly — add, list, remove, and verify persistence across requests
 - **SC-006**: A user can complete the full driver journey: discover stations → view detail → favorite → review
 
