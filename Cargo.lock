@@ -438,14 +438,21 @@ name = "driver-service"
 version = "0.1.0"
 dependencies = [
  "axum",
+ "chrono",
  "common-auth",
  "common-db",
  "common-errors",
  "common-types",
+ "serde",
  "serde_json",
+ "sqlx",
+ "thiserror 2.0.18",
  "tokio",
+ "tower 0.4.13",
+ "tower-http 0.5.2",
  "tracing",
  "tracing-subscriber",
+ "ulid",
 ]
 
 [[package]]
