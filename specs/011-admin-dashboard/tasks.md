@@ -16,10 +16,10 @@
 
 **Purpose**: Project initialization and dependency configuration
 
-- [ ] T001 Add missing dependencies to `apps/admin-dashboard/package.json` (`@bornemap/api-client`, `@bornemap/auth-client`, `@bornemap/api-contracts`, `@bornemap/design-tokens`, `@bornemap/event-taxonomy`, `@tanstack/react-query`, `react-router`, `keycloak-js`, `class-variance-authority`)
-- [ ] T002 Update `apps/admin-dashboard/vite.config.ts` with proxy to localhost:80 and path alias; add `@tailwindcss/vite` plugin and migrate `tailwind.config.ts` to Tailwind v4 CSS syntax
-- [ ] T003 Update `apps/admin-dashboard/index.html` with correct title
-- [ ] T004 Replace `apps/admin-dashboard/src/index.css` with clean Tailwind + design token CSS variables
+- [X] T001 Add missing dependencies to `apps/admin-dashboard/package.json` (`@bornemap/api-client`, `@bornemap/auth-client`, `@bornemap/api-contracts`, `@bornemap/design-tokens`, `@bornemap/event-taxonomy`, `@tanstack/react-query`, `react-router`, `keycloak-js`, `class-variance-authority`)
+- [X] T002 Update `apps/admin-dashboard/vite.config.ts` with proxy to localhost:80 and path alias; add `@tailwindcss/vite` plugin and migrate `tailwind.config.ts` to Tailwind v4 CSS syntax
+- [X] T003 Update `apps/admin-dashboard/index.html` with correct title
+- [X] T004 Replace `apps/admin-dashboard/src/index.css` with clean Tailwind + design token CSS variables
 
 ---
 
@@ -27,18 +27,18 @@
 
 **Purpose**: Shared infrastructure that ALL user stories depend on
 
-- [ ] T005 Create `apps/admin-dashboard/src/lib/types.ts` — domain types (Partner, Station, Charger, Review, User, envelopes)
-- [ ] T006 [P] Create `apps/admin-dashboard/src/lib/api.ts` — ApiClient singleton pointed at `/api/v1/admin`
-- [ ] T007 [P] Create `apps/admin-dashboard/src/lib/clickstream.ts` — event emission on `admin_dashboard` channel
-- [ ] T008 Create `apps/admin-dashboard/src/hooks/useAuth.tsx` — Keycloak auth context provider (initAuth, login, logout, getToken)
-- [ ] T009 Create `apps/admin-dashboard/src/components/ErrorBoundary.tsx` — React error boundary
-- [ ] T010 Create `apps/admin-dashboard/src/components/Modal.tsx` — Portal modal with overlay + Escape key
-- [ ] T011 [P] Create `apps/admin-dashboard/src/components/Header.tsx` — Top nav with sidebar toggle + user info + logout
-- [ ] T012 [P] Create `apps/admin-dashboard/src/components/Sidebar.tsx` — 260px sidebar with nav items (Dashboard, Partners, Stations, Reviews, Users)
-- [ ] T013 Create `apps/admin-dashboard/src/components/Layout.tsx` — Sidebar + Header + main content wrapper
-- [ ] T014 Create `apps/admin-dashboard/src/components/AuthGate.tsx` — Auth guard with login prompt
-- [ ] T015 Create `apps/admin-dashboard/src/main.tsx` — Root with QueryClient + BrowserRouter + AuthProvider + App
-- [ ] T016 Create `apps/admin-dashboard/src/App.tsx` — ErrorBoundary > AuthGate > Layout > Routes
+- [X] T005 Create `apps/admin-dashboard/src/lib/types.ts` — domain types (Partner, Station, Charger, Review, User, envelopes)
+- [X] T006 [P] Create `apps/admin-dashboard/src/lib/api.ts` — ApiClient singleton pointed at `/api/v1/admin`
+- [X] T007 [P] Create `apps/admin-dashboard/src/lib/clickstream.ts` — event emission on `admin_dashboard` channel
+- [X] T008 Create `apps/admin-dashboard/src/hooks/useAuth.tsx` — Keycloak auth context provider (initAuth, login, logout, getToken)
+- [X] T009 Create `apps/admin-dashboard/src/components/ErrorBoundary.tsx` — React error boundary
+- [X] T010 Create `apps/admin-dashboard/src/components/Modal.tsx` — Portal modal with overlay + Escape key
+- [X] T011 [P] Create `apps/admin-dashboard/src/components/Header.tsx` — Top nav with sidebar toggle + user info + logout
+- [X] T012 [P] Create `apps/admin-dashboard/src/components/Sidebar.tsx` — 260px sidebar with nav items (Dashboard, Partners, Stations, Reviews, Users)
+- [X] T013 Create `apps/admin-dashboard/src/components/Layout.tsx` — Sidebar + Header + main content wrapper
+- [X] T014 Create `apps/admin-dashboard/src/components/AuthGate.tsx` — Auth guard with login prompt
+- [X] T015 Create `apps/admin-dashboard/src/main.tsx` — Root with QueryClient + BrowserRouter + AuthProvider + App
+- [X] T016 Create `apps/admin-dashboard/src/App.tsx` — ErrorBoundary > AuthGate > Layout > Routes
 
 **Checkpoint**: Foundation ready — all user stories can now be implemented independently
 
@@ -52,9 +52,9 @@
 
 **Independent Test**: Authenticate as admin; navigate to `/`; verify metric cards render with correct counts
 
-- [ ] T017 [P] [US1] Create `apps/admin-dashboard/src/hooks/useAdminOverview.ts` — dashboard metrics query
-- [ ] T018 [P] [US1] Create `apps/admin-dashboard/src/components/DataCard.tsx` — metric card component
-- [ ] T019 [US1] Create `apps/admin-dashboard/src/pages/DashboardPage.tsx` — overview with DataCard grid, loading skeletons, error/retry, empty state
+- [X] T017 [P] [US1] Create `apps/admin-dashboard/src/hooks/useAdminOverview.ts` — dashboard metrics query
+- [X] T018 [P] [US1] Create `apps/admin-dashboard/src/components/DataCard.tsx` — metric card component
+- [X] T019 [US1] Create `apps/admin-dashboard/src/pages/DashboardPage.tsx` — overview with DataCard grid, loading skeletons, error/retry, empty state
 
 **Checkpoint**: Dashboard overview renders with platform counts
 
@@ -66,9 +66,9 @@
 
 **Independent Test**: `curl -H "Authorization: Bearer $TOKEN" http://localhost/api/v1/admin/partners` returns paginated partner list; UI add/edit/delete workflows work
 
-- [ ] T020 [P] [US2] Create `apps/admin-dashboard/src/hooks/useAdminPartners.ts` — partner list/create/edit/delete queries and mutations
-- [ ] T021 [P] [US2] Create `apps/admin-dashboard/src/components/PartnerForm.tsx` — create/edit form with name, type, status fields
-- [ ] T022 [US2] Create `apps/admin-dashboard/src/pages/PartnersPage.tsx` — paginated list with create/edit/delete modals, status badges, blocked deletion error
+- [X] T020 [P] [US2] Create `apps/admin-dashboard/src/hooks/useAdminPartners.ts` — partner list/create/edit/delete queries and mutations
+- [X] T021 [P] [US2] Create `apps/admin-dashboard/src/components/PartnerForm.tsx` — create/edit form with name, type, status fields
+- [X] T022 [US2] Create `apps/admin-dashboard/src/pages/PartnersPage.tsx` — paginated list with create/edit/delete modals, status badges, blocked deletion error
 
 **Checkpoint**: Partner CRUD works — MVP is deliverable with Dashboard + Partners
 

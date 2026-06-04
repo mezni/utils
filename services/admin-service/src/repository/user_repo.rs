@@ -44,3 +44,27 @@ pub async fn list_users(
 
     Ok((users, meta))
 }
+
+pub async fn update_user(
+    pool: &PgPool,
+    user_id: &str,
+    req: &crate::routes::admin::UserUpdateRequest,
+) -> Result<User, ServiceError> {
+    let now = chrono::Utc::now();
+    
+    let result = sqlx::query_as::<_, User>(
+        "UPDATE platform_db.user_account SET \
+         role = COALESCE($1, role), \
+         updated_at = $2 \
+         WHERE user_id = $3 \
+         RETURNING user_id, keycloak_user_id, email, role, created_at, updated_at",
+    )
+    .bind(&req.role)
+    .bind(now)
+    .bind(user_id)
+    .fetch_optional(pool)
+    .await
+    .map_err(ServiceError::Db)?;
+
+    result.ok_or_else(|| ServiceError::not_found("User", user_id))
+}

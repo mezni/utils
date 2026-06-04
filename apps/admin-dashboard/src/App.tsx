@@ -1,26 +1,30 @@
-import { formatId } from "@bornemap/shared-types";
-import type { EventEnvelope } from "@bornemap/event-taxonomy";
-import type { ErrorEnvelope } from "@bornemap/api-contracts";
-import type { SuccessEnvelope } from "@bornemap/api-contracts";
-import type { PaginationMeta } from "@bornemap/api-contracts";
-
-const APP_NAME = "admin-dashboard";
-const sampleId = formatId("USR", "01JAN1234567890");
+import { Routes, Route, Navigate } from 'react-router'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
+import { AuthGate } from '@/components/AuthGate'
+import { Layout } from '@/components/Layout'
+import DashboardPage from '@/pages/DashboardPage'
+import PartnersPage from '@/pages/PartnersPage'
+import StationsPage from '@/pages/StationsPage'
+import ReviewsPage from '@/pages/ReviewsPage'
+import UsersPage from '@/pages/UsersPage'
 
 function App() {
-  const verifyEvent: EventEnvelope | null = null;
-  const verifyError: ErrorEnvelope | null = null;
-  const verifySuccess: SuccessEnvelope | null = null;
-  const verifyMeta: PaginationMeta | null = null;
   return (
-    <h1>
-      {APP_NAME} | {sampleId}
-      {verifyEvent !== null ? "E" : ""}
-      {verifyError !== null ? "E" : ""}
-      {verifySuccess !== null ? "S" : ""}
-      {verifyMeta !== null ? "M" : ""}
-    </h1>
-  );
+    <ErrorBoundary>
+      <AuthGate>
+        <Layout>
+          <Routes>
+            <Route path="/" element={<DashboardPage />} />
+            <Route path="/partners" element={<PartnersPage />} />
+            <Route path="/stations" element={<StationsPage />} />
+            <Route path="/reviews" element={<ReviewsPage />} />
+            <Route path="/users" element={<UsersPage />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Layout>
+      </AuthGate>
+    </ErrorBoundary>
+  )
 }
 
-export default App;
+export default App

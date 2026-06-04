@@ -15,12 +15,62 @@ use crate::repository::{
 use crate::repository::partner_repo::PartnerUpdateRequest;
 use common_types::api::{ItemEnvelope, SuccessEnvelope};
 
+#[derive(serde::Serialize)]
+pub struct OverviewMetrics {
+    pub total_partners: i64,
+    pub total_stations: i64,
+    pub active_stations: i64,
+    pub pending_reviews: i64,
+}
+
 fn get_header(headers: &HeaderMap, name: &str) -> Result<String, ServiceError> {
     headers
         .get(name)
         .and_then(|v| v.to_str().ok())
         .map(|s| s.to_string())
         .ok_or_else(|| ServiceError::validation(format!("Missing required header: {}", name)))
+}
+
+async fn get_overview(
+    Extension(_user): Extension<CurrentUser>,
+    State(pool): State<PgPool>,
+) -> Result<impl IntoResponse, ServiceError> {
+    let total_partners: (i64,) = sqlx::query_as(
+        "SELECT COUNT(*) FROM inventory.partner WHERE deleted_at IS NULL"
+    )
+    .fetch_one(&pool)
+    .await
+    .map_err(ServiceError::Db)?;
+
+    let total_stations: (i64,) = sqlx::query_as(
+        "SELECT COUNT(*) FROM inventory.station WHERE deleted_at IS NULL"
+    )
+    .fetch_one(&pool)
+    .await
+    .map_err(ServiceError::Db)?;
+
+    let active_stations: (i64,) = sqlx::query_as(
+        "SELECT COUNT(*) FROM inventory.station WHERE deleted_at IS NULL AND status = 'active'"
+    )
+    .fetch_one(&pool)
+    .await
+    .map_err(ServiceError::Db)?;
+
+    let pending_reviews: (i64,) = sqlx::query_as(
+        "SELECT COUNT(*) FROM inventory.review WHERE status = 'submitted'"
+    )
+    .fetch_one(&pool)
+    .await
+    .map_err(ServiceError::Db)?;
+
+    let metrics = OverviewMetrics {
+        total_partners: total_partners.0,
+        total_stations: total_stations.0,
+        active_stations: active_stations.0,
+        pending_reviews: pending_reviews.0,
+    };
+
+    Ok(ItemEnvelope::new(metrics))
 }
 
 pub fn station_routes(pool: PgPool) -> axum::Router {
@@ -35,12 +85,14 @@ pub fn station_routes(pool: PgPool) -> axum::Router {
 
 pub fn partner_routes(pool: PgPool) -> axum::Router {
     axum::Router::new()
+        .route("/api/v1/admin/overview", axum::routing::get(get_overview))
         .route("/api/v1/admin/partners", axum::routing::get(list_partners).post(create_partner))
         .route(
             "/api/v1/admin/partners/{id}",
             axum::routing::patch(update_partner).delete(delete_partner),
         )
         .route("/api/v1/admin/users", axum::routing::get(list_users))
+        .route("/api/v1/admin/users/{id}", axum::routing::patch(update_user))
         .route("/api/v1/admin/reviews", axum::routing::get(list_reviews))
         .route("/api/v1/admin/reviews/{id}/status", axum::routing::patch(moderate_review))
         .with_state(pool)
@@ -244,6 +296,11 @@ async fn delete_partner(
 
 // ---- User handlers ----
 
+#[derive(serde::Deserialize)]
+pub struct UserUpdateRequest {
+    pub role: Option<String>,
+}
+
 async fn list_users(
     Extension(_user): Extension<CurrentUser>,
     State(pool): State<PgPool>,
@@ -251,6 +308,16 @@ async fn list_users(
 ) -> Result<impl IntoResponse, ServiceError> {
     let (users, meta) = user_repo::list_users(&pool, &params).await?;
     Ok(SuccessEnvelope::new(users, meta))
+}
+
+async fn update_user(
+    Extension(_user): Extension<CurrentUser>,
+    State(pool): State<PgPool>,
+    Path(id): Path<String>,
+    Json(body): Json<UserUpdateRequest>,
+) -> Result<impl IntoResponse, ServiceError> {
+    let updated = user_repo::update_user(&pool, &id, &body).await?;
+    Ok(ItemEnvelope::new(updated))
 }
 
 // ---- Review handlers ----
