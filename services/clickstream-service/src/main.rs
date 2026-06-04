@@ -1,4 +1,4 @@
-use axum::routing::get;
+use axum::routing::{get, post};
 use axum::{Json, Router};
 use common_auth::{optional_auth_middleware, set_auth_config, AuthConfig};
 use serde_json::{json, Value};
@@ -47,7 +47,7 @@ async fn main() {
     // Clickstream ingestion accepts anonymous events: optional auth populates
     // CurrentUser when a valid token is present but does not reject anonymous callers.
     let events = Router::new()
-        .route("/api/v1/clickstream/events", get(ingest))
+        .route("/api/v1/clickstream/events", post(ingest))
         .layer(axum::middleware::from_fn(optional_auth_middleware));
 
     // /health is exempt from auth (liveness/readiness probes).
