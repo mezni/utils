@@ -71,7 +71,7 @@ services:
     build:
       context: ../..
       dockerfile: services/driver-service/Dockerfile
-    env_file: ../../infra/env/driver-service.env.example
+    env_file: ../../infra/env/driver-service.env
     networks:
       internal: {}
     depends_on:

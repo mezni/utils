@@ -24,8 +24,6 @@ http:
 
     clickstream:
       rule: "PathPrefix(`/api/v1/clickstream`)"
-      middlewares:
-        - strip-clickstream
       service: clickstream-service
       entryPoints:
         - web
