@@ -13,6 +13,12 @@ export interface SuccessEnvelope<T = Record<string, unknown>> {
   meta: PaginationMeta;
 }
 
+export interface ItemEnvelope<T = Record<string, unknown>> {
+  success: true;
+  data: T;
+  meta: Record<string, never>;
+}
+
 export interface ErrorEnvelope {
   success: false;
   error: {

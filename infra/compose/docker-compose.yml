@@ -90,7 +90,11 @@ services:
     build:
       context: ../..
       dockerfile: services/admin-service/Dockerfile
-    env_file: ../../infra/env/admin-service.env.example
+    env_file: ../../infra/env/admin-service.env
+    environment:
+      - ADMIN_SERVICE_MIGRATIONS_DIR=/migrations
+    volumes:
+      - ../../services/admin-service/migrations:/migrations:ro
     networks:
       internal: {}
     depends_on:

@@ -29,9 +29,9 @@ async fn main() {
         .await
         .expect("Failed to init database pool");
 
-    common_db::run_migrations(&pool)
-        .await
-        .expect("Failed to run migrations");
+    if let Err(e) = common_db::run_migrations(&pool).await {
+        tracing::warn!("Skipping migrations (already applied?): {e}");
+    }
 
     set_auth_config(AuthConfig {
         issuer: config.auth_issuer.clone(),

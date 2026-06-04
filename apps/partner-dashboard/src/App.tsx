@@ -1,26 +1,31 @@
-import { formatId } from "@bornemap/shared-types";
-import type { EventEnvelope } from "@bornemap/event-taxonomy";
-import type { ErrorEnvelope } from "@bornemap/api-contracts";
-import type { SuccessEnvelope } from "@bornemap/api-contracts";
-import type { PaginationMeta } from "@bornemap/api-contracts";
-
-const APP_NAME = "partner-dashboard";
-const sampleId = formatId("PRT", "01JAN1234567890");
+import { Routes, Route, Navigate } from 'react-router'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
+import { Header } from '@/components/Header'
+import { AuthGate } from '@/components/AuthGate'
+import { StationsPage } from '@/pages/StationsPage'
+import { ChargersPage } from '@/pages/ChargersPage'
+import { ProfilePage } from '@/pages/ProfilePage'
 
 function App() {
-  const verifyEvent: EventEnvelope | null = null;
-  const verifyError: ErrorEnvelope | null = null;
-  const verifySuccess: SuccessEnvelope | null = null;
-  const verifyMeta: PaginationMeta | null = null;
   return (
-    <h1>
-      {APP_NAME} | {sampleId}
-      {verifyEvent !== null ? "E" : ""}
-      {verifyError !== null ? "E" : ""}
-      {verifySuccess !== null ? "S" : ""}
-      {verifyMeta !== null ? "M" : ""}
-    </h1>
-  );
+    <ErrorBoundary>
+      <AuthGate>
+        <div className="flex h-svh w-full flex-col overflow-hidden">
+          <Header />
+          <main className="flex flex-1 overflow-hidden">
+            <div className="flex-1 overflow-y-auto">
+              <Routes>
+                <Route path="/" element={<Navigate to="/stations" replace />} />
+                <Route path="/stations" element={<StationsPage />} />
+                <Route path="/chargers" element={<ChargersPage />} />
+                <Route path="/profile" element={<ProfilePage />} />
+              </Routes>
+            </div>
+          </main>
+        </div>
+      </AuthGate>
+    </ErrorBoundary>
+  )
 }
 
-export default App;
+export default App

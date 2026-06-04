@@ -90,7 +90,7 @@ VALUES
     ('USR-' || public.generate_ulid(), 'kc-driver-003', 'youssef@example.tn', 'active'),
     ('USR-' || public.generate_ulid(), 'kc-partner-001', 'partner1@example.tn', 'active'),
     ('USR-' || public.generate_ulid(), 'kc-admin-001', 'admin@example.tn', 'active')
-ON CONFLICT (id) DO NOTHING;
+ON CONFLICT (keycloak_user_id) DO NOTHING;
 
 INSERT INTO users.partner_membership (user_id, partner_id, role)
 SELECT ua.id, p.id, 'owner'
