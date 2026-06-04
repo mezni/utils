@@ -16,6 +16,20 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
-    include: ['react', 'react-dom', '@tanstack/react-query'],
+    include: ['react', 'react-dom', '@tanstack/react-query', 'react-router'],
+    force: true,
+  },
+  esbuild: {
+    jsx: 'automatic',
+    jsxImportSource: 'react',
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          react: ['react', 'react-dom'],
+        },
+      },
+    },
   },
 });
