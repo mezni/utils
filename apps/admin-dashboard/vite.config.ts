@@ -15,4 +15,7 @@ export default defineConfig({
       "/auth": { target: "http://localhost", changeOrigin: true },
     },
   },
+  optimizeDeps: {
+    include: ['react', 'react-dom', '@tanstack/react-query'],
+  },
 });
