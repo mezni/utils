@@ -76,7 +76,7 @@ http:
     driver-service:
       loadBalancer:
         servers:
-          - url: "http://172.18.0.1:8081"
+          - url: "http://driver-service:8081"
 
     admin-service:
       loadBalancer:
