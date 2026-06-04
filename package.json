@@ -19,5 +19,8 @@
     "dev:partner": "npm run dev -w apps/partner-dashboard",
     "dev:admin": "npm run dev -w apps/admin-dashboard",
     "dev:mobile": "cd apps/driver-mobile && npx expo start"
+  },
+  "dependencies": {
+    "react-router": "^7.17.0"
   }
 }
