@@ -16,3 +16,14 @@ Thumbs.db
 .vscode/
 .idea/
 *.log
+.expo-shared/
+expo-env.json
+*.tgz
+.eslintcache
+*.cache
+ios/Pods/
+android/app/build/
+android/.gradle/
+android/local.properties
+android/captures/
+web-build/
