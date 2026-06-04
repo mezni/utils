@@ -1,12 +1,16 @@
 import { ApiClient } from '@bornemap/api-client';
 import * as auth from '@bornemap/auth-client';
-import config from '../theme/config';
 
-const GATEWAY_BASE_URL = (import.meta.env.VITE_GATEWAY_BASE_URL as string) ?? 'http://localhost';
-const API_BASE_URL = `${GATEWAY_BASE_URL}/api/v1/driver`;
+// Get API base URL from Expo environment variables
+const API_BASE_URL = (process.env.EXPO_PUBLIC_API_BASE_URL as string) ?? 'https://api.example.tn';
+const DRIVER_API_URL = `${API_BASE_URL}/api/v1/driver`;
 
+/**
+ * API Client for Driver Mobile App
+ * Configured with automatic token management via auth-client
+ */
 export const apiClient = new ApiClient({
-  baseUrl: API_BASE_URL,
+  baseUrl: DRIVER_API_URL,
   getToken: async () => {
     try {
       const token = await auth.getToken();

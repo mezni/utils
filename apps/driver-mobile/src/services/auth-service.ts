@@ -1,83 +1,167 @@
+/**
+ * Authentication Service
+ * Handles authentication operations with proper error handling and type safety
+ */
+
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { AuthResponse, LoginCredentials, UserData, TokenData } from '@/types/auth';
+import { AuthenticationError, StorageError, ValidationError } from '@/lib/errors';
+import { Logger } from '@/services/logger';
 
 const AUTH_TOKEN_KEY = 'auth_token';
 const USER_DATA_KEY = 'user_data';
+const TOKEN_EXPIRY_KEY = 'token_expiry';
 
+/**
+ * Authentication service with proper error handling and validation
+ */
 export class AuthService {
   /**
    * Login with credentials
+   * @param credentials - User login credentials
+   * @returns Auth response with token and user data
+   * @throws {ValidationError} If credentials are invalid
+   * @throws {AuthenticationError} If login fails
    */
-  static async login(credentials: any): Promise<any> {
+  static async login(credentials: LoginCredentials): Promise<AuthResponse> {
     try {
+      // Validate input
+      if (!credentials.email || !credentials.password) {
+        throw new ValidationError('Email and password are required');
+      }
+
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(credentials.email)) {
+        throw new ValidationError('Invalid email format', 'email', credentials.email);
+      }
+
+      if (credentials.password.length < 6) {
+        throw new ValidationError('Password must be at least 6 characters', 'password');
+      }
+
       // TODO: Implement actual login via auth client
       // const response = await authClient.login(credentials);
-      
+
       // Mock login for development
-      const token = 'mock_token';
-      const user = { 
+      const user: UserData = {
         id: 'user-123',
-        name: 'Driver',
-        email: credentials.email || 'driver@example.com',
+        name: 'Driver User',
+        email: credentials.email,
+        createdAt: new Date().toISOString(),
       };
 
-      await AsyncStorage.setItem(AUTH_TOKEN_KEY, token);
-      await AsyncStorage.setItem(USER_DATA_KEY, JSON.stringify(user));
+      const token = `mock_token_${Date.now()}`;
+      const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(); // 24 hours
 
-      return { token, user };
+      // Store credentials
+      await this.storeToken(token, expiresAt);
+      await this.storeUser(user);
+
+      Logger.info('User logged in successfully', { userId: user.id });
+
+      return { token, user, expiresAt };
     } catch (error) {
-      console.error('Login failed:', error);
-      throw error;
+      if (error instanceof ValidationError || error instanceof AuthenticationError) {
+        throw error;
+      }
+      Logger.error('Login failed', error);
+      throw new AuthenticationError('Failed to login', { cause: error });
     }
   }
 
   /**
-   * Logout
+   * Logout user and clear stored credentials
+   * @throws {AuthenticationError} If logout fails
    */
   static async logout(): Promise<void> {
     try {
-      // TODO: Call logout endpoint
-      await AsyncStorage.removeItem(AUTH_TOKEN_KEY);
-      await AsyncStorage.removeItem(USER_DATA_KEY);
+      await this.clearAuth();
+      Logger.info('User logged out successfully');
     } catch (error) {
-      console.error('Logout failed:', error);
-      throw error;
+      Logger.error('Logout failed', error);
+      throw new AuthenticationError('Failed to logout', { cause: error });
     }
   }
 
   /**
-   * Get auth token
+   * Get stored auth token
+   * @returns Auth token or null if not found
    */
   static async getToken(): Promise<string | null> {
     try {
-      return await AsyncStorage.getItem(AUTH_TOKEN_KEY);
+      const token = await AsyncStorage.getItem(AUTH_TOKEN_KEY);
+
+      if (!token) {
+        return null;
+      }
+
+      // Check if token is expired
+      const expiry = await AsyncStorage.getItem(TOKEN_EXPIRY_KEY);
+      if (expiry && new Date(expiry) < new Date()) {
+        await this.clearAuth();
+        Logger.warn('Token expired, clearing auth');
+        return null;
+      }
+
+      return token;
     } catch (error) {
-      console.error('Failed to get auth token:', error);
-      return null;
+      Logger.error('Failed to get auth token', error);
+      throw new StorageError('Failed to retrieve auth token', AUTH_TOKEN_KEY, { cause: error });
     }
   }
 
   /**
-   * Get user data
+   * Get stored user data
+   * @returns User data or null if not found
    */
-  static async getUser(): Promise<any | null> {
+  static async getUser(): Promise<UserData | null> {
     try {
       const userData = await AsyncStorage.getItem(USER_DATA_KEY);
-      return userData ? JSON.parse(userData) : null;
+      if (!userData) {
+        return null;
+      }
+      return JSON.parse(userData) as UserData;
     } catch (error) {
-      console.error('Failed to get user:', error);
+      Logger.error('Failed to get user data', error);
       return null;
     }
   }
 
   /**
-   * Clear auth data
+   * Store auth token with expiry
    */
-  static async clearAuth(): Promise<void> {
+  private static async storeToken(token: string, expiresAt: string): Promise<void> {
     try {
-      await AsyncStorage.removeItem(AUTH_TOKEN_KEY);
-      await AsyncStorage.removeItem(USER_DATA_KEY);
+      await AsyncStorage.multiSet([
+        [AUTH_TOKEN_KEY, token],
+        [TOKEN_EXPIRY_KEY, expiresAt],
+      ]);
     } catch (error) {
-      console.error('Failed to clear auth:', error);
+      Logger.error('Failed to store token', error);
+      throw new StorageError('Failed to store auth token', AUTH_TOKEN_KEY, { cause: error });
+    }
+  }
+
+  /**
+   * Store user data
+   */
+  private static async storeUser(user: UserData): Promise<void> {
+    try {
+      await AsyncStorage.setItem(USER_DATA_KEY, JSON.stringify(user));
+    } catch (error) {
+      Logger.error('Failed to store user data', error);
+      throw new StorageError('Failed to store user data', USER_DATA_KEY, { cause: error });
+    }
+  }
+
+  /**
+   * Clear all authentication data
+   */
+  private static async clearAuth(): Promise<void> {
+    try {
+      await AsyncStorage.multiRemove([AUTH_TOKEN_KEY, USER_DATA_KEY, TOKEN_EXPIRY_KEY]);
+    } catch (error) {
+      Logger.error('Failed to clear auth data', error);
+      throw new StorageError('Failed to clear authentication data', undefined, { cause: error });
     }
   }
 }
