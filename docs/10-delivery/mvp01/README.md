@@ -247,15 +247,18 @@ Scaffold the full layer structure inside `services/driver-service/src/`:
 
 ### packages/ui — Tokens and Core Components
 
-- Export all design tokens (colors, typography, spacing, radius, shadows) from `tokens/index.ts`
+- Export all design tokens using the **bright theme** (see `docs/06-frontend/bright-theme.md`):
+  - Colors: `ev-bg` (#F8FAF6), `ev-surface` (#FFFFFF), `ev-green` (#007943), `ev-glow` (#00E676), etc.
+  - Typography: Plus Jakarta Sans, Inter with scale 12-36px
+  - Spacing: 4px base unit, comprehensive scale
 - Build these components only (what the discovery screens need):
-  - Button (primary, secondary, ghost — all sizes)
-  - Input (text, search)
-  - Badge (availability status)
+  - Button (primary [ev-green bg], secondary, ghost — all sizes)
+  - Input (text, search with ev-border)
+  - Badge (availability status with ev-green or ev-glow)
   - Skeleton (for loading states)
-  - EmptyState
-  - ErrorState
-  - Toast
+  - EmptyState (ev-bg canvas)
+  - ErrorState (ev-muted text)
+  - Toast (ev-surface card)
 
 ### packages/api-client — Driver Endpoints
 
@@ -265,35 +268,37 @@ Scaffold the full layer structure inside `services/driver-service/src/`:
 
 ### Driver Web App Screens
 
+All screens use the **bright theme** with `ev-` color tokens and Plus Jakarta Sans typography.
+
 **Map / Home screen:**
-- Full-bleed map (Mapbox GL JS or Leaflet)
+- Full-bleed map (Mapbox GL JS or Leaflet, `bg-ev-mapBg` background)
 - Fetch markers on bbox change
-- Station markers with availability color coding
-- Click marker to open station summary card
-- Filter panel toggle (connector type, power)
+- Station markers with `bg-ev-glow` for available, `bg-gray-400` for unavailable
+- Click marker to open `bg-ev-surface` station summary card
+- Filter panel with `bg-ev-green` primary buttons, `border-ev-border` inputs
 
 **Station List screen:**
 - Fetch nearby stations using geolocation API
-- Render StationCard list
-- Pull-to-refresh equivalent (reload button)
-- Loading skeletons while fetching
-- Empty state when no stations found
+- Render StationCard list with `bg-ev-surface` cards, `border-ev-border`
+- Pull-to-refresh equivalent (reload button with `bg-ev-green`)
+- Loading skeletons (`bg-gray-200`) while fetching
+- Empty state with `bg-ev-bg` canvas, `text-ev-muted` placeholder
 
 **Station Detail screen:**
 - Fetch station by ID
-- Show name, address, charger list with ChargerRow
-- Show average rating (read only, no auth needed)
+- Show name, address, charger list in `bg-ev-surface` card
+- Show average rating (read only, no auth needed) in `text-ev-green`
 - Show map snippet centered on station
 
 **Search screen:**
-- Search input with debounce
-- Filter bar (connector type, power)
-- Paginated results
-- Empty state
+- Search input with `border-ev-border` and `placeholder-ev-muted`
+- Filter bar with pill buttons (`bg-ev-surface`, `border-ev-border`)
+- Paginated results with `bg-ev-surface` result cards
+- Empty state with `text-ev-muted`
 
 **i18n setup:**
 - Configure i18n with Arabic and French
-- Implement RTL layout switching for Arabic
+- Implement RTL layout switching for Arabic (bright theme colors unchanged)
 - Translate all static strings in these four screens
 
 ### Done When
@@ -315,37 +320,42 @@ Scaffold the full layer structure inside `services/driver-service/src/`:
 
 ### Driver Mobile App Screens
 
+All screens use the same **bright theme** colors and typography as web app (via shared `tailwind.config.js`).
+
 **Map screen:**
-- Use `react-native-maps` or `expo-maps`
+- Use `react-native-maps` or `expo-maps` with `ev-mapBg` background
 - Fetch markers on region change
-- Station markers with availability color coding
-- Tap marker to open bottom sheet with station summary
+- Station markers with `ev-glow` color for available, gray for unavailable
+- Tap marker to open bottom sheet (white `ev-surface` with `ev-border`) with station summary
 
 **Station List screen:**
 - Use device location via `expo-location`
 - Fetch nearby stations
-- Render StationCard list
-- Pull to refresh
-- Loading skeletons
+- Render StationCard list with `ev-surface` backgrounds, `ev-border` dividers
+- Pull to refresh with `ev-green` spinner
+- Loading skeletons with gray backgrounds
 
 **Station Detail screen:**
-- Full scrollable screen
-- Station info, ChargerRow list
-- Rating display
-- Map snippet
+- Full scrollable screen with `ev-bg` background
+- Station info card (`ev-surface`, `ev-border`)
+- ChargerRow list with `text-ev-green` availability status
+- Rating display with `text-ev-green` stars
+- Map snippet with `ev-mapBg`
 
 **Search screen:**
-- Search input with debounce
-- Filter controls
-- Results list
+- Search input with `ev-border`, `placeholder-ev-muted`
+- Filter controls (pill buttons with `ev-green` active state)
+- Results list with `ev-surface` cards
 
 **Navigation:**
 - Bottom tab bar: Map, List, Search
-- Stack navigator for station detail
+- Active tab uses `text-ev-green`, inactive uses `text-ev-muted`
+- Stack navigator for station detail screens
 
 **i18n and RTL:**
-- Mirror the web app language support
+- Mirror the web app language support (Arabic and French)
 - RTL layout for Arabic using React Native's built-in RTL support
+- Bright theme colors and layout are RTL-compatible (no special color changes)
 
 ### Done When
 

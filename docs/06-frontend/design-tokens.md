@@ -1,22 +1,50 @@
 # Design Tokens
 
-Defined in `packages/ui/src/tokens/`
+Design tokens are defined in `packages/ui/src/tokens/` and exported to both
+web and mobile apps. The bright theme brings a clean, modern aesthetic to the
+driver applications.
 
-## Colors (`colors.ts`)
+## Bright Theme Color Palette
 
-- Primary: EV-brand green (#059669)
-- Secondary: Slate gray palette
-- Accent: Amber for warnings/highlights
-- Background: White/gray scale
-- Text: Dark slate
+The bright theme uses a crisp, high-contrast palette optimized for outdoor
+visibility and accessibility:
 
-See `tokens/colors.ts` for full palette.
+| Token | Color | Usage |
+|-------|-------|-------|
+| `ev-bg` | #F8FAF6 | Ultra-bright app background canvas |
+| `ev-surface` | #FFFFFF | Clean white card layers, modals |
+| `ev-mapBg` | #EAF0E6 | Light organic map terrain base |
+| `ev-green` | #007943 | Primary brand green (high-contrast) |
+| `ev-glow` | #00E676 | Neon green for active/live map pins |
+| `ev-muted` | #6B7280 | Slate gray for secondary text labels |
+| `ev-border` | #E5E7EB | Subtle light gray divider lines |
+
+### Implementation in Tailwind
+
+All driver applications use `tailwind.config.js` with the `ev` color namespace:
+
+```js
+colors: {
+  ev: {
+    bg: '#F8FAF6',
+    surface: '#FFFFFF',
+    mapBg: '#EAF0E6',
+    green: '#007943',
+    glow: '#00E676',
+    muted: '#6B7280',
+    border: '#E5E7EB',
+  }
+}
+```
+
+Use in templates: `bg-ev-bg`, `text-ev-green`, `border-ev-border`, etc.
 
 ## Typography (`typography.ts`)
 
-- Font family: System UI sans-serif stack
-- Scale: 12/14/16/18/20/24/30/36px
-- Weights: 400 (regular), 500 (medium), 600 (semibold), 700 (bold)
+- **Font family:** Plus Jakarta Sans, Inter, system UI sans-serif stack
+  (optimized for readability on maps and mobile)
+- **Scale:** 12/14/16/18/20/24/30/36px
+- **Weights:** 400 (regular), 500 (medium), 600 (semibold), 700 (bold)
 
 ## Spacing (`spacing.ts`)
 
