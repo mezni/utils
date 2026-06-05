@@ -71,7 +71,7 @@ pub async fn create_favorite_handler(
         return Err("Only registered drivers can create favorites".into());
     }
 
-    // TODO: Implement actual SQLx insert
+    // TODO: Implement actual SQLx insert using favorites use case
     tracing::info!("Creating favorite for user: {} for station: {}", claims.sub, input.station_id);
 
     // TODO: Validate station exists
@@ -85,17 +85,54 @@ pub async fn create_favorite_handler(
     }))
 }
 
+/// List favorites handler (authenticated)
+pub async fn list_favorites_handler(
+    claims: web::Data<ev_auth::Claims>,
+    query: web::Query<PageQuery>,
+    pool: web::Data<PgPool>,
+) -> AppResult<impl Responder> {
+    // Validate user role (only registered_driver can list favorites)
+    if claims.role != ev_auth::Role::RegisteredDriver {
+        return Err("Only registered drivers can list favorites".into());
+    }
+
+    let limit = query.limit.unwrap_or(20);
+    let offset = query.offset.unwrap_or(0);
+
+    // TODO: Implement actual SQLx query using favorites use case
+    tracing::info!("Listing favorites for user: {} with limit: {}, offset: {}", claims.sub, limit, offset);
+
+    let favorites = vec![]; // TODO: Fetch from database
+
+    Ok(HttpResponse::Ok().json(FavoritesResponse {
+        favorites,
+        pagination: PageResponse {
+            total: favorites.len() as i64,
+            limit: limit as i32,
+            offset: offset as i32,
+        },
+    }))
+}
+
 /// Remove favorite handler (authenticated)
 pub async fn remove_favorite_handler(
     claims: web::Data<ev_auth::Claims>,
     favorite_id: web::Path<String>,
     pool: web::Data<PgPool>,
 ) -> AppResult<impl Responder> {
+    // Validate user role (only registered_driver can remove favorites)
+    if claims.role != ev_auth::Role::RegisteredDriver {
+        return Err("Only registered drivers can remove favorites".into());
+    }
+
     // TODO: Validate user owns this favorite
     tracing::info!("Removing favorite: {} for user: {}", favorite_id, claims.sub);
 
     // TODO: Implement actual SQLx delete (hard delete per research decisions)
     // DELETE FROM users.favorite WHERE id = ? AND user_id = ?
+
+    Ok(HttpResponse::NoContent().finish())
+}
 
     Ok(HttpResponse::NoContent().finish())
 }

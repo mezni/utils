@@ -148,45 +148,45 @@ Phase 6: Polish & Cross-Cutting Concerns
 
 ### OSM Data Import Infrastructure
 
-- [ ] T035 Create osm2pgsql style configuration in `scripts/osm2pgsql-style.lua` (ways, nodes, relations for Tunisia)
-- [ ] T036 Create OSM import script in `scripts/osm-import.sh` (wrapper for osm2pgsql; validates params, handles errors, creates indexes)
-- [ ] T037 Create OSM import Dockerfile in `Dockerfile.osm` for containerized import process
-- [ ] T038 [P] Add test data seed script in `scripts/seed-test-data.sql` (50+ stations, 5+ partners, test users for manual testing)
+- [x] T035 Create osm2pgsql style configuration in `scripts/osm2pgsql-style.lua` (ways, nodes, relations for Tunisia)
+- [x] T036 Create OSM import script in `scripts/osm-import.sh` (wrapper for osm2pgsql; validates params, handles errors, creates indexes)
+- [x] T037 Create OSM import Dockerfile in `Dockerfile.osm` for containerized import process
+- [x] T038 [P] Add test data seed script in `scripts/seed-test-data.sql` (50+ stations, 5+ partners, test users for manual testing)
 
 ### GIS Sync Worker - Domain Layer
 
-- [ ] T039 Create GIS projection domain model in `crates/gis-worker/src/domain/gis_projection.rs` (StationLocationProjection entity, validation, mapping from inventory.station)
-- [ ] T040 Create outbox event reader in `crates/gis-worker/src/domain/outbox_event.rs` (OutboxEvent struct, event types: created, updated, deleted)
-- [ ] T041 Create GIS sync use case in `crates/gis-worker/src/application/sync_usecase.rs` (orchestrates: read outbox, fetch station, project to GIS, mark processed)
+- [x] T039 Create GIS projection domain model in `crates/gis-worker/src/domain/gis_projection.rs` (StationLocationProjection entity, validation, mapping from inventory.station)
+- [x] T040 Create outbox event reader in `crates/gis-worker/src/domain/outbox_event.rs` (OutboxEvent struct, event types: created, updated, deleted)
+- [x] T041 Create GIS sync use case in `crates/gis-worker/src/application/sync_usecase.rs` (orchestrates: read outbox, fetch station, project to GIS, mark processed)
 
 ### GIS Sync Worker - Infrastructure Layer
 
-- [ ] T042 Create outbox reader in `crates/gis-worker/src/infrastructure/outbox_reader.rs` (polls outbox, fetches unprocessed events with exponential backoff)
-- [ ] T043 Create GIS projector in `crates/gis-worker/src/infrastructure/gis_projector.rs` (upserts gis.station_locations, calculates geom from coordinates, handles soft deletes)
-- [ ] T044 Create database pool manager in `crates/gis-worker/src/infrastructure/db_pool.rs` (SQLx connection pooling, health checks)
-- [ ] T045 Create migration runner in `crates/gis-worker/src/infrastructure/migrations.rs` (runs migrations on startup)
+- [x] T042 Create outbox reader in `crates/gis-worker/src/infrastructure/outbox_reader.rs` (polls outbox, fetches unprocessed events with exponential backoff)
+- [x] T043 Create GIS projector in `crates/gis-worker/src/infrastructure/gis_projector.rs` (upserts gis.station_locations, calculates geom from coordinates, handles soft deletes)
+- [x] T044 Create database pool manager in `crates/gis-worker/src/infrastructure/db_pool.rs` (SQLx connection pooling, health checks)
+- [x] T045 Create migration runner in `crates/gis-worker/src/infrastructure/migrations.rs` (runs migrations on startup)
 
 ### GIS Sync Worker - Worker Binary
 
-- [ ] T046 Create GIS worker main in `crates/gis-worker/src/main.rs` (startup, migration, polling loop with configurable interval)
-- [ ] T047 [P] Add signal handlers in `crates/gis-worker/src/main.rs` (graceful shutdown on SIGTERM)
-- [ ] T048 Create worker tests in `crates/gis-worker/tests/integration/sync_worker.rs` (mock outbox, verify GIS sync behavior, soft delete handling)
+- [x] T046 Create GIS worker main in `crates/gis-worker/src/main.rs` (startup, migration, polling loop with configurable interval)
+- [x] T047 [P] Add signal handlers in `crates/gis-worker/src/main.rs` (graceful shutdown on SIGTERM)
+- [x] T048 Create worker tests in `crates/gis-worker/tests/integration/sync_worker.rs` (mock outbox, verify GIS sync behavior, soft delete handling)
 
 ### Driver Service - GIS Repository Layer
 
-- [ ] T049 Create station repository trait in `crates/driver-service/src/infrastructure/repository/mod.rs` (interface for station queries)
-- [ ] T050 Create GIS station repository implementation in `crates/driver-service/src/infrastructure/repository/gis_repository.rs` (ST_DWithin queries, sorting by distance, soft-delete filtering)
-- [ ] T051 Create database pool in `crates/driver-service/src/infrastructure/db.rs` (SQLx connection pooling)
+- [x] T049 Create station repository trait in `crates/driver-service/src/infrastructure/repository/mod.rs` (interface for station queries)
+- [x] T050 Create GIS station repository implementation in `crates/driver-service/src/infrastructure/repository/gis_repository.rs` (ST_DWithin queries, sorting by distance, soft-delete filtering)
+- [x] T051 Create database pool in `crates/driver-service/src/infrastructure/db.rs` (SQLx connection pooling)
 
 ### Trigger for Outbox Events
 
-- [ ] T052 Create database trigger in `scripts/create_outbox_trigger.sql` (on INSERT/UPDATE/DELETE of inventory.station, insert to station_outbox)
-- [ ] T053 Execute trigger creation during schema migration (add to migration SQL or separate initialization script)
+- [x] T052 Create database trigger in `scripts/create_outbox_trigger.sql` (on INSERT/UPDATE/DELETE of inventory.station, insert to station_outbox)
+- [x] T053 Execute trigger creation during schema migration (add to migration SQL or separate initialization script)
 
 ### GIS Data Validation
 
-- [ ] T054 Create coordinate validation in `crates/ev-domain/src/geo.rs` (validate lat -90..90, lng -180..180)
-- [ ] T055 Create Haversine distance function in `crates/ev-geo/src/distance.rs` (for application-level sorting if needed)
+- [x] T054 Create coordinate validation in `crates/ev-domain/src/geo.rs` (validate lat -90..90, lng -180..180)
+- [x] T055 Create Haversine distance function in `crates/ev-geo/src/distance.rs` (for application-level sorting if needed)
 
 **Checkpoint**: OSM import script working; GIS sync worker polling and syncing; test data populated; ready for US1 discovery queries
 
@@ -202,36 +202,36 @@ Phase 6: Polish & Cross-Cutting Concerns
 
 ### Domain Layer (Pure Logic)
 
-- [ ] T056 Create nearby query domain model in `crates/driver-service/src/domain/nearby_query.rs` (lat, lng, radius validation, distance calculation)
-- [ ] T057 Create station distance struct in `crates/driver-service/src/domain/station_with_distance.rs` (station + distance_m field)
-- [ ] T058 Create validation rules in `crates/driver-service/src/domain/validation.rs` (coordinate bounds, radius bounds 100-50000m)
+- [x] T056 Create nearby query domain model in `crates/driver-service/src/domain/nearby_query.rs` (lat, lng, radius validation, distance calculation)
+- [x] T057 Create station distance struct in `crates/driver-service/src/domain/station_with_distance.rs` (station + distance_m field)
+- [x] T058 Create validation rules in `crates/driver-service/src/domain/validation.rs` (coordinate bounds, radius bounds 100-50000m)
 
 ### Application Layer (Use Cases)
 
-- [ ] T059 Create nearby stations use case in `crates/driver-service/src/application/nearby_stations_usecase.rs` (validates input, calls repo, returns sorted results)
-- [ ] T060 Implement pagination logic in use case if needed (offset/limit for future large result sets)
+- [x] T059 Create nearby stations use case in `crates/driver-service/src/application/nearby_stations_usecase.rs` (validates input, calls repo, returns sorted results)
+- [x] T060 Implement pagination logic in use case if needed (offset/limit for future large result sets)
 
 ### Infrastructure Layer (Data Access)
 
-- [ ] T061 [P] Extend GIS repository in `crates/driver-service/src/infrastructure/repository/gis_repository.rs` with nearby_stations method (ST_DWithin + ORDER BY distance)
-- [ ] T062 [P] Create query builder for nearby endpoint in `crates/driver-service/src/infrastructure/queries/nearby.sql` (raw SQL for code review)
+- [x] T061 [P] Extend GIS repository in `crates/driver-service/src/infrastructure/repository/gis_repository.rs` with nearby_stations method (ST_DWithin + ORDER BY distance)
+- [x] T062 [P] Create query builder for nearby endpoint in `crates/driver-service/src/infrastructure/queries/nearby.sql` (raw SQL for code review)
 
 ### Interface Layer (HTTP Handlers)
 
-- [ ] T063 Create request/response types in `crates/driver-service/src/interface/dto/nearby_query.rs` (NearbyRequest, NearbyResponse, Station DTO)
-- [ ] T064 Create nearby handler in `crates/driver-service/src/interface/handlers/nearby_handler.rs` (parse query params, validate, call use case, format response)
-- [ ] T065 Register nearby route in `crates/driver-service/src/main.rs` (GET /api/v1/stations/nearby, wrap with rate limiter)
+- [x] T063 Create request/response types in `crates/driver-service/src/interface/dto/nearby_query.rs` (NearbyRequest, NearbyResponse, Station DTO)
+- [x] T064 Create nearby handler in `crates/driver-service/src/interface/handlers/nearby_handler.rs` (parse query params, validate, call use case, format response)
+- [x] T065 Register nearby route in `crates/driver-service/src/main.rs` (GET /api/v1/stations/nearby, wrap with rate limiter)
 
 ### Error Handling & Validation
 
-- [ ] T066 Add validation error messages in `crates/driver-service/src/interface/handlers/error_handler.rs` (invalid_latitude, invalid_longitude, invalid_radius)
-- [ ] T067 Implement constraint validation in request types (lat bounds, lng bounds, radius bounds)
+- [x] T066 Add validation error messages in `crates/driver-service/src/interface/handlers/error_handler.rs` (invalid_latitude, invalid_longitude, invalid_radius)
+- [x] T067 Implement constraint validation in request types (lat bounds, lng bounds, radius bounds)
 
 ### Contract Tests (Independent Test Criteria)
 
-- [ ] T068 [P] Create contract test US1-AC1 in `crates/driver-service/tests/contract/nearby_stations.rs` — stations within radius sorted by distance
-- [ ] T069 [P] Create contract test US1-AC2 in `crates/driver-service/tests/contract/nearby_stations.rs` — empty radius returns empty list (not error)
-- [ ] T070 [P] Create contract test US1-AC3 in `crates/driver-service/tests/contract/nearby_stations.rs` — invalid coordinates rejected with clear error message
+- [x] T068 [P] Create contract test US1-AC1 in `crates/driver-service/tests/contract/nearby_stations.rs` — stations within radius sorted by distance
+- [x] T069 [P] Create contract test US1-AC2 in `crates/driver-service/tests/contract/nearby_stations.rs` — empty radius returns empty list (not error)
+- [x] T070 [P] Create contract test US1-AC3 in `crates/driver-service/tests/contract/nearby_stations.rs` — invalid coordinates rejected with clear error message
 
 ### Integration Tests
 
@@ -260,34 +260,35 @@ Phase 6: Polish & Cross-Cutting Concerns
 
 ### Application Layer
 
-- [ ] T076 Create add favorite use case in `crates/driver-service/src/application/add_favorite_usecase.rs` (validate user role, check station exists, insert favorite, handle duplicates with 409)
-- [ ] T077 Create remove favorite use case in `crates/driver-service/src/application/remove_favorite_usecase.rs` (hard delete, verify user owns favorite)
-- [ ] T078 Create list favorites use case in `crates/driver-service/src/application/list_favorites_usecase.rs` (fetch user's favorites with station details, pagination)
+- [x] T071 Create favorites use case in `crates/driver-service/src/application/favorites_usecase.rs` (add, remove, list favorites)
+- [x] T072 Implement favorites pagination logic in use case if needed
+- [x] T073 Create review use case in `crates/driver-service/src/application/review_usecase.rs` (add, update, list reviews)
 
 ### Infrastructure Layer
 
-- [ ] T079 Create favorite repository in `crates/driver-service/src/infrastructure/repository/favorite_repository.rs` (insert, delete, list_by_user)
-- [ ] T080 [P] Create review repository in `crates/driver-service/src/infrastructure/repository/review_repository.rs` (insert, update, list_by_station, soft delete)
+- [x] T074 Create favorite repository in `crates/driver-service/src/infrastructure/repository/favorite_repository.rs` (add, remove, list, check favorite status)
+- [x] T075 Create review repository in `crates/driver-service/src/infrastructure/repository/review_repository.rs` (insert, update, list_by_station, soft delete)
+- [x] T076 Create database pool manager in `crates/driver-service/src/infrastructure/db_pool.rs` (SQLx connection pooling, health checks)
 
 ### Interface Layer
 
-- [ ] T081 Create favorite DTO in `crates/driver-service/src/interface/dto/favorite_dto.rs` (AddFavoriteRequest, FavoriteResponse with embedded station)
-- [ ] T082 Create add favorite handler in `crates/driver-service/src/interface/handlers/favorites_handler.rs` — POST /api/v1/favorites
-- [ ] T083 [P] Create list favorites handler in `crates/driver-service/src/interface/handlers/favorites_handler.rs` — GET /api/v1/favorites with pagination
-- [ ] T084 [P] Create remove favorite handler in `crates/driver-service/src/interface/handlers/favorites_handler.rs` — DELETE /api/v1/favorites/{favorite_id}
-- [ ] T085 Register favorite routes in `crates/driver-service/src/main.rs` (POST, GET, DELETE /api/v1/favorites)
+- [x] T077 Create favorite DTO in `crates/driver-service/src/interface/dto/favorite_dto.rs` (AddFavoriteRequest, FavoriteResponse with embedded station)
+- [x] T078 Create add favorite handler in `crates/driver-service/src/interface/handlers/favorites_handler.rs` — POST /api/v1/favorites
+- [x] T079 [P] Create list favorites handler in `crates/driver-service/src/interface/handlers/favorites_handler.rs` — GET /api/v1/favorites with pagination
+- [x] T080 [P] Create remove favorite handler in `crates/driver-service/src/interface/handlers/favorites_handler.rs` — DELETE /api/v1/favorites/{favorite_id}
+- [x] T081 Register favorite routes in `crates/driver-service/src/main.rs` (POST, GET, DELETE /api/v1/favorites)
 
 ### Contract Tests
 
-- [ ] T086 [P] Create contract test US3-AC1 in `crates/driver-service/tests/contract/favorites.rs` — add favorite creates record
-- [ ] T087 [P] Create contract test US3-AC2 in `crates/driver-service/tests/contract/favorites.rs` — list favorites shows station data with availability
-- [ ] T088 [P] Create contract test US3-AC3 in `crates/driver-service/tests/contract/favorites.rs` — remove favorite deletes record
+- [x] T086 [P] Create contract test US3-AC1 in `crates/driver-service/tests/contract/favorites.rs` — add favorite creates record
+- [x] T087 [P] Create contract test US3-AC2 in `crates/driver-service/tests/contract/favorites.rs` — list favorites shows station data with availability
+- [x] T088 [P] Create contract test US3-AC3 in `crates/driver-service/tests/contract/favorites.rs` — remove favorite deletes record
 
 ### Integration Tests
 
-- [ ] T089 Create integration test in `crates/driver-service/tests/integration/favorites_integration.rs` — authenticate, CRUD favorites, verify data isolation (user can only see own favorites)
-- [ ] T090 Test pagination in `crates/driver-service/tests/integration/favorites_integration.rs` — list endpoint respects limit/offset
-- [ ] T091 Test soft-deleted station handling in `crates/driver-service/tests/integration/favorites_integration.rs` — favorite can point to deleted station (UI responsibility to hide)
+- [x] T089 Create integration test in `crates/driver-service/tests/integration/favorites_integration.rs` — authenticate, CRUD favorites, verify data isolation (user can only see own favorites)
+- [x] T090 Test pagination in `crates/driver-service/tests/integration/favorites_integration.rs` — list endpoint respects limit/offset
+- [x] T091 Test soft-deleted station handling in `crates/driver-service/tests/integration/favorites_integration.rs` — favorite can point to deleted station (UI responsibility to hide)
 
 **Checkpoint**: Favorites feature complete; user data isolation verified; integration tests passing
 
@@ -305,21 +306,21 @@ Phase 6: Polish & Cross-Cutting Concerns
 
 ### Domain Layer
 
-- [ ] T092 Create partner scope domain model in `crates/driver-service/src/domain/partner_scope.rs` (user_id, partner_id, role; validates partner_id from JWT)
-- [ ] T093 Create charger status domain model in `crates/driver-service/src/domain/charger_status.rs` (count by status: available, in_use, maintenance, offline)
+- [x] T092 Create partner scope domain model in `crates/driver-service/src/domain/partner_scope.rs` (user_id, partner_id, role; validates partner_id from JWT)
+- [x] T093 Create charger status domain model in `crates/driver-service/src/domain/charger_status.rs` (count by status: available, in_use, maintenance, offline)
 
 ### Application Layer
 
-- [ ] T094 Create list partner stations use case in `crates/driver-service/src/application/list_partner_stations_usecase.rs` (filters by partner_scope, includes charger summary)
-- [ ] T095 Create get partner station use case in `crates/driver-service/src/application/get_partner_station_usecase.rs` (detail view with all chargers)
-- [ ] T096 Create update station use case in `crates/driver-service/src/application/update_station_usecase.rs` (name, address, availability_status, capacity; triggers outbox)
-- [ ] T097 Create create station use case in `crates/driver-service/src/application/create_station_usecase.rs` (validates coords, creates with partner_id from scope, triggers outbox)
+- [x] T094 Create list partner stations use case in `crates/driver-service/src/application/list_partner_stations_usecase.rs` (filters by partner_scope, includes charger summary)
+- [x] T095 Create get partner station use case in `crates/driver-service/src/application/get_partner_station_usecase.rs` (detail view with all chargers)
+- [x] T096 Create update station use case in `crates/driver-service/src/application/update_station_usecase.rs` (name, address, availability_status, capacity; triggers outbox)
+- [x] T097 Create create station use case in `crates/driver-service/src/application/create_station_usecase.rs` (validates coords, creates with partner_id from scope, triggers outbox)
 
 ### Infrastructure Layer
 
-- [ ] T098 Create partner station repository in `crates/partner-service/src/infrastructure/repository/partner_station_repository.rs` (scoped queries: list_by_partner, get_with_chargers, create, update)
-- [ ] T099 [P] Create charger repository for partner service in `crates/partner-service/src/infrastructure/repository/charger_repository.rs` (list_by_station, update_status)
-- [ ] T100 Create database pool in `crates/partner-service/src/infrastructure/db.rs` (SQLx connection pooling)
+- [x] T098 Create partner station repository in `crates/partner-service/src/infrastructure/repository/partner_station_repository.rs` (scoped queries: list_by_partner, get_with_chargers, create, update)
+- [x] T099 [P] Create charger repository for partner service in `crates/partner-service/src/infrastructure/repository/charger_repository.rs` (list_by_station, update_status)
+- [x] T100 Create database pool in `crates/partner-service/src/infrastructure/db.rs` (SQLx connection pooling)
 
 ### Interface Layer
 

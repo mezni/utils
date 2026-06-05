@@ -5,11 +5,15 @@
 
 pub mod config;
 pub mod error;
+pub mod infrastructure;
+pub mod routing;
 
 pub use config::Config;
 pub use error::{ApiError, AppResult};
 
+/// Application state
 #[derive(Debug)]
 pub struct AppState {
     pub config: Config,
+    pub pool: sqlx::PgPool,
 }

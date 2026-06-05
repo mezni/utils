@@ -9,10 +9,12 @@
 pub mod entities;
 pub mod ids;
 pub mod validation;
+pub mod geo;
 
 pub use entities::*;
 pub use ids::*;
 pub use validation::*;
+pub use geo::*;
 
 #[derive(Debug, thiserror::Error)]
 pub enum DomainError {
