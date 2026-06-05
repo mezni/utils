@@ -1,5 +1,28 @@
+# Cargo tooling configuration for ev-platform monorepo
+
+# Build alias for development with all checks
+[alias]
+check-all = "check --all-features --all-targets"
+clippy-all = "clippy --all-features --all-targets -- -D warnings"
+fmt-check = "fmt -- --check"
+test-all = "test --all-features --all-targets"
+
+# Release profile: optimized for production
 [profile.release]
 debug = false
 strip = true
 lto = true
 codegen-units = 1
+
+# Development profile: faster compile times
+[profile.dev]
+split-debuginfo = "packed"
+
+# Testing profile: balance speed and coverage
+[profile.test]
+opt-level = 1
+
+# Build settings
+[build]
+# Use multiple threads for parallel compilation
+jobs = 4

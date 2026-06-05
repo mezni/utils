@@ -67,11 +67,11 @@ Phase 6: Polish & Cross-Cutting Concerns
 
 ### Project Structure & Dependencies
 
-- [ ] T001 Create Rust project structure per plan.md; verify crate layout (driver-service, partner-service, gis-worker, ev-geo, ev-auth, ev-domain) at `ev-platform/crates/`
-- [ ] T002 [P] Initialize Cargo.toml workspace with shared dependencies: actix-web, sqlx, tokio, serde, tracing, uuid (ev-platform/Cargo.toml)
-- [ ] T003 [P] Configure Rust tooling: rustfmt, clippy, and linting in `ev-platform/.cargo/config.toml`
-- [ ] T004 [P] Setup Docker Compose for local development with PostgreSQL 15+ and Keycloak (ev-platform/docker-compose.yml)
-- [ ] T005 Create environment template file (.env.example) with all required variables (DATABASE_URL, KEYCLOAK_*, RUST_LOG)
+- [X] T001 Create Rust project structure per plan.md; verify crate layout (driver-service, partner-service, gis-worker, ev-geo, ev-auth, ev-domain) at `ev-platform/crates/`
+- [X] T002 [P] Initialize Cargo.toml workspace with shared dependencies: actix-web, sqlx, tokio, serde, tracing, uuid (ev-platform/Cargo.toml)
+- [X] T003 [P] Configure Rust tooling: rustfmt, clippy, and linting in `ev-platform/.cargo/config.toml`
+- [X] T004 [P] Setup Docker Compose for local development with PostgreSQL 15+ and Keycloak (ev-platform/docker-compose.yml)
+- [X] T005 Create environment template file (.env.example) with all required variables (DATABASE_URL, KEYCLOAK_*, RUST_LOG)
 
 **Checkpoint**: Project skeleton ready, dependencies installed, Docker infrastructure available
 
