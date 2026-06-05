@@ -12,7 +12,9 @@
 
 | ID | Date | Severity | Component | Description | Fix |
 |---|---|---|---|---|---|
-| TBD | — | — | — | — | — |
+| KL-001 | 2026-06-05 | medium | `crates/ev-db` | Pool tests cannot run without a live PostgreSQL instance | Mitigated: tests only check URL parsing, not pool creation |
+| KL-002 | 2026-06-05 | high | Docker | Migration runner uses relative path `db/migrations/` not available in runtime image | Fixed: Dockerfile copies `db/migrations/` into runtime image at `/app/db/migrations`, WORKDIR set to `/app` |
+| KL-005 | 2026-06-05 | medium | Docker | Compose healthcheck used fragile bash TCP hack instead of curl | Fixed: healthcheck now uses `curl -f http://localhost:8000/health` matching Dockerfile |
 
 ## Known Limitations
 
