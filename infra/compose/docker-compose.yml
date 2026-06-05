@@ -1,11 +1,9 @@
-version: "3.8"
-
 name: bornemap
 
 services:
-  postgres:
+  platform_db:
     image: postgis/postgis:14-3.2
-    container_name: bornemap-postgres
+    container_name: bornemap-platform-db
     restart: unless-stopped
     ports:
       - "5432:5432"
@@ -26,7 +24,7 @@ services:
 
   driver-service:
     build:
-      context: ../../..
+      context: ../..
       dockerfile: services/driver-service/Dockerfile
     container_name: bornemap-driver
     restart: unless-stopped
@@ -35,10 +33,10 @@ services:
     environment:
       SERVICE_HOST: ${SERVICE_HOST:-0.0.0.0}
       SERVICE_PORT: ${SERVICE_PORT:-8000}
-      DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:postgres123@postgres:5432/platform_db}
+      DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:postgres123@platform_db:5432/platform_db}
       RUST_LOG: ${RUST_LOG:-info}
     depends_on:
-      postgres:
+      platform_db:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/localhost/8000 && echo -e 'GET /health HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n' >&3 && cat <&3 | head -1 | grep -q 200"]
@@ -46,22 +44,6 @@ services:
       timeout: 5s
       retries: 5
       start_period: 30s
-    networks:
-      - bornemap-net
-
-  pgadmin:
-    image: dpage/pgadmin4:latest
-    container_name: bornemap-pgadmin
-    restart: unless-stopped
-    ports:
-      - "5050:5050"
-    environment:
-      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@localhost.local}
-      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin123}
-      PGADMIN_CONFIG_ENHANCED_COOKIE_PROTECTION: "False"
-      PGADMIN_CONFIG_COOKIE_SAMESITE: "'Lax'"
-    depends_on:
-      - postgres
     networks:
       - bornemap-net
 
