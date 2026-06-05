@@ -1,22 +1,16 @@
 <!--
 Sync Impact Report
-Version change: 0.0.0 (template) → 1.0.0
-Modified principles: N/A (all new — first population)
-Added sections:
-  - Principle 1: Simplicity First
-  - Principle 2: Single Source of Truth
-  - Principle 3: Clear Separation of Concerns
-  - Principle 4: Manual Operations Allowed
-  - Principle 5: Identity & Security (NON-NEGOTIABLE)
-  - User Model & Access Rules
-  - Non-Negotiable Rules & Engineering Discipline
-  - Governance section
+Version change: 1.0.0 → 1.1.0
+Modified principles:
+  - Principle 2: Single Source of Truth — added explicit gis schema mention
+Added sections: N/A (inline clarifications)
 Removed sections: N/A
 Templates requiring updates:
   - .specify/templates/plan-template.md — ✅ updated (no changes needed, generic gates)
   - .specify/templates/spec-template.md — ✅ updated (no changes needed)
   - .specify/templates/tasks-template.md — ✅ updated (no changes needed)
   - .specify/templates/checklist-template.md — ✅ updated (no changes needed)
+  - .specify/templates/constitution-template.md — ⚠ pending (update placeholder count for 3-db model if needed)
 Follow-up TODOs: None
 -->
 
@@ -34,9 +28,10 @@ over complex frameworks or abstractions.
 
 Each domain has one authoritative system. Identity is managed exclusively by
 Keycloak (login, token issuance, session management). Business data lives in
-the platform database (`platform_db`). Analytics lives in the analytics
-database (`analytics_db`). No direct DB access from frontend. Secrets are
-stored only on host environment files.
+the platform database (`platform_db`) with three schemas — `inventory`,
+`users`, `gis`. Analytics lives in the analytics database (`analytics_db`).
+No direct DB access from frontend. Secrets are stored only on host
+environment files.
 
 ### 3. Clear Separation of Concerns
 
@@ -109,6 +104,8 @@ mandatory and enforced at every API layer.
 - Shared domain packages for auth, config, errors, IDs, observability.
 - Each backend service MUST follow Clean Architecture (domain → application →
   infrastructure → interface layers).
+- Rust services use **Actix-Web** as the HTTP framework.
+- All identifiers use **16-character prefixed NanoIDs**.
 - Frontend apps share a `packages/ui` component library with design tokens.
 - Frontend apps: Driver Web App (React + Vite), Driver Mobile App (React
   Native Expo), Partner Dashboard (React + Vite), Admin Dashboard (React +
@@ -123,4 +120,4 @@ Complexity introduced without constitutional justification MUST be flagged and
 resolved. The constitution is versioned using semantic versioning (MAJOR for
 principle redefinitions, MINOR for additions, PATCH for clarifications).
 
-**Version**: 1.0.0 | **Ratified**: 2026-06-05 | **Last Amended**: 2026-06-05
+**Version**: 1.1.0 | **Ratified**: 2026-06-05 | **Last Amended**: 2026-06-05

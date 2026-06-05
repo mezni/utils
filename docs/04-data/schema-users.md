@@ -17,7 +17,7 @@ Schema: `users` in `platform_db`
 
 | Column | Type | Description |
 |--------|------|-------------|
-| id | TEXT (nanoid) | Primary key |
+| id | TEXT (nanoid:16) | Primary key (16-char prefixed NanoID) |
 | user_id | TEXT | FK to user profile |
 | station_id | TEXT | FK to station |
 | created_at | TIMESTAMPTZ | Creation timestamp |
@@ -28,7 +28,7 @@ Schema: `users` in `platform_db`
 
 | Column | Type | Description |
 |--------|------|-------------|
-| id | TEXT (nanoid) | Primary key |
+| id | TEXT (nanoid:16) | Primary key (16-char prefixed NanoID) |
 | user_id | TEXT | FK to user profile |
 | station_id | TEXT | FK to station |
 | rating | INTEGER | 1-5 rating |

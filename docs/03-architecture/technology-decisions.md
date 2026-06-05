@@ -5,7 +5,7 @@
 | Technology | Decision | Rationale |
 |------------|----------|-----------|
 | Rust | Backend services | Performance, type safety, reliability for API services |
-| Axum | Web framework | Modern, async-first Rust web framework |
+| Actix-Web | Web framework | High-performance, actor-based Rust web framework |
 | SQLx | Database driver | Async PostgreSQL driver with compile-time query checking |
 | PostgreSQL | Database | PostGIS support, reliability, single-database simplicity |
 | RabbitMQ | Message broker | Event streaming for analytics pipeline |

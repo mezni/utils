@@ -8,6 +8,7 @@ Single PostgreSQL instance with logical schema separation:
 |----------|--------|---------|
 | `platform_db` | `inventory` | Stations, chargers, availability |
 | `platform_db` | `users` | Profiles, favorites, reviews |
+| `platform_db` | `gis` | Derived spatial data (asynchronously synced) |
 | `analytics_db` | `public` | Clickstream events, aggregated analytics |
 | `keycloak_db` | `public` | Identity data (Keycloak managed only) |
 
