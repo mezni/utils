@@ -21,6 +21,7 @@
     },
     "plugins": [
       ["expo-location", { "locationAlwaysAndWhenInUsePermission": "Find nearby charging stations" }]
-    ]
+    ],
+    "primaryColor": "#007943"
   }
 }
