@@ -99,22 +99,22 @@ Phase 6: Polish & Cross-Cutting Concerns
 
 ### Authentication & Authorization
 
-- [ ] T015 Implement JWT validation middleware in `crates/ev-auth/src/jwt_validator.rs` (decode, validate expiry, extract claims)
-- [ ] T016 Create Claims struct in `crates/ev-auth/src/claims.rs` with user_id, partner_id, role, scopes
-- [ ] T017 Create AuthError enum in `crates/ev-auth/src/lib.rs` for 401/403 responses
-- [ ] T018 Implement auth middleware for driver-service in `crates/driver-service/src/interface/middleware/auth.rs` (attach claims to request extensions)
-- [ ] T019 Create PartnerScope extractor in `crates/driver-service/src/interface/middleware/partner_scope.rs` (validates partner_id in JWT, fails if missing)
+- [X] T015 Implement JWT validation middleware in `crates/ev-auth/src/jwt_validator.rs` (decode, validate expiry, extract claims)
+- [X] T016 Create Claims struct in `crates/ev-auth/src/claims.rs` with user_id, partner_id, role, scopes
+- [X] T017 Create AuthError enum in `crates/ev-auth/src/lib.rs` for 401/403 responses
+- [X] T018 Implement auth middleware for driver-service in `crates/driver-service/src/interface/middleware/auth.rs` (attach claims to request extensions)
+- [X] T019 Create PartnerScope extractor in `crates/driver-service/src/interface/middleware/partner_scope.rs` (validates partner_id in JWT, fails if missing)
 
 ### Rate Limiting
 
-- [ ] T020 Implement IP-based rate limiter in `crates/driver-service/src/interface/middleware/rate_limiter.rs` (100 req/min per IP, 429 response)
-- [ ] T021 Add rate limiter middleware to driver-service routing (crates/driver-service/src/main.rs)
+- [X] T020 Implement IP-based rate limiter in `crates/driver-service/src/interface/middleware/rate_limiter.rs` (100 req/min per IP, 429 response)
+- [X] T021 Add rate limiter middleware to driver-service routing (crates/driver-service/src/main.rs)
 
 ### Error Handling & Logging
 
-- [ ] T022 Create error hierarchy in `crates/driver-service/src/error.rs` (ValidationError, NotFound, Unauthorized, RateLimited, InternalError)
-- [ ] T023 Implement HTTP response mapping for errors in `crates/driver-service/src/interface/handlers/error_handler.rs` (400, 401, 403, 404, 429, 500)
-- [ ] T024 Setup structured logging with tracing crate in `crates/driver-service/src/lib.rs` (JSON output, correlation IDs)
+- [X] T022 Create error hierarchy in `crates/driver-service/src/error.rs` (ValidationError, NotFound, Unauthorized, RateLimited, InternalError)
+- [X] T023 Implement HTTP response mapping for errors in `crates/driver-service/src/interface/handlers/error_handler.rs` (400, 401, 403, 404, 429, 500)
+- [X] T024 Setup structured logging with tracing crate in `crates/driver-service/src/lib.rs` (JSON output, correlation IDs)
 
 ### Environment Configuration
 
