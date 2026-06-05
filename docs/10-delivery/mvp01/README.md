@@ -37,10 +37,14 @@ Driver Web + Mobile apps.
 - Initialize the monorepo with the directory structure from the codebase document
 - Set up Cargo workspace with `Cargo.toml` at root
 - Set up pnpm workspace with `pnpm-workspace.yaml`
-- Scaffold `services/driver-service` as an empty Actix-Web binary that starts and returns 200 on `/health`
+- Scaffold `services/driver-service` as an empty Actix-Web binary with Clean
+  Architecture module directories (`domain/`, `application/`, `infrastructure/`,
+  `interface/handlers/`, `interface/middleware/`)
 - Scaffold `apps/driver-web` as an empty Vite + React app
 - Scaffold `apps/driver-mobile` as an empty Expo app
-- Stub `crates/ev-core`, `crates/ev-db`, `crates/ev-geo` as empty lib crates
+- Stub `crates/ev-core` (domain layer — NanoID, enums, value objects)
+- Stub `crates/ev-db` (infrastructure layer — pool, pagination)
+- Stub `crates/ev-geo` (domain layer — LatLng, bbox, distance)
 - Stub `packages/ui` and `packages/api-client` as empty packages
 
 ### Database Foundation
@@ -167,17 +171,41 @@ inventory.charger (
 
 ### ev-db Crate
 
-- Implement `pool.rs` — SQLx PgPool setup from environment
+- Implement `pool.rs` — SQLx PgPool setup from environment (infrastructure
+  layer use by all services)
 - Implement `pagination.rs` — shared cursor/offset pagination structs
 
-### Driver Service Structure
+### Driver Service — Clean Architecture Layers
 
-- Set up Actix-Web router in `router.rs`
-- Set up `AppState` with database pool
-- Set up structured logging (`tracing` crate)
-- Set up error handling in `errors.rs` — typed errors mapping to HTTP status codes
+Scaffold the full layer structure inside `services/driver-service/src/`:
 
-### Handlers
+**Domain layer** (`domain/`):
+- `station.rs` — Station entity, StationSummary, MarkerPoint, StationDetail
+- `favorite.rs` — Favorite entity (stub — out of scope for MVP01)
+- `review.rs` — Review entity (stub — out of scope for MVP01)
+- Repository traits: `StationRepository`
+
+**Application layer** (`application/`):
+- `stations.rs` — use case functions: `get_nearby`, `get_markers`,
+  `search_stations`, `get_station_detail`
+- Each function receives a `&impl StationRepository` for dependency inversion
+
+**Infrastructure layer** (`infrastructure/`):
+- `db/pool.rs` — SQLx PgPool initialization
+- `db/stations.rs` — `StationRepository` implementation with raw SQL queries
+  via `sqlx::query_as!`
+
+**Interface layer** (`interface/`):
+- `handlers/stations.rs` — Actix-Web handler functions for each endpoint
+- `middleware/logging.rs` — request logging via `tracing`
+- `router.rs` — route definitions binding paths to handlers
+
+**Cross-cutting**:
+- `config.rs` — environment configuration struct
+- `errors.rs` — typed `ServiceError` enum mapped to HTTP status codes
+- `main.rs` — binary entrypoint wiring everything together
+
+### Endpoint Handlers
 
 **GET /stations/nearby**
 - Query params: `lat`, `lng`, `radius_km` (default 10), `limit` (default 20)

@@ -1,16 +1,17 @@
 <!--
 Sync Impact Report
-Version change: 1.0.0 → 1.1.0
-Modified principles:
-  - Principle 2: Single Source of Truth — added explicit gis schema mention
-Added sections: N/A (inline clarifications)
-Removed sections: N/A
+Version change: 1.1.0 → 1.2.0
+Modified sections:
+  - Engineering Conventions — expanded Clean Architecture with Rust-specific
+    layer layout, dependency rules, and trait-based DI (MINOR addition)
+  - new docs/03-architecture/clean-architecture.md — Rust-specific rewrite
+  - new docs/03-architecture/services.md — per-service Clean Architecture mapping
+  - docs/10-delivery/mvp01 — Sprint 0/2 updated with explicit layer references
 Templates requiring updates:
-  - .specify/templates/plan-template.md — ✅ updated (no changes needed, generic gates)
+  - .specify/templates/plan-template.md — ✅ updated (no changes needed)
   - .specify/templates/spec-template.md — ✅ updated (no changes needed)
   - .specify/templates/tasks-template.md — ✅ updated (no changes needed)
   - .specify/templates/checklist-template.md — ✅ updated (no changes needed)
-  - .specify/templates/constitution-template.md — ⚠ pending (update placeholder count for 3-db model if needed)
 Follow-up TODOs: None
 -->
 
@@ -102,8 +103,14 @@ mandatory and enforced at every API layer.
 
 - Single monorepo (`ev-platform/`) with Rust backend workspace.
 - Shared domain packages for auth, config, errors, IDs, observability.
-- Each backend service MUST follow Clean Architecture (domain → application →
-  infrastructure → interface layers).
+- Each backend service MUST follow Clean Architecture with four strictly
+  separated layers — see `docs/03-architecture/clean-architecture.md` for the
+  complete Rust-specific directory layout, dependency rules, and trait-based
+  dependency inversion pattern:
+  - **Domain layer** (`domain/`) — pure logic, entities, traits, zero external deps
+  - **Application layer** (`application/`) — use cases, orchestration, depends only on domain
+  - **Infrastructure layer** (`infrastructure/`) — SQLx queries, repository implementations
+  - **Interface layer** (`interface/`) — Actix-Web handlers, middleware, request/response
 - Rust services use **Actix-Web** as the HTTP framework.
 - All identifiers use **16-character prefixed NanoIDs**.
 - Frontend apps share a `packages/ui` component library with design tokens.
@@ -120,4 +127,4 @@ Complexity introduced without constitutional justification MUST be flagged and
 resolved. The constitution is versioned using semantic versioning (MAJOR for
 principle redefinitions, MINOR for additions, PATCH for clarifications).
 
-**Version**: 1.1.0 | **Ratified**: 2026-06-05 | **Last Amended**: 2026-06-05
+**Version**: 1.2.0 | **Ratified**: 2026-06-05 | **Last Amended**: 2026-06-05
