@@ -15,12 +15,12 @@ Find stations near a location.
 
 **Query parameters:** `lat`, `lng`, `radius` (km)
 
-### `GET /markers`
+### `GET /stations/markers`
 Get station markers for map display (lightweight, clustered).
 
 **Query parameters:** `ne_lat`, `ne_lng`, `sw_lat`, `sw_lng`, `zoom`
 
-### `GET /search`
+### `GET /stations/search`
 Full-text search across stations.
 
 **Query parameters:** `q`, `filters`, `page`, `per_page`
