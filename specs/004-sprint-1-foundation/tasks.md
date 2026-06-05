@@ -87,7 +87,7 @@ Phase 6: Polish & Cross-Cutting Concerns
 
 ### Database Migrations Framework
 
-- [ ] T006 Initialize SQLx CLI and migration system; create `crates/driver-service/migrations/` directory
+- [X] T006 Initialize SQLx CLI and migration system; create `crates/driver-service/migrations/` directory
 - [ ] T007 Create migration: `001_create_inventory_schema.sql` with inventory, users, gis schemas (crates/driver-service/migrations/)
 - [ ] T008 [P] Create migration: `002_create_partner_table.sql` in `crates/driver-service/migrations/`
 - [ ] T009 [P] Create migration: `003_create_station_table.sql` with soft-delete support in `crates/driver-service/migrations/`
@@ -95,7 +95,7 @@ Phase 6: Polish & Cross-Cutting Concerns
 - [ ] T011 [P] Create migration: `005_create_users_schema_and_tables.sql` (user, favorite, review) in `crates/driver-service/migrations/`
 - [ ] T012 [P] Create migration: `006_create_gis_schema_and_indexes.sql` with GIST spatial indexes in `crates/driver-service/migrations/`
 - [ ] T013 [P] Create migration: `007_create_station_outbox.sql` for GIS sync pattern in `crates/driver-service/migrations/`
-- [ ] T014 Run migrations and verify schema creation in local PostgreSQL (test via psql \dt inventory.*, users.*, gis.*)
+- [X] T014 Run migrations and verify schema schema creation in local PostgreSQL (test via psql \dt inventory.*, users.*, gis.*)
 
 ### Authentication & Authorization
 

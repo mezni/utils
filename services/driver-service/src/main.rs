@@ -1,72 +1,81 @@
-use actix_web::{App, HttpServer, middleware as actix_middleware};
-use tracing_subscriber::EnvFilter;
+//! Driver Service — Station Discovery & Favorites API
+//!
+//! This service provides:
+//! - Public station discovery endpoint (GET /api/v1/stations/nearby)
+//! - User favorites management (POST/GET/DELETE /api/v1/favorites)
+//! - Rate limiting, authentication middleware, error handling
+//!
+//! Architecture:
+//! - Domain layer: Pure business logic (station discovery, favorites)
+//! - Application layer: Use cases (orchestration)
+//! - Infrastructure layer: DB access, repositories, middleware
+//! - Interface layer: HTTP handlers (Actix-Web)
 
 mod config;
-mod errors;
-mod domain;
-mod application;
-mod infrastructure;
-mod interface;
+mod error;
+mod migration_runner;
+mod routing;
 
-async fn run_migrations(database_url: &str) -> Result<(), sqlx::migrate::MigrateError> {
-    tracing::info!("Running database migrations...");
+pub use config::Config;
+pub use error::{ApiError, AppResult};
 
-    let pool = sqlx::PgPool::connect(database_url).await
-        .map_err(|e| sqlx::migrate::MigrateError::Source(e.into()))?;
-
-    // Run migrations from the db/migrations directory
-    let migrations = sqlx::migrate::Migrator::new(std::path::Path::new("db/migrations"))
-        .await?;
-
-    migrations.run(&pool).await?;
-
-    tracing::info!("Database migrations complete");
-    Ok(())
-}
+use actix_web::{web, App, HttpServer, HttpResponse, Responder};
+use sqlx::PgPool;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    // Load configuration
+    let config = Config::from_env();
     tracing_subscriber::fmt()
-        .with_env_filter(EnvFilter::from_default_env())
+        .with_env_filter(
+            tracing_subscriber::EnvFilter::try_from_default_env()
+                .unwrap_or_else(|_| "info".into()),
+        )
         .init();
 
-    let app_config = config::AppConfig::from_env()
-        .expect("Failed to load configuration from environment");
+    tracing::info!("Starting driver-service on port {}", config.server_port);
 
-    tracing::info!("Starting Driver Service on {}", app_config.bind_address());
+    // Create database pool
+    let pool = sqlx::PgPool::connect(&config.database_url)
+        .await
+        .expect("Failed to connect to database");
+
+    tracing::info!("Database pool created");
 
     // Run migrations
-    match run_migrations(&app_config.database_url).await {
-        Ok(()) => {
-            tracing::info!("Migrations ran successfully");
-        }
+    match migration_runner::run_migrations(&pool).await {
+        Ok(()) => tracing::info!("Migrations applied successfully"),
         Err(e) => {
-            tracing::warn!("Could not run migrations: {}", e);
-            tracing::warn!("Service will start without database migrations");
+            tracing::error!("Failed to apply migrations: {}", e);
+            std::process::exit(1);
         }
     }
 
-    // Attempt database connection
-    match infrastructure::db::pool::create_pool(&app_config.database_url).await {
-        Ok(pool) => {
-            tracing::info!("Successfully connected to PostgreSQL");
-            let _ = pool;
-        }
+    // Verify schema
+    match migration_runner::verify_schema(&pool).await {
+        Ok(()) => tracing::info!("Schema verified successfully"),
         Err(e) => {
-            tracing::warn!("Could not connect to PostgreSQL on startup: {}", e);
-            tracing::warn!("Service will start without database connection (health endpoint only)");
+            tracing::error!("Schema verification failed: {}", e);
+            std::process::exit(1);
         }
     }
 
-    let bind_addr = app_config.bind_address();
-
+    // Start HTTP server
     HttpServer::new(move || {
         App::new()
-            .wrap(actix_middleware::Logger::default())
-            .wrap(actix_middleware::Compress::default())
-            .configure(interface::router::configure)
+            .app_data(web::Data::new(pool.clone()))
+            .configure(routing::setup_routes)
     })
-    .bind(&bind_addr)?
+    .bind(("0.0.0.0", config.server_port))?
     .run()
     .await
+}
+
+/// Health check endpoint
+async fn health_check() -> impl Responder {
+    HttpResponse::Ok().json(serde_json::json!({
+        "status": "ok",
+        "service": "driver-service",
+        "version": "0.1.0"
+    }))
 }
