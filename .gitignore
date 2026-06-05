@@ -1,16 +1,49 @@
+# Dependencies
 node_modules/
+
+# Rust
+target/
+debug/
+release/
+*.rs.bk
+*.rlib
+*.prof*
+
+# Build outputs
 build/
 dist/
 coverage/
+web-build/
+
+# OS
 .DS_Store
+Thumbs.db
+*.swp
+*.tmp
+
+# Logs
 *.log
+
+# Environment
 .env*
 !.env.example
+
+# Expo
 .expo/
+
+# Keys & certs
 *.jks
 *.p8
 *.p12
 *.key
 *.mobileprovision
+
+# Merge artifacts
 *.orig.*
-web-build/
+
+# IDE
+.vscode/
+.idea/
+
+# Editor temp files
+*~

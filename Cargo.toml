@@ -1,0 +1,12 @@
+[workspace]
+members = [
+    "services/driver-service",
+    "crates/ev-core",
+    "crates/ev-geo",
+    "crates/ev-db",
+]
+resolver = "2"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"

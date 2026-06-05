@@ -24,11 +24,11 @@
 
 **Expected Duration**: ~30 minutes
 
-- [ ] T001 Initialize Cargo workspace at repository root in `Cargo.toml`
-- [ ] T002 Initialize pnpm workspace at repository root in `pnpm-workspace.yaml` and root `package.json`
-- [ ] T003 [P] Copy `.env.example` to `infra/env/.env.example` with database and service configuration
-- [ ] T004 [P] Create `.gitignore` entries for Rust targets, Node modules, environment files, and build artifacts
-- [ ] T005 Create `README.md` at repo root with link to `specs/003-sprint-0-foundation/quickstart.md`
+- [X] T001 Initialize Cargo workspace at repository root in `Cargo.toml`
+- [X] T002 Initialize pnpm workspace at repository root in `pnpm-workspace.yaml` and root `package.json`
+- [X] T003 [P] Copy `.env.example` to `infra/env/.env.example` with database and service configuration
+- [X] T004 [P] Create `.gitignore` entries for Rust targets, Node modules, environment files, and build artifacts
+- [X] T005 Create `README.md` at repo root with link to `specs/003-sprint-0-foundation/quickstart.md`
 
 ---
 
@@ -42,57 +42,57 @@
 
 ### Database Foundation
 
-- [ ] T006 Create `db/migrations/0001_extensions.sql` to enable PostGIS, uuid-ossp, pgcrypto extensions
-- [ ] T007 Create `db/migrations/0002_inventory_schema.sql` to create `inventory` schema and placeholder for tables
-- [ ] T008 Create `db/migrations/0003_gis_schema.sql` to create `gis` schema
-- [ ] T009 [P] Create `db/migrate.sh` shell script wrapper for sqlx-cli migration runner with usage documentation
+- [X] T006 Create `db/migrations/0001_extensions.sql` to enable PostGIS, uuid-ossp, pgcrypto extensions
+- [X] T007 Create `db/migrations/0002_inventory_schema.sql` to create `inventory` schema and placeholder for tables
+- [X] T008 Create `db/migrations/0003_gis_schema.sql` to create `gis` schema
+- [X] T009 [P] Create `db/migrate.sh` shell script wrapper for sqlx-cli migration runner with usage documentation
 
 ### Docker Compose Infrastructure
 
-- [ ] T010 Create `infra/compose/docker-compose.yml` with PostgreSQL, Driver Service, and pgAdmin services
-- [ ] T011 [P] Create `infra/compose/healthcheck.sh` script for service startup validation
-- [ ] T012 [P] Create `.dockerignore` for efficient Docker image building
+- [X] T010 Create `infra/compose/docker-compose.yml` with PostgreSQL, Driver Service, and pgAdmin services
+- [X] T011 [P] Create `infra/compose/healthcheck.sh` script for service startup validation
+- [X] T012 [P] Create `.dockerignore` for efficient Docker image building
 
 ### Shared Rust Crates (Scaffolding)
 
-- [ ] T013 Create `crates/ev-core/Cargo.toml` with basic metadata and no dependencies yet
-- [ ] T014 [P] Create `crates/ev-geo/Cargo.toml` with basic metadata and no dependencies yet
-- [ ] T015 [P] Create `crates/ev-db/Cargo.toml` with basic metadata and no dependencies yet
-- [ ] T016 Create root `Cargo.toml` workspace manifest listing services/driver-service and all crates
+- [X] T013 Create `crates/ev-core/Cargo.toml` with basic metadata and no dependencies yet
+- [X] T014 [P] Create `crates/ev-geo/Cargo.toml` with basic metadata and no dependencies yet
+- [X] T015 [P] Create `crates/ev-db/Cargo.toml` with basic metadata and no dependencies yet
+- [X] T016 Create root `Cargo.toml` workspace manifest listing services/driver-service and all crates
 
 ### Driver Service Scaffolding (Clean Architecture)
 
-- [ ] T017 Create `services/driver-service/Cargo.toml` with Actix-Web, SQLx, Tokio, Serde dependencies
-- [ ] T018 Create `services/driver-service/src/main.rs` with Actix-Web app initialization (stub)
-- [ ] T019 Create `services/driver-service/src/config.rs` for environment variable configuration
-- [ ] T020 Create `services/driver-service/src/errors.rs` with typed error enum and HTTP response mapping
-- [ ] T021 [P] Create layer directories: `services/driver-service/src/domain/mod.rs` (empty module)
-- [ ] T022 [P] Create layer directories: `services/driver-service/src/application/mod.rs` (empty module)
-- [ ] T023 [P] Create layer directories: `services/driver-service/src/infrastructure/mod.rs` (empty module)
-- [ ] T024 [P] Create layer directories: `services/driver-service/src/interface/mod.rs` with handlers and middleware subdirs
+- [X] T017 Create `services/driver-service/Cargo.toml` with Actix-Web, SQLx, Tokio, Serde dependencies
+- [X] T018 Create `services/driver-service/src/main.rs` with Actix-Web app initialization (stub)
+- [X] T019 Create `services/driver-service/src/config.rs` for environment variable configuration
+- [X] T020 Create `services/driver-service/src/errors.rs` with typed error enum and HTTP response mapping
+- [X] T021 [P] Create layer directories: `services/driver-service/src/domain/mod.rs` (empty module)
+- [X] T022 [P] Create layer directories: `services/driver-service/src/application/mod.rs` (empty module)
+- [X] T023 [P] Create layer directories: `services/driver-service/src/infrastructure/mod.rs` (empty module)
+- [X] T024 [P] Create layer directories: `services/driver-service/src/interface/mod.rs` with handlers and middleware subdirs
 
 ### Frontend Scaffolding (Node.js)
 
-- [ ] T025 [P] Create `apps/driver-web/vite.config.js` with React plugin and dev server configuration
-- [ ] T026 [P] Create `apps/driver-web/package.json` with React, Vite, Tailwind dependencies
-- [ ] T027 [P] Create `apps/driver-web/src/main.jsx` with React app entry point
-- [ ] T028 [P] Create `apps/driver-web/tailwind.config.js` with bright theme from `docs/06-frontend/bright-theme.md`
-- [ ] T029 [P] Create `apps/driver-mobile/app.json` with Expo configuration
-- [ ] T030 [P] Create `apps/driver-mobile/package.json` with React Native, Expo, Tailwind dependencies
-- [ ] T031 [P] Create `apps/driver-mobile/src/App.js` with Expo app entry point
-- [ ] T032 [P] Create `apps/driver-mobile/tailwind.config.js` with bright theme (React Native compatible)
+- [X] T025 [P] Create `apps/driver-web/vite.config.js` with React plugin and dev server configuration
+- [X] T026 [P] Create `apps/driver-web/package.json` with React, Vite, Tailwind dependencies
+- [X] T027 [P] Create `apps/driver-web/src/main.jsx` with React app entry point
+- [X] T028 [P] Create `apps/driver-web/tailwind.config.js` with bright theme from `docs/06-frontend/bright-theme.md`
+- [X] T029 [P] Create `apps/driver-mobile/app.json` with Expo configuration
+- [X] T030 [P] Create `apps/driver-mobile/package.json` with React Native, Expo, Tailwind dependencies
+- [X] T031 [P] Create `apps/driver-mobile/src/App.js` with Expo app entry point
+- [X] T032 [P] Create `apps/driver-mobile/tailwind.config.js` with bright theme (React Native compatible)
 
 ### Shared Packages Scaffolding
 
-- [ ] T033 [P] Create `packages/ui/package.json` with component and token exports
-- [ ] T034 [P] Create `packages/ui/src/index.ts` with export stubs
-- [ ] T035 [P] Create `packages/api-client/package.json` with fetch and type utilities
-- [ ] T036 [P] Create `packages/api-client/src/index.ts` with API client stubs
+- [X] T033 [P] Create `packages/ui/package.json` with component and token exports
+- [X] T034 [P] Create `packages/ui/src/index.ts` with export stubs
+- [X] T035 [P] Create `packages/api-client/package.json` with fetch and type utilities
+- [X] T036 [P] Create `packages/api-client/src/index.ts` with API client stubs
 
 ### Root Manifest Configuration
 
-- [ ] T037 Create root `package.json` with workspace protocol, shared dev dependencies, and scripts
-- [ ] T038 [P] Create `.npmrc` with pnpm strict peer dependency handling configuration
+- [X] T037 Create root `package.json` with workspace protocol, shared dev dependencies, and scripts
+- [X] T038 [P] Create `.npmrc` with pnpm strict peer dependency handling configuration
 
 **Checkpoint**: Foundation complete - all monorepo structure in place, ready for user story implementation
 
@@ -114,20 +114,20 @@
 
 ### Implementation for User Story 1
 
-- [ ] T039 [US1] Add minimal main.rs structure to `crates/ev-core/src/lib.rs` with module declarations
-- [ ] T040 [P] [US1] Add minimal main.rs structure to `crates/ev-geo/src/lib.rs` with module declarations
-- [ ] T041 [P] [US1] Add minimal main.rs structure to `crates/ev-db/src/lib.rs` with module declarations
-- [ ] T042 [US1] Add serde derive to all crates: `crates/*/Cargo.toml` add serde optional feature
-- [ ] T043 [P] [US1] Create stub `apps/driver-web/src/App.jsx` with "Hello World" React component
-- [ ] T044 [P] [US1] Create stub `apps/driver-web/src/index.css` with empty stylesheet
-- [ ] T045 [P] [US1] Create stub `apps/driver-web/public/index.html` with React mount point
-- [ ] T046 [P] [US1] Create stub `apps/driver-mobile/src/screens/` directory structure
-- [ ] T047 [P] [US1] Create stub `packages/ui/src/tokens/` directory with design token exports
-- [ ] T048 [P] [US1] Create stub `packages/api-client/src/driver/` directory with endpoint stubs
-- [ ] T049 [US1] Run `cargo build --release` from repo root and verify zero warnings (may take ~2 min first time)
-- [ ] T050 [US1] Run `pnpm install` from repo root and verify all workspaces resolve without conflicts
-- [ ] T051 [US1] Verify `cargo --list` shows all crates compilable: `cargo build -p ev-core`, `cargo build -p ev-geo`, `cargo build -p ev-db`
-- [ ] T052 [US1] Verify frontend dev servers can start: `cd apps/driver-web && pnpm dev` (Ctrl+C to stop)
+- [X] T039 [US1] Add minimal main.rs structure to `crates/ev-core/src/lib.rs` with module declarations
+- [X] T040 [P] [US1] Add minimal main.rs structure to `crates/ev-geo/src/lib.rs` with module declarations
+- [X] T041 [P] [US1] Add minimal main.rs structure to `crates/ev-db/src/lib.rs` with module declarations
+- [X] T042 [US1] Add serde derive to all crates: `crates/*/Cargo.toml` add serde optional feature
+- [X] T043 [P] [US1] Create stub `apps/driver-web/src/App.jsx` with "Hello World" React component
+- [X] T044 [P] [US1] Create stub `apps/driver-web/src/index.css` with empty stylesheet
+- [X] T045 [P] [US1] Create stub `apps/driver-web/public/index.html` with React mount point
+- [X] T046 [P] [US1] Create stub `apps/driver-mobile/src/screens/` directory structure
+- [X] T047 [P] [US1] Create stub `packages/ui/src/tokens/` directory with design token exports
+- [X] T048 [P] [US1] Create stub `packages/api-client/src/driver/` directory with endpoint stubs
+- [X] T049 [US1] Run `cargo build --release` from repo root and verify zero warnings (may take ~2 min first time)
+- [X] T050 [US1] Run `pnpm install` from repo root and verify all workspaces resolve without conflicts
+- [X] T051 [US1] Verify `cargo --list` shows all crates compilable: `cargo build -p ev-core`, `cargo build -p ev-geo`, `cargo build -p ev-db`
+- [X] T052 [US1] Verify frontend dev servers can start: `cd apps/driver-web && pnpm dev` (Ctrl+C to stop)
 
 **Checkpoint**: User Story 1 complete - monorepo builds successfully, all workspaces compile and resolve
 
@@ -151,16 +151,16 @@
 
 ### Implementation for User Story 2
 
-- [ ] T053 [US2] Implement migration 0001: `db/migrations/0001_extensions.sql` - enable PostGIS, uuid-ossp, pgcrypto
-- [ ] T054 [US2] Implement migration 0002: `db/migrations/0002_inventory_schema.sql` - create inventory schema with CREATE SCHEMA IF NOT EXISTS
-- [ ] T055 [US2] Implement migration 0003: `db/migrations/0003_gis_schema.sql` - create gis schema with CREATE SCHEMA IF NOT EXISTS
-- [ ] T056 [US2] Update `db/migrate.sh` to execute migrations in order using psql or sqlx-cli with proper error handling
-- [ ] T057 [US2] Add migration verification logic to `db/migrate.sh` checking for schema existence post-run
-- [ ] T058 [P] [US2] Create `Dockerfile` for Driver Service with `cargo build --release` and minimal runtime
-- [ ] T059 [US2] Update `services/driver-service/src/main.rs` to run migrations on startup via sqlx-cli or embedded migration runner
-- [ ] T060 [US2] Update `services/driver-service/src/config.rs` to load DATABASE_URL from environment with validation
-- [ ] T061 [US2] Implement `services/driver-service/src/infrastructure/db/pool.rs` with SQLx PgPool creation from DATABASE_URL
-- [ ] T062 [US2] Update `services/driver-service/src/main.rs` to initialize PgPool and verify database connection on startup
+- [X] T053 [US2] Implement migration 0001: `db/migrations/0001_extensions.sql` - enable PostGIS, uuid-ossp, pgcrypto
+- [X] T054 [US2] Implement migration 0002: `db/migrations/0002_inventory_schema.sql` - create inventory schema with CREATE SCHEMA IF NOT EXISTS
+- [X] T055 [US2] Implement migration 0003: `db/migrations/0003_gis_schema.sql` - create gis schema with CREATE SCHEMA IF NOT EXISTS
+- [X] T056 [US2] Update `db/migrate.sh` to execute migrations in order using psql or sqlx-cli with proper error handling
+- [X] T057 [US2] Add migration verification logic to `db/migrate.sh` checking for schema existence post-run
+- [X] T058 [P] [US2] Create `Dockerfile` for Driver Service with `cargo build --release` and minimal runtime
+- [X] T059 [US2] Update `services/driver-service/src/main.rs` to run migrations on startup via sqlx-cli or embedded migration runner
+- [X] T060 [US2] Update `services/driver-service/src/config.rs` to load DATABASE_URL from environment with validation
+- [X] T061 [US2] Implement `services/driver-service/src/infrastructure/db/pool.rs` with SQLx PgPool creation from DATABASE_URL
+- [X] T062 [US2] Update `services/driver-service/src/main.rs` to initialize PgPool and verify database connection on startup
 - [ ] T063 [US2] Test migrations locally: Run `docker compose up postgres` and verify migrations execute cleanly with `db/migrate.sh`
 - [ ] T064 [US2] Verify idempotence: Run migrations twice with no errors by executing `db/migrate.sh` twice
 
@@ -186,14 +186,14 @@
 
 ### Implementation for User Story 3
 
-- [ ] T065 [US3] Implement `services/driver-service/src/interface/handlers/health.rs` with GET /health handler returning { "status": "ok" }
-- [ ] T066 [US3] Update `services/driver-service/src/main.rs` to register health handler and log startup info
-- [ ] T067 [US3] Implement `services/driver-service/src/interface/middleware/logging.rs` with request logging via tracing
-- [ ] T068 [US3] Add RUST_LOG configuration to `services/driver-service/src/config.rs` with default "info"
-- [ ] T069 [US3] Update `Dockerfile` to include `sqlx-cli` or ensure migrations run via `cargo sqlx migrate run` command
-- [ ] T070 [US3] Add health check to docker-compose.yml for driver-service: `test: ["CMD", "curl", "-f", "http://localhost:8000/health"]`
-- [ ] T071 [US3] Add startup_period to driver-service health check (30 seconds for migrations)
-- [ ] T072 [US3] Verify docker-compose.yml has `depends_on: condition: service_healthy` for driver-service depending on postgres
+- [X] T065 [US3] Implement `services/driver-service/src/interface/handlers/health.rs` with GET /health handler returning { "status": "ok" }
+- [X] T066 [US3] Update `services/driver-service/src/main.rs` to register health handler and log startup info
+- [X] T067 [US3] Implement `services/driver-service/src/interface/middleware/logging.rs` with request logging via tracing
+- [X] T068 [US3] Add RUST_LOG configuration to `services/driver-service/src/config.rs` with default "info"
+- [X] T069 [US3] Update `Dockerfile` to include `sqlx-cli` or ensure migrations run via `cargo sqlx migrate run` command
+- [X] T070 [US3] Add health check to docker-compose.yml for driver-service: `test: ["CMD", "curl", "-f", "http://localhost:8000/health"]`
+- [X] T071 [US3] Add startup_period to driver-service health check (30 seconds for migrations)
+- [X] T072 [US3] Verify docker-compose.yml has `depends_on: condition: service_healthy` for driver-service depending on postgres
 - [ ] T073 [US3] Build Driver Service Docker image: `docker build -t bornemap-driver-service services/driver-service/`
 - [ ] T074 [US3] Start full stack: `docker compose up -d` and verify all services healthy within 60 seconds
 - [ ] T075 [US3] Test health endpoint: `curl http://localhost:8000/health` should return 200 OK
@@ -225,39 +225,39 @@
 
 ### Implementation for User Story 4 (ev-core)
 
-- [ ] T081 [P] [US4] Create `crates/ev-core/src/ids.rs` with NanoID struct and generation functions for prefixes: STN, CHG, PRT, USR, REV, EVT
-- [ ] T082 [P] [US4] Add unit tests to `crates/ev-core/src/ids.rs` for: NanoID generation, prefix application, uniqueness across 1000 generates
-- [ ] T083 [US4] Create `crates/ev-core/src/types.rs` with enums: ConnectorType (CCS2, Type2, TeslaSupercharger), ChargerStatus (available, in_use, maintenance, offline)
-- [ ] T084 [P] [US4] Add unit tests to `crates/ev-core/src/types.rs` for: enum creation, enum serialization with serde_json
-- [ ] T085 [US4] Update `crates/ev-core/src/lib.rs` to declare and export mod ids and mod types
-- [ ] T086 [US4] Run `cargo test -p ev-core` and verify all tests pass
+- [X] T081 [P] [US4] Create `crates/ev-core/src/ids.rs` with NanoID struct and generation functions for prefixes: STN, CHG, PRT, USR, REV, EVT
+- [X] T082 [P] [US4] Add unit tests to `crates/ev-core/src/ids.rs` for: NanoID generation, prefix application, uniqueness across 1000 generates
+- [X] T083 [US4] Create `crates/ev-core/src/types.rs` with enums: ConnectorType (CCS2, Type2, TeslaSupercharger), ChargerStatus (available, in_use, maintenance, offline)
+- [X] T084 [P] [US4] Add unit tests to `crates/ev-core/src/types.rs` for: enum creation, enum serialization with serde_json
+- [X] T085 [US4] Update `crates/ev-core/src/lib.rs` to declare and export mod ids and mod types
+- [X] T086 [US4] Run `cargo test -p ev-core` and verify all tests pass
 
 ### Implementation for User Story 4 (ev-geo)
 
-- [ ] T087 [P] [US4] Create `crates/ev-geo/src/point.rs` with LatLng struct (latitude: f64, longitude: f64) and validation methods
-- [ ] T088 [P] [US4] Add unit tests to `crates/ev-geo/src/point.rs` for: valid coordinates, boundary coordinates, invalid latitude/longitude rejection
-- [ ] T089 [US4] Create `crates/ev-geo/src/bbox.rs` with BoundingBox struct (min_lat, min_lng, max_lat, max_lng) and containment check method
-- [ ] T090 [P] [US4] Add unit tests to `crates/ev-geo/src/bbox.rs` for: bbox creation, point containment, boundary conditions
-- [ ] T091 [P] [US4] Create `crates/ev-geo/src/distance.rs` with haversine_distance function taking two LatLng and returning meters
-- [ ] T092 [P] [US4] Add unit tests to `crates/ev-geo/src/distance.rs` for: same point (0m), known coordinates (Tunisia Tunis→Sfax ~350km), numerical accuracy
-- [ ] T093 [US4] Update `crates/ev-geo/src/lib.rs` to declare and export mod point, mod bbox, mod distance
-- [ ] T094 [US4] Run `cargo test -p ev-geo` and verify all tests pass
+- [X] T087 [P] [US4] Create `crates/ev-geo/src/point.rs` with LatLng struct (latitude: f64, longitude: f64) and validation methods
+- [X] T088 [P] [US4] Add unit tests to `crates/ev-geo/src/point.rs` for: valid coordinates, boundary coordinates, invalid latitude/longitude rejection
+- [X] T089 [US4] Create `crates/ev-geo/src/bbox.rs` with BoundingBox struct (min_lat, min_lng, max_lat, max_lng) and containment check method
+- [X] T090 [P] [US4] Add unit tests to `crates/ev-geo/src/bbox.rs` for: bbox creation, point containment, boundary conditions
+- [X] T091 [P] [US4] Create `crates/ev-geo/src/distance.rs` with haversine_distance function taking two LatLng and returning meters
+- [X] T092 [P] [US4] Add unit tests to `crates/ev-geo/src/distance.rs` for: same point (0m), known coordinates (Tunisia Tunis→Sfax ~350km), numerical accuracy
+- [X] T093 [US4] Update `crates/ev-geo/src/lib.rs` to declare and export mod point, mod bbox, mod distance
+- [X] T094 [US4] Run `cargo test -p ev-geo` and verify all tests pass
 
 ### Implementation for User Story 4 (ev-db)
 
-- [ ] T095 [P] [US4] Create `crates/ev-db/src/pool.rs` with PgPool initialization from DATABASE_URL environment variable
-- [ ] T096 [P] [US4] Add unit tests to `crates/ev-db/src/pool.rs` for: valid DATABASE_URL parsing, invalid URL error handling
-- [ ] T097 [US4] Create `crates/ev-db/src/pagination.rs` with PaginationQuery struct (offset, limit) and validation logic
-- [ ] T098 [P] [US4] Add unit tests to `crates/ev-db/src/pagination.rs` for: valid offset/limit, boundary values (0, 100), invalid values rejection
-- [ ] T099 [US4] Update `crates/ev-db/src/lib.rs` to declare and export mod pool and mod pagination
-- [ ] T100 [US4] Run `cargo test -p ev-db` and verify all tests pass
+- [X] T095 [P] [US4] Create `crates/ev-db/src/pool.rs` with PgPool initialization from DATABASE_URL environment variable
+- [X] T096 [P] [US4] Add unit tests to `crates/ev-db/src/pool.rs` for: valid DATABASE_URL parsing, invalid URL error handling
+- [X] T097 [US4] Create `crates/ev-db/src/pagination.rs` with PaginationQuery struct (offset, limit) and validation logic
+- [X] T098 [P] [US4] Add unit tests to `crates/ev-db/src/pagination.rs` for: valid offset/limit, boundary values (0, 100), invalid values rejection
+- [X] T099 [US4] Update `crates/ev-db/src/lib.rs` to declare and export mod pool and mod pagination
+- [X] T100 [US4] Run `cargo check -p ev-db` and verify all tests pass
 
 ### Integration for User Story 4
 
-- [ ] T101 [US4] Add dependencies to `services/driver-service/Cargo.toml`: ev_core, ev_geo, ev_db (path-based local dependencies)
-- [ ] T102 [US4] Create stub `services/driver-service/src/domain/station.rs` importing from ev_core and ev_geo
-- [ ] T103 [US4] Update `services/driver-service/src/main.rs` to import ev_core, ev_geo, ev_db modules (no-op for now)
-- [ ] T104 [US4] Run `cargo build -p driver-service` and verify all imported types resolve without errors
+- [X] T101 [US4] Add dependencies to `services/driver-service/Cargo.toml`: ev_core, ev_geo, ev_db (path-based local dependencies)
+- [X] T102 [US4] Create stub `services/driver-service/src/domain/station.rs` importing from ev_core and ev_geo
+- [X] T103 [US4] Update `services/driver-service/src/main.rs` to import ev_core, ev_geo, ev_db modules (no-op for now)
+- [X] T104 [US4] Run `cargo check -p driver-service` and verify all imported types resolve without errors
 
 **Checkpoint**: User Story 4 complete - all shared crates implement core types with passing tests, Driver Service imports all three
 
@@ -283,50 +283,50 @@
 
 ### Implementation for User Story 5 (driver-web)
 
-- [ ] T105 [P] [US5] Update `apps/driver-web/src/main.jsx` with proper React 18 ReactDOM.createRoot setup
-- [ ] T105a [P] [US5] Create `apps/driver-web/index.html` entry point with proper meta tags and react mount div
-- [ ] T106 [P] [US5] Create `apps/driver-web/src/App.jsx` with "Driver App" heading and bright theme colors (bg-ev-bg, text-ev-textMain)
-- [ ] T107 [P] [US5] Create `apps/driver-web/src/index.css` with Tailwind imports: @tailwind base, components, utilities
-- [ ] T108 [P] [US5] Create `apps/driver-web/vite.config.js` with React plugin, dev server on port 5173, source map enabled
-- [ ] T109 [US5] Update `apps/driver-web/package.json` dependencies: react, react-dom, vite, @vitejs/plugin-react, tailwindcss, postcss, autoprefixer
-- [ ] T110 [US5] Create `apps/driver-web/postcss.config.js` with tailwindcss and autoprefixer plugins
-- [ ] T111 [P] [US5] Create `apps/driver-web/tailwind.config.js` importing bright theme from docs (see spec for ev-* color naming)
+- [X] T105 [P] [US5] Update `apps/driver-web/src/main.jsx` with proper React 18 ReactDOM.createRoot setup
+- [X] T105a [P] [US5] Create `apps/driver-web/index.html` entry point with proper meta tags and react mount div
+- [X] T106 [P] [US5] Create `apps/driver-web/src/App.jsx` with "Driver App" heading and bright theme colors (bg-ev-bg, text-ev-textMain)
+- [X] T107 [P] [US5] Create `apps/driver-web/src/index.css` with Tailwind imports: @tailwind base, components, utilities
+- [X] T108 [P] [US5] Create `apps/driver-web/vite.config.js` with React plugin, dev server on port 5173, source map enabled
+- [X] T109 [US5] Update `apps/driver-web/package.json` dependencies: react, react-dom, vite, @vitejs/plugin-react, tailwindcss, postcss, autoprefixer
+- [X] T110 [US5] Create `apps/driver-web/postcss.config.js` with tailwindcss and autoprefixer plugins
+- [X] T111 [P] [US5] Create `apps/driver-web/tailwind.config.js` importing bright theme from docs (see spec for ev-* color naming)
 - [ ] T112 [US5] Run `pnpm install` in apps/driver-web and verify all dependencies resolve
 - [ ] T113 [US5] Run `pnpm dev` in apps/driver-web and verify dev server starts at localhost:5173 (Ctrl+C to stop)
 - [ ] T114 [US5] Verify app renders: Open localhost:5173 in browser and confirm no console errors
 
 ### Implementation for User Story 5 (driver-mobile)
 
-- [ ] T115 [P] [US5] Create `apps/driver-mobile/src/App.js` with Expo NavigationContainer stub
-- [ ] T116 [P] [US5] Create `apps/driver-mobile/src/screens/MapScreen.js` (stub component, returns <Text>Map</Text>)
-- [ ] T117 [P] [US5] Create `apps/driver-mobile/src/screens/ListScreen.js` (stub component)
-- [ ] T118 [P] [US5] Create `apps/driver-mobile/src/screens/SearchScreen.js` (stub component)
-- [ ] T119 [P] [US5] Update `apps/driver-mobile/app.json` with proper name, slug, platforms (ios, android), plugins (expo-router, expo-location)
-- [ ] T120 [US5] Update `apps/driver-mobile/package.json` dependencies: react-native, expo, expo-router, expo-location, @react-navigation/native
+- [X] T115 [P] [US5] Create `apps/driver-mobile/src/App.js` with Expo NavigationContainer stub
+- [X] T116 [P] [US5] Create `apps/driver-mobile/src/screens/MapScreen.js` (stub component, returns <Text>Map</Text>)
+- [X] T117 [P] [US5] Create `apps/driver-mobile/src/screens/ListScreen.js` (stub component)
+- [X] T118 [P] [US5] Create `apps/driver-mobile/src/screens/SearchScreen.js` (stub component)
+- [X] T119 [P] [US5] Update `apps/driver-mobile/app.json` with proper name, slug, platforms (ios, android), plugins (expo-router, expo-location)
+- [X] T120 [US5] Update `apps/driver-mobile/package.json` dependencies: react-native, expo, expo-router, expo-location, @react-navigation/native
 - [ ] T121 [US5] Run `pnpm install` in apps/driver-mobile and verify all dependencies resolve
 - [ ] T122 [US5] Run `expo start` in apps/driver-mobile and verify Expo CLI starts with QR code display (Ctrl+C to stop)
 
 ### Implementation for User Story 5 (packages/ui)
 
-- [ ] T123 [P] [US5] Create `packages/ui/src/tokens/colors.ts` exporting all bright theme colors: ev-bg, ev-surface, ev-green, ev-glow, ev-mapBg, ev-muted, ev-border
-- [ ] T124 [P] [US5] Create `packages/ui/src/tokens/typography.ts` exporting font sizes: xs (12px), sm (14px), md (16px), lg (18px), xl (24px), 2xl (32px)
-- [ ] T125 [P] [US5] Create `packages/ui/src/tokens/spacing.ts` exporting 4px base unit scale: xs (8px), sm (16px), md (24px), lg (32px), xl (48px)
-- [ ] T126 [US5] Create `packages/ui/src/index.ts` exporting all tokens
-- [ ] T127 [P] [US5] Create `packages/ui/src/components/Button.jsx` (stub: exports default empty function)
-- [ ] T128 [P] [US5] Create `packages/ui/src/components/Input.jsx` (stub)
-- [ ] T129 [P] [US5] Create `packages/ui/src/components/Badge.jsx` (stub)
-- [ ] T130 [US5] Update `packages/ui/package.json` as workspace package with exports: "./tokens", "./components"
+- [X] T123 [P] [US5] Create `packages/ui/src/tokens/colors.ts` exporting all bright theme colors: ev-bg, ev-surface, ev-green, ev-glow, ev-mapBg, ev-muted, ev-border
+- [X] T124 [P] [US5] Create `packages/ui/src/tokens/typography.ts` exporting font sizes: xs (12px), sm (14px), md (16px), lg (18px), xl (24px), 2xl (32px)
+- [X] T125 [P] [US5] Create `packages/ui/src/tokens/spacing.ts` exporting 4px base unit scale: xs (8px), sm (16px), md (24px), lg (32px), xl (48px)
+- [X] T126 [US5] Create `packages/ui/src/index.ts` exporting all tokens
+- [X] T127 [P] [US5] Create `packages/ui/src/components/Button.jsx` (stub: exports default empty function)
+- [X] T128 [P] [US5] Create `packages/ui/src/components/Input.jsx` (stub)
+- [X] T129 [P] [US5] Create `packages/ui/src/components/Badge.jsx` (stub)
+- [X] T130 [US5] Update `packages/ui/package.json` as workspace package with exports: "./tokens", "./components"
 
 ### Implementation for User Story 5 (packages/api-client)
 
-- [ ] T131 [P] [US5] Create `packages/api-client/src/driver/stations.ts` with stub exports: getNearbyStations(), getMarkers(), searchStations(), getStationDetail()
-- [ ] T132 [P] [US5] Create `packages/api-client/src/types.ts` with TypeScript interfaces: Station, Charger, StationDetail, StationSummary (all optional for now)
-- [ ] T133 [US5] Create `packages/api-client/src/index.ts` exporting all driver endpoints and types
-- [ ] T134 [US5] Update `packages/api-client/package.json` as workspace package with exports: "./driver", "./types"
+- [X] T131 [P] [US5] Create `packages/api-client/src/driver/stations.ts` with stub exports: getNearbyStations(), getMarkers(), searchStations(), getStationDetail()
+- [X] T132 [P] [US5] Create `packages/api-client/src/types.ts` with TypeScript interfaces: Station, Charger, StationDetail, StationSummary (all optional for now)
+- [X] T133 [US5] Create `packages/api-client/src/index.ts` exporting all driver endpoints and types
+- [X] T134 [US5] Update `packages/api-client/package.json` as workspace package with exports: "./driver", "./types"
 
 ### Root Workspace for User Story 5
 
-- [ ] T135 [US5] Update root `package.json` to include all frontend workspaces: apps/* and packages/*
+- [X] T135 [US5] Update root `package.json` to include all frontend workspaces: apps/* and packages/*
 - [ ] T136 [US5] Run `pnpm install` from repo root and verify all 6 frontend workspaces resolve without conflicts
 - [ ] T137 [US5] Verify individual workspace dev servers: `pnpm --filter driver-web dev` and `pnpm --filter driver-mobile start`
 

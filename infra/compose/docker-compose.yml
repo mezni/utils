@@ -1,0 +1,74 @@
+version: "3.8"
+
+name: bornemap
+
+services:
+  postgres:
+    image: postgis/postgis:14-3.2
+    container_name: bornemap-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres123}
+      POSTGRES_DB: ${POSTGRES_DB:-platform_db}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - bornemap-net
+
+  driver-service:
+    build:
+      context: ../../..
+      dockerfile: services/driver-service/Dockerfile
+    container_name: bornemap-driver
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      SERVICE_HOST: ${SERVICE_HOST:-0.0.0.0}
+      SERVICE_PORT: ${SERVICE_PORT:-8000}
+      DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:postgres123@postgres:5432/platform_db}
+      RUST_LOG: ${RUST_LOG:-info}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/localhost/8000 && echo -e 'GET /health HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n' >&3 && cat <&3 | head -1 | grep -q 200"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - bornemap-net
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: bornemap-pgadmin
+    restart: unless-stopped
+    ports:
+      - "5050:5050"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@localhost.local}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin123}
+      PGADMIN_CONFIG_ENHANCED_COOKIE_PROTECTION: "False"
+      PGADMIN_CONFIG_COOKIE_SAMESITE: "'Lax'"
+    depends_on:
+      - postgres
+    networks:
+      - bornemap-net
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  bornemap-net:
+    driver: bridge

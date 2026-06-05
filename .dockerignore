@@ -1,0 +1,41 @@
+# Docker ignore file
+# Prevents unnecessary files from being copied into Docker build context
+
+# Dependencies
+node_modules/
+pnpm-lock.yaml
+
+# Rust build artifacts
+target/
+debug/
+release/
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Logs
+*.log
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Test and coverage
+coverage/
+*.prof*
+
+# Documentation (not needed at runtime)
+docs/
+README.md
+specs/
