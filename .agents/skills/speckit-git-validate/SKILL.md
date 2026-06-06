@@ -1,0 +1,54 @@
+---
+name: speckit-git-validate
+description: Validate current branch follows sprint branch naming conventions
+compatibility: Requires spec-kit project structure with .specify/ directory
+metadata:
+  author: github-spec-kit
+  source: git:commands/speckit.git.validate.md
+---
+
+# Validate Sprint Branch
+
+Validate that the current Git branch follows the expected sprint branch naming conventions.
+
+## Prerequisites
+
+- Check if Git is available by running `git rev-parse --is-inside-work-tree 2>/dev/null`
+- If Git is not available, output a warning and skip validation:
+  ```
+  [specify] Warning: Git repository not detected; skipped branch validation
+  ```
+
+## Validation Rules
+
+Get the current branch name:
+
+```bash
+git rev-parse --abbrev-ref HEAD
+```
+
+The branch name must match one of these patterns:
+
+1. **Sequential**: `^[0-9]{3,}-` (e.g., `001-sprint-name`, `042-fix-bug`, `1000-big-feature`)
+2. **Timestamp**: `^[0-9]{8}-[0-9]{6}-` (e.g., `20260319-143022-sprint-name`)
+
+## Execution
+
+If on a sprint branch (matches either pattern):
+- Output: `✓ On sprint branch: <branch-name>`
+- Check if the corresponding spec directory exists under `specs/`:
+  - For sequential branches, look for `specs/<prefix>-*` where prefix matches the numeric portion
+  - For timestamp branches, look for `specs/<prefix>-*` where prefix matches the `YYYYMMDD-HHMMSS` portion
+- If spec directory exists: `✓ Spec directory found: <path>`
+- If spec directory missing: `⚠ No spec directory found for prefix <prefix>`
+
+If NOT on a sprint branch:
+- Output: `✗ Not on a sprint branch. Current branch: <branch-name>`
+- Output: `Sprint branches should be named like: 001-sprint-name or 20260319-143022-sprint-name`
+
+## Graceful Degradation
+
+If Git is not installed or the directory is not a Git repository:
+- Check the `SPECIFY_FEATURE` environment variable as a fallback
+- If set, validate that value against the naming patterns
+- If not set, skip validation with a warning
