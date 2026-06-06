@@ -1,0 +1,16 @@
+export const brandPrimary = '#007943'
+export const brandSecondary = '#1e293b'
+export const brandLight = '#EAF0E6'
+export const brandDark = '#004d29'
+
+export const success = '#10b981'
+export const warning = '#f59e0b'
+export const error = '#ef4444'
+
+export const neutral100 = '#f8fafc'
+export const neutral200 = '#e2e8f0'
+export const neutral300 = '#cbd5e1'
+export const neutral400 = '#94a3b8'
+export const neutral500 = '#64748b'
+export const neutral600 = '#475569'
+export const neutral700 = '#334155'

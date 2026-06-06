@@ -1,0 +1,11 @@
+export const spacing0 = 0
+export const spacing1 = 4
+export const spacing2 = 8
+export const spacing3 = 12
+export const spacing4 = 16
+export const spacing5 = 20
+export const spacing6 = 24
+export const spacing7 = 32
+export const spacing8 = 40
+export const spacing10 = 48
+export const spacing12 = 64
