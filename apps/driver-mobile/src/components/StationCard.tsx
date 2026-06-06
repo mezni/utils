@@ -1,28 +1,7 @@
 import React from 'react'
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native'
 import { useTranslation } from 'react-i18next'
-import {
-  brandPrimary,
-  success,
-  error,
-  neutral100,
-  neutral300,
-  neutral400,
-  neutral600,
-  neutral700,
-  fontFamilySans,
-  fontSizeSm,
-  fontSizeBase,
-  fontWeightBold,
-  fontWeightMedium,
-  spacing1,
-  spacing2,
-  spacing3,
-  spacing4,
-  radiusMd,
-  radiusFull,
-  shadowCard,
-} from '@borne-map/ui/src/tokens/native'
+import { StatusBadge } from '@borne-map/ui'
 
 interface StationCardProps {
   name: string
@@ -67,11 +46,9 @@ export default function StationCard({
         <Text style={styles.metaText}>{availableCount}/{chargerCount} {t('station.chargers')}</Text>
       </View>
       <View style={styles.bottomRow}>
-        <View style={[styles.badge, { backgroundColor: isAvail ? success : error }]}>
-          <Text style={styles.badgeText}>
-            {isAvail ? t('station.available') : t('station.unavailable')}
-          </Text>
-        </View>
+        <StatusBadge variant={availability}>
+          {availability === 'available' ? t('station.available') : t('station.unavailable')}
+        </StatusBadge>
         <Text style={styles.rating}>⭐ {rating.toFixed(1)}</Text>
       </View>
     </TouchableOpacity>

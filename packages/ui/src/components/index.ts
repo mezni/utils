@@ -1,7 +1,7 @@
 export { Button } from './Button/Button'
 export { Input } from './Input/Input'
 export { Badge } from './Badge/Badge'
-export { StatusBadge } from './StatusBadge/StatusBadge'
+export { StatusBadge, StatusBadge as NativeStatusBadge } from './StatusBadge/StatusBadge'
 export { Skeleton } from './Skeleton/Skeleton'
 export { EmptyState } from './EmptyState/EmptyState'
 export { ErrorState } from './ErrorState/ErrorState'

@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { useFavorites } from '../hooks/useFavorites'
+import { StatusBadge } from '@borne-map/ui'
 
 interface StationCardProps {
   station: {
@@ -35,15 +36,9 @@ export default function StationCard({ station, onClick }: StationCardProps) {
           <p className="mt-0.5 text-xs text-neutral-400">{station.address}</p>
         </div>
         <div className="ml-2 flex items-center gap-2">
-          <span
-            className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-              station.availability === 'available'
-                ? 'bg-semantic-success/10 text-semantic-success'
-                : 'bg-neutral-100 text-neutral-500'
-            }`}
-          >
+          <StatusBadge variant="available">
             {station.availability === 'available' ? t('station.available') : t('station.unavailable')}
-          </span>
+          </StatusBadge>
           <button
             onClick={(e) => { e.stopPropagation(); toggleFavorite(station.id) }}
             className="focus:outline-none"
