@@ -1,0 +1,72 @@
+{
+  "app": {
+    "name": "BorneMap"
+  },
+  "nav": {
+    "home": "Accueil",
+    "search": "Rechercher",
+    "favorites": "Favoris",
+    "profile": "Profil",
+    "login": "Connexion",
+    "register": "Inscription"
+  },
+  "home": {
+    "title": "Bornes de recharge à proximité",
+    "searchPlaceholder": "Rechercher une station...",
+    "noStations": "Aucune station à proximité"
+  },
+  "station": {
+    "chargers": "Chargeurs",
+    "available": "Disponible",
+    "unavailable": "Indisponible",
+    "reviews": "Avis",
+    "noReviews": "Aucun avis pour le moment",
+    "noChargers": "Aucun chargeur",
+    "distance": "km",
+    "rating": "Note",
+    "directions": "Itinéraire",
+    "pricePerKwh": "TND/kWh"
+  },
+  "charger": {
+    "type2": "Type 2",
+    "ccs": "CCS",
+    "chademo": "CHAdeMO"
+  },
+  "search": {
+    "title": "Résultats de recherche",
+    "noResults": "Aucun résultat trouvé",
+    "filterByType": "Par type",
+    "filterByAvailability": "Par disponibilité",
+    "all": "Tous",
+    "available": "Disponible uniquement"
+  },
+  "favorites": {
+    "title": "Favoris",
+    "empty": "Aucune station en favori pour le moment"
+  },
+  "profile": {
+    "title": "Profil",
+    "name": "Nom",
+    "email": "Email",
+    "phone": "Téléphone",
+    "save": "Enregistrer"
+  },
+  "auth": {
+    "login": "Connexion",
+    "register": "Inscription",
+    "email": "Email",
+    "password": "Mot de passe",
+    "loginButton": "Se connecter",
+    "registerButton": "S'inscrire",
+    "loginWithGoogle": "Se connecter avec Google",
+    "loginWithApple": "Se connecter avec Apple",
+    "loginWithFacebook": "Se connecter avec Facebook",
+    "noAccount": "Pas encore de compte ?",
+    "hasAccount": "Déjà un compte ?"
+  },
+  "common": {
+    "loading": "Chargement...",
+    "error": "Une erreur est survenue",
+    "retry": "Réessayer"
+  }
+}

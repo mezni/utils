@@ -13,7 +13,8 @@
     "./tokens/spacing": "./src/tokens/spacing.ts",
     "./tokens/radius": "./src/tokens/radius.ts",
     "./tokens/shadows": "./src/tokens/shadows.ts",
-    "./tokens/native": "./src/tokens/native.ts"
+    "./tokens/native": "./src/tokens/native.ts",
+    "./tailwind.config.base.js": "./tailwind.config.base.js"
   },
   "scripts": {
     "build": "tsc --noEmit",
