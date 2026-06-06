@@ -1,0 +1,71 @@
+{
+  "dashboard": {
+    "title": "BorneMap",
+    "overview": "نظرة عامة",
+    "myStations": "محطاتي",
+    "stationEdit": "تعديل المحطة",
+    "chargerManagement": "إدارة الشواحن",
+    "availabilityUpdate": "تحديث التوفر",
+    "reports": "التقارير",
+    "users": "المستخدمين",
+    "partners": "الشركاء",
+    "stations": "المحطات",
+    "chargers": "الشواحن",
+    "reviews": "المراجعات"
+  },
+  "stats": {
+    "totalStations": "إجمالي المحطات",
+    "totalChargers": "إجمالي الشواحن",
+    "totalReviews": "إجمالي التقييمات",
+    "availability": "نسبة التوفر",
+    "totalUsers": "إجمالي المستخدمين",
+    "totalPartners": "إجمالي الشركاء",
+    "totalEvents": "إجمالي الأحداث"
+  },
+  "table": {
+    "name": "الاسم",
+    "address": "العنوان",
+    "status": "الحالة",
+    "partner": "الشريك",
+    "chargers": "الشواحن",
+    "rating": "التقييم",
+    "reviews": "المراجعات",
+    "connectorType": "نوع الموصل",
+    "powerRating": "القدرة (kW)",
+    "email": "البريد الإلكتروني",
+    "role": "الدور",
+    "actions": "الإجراءات",
+    "edit": "تعديل",
+    "delete": "حذف",
+    "view": "عرض",
+    "manage": "إدارة",
+    "update": "تحديث"
+  },
+  "form": {
+    "stationName": "اسم المحطة",
+    "address": "العنوان",
+    "latitude": "خط العرض",
+    "longitude": "خط الطول",
+    "partner": "الشريك",
+    "chargers": "الشواحن",
+    "save": "حفظ",
+    "cancel": "إلغاء"
+  },
+  "role": {
+    "partner": "شريك",
+    "admin": "مدير",
+    "switch": "تغيير الدور"
+  },
+  "language": {
+    "french": "الفرنسية",
+    "arabic": "العربية"
+  },
+  "common": {
+    "back": "رجوع",
+    "next": "التالي",
+    "loading": "جاري التحميل...",
+    "error": "خطأ",
+    "success": "نجح",
+    "noData": "لا توجد بيانات متاحة"
+  }
+}

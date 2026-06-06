@@ -13,6 +13,8 @@
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
+    "composite": true,
+    "incremental": true,
     "outDir": "dist",
     "baseUrl": ".",
     "paths": {

@@ -1,0 +1,71 @@
+{
+  "dashboard": {
+    "title": "BorneMap",
+    "overview": "Vue d'ensemble",
+    "myStations": "Mes Stations",
+    "stationEdit": "Modifier Station",
+    "chargerManagement": "Gestion Chargeurs",
+    "availabilityUpdate": "Mise à jour Disponibilité",
+    "reports": "Rapports",
+    "users": "Utilisateurs",
+    "partners": "Partenaires",
+    "stations": "Stations",
+    "chargers": "Chargeurs",
+    "reviews": "Avis"
+  },
+  "stats": {
+    "totalStations": "Total Stations",
+    "totalChargers": "Total Chargeurs",
+    "totalReviews": "Total Avis",
+    "availability": "Disponibilité",
+    "totalUsers": "Total Utilisateurs",
+    "totalPartners": "Total Partenaires",
+    "totalEvents": "Total Événements"
+  },
+  "table": {
+    "name": "Nom",
+    "address": "Adresse",
+    "status": "Statut",
+    "partner": "Partenaire",
+    "chargers": "Chargeurs",
+    "rating": "Note",
+    "reviews": "Avis",
+    "connectorType": "Type Connecteur",
+    "powerRating": "Puissance (kW)",
+    "email": "Email",
+    "role": "Rôle",
+    "actions": "Actions",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "view": "Voir",
+    "manage": "Gérer",
+    "update": "Mettre à jour"
+  },
+  "form": {
+    "stationName": "Nom de la station",
+    "address": "Adresse",
+    "latitude": "Latitude",
+    "longitude": "Longitude",
+    "partner": "Partenaire",
+    "chargers": "Chargeurs",
+    "save": "Enregistrer",
+    "cancel": "Annuler"
+  },
+  "role": {
+    "partner": "Partenaire",
+    "admin": "Admin",
+    "switch": "Changer Rôle"
+  },
+  "language": {
+    "french": "Français",
+    "arabic": "Arabe"
+  },
+  "common": {
+    "back": "Retour",
+    "next": "Suivant",
+    "loading": "Chargement...",
+    "error": "Erreur",
+    "success": "Succès",
+    "noData": "Aucune donnée disponible"
+  }
+}
