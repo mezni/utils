@@ -18,8 +18,13 @@ pnpm install --no-frozen-lockfile
 
 ### Development
 
+**Important**: Always install dependencies with `--no-frozen-lockfile` before running dev commands:
+
 ```bash
-# Start dashboard dev server
+# Install dependencies first
+pnpm install --no-frozen-lockfile
+
+# Then start dashboard dev server
 pnpm --filter @borne-map/dashboard dev
 
 # Start driver web app
@@ -27,6 +32,15 @@ pnpm --filter @borne-map/driver-web dev
 
 # Start driver mobile app
 pnpm --filter @borne-map/driver-mobile dev
+```
+
+**Quick Command** (install + run):
+```bash
+# Dashboard
+pnpm install --no-frozen-lockfile && pnpm --filter @borne-map/dashboard dev
+
+# Web App
+pnpm install --no-frozen-lockfile && pnpm --filter @borne-map/driver-web dev
 ```
 
 ### Testing
