@@ -2,7 +2,7 @@
   "name": "@borne-map/driver-mobile",
   "version": "0.1.0",
   "private": true,
-  "main": "expo/AppEntry.js",
+  "main": "src/App.tsx",
   "scripts": {
     "dev": "expo start",
     "start": "expo start",
