@@ -3,11 +3,11 @@ For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan
 <!-- SPECKIT END -->
 
-## Active Feature: Design System Foundation
+## Active Feature: Driver Web App with Mock Data
 
-**Plan**: [plan.md](./plan.md)
+**Plan**: [plan.md](specs/002-driver-web-mock/plan.md)
 
-**Spec**: [spec.md](./spec.md)
+**Spec**: [spec.md](specs/002-driver-web-mock/spec.md)
 
 **Status**: Planning complete, ready for implementation tasks
 
@@ -15,87 +15,99 @@ shell commands, and other important information, read the current plan
 
 ### Key Deliverables
 
-1. **Design Token Package** (`packages/ui/src/tokens/`)
-   - Colors, typography, spacing, radius, shadows
-   - Central index for re-exports
-   - React Native compatibility (`native.ts`)
+1. **App Scaffold** (`apps/driver-web/`)
+   - Vite + React + TypeScript with Tailwind + i18n
+   - Routes for 6 screens, RTL support for Arabic
 
-2. **Shared Component Package** (`packages/ui/src/components/`)
-   - 12 components: Button, Input, Badge, StatusBadge, Skeleton, EmptyState, ErrorState, Toast, Modal, Table, StatCard, DataCard
-   - TypeScript interfaces for props
+2. **Mock Data** (`apps/driver-web/src/mocks/`)
+   - 15 stations with Tunisian coordinates
+   - 2–4 chargers per station (Type 2, CCS, CHAdeMO)
+   - 3–5 reviews per station (Arabic and French)
+
+3. **Driver-Specific Components** (`apps/driver-web/src/components/`)
+   - 9 components: MobileTopBar, SearchBar, FilterPills, MapPinMarker, ZoomControls, StationCard, ChargerRow, ReviewCard, BottomStationCard
+   - TypeScript prop interfaces
    - Unit tests for all variants and states
 
-3. **Documentation**
-   - `docs/ui/components.md` - Component usage guide
-   - `docs/ui/tokens.md` - Token reference
-   - `docs/ui/design-tokens.md` - Design token values
+4. **Screens** (`apps/driver-web/src/screens/`)
+   - Home/Map, Station Detail, Search Results, Favorites, Profile, Login/Register
 
 ---
 
 ### Technical Approach
 
-- **TypeScript 5.x** with strict mode for type safety
+- **Vite 5** + **React 18** + **TypeScript 5.x** for the SPA
+- **React Router v6** with createBrowserRouter for navigation
+- **Tailwind CSS** extending `packages/ui/tailwind.config.base.js` for design tokens
+- **react-i18next** for Arabic/French i18n with automatic RTL switching
 - **Vitest** + **@testing-library/react** for testing
-- **Tailwind CSS** extension for web usage
-- **React Native** StyleSheet-compatible exports for mobile
-- **pnpm workspaces** for monorepo management
+- **Sidebar + Top Bar** layout pattern (persistent TopBar, sidebar as nav panel)
+- **No backend calls** — all data from local mock TypeScript files
 
 ---
 
 ### Design Principles
 
-- All visual values from tokens (no hardcoding)
-- Components consume tokens automatically
-- WCAG 2.1 AA accessibility compliance
-- RTL support built-in for Arabic
-- Component composition pattern
+- All visual values from tokens (no hardcoding) — via `packages/ui`
+- WCAG 2.1 AA accessibility compliance on all screens
+- Arabic RTL works correctly on every screen
+- Mock data is placeholder — replaceable with real API in Phase 5
 
 ---
 
 ### Project Structure
 
 ```
-packages/ui/
+apps/driver-web/
 ├── src/
-│   ├── tokens/
-│   │   ├── colors.ts
-│   │   ├── typography.ts
-│   │   ├── spacing.ts
-│   │   ├── radius.ts
-│   │   ├── shadows.ts
-│   │   ├── index.ts
-│   │   └── native.ts
 │   ├── components/
-│   │   ├── Button/
-│   │   ├── Input/
-│   │   ├── Badge/
-│   │   ├── StatusBadge/
-│   │   ├── Skeleton/
-│   │   ├── EmptyState/
-│   │   ├── ErrorState/
-│   │   ├── Toast/
-│   │   ├── Modal/
-│   │   ├── Table/
-│   │   ├── StatCard/
-│   │   └── DataCard/
-│   ├── index.ts
-│   └── types.ts
-├── tailwind.config.base.js
+│   │   ├── MobileTopBar.tsx
+│   │   ├── SearchBar.tsx
+│   │   ├── FilterPills.tsx
+│   │   ├── MapPinMarker.tsx
+│   │   ├── ZoomControls.tsx
+│   │   ├── StationCard.tsx
+│   │   ├── ChargerRow.tsx
+│   │   ├── ReviewCard.tsx
+│   │   └── BottomStationCard.tsx
+│   ├── screens/
+│   │   ├── HomeMapScreen.tsx
+│   │   ├── StationDetailScreen.tsx
+│   │   ├── SearchResultsScreen.tsx
+│   │   ├── FavoritesScreen.tsx
+│   │   ├── ProfileScreen.tsx
+│   │   └── LoginRegisterScreen.tsx
+│   ├── mocks/
+│   │   ├── stations.ts
+│   │   ├── chargers.ts
+│   │   ├── reviews.ts
+│   │   └── users.ts
+│   ├── i18n/
+│   │   ├── ar.json
+│   │   ├── fr.json
+│   │   └── index.ts
+│   ├── hooks/
+│   ├── types/
+│   │   └── index.ts
+│   ├── App.tsx
+│   ├── main.tsx
+│   └── index.css
 ├── package.json
 ├── tsconfig.json
-└── README.md
+├── vite.config.ts
+├── tailwind.config.ts
+└── postcss.config.js
 ```
 
 ---
 
 ### Success Criteria
 
+- ✅ All 6 screens render with realistic mock data when navigated to
+- ✅ Navigation between all screens works (click, back, direct URL)
+- ✅ Arabic RTL layout is correct on every screen
+- ✅ French layout renders correctly with translated strings
+- ✅ No backend calls made (verified via network tab)
+- ✅ All 9 driver-specific components render with required props and states
 - ✅ `pnpm build` passes with zero warnings
-- ✅ All component tests pass with 100% coverage of variants/states
-- ✅ All visual values from tokens (hardcoding prohibited)
-- ✅ Components render correctly with proper token-based styles
-- ✅ Component documentation covers 100% of implemented components
-- ✅ Tailwind config resolves all token values without errors
-- ✅ React Native compatibility maintained
-- ✅ WCAG 2.1 AA accessibility compliance
-- ✅ Arabic RTL support works automatically
+- ✅ All static strings translated in ar.json and fr.json

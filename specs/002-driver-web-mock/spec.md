@@ -8,6 +8,14 @@
 
 **Input**: Driver Web App is fully navigable with all public screens populated from realistic mock data (Sprint 1.2 of Phase 1)
 
+## Clarifications
+
+### Session 2026-06-05
+
+- Q: Navigation paradigm — what layout structure connects all screens? → A: Sidebar + Top Bar pattern. Top bar (MobileTopBar) shows hamburger menu, brand name, notification bell across all screens. Sidebar acts as the primary navigation panel — Home uses a split layout (map left, sidebar right in LTR; reversed in RTL). Other screens (Station Detail, Search Results, Favorites, Profile, Login/Register) replace sidebar content while keeping the Top Bar. Hamburger toggles sidebar visibility on narrow screens.
+- Q: FilterPills — what criteria should pills filter by? → A: Two pill rows — Charger Type (Type 2, CCS, CHAdeMO) and Availability (All / Available only).
+- Q: Station availability states — what enum values for station/charger availability? → A: Binary — Available or Unavailable. No intermediate states (Busy, Maintenance, etc.) for mock data.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Browse Stations on Map (Priority: P1)
@@ -44,7 +52,7 @@ A driver can tap a station card or marker to see full station details, including
 
 ### User Story 3 - Search, Filter & Favorites (Priority: P2)
 
-A driver can search for stations by text, filter by charger type, and save favorite stations for quick access later.
+A driver can search for stations by text, filter by charger type and availability, and save favorite stations for quick access later.
 
 **Why this priority**: Search and filtering enhance the core discovery experience. Favorites requires mock data only — no backend auth yet.
 
@@ -104,20 +112,21 @@ A driver can view a profile page with static form fields and see login/register 
 - **FR-015**: Navigation between all 6 screens MUST work (click, back button, direct URL)
 - **FR-016**: No backend calls MUST be made — all data comes from mock data files
 - **FR-017**: Each driver-specific component (MobileTopBar, SearchBar, FilterPills, MapPinMarker, ZoomControls, StationCard, ChargerRow, ReviewCard, BottomStationCard) MUST be in `apps/driver-web/src/components/`
-- **FR-018**: MobileTopBar MUST show menu icon, brand name, and notification bell
-- **FR-019**: SearchBar MUST show search icon, text input, and float in a card-style container
-- **FR-020**: FilterPills MUST render as horizontal pill row with active/inactive visual states
-- **FR-021**: MapPinMarker MUST support default, selected, and unavailable states with appropriate colors and glow shadow
-- **FR-022**: ZoomControls MUST render as +/- button group
-- **FR-023**: StationCard MUST show station name, address, distance, charger count, and availability badge
-- **FR-024**: ChargerRow MUST show connector type, power in kW, and status badge
-- **FR-025**: ReviewCard MUST show star rating, date, reviewer name, and review text
-- **FR-026**: BottomStationCard MUST show station summary with specification rows
+- **FR-018**: Layout MUST follow Sidebar + Top Bar pattern — MobileTopBar is persistent across all screens, sidebar is the primary navigation panel, screens replace sidebar content
+- **FR-019**: MobileTopBar MUST show hamburger menu icon, brand name, and notification bell on all screens
+- **FR-020**: SearchBar MUST show search icon, text input, and float in a card-style container
+- **FR-021**: FilterPills MUST render as two horizontal pill rows — Charger Type (Type 2, CCS, CHAdeMO) and Availability (All / Available only) — with active/inactive visual states
+- **FR-022**: MapPinMarker MUST support default, selected, and unavailable states with appropriate colors and glow shadow
+- **FR-023**: ZoomControls MUST render as +/- button group
+- **FR-024**: StationCard MUST show station name, address, distance, charger count, and availability badge
+- **FR-025**: ChargerRow MUST show connector type, power in kW, and status badge
+- **FR-026**: ReviewCard MUST show star rating, date, reviewer name, and review text
+- **FR-027**: BottomStationCard MUST show station summary with specification rows
 
 ### Key Entities
 
-- **Station**: Charging station entity with name, address (Tunisian), coordinates (lat/lng), distance, charger count, availability status
-- **Charger**: Individual charging point at a station with connector type (Type 2, CCS, CHAdeMO), power (kW), availability status
+- **Station**: Charging station entity with name, address (Tunisian), coordinates (lat/lng), distance, charger count, availability status (Available or Unavailable)
+- **Charger**: Individual charging point at a station with connector type (Type 2, CCS, CHAdeMO), power (kW), availability status (Available or Unavailable)
 - **Review**: User review of a station with star rating (1–5), date, author name, text content (Arabic or French)
 - **Driver User**: Mock user profile with name, email, phone, favorite station IDs, avatar
 
@@ -126,7 +135,7 @@ A driver can view a profile page with static form fields and see login/register 
 ### Measurable Outcomes
 
 - **SC-001**: All 6 screens render with realistic mock data when navigated to
-- **SC-002**: Navigation between all screens works via click, browser back button, and direct URL entry
+- **SC-002**: Navigation requirements (per FR-015) are satisfied — verified via manual walkthrough through all routes
 - **SC-003**: Arabic RTL layout is visually correct on every screen (sidebar on right, flipped layout, no broken elements)
 - **SC-004**: French layout renders correctly with translated strings on every screen
 - **SC-005**: No backend calls are made — verified by checking network tab or console for API requests
