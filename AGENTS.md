@@ -1,64 +1,64 @@
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan
+at specs/003-driver-mobile-mock/plan.md
 <!-- SPECKIT END -->
 
-## Active Feature: Driver Web App with Mock Data
+## Active Feature: Driver Mobile App with Mock Data
 
-**Plan**: [plan.md](specs/002-driver-web-mock/plan.md)
+**Plan**: [plan.md](specs/003-driver-mobile-mock/plan.md)
 
-**Spec**: [spec.md](specs/002-driver-web-mock/spec.md)
+**Spec**: [spec.md](specs/003-driver-mobile-mock/spec.md)
 
-**Status**: Planning complete, ready for implementation tasks
+**Status**: Plan complete — ready for implementation tasks
 
 ---
 
 ### Key Deliverables
 
-1. **App Scaffold** (`apps/driver-web/`)
-   - Vite + React + TypeScript with Tailwind + i18n
-   - Routes for 6 screens, RTL support for Arabic
+1. **App Scaffold** (`apps/driver-mobile/`)
+   - Expo + React Native + TypeScript with native tokens + i18n
+   - Bottom tab navigator (5 tabs) + stack navigator (2 stack screens)
+   - RTL support for Arabic via `I18nManager.forceRTL()`
 
-2. **Mock Data** (`apps/driver-web/src/mocks/`)
-   - 15 stations with Tunisian coordinates
-   - 2–4 chargers per station (Type 2, CCS, CHAdeMO)
+2. **Mock Data** (`apps/driver-mobile/src/mocks/`)
+   - 15 stations with Tunisian coordinates (same shape as web)
+   - 2–4 chargers per station (Type2, CCS, CHAdeMO)
    - 3–5 reviews per station (Arabic and French)
 
-3. **Driver-Specific Components** (`apps/driver-web/src/components/`)
-   - 9 components: MobileTopBar, SearchBar, FilterPills, MapPinMarker, ZoomControls, StationCard, ChargerRow, ReviewCard, BottomStationCard
+3. **Mobile-Specific Components** (`apps/driver-mobile/src/components/`)
+   - 12 components: MobileTopBar, SearchBar, FilterPills, MapPinMarker, ZoomControls, StationCard, ChargerRow, ReviewCard, BottomStationCard, SpecRow, CenterActionButton, BottomTabBar
    - TypeScript prop interfaces
-   - Unit tests for all variants and states
 
-4. **Screens** (`apps/driver-web/src/screens/`)
-   - Home/Map, Station Detail, Search Results, Favorites, Profile, Login/Register
+4. **Screens** (`apps/driver-mobile/src/screens/`)
+   - Map/Home, Station List, Station Detail, Search, Favorites, Profile, Login/Register
 
 ---
 
 ### Technical Approach
 
-- **Vite 5** + **React 18** + **TypeScript 5.x** for the SPA
-- **React Router v6** with createBrowserRouter for navigation
-- **Tailwind CSS** extending `packages/ui/tailwind.config.base.js` for design tokens
-- **react-i18next** for Arabic/French i18n with automatic RTL switching
-- **Vitest** + **@testing-library/react** for testing
-- **Sidebar + Top Bar** layout pattern (persistent TopBar, sidebar as nav panel)
+- **Expo SDK 52** + **React Native 0.76** + **TypeScript 5.x** for mobile
+- **React Navigation v6** with bottom tabs + native stack
+- **Native tokens** from `packages/ui/src/tokens/native.ts` for all visual values
+- **react-i18next** + **expo-localization** for Arabic/French i18n with RTL
+- **react-native-safe-area-context** for safe area insets
 - **No backend calls** — all data from local mock TypeScript files
 
 ---
 
 ### Design Principles
 
-- All visual values from tokens (no hardcoding) — via `packages/ui`
-- WCAG 2.1 AA accessibility compliance on all screens
-- Arabic RTL works correctly on every screen
+- All visual values from tokens (no hardcoding) — via `packages/ui/src/tokens/native.ts`
+- Arabic RTL works correctly on every screen via `I18nManager.forceRTL()`
 - Mock data is placeholder — replaceable with real API in Phase 5
+- iOS and Android parity from single Expo managed codebase
 
 ---
 
 ### Project Structure
 
 ```
-apps/driver-web/
+apps/driver-mobile/
 ├── src/
 │   ├── components/
 │   │   ├── MobileTopBar.tsx
@@ -69,11 +69,15 @@ apps/driver-web/
 │   │   ├── StationCard.tsx
 │   │   ├── ChargerRow.tsx
 │   │   ├── ReviewCard.tsx
-│   │   └── BottomStationCard.tsx
+│   │   ├── BottomStationCard.tsx
+│   │   ├── SpecRow.tsx
+│   │   ├── CenterActionButton.tsx
+│   │   └── BottomTabBar.tsx
 │   ├── screens/
 │   │   ├── HomeMapScreen.tsx
+│   │   ├── StationListScreen.tsx
 │   │   ├── StationDetailScreen.tsx
-│   │   ├── SearchResultsScreen.tsx
+│   │   ├── SearchScreen.tsx
 │   │   ├── FavoritesScreen.tsx
 │   │   ├── ProfileScreen.tsx
 │   │   └── LoginRegisterScreen.tsx
@@ -87,27 +91,31 @@ apps/driver-web/
 │   │   ├── fr.json
 │   │   └── index.ts
 │   ├── hooks/
+│   │   ├── useStations.ts
+│   │   ├── useFavorites.ts
+│   │   └── useMockFilter.ts
+│   ├── navigation/
+│   │   ├── RootNavigator.tsx
+│   │   └── types.ts
 │   ├── types/
 │   │   └── index.ts
 │   ├── App.tsx
-│   ├── main.tsx
 │   └── index.css
-├── package.json
+├── app.json
+├── babel.config.js
 ├── tsconfig.json
-├── vite.config.ts
-├── tailwind.config.ts
-└── postcss.config.js
+├── package.json
+└── metro.config.js
 ```
 
 ---
 
 ### Success Criteria
 
-- ✅ All 6 screens render with realistic mock data when navigated to
-- ✅ Navigation between all screens works (click, back, direct URL)
+- ✅ All 7 screens render with realistic mock data on iOS simulator and Android emulator
+- ✅ Navigation between all screens works via bottom tabs and stack (forward and back)
 - ✅ Arabic RTL layout is correct on every screen
-- ✅ French layout renders correctly with translated strings
-- ✅ No backend calls made (verified via network tab)
-- ✅ All 9 driver-specific components render with required props and states
-- ✅ `pnpm build` passes with zero warnings
-- ✅ All static strings translated in ar.json and fr.json
+- ✅ French layout renders correctly with translated strings on all screens
+- ✅ No backend calls made (verified via network inspector)
+- ✅ All 12 mobile components render with required props and all visual states
+- ✅ `pnpm build` passes for `apps/driver-mobile` with zero warnings
