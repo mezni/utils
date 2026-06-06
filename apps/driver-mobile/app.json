@@ -1,0 +1,31 @@
+{
+  "expo": {
+    "name": "BorneMap",
+    "slug": "borne-map-driver",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "backgroundColor": "#EAF0E6"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.bornemap.driver",
+      "infoPlist": {
+        "CFBundleAllowMixedLocalizations": true
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#EAF0E6"
+      },
+      "package": "com.bornemap.driver"
+    },
+    "plugins": [
+      "expo-localization",
+      "expo-font"
+    ]
+  }
+}
