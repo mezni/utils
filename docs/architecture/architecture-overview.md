@@ -12,7 +12,7 @@
 | Component | Status | Sprint |
 |---|---|---|
 | Cargo workspace | 🔴 Planned | 1.1 |
-| pnpm workspace | 🔴 Planned | 1.1 |
+| npm workspace | 🔴 Planned | 1.1 |
 | ev-core (shared crate) | 🔴 Planned | 1.1 |
 | ev-db (shared crate) | 🔴 Planned | 1.1 |
 | CI/CD (6 workflows) | 🔴 Planned | 1.1 |
@@ -50,7 +50,7 @@ The platform follows a **pragmatic monolith** approach: multiple services owned 
 | Bare metal + Docker Compose | ADR-006 | One-person operations; Kubernetes is overkill |
 | Keycloak for auth | ADR-007 | Industry standard, mature, self-hosted |
 | PostgreSQL trigger for GIS sync | ADR-008 | Atomic with business transaction, no worker needed |
-| Monorepo (Cargo + pnpm) | ADR-009 | Single source of truth, shared dependency management |
+| Monorepo (Cargo + npm) | ADR-009 | Single source of truth, shared dependency management |
 | Traefik edge router | ADR-010 | Automatic TLS, simple routing, Docker-native |
 | React + Vite for web | ADR-011 | Fast dev experience, Tailwind CSS integration |
 | React Native + Expo SDK 54 | ADR-012 | Cross-platform mobile with managed workflow |

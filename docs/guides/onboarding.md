@@ -7,9 +7,9 @@
 
 ## Prérequis
 
-- **Rust**: 1.78+ (installer via rustup)
-- **Node.js**: 20+ (installer via nvm)
-- **pnpm**: 9+ (`npm install -g pnpm`)
+- **Rust**: 1.95+ (installer via rustup)
+- **Node.js**: 20.20+ (installer via nvm)
+- **npm**: 10.8+ (inclus avec Node.js)
 - **Docker**: 24+ avec Docker Compose
 - **PostgreSQL**: 16 (optionnel, Docker fournit la base)
 - **sqlx-cli**: `cargo install sqlx-cli --no-default-features --features postgres`
@@ -26,7 +26,7 @@ cd BorneMap
 cargo build --all
 
 # Installer les dépendances JS/TS
-pnpm install
+npm install
 ```
 
 ---
@@ -90,7 +90,7 @@ cargo run
 
 ```bash
 cd apps/driver-web
-pnpm dev
+npm run dev
 # Disponible sur http://localhost:5173
 ```
 
@@ -98,7 +98,7 @@ pnpm dev
 
 ```bash
 cd apps/dashboard
-pnpm dev
+npm run dev
 # Disponible sur http://localhost:5174
 ```
 
@@ -106,7 +106,7 @@ pnpm dev
 
 ```bash
 cd apps/driver-mobile
-pnpm start
+npm start
 # Scanner le QR code avec Expo Go
 ```
 
@@ -146,10 +146,10 @@ cargo clippy --all-targets -- -D warnings
 cargo fmt --all -- --check
 
 # Tests frontend
-pnpm test
+npm test
 
 # Lint frontend
-pnpm lint
+npm run lint
 ```
 
 ---

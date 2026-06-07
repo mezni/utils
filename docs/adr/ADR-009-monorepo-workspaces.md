@@ -1,4 +1,4 @@
-# ADR-009: Monorepo with Cargo and pnpm Workspaces
+# ADR-009: Monorepo with Cargo and npm Workspaces
 
 **Status**: Accepted
 **Date**: 2026-06-07
@@ -9,24 +9,24 @@ The project contains Rust services, shared crates, JavaScript/TypeScript applica
 
 ## Decision
 
-Use a single monorepo with Cargo workspaces (Rust) and pnpm workspaces (JS/TS).
+Use a single monorepo with Cargo workspaces (Rust) and npm workspaces (JS/TS).
 
 ## Rationale
 
 - Single source of truth for all code
 - Atomic commits across backend and frontend changes
-- Shared dependency versions via Cargo workspace.dependencies and pnpm workspace
+- Shared dependency versions via Cargo workspace.dependencies and npm workspace
 - Consistent CI/CD configuration in one .github/workflows directory
 - Easier onboarding: clone one repository, everything works
 - Cargo workspaces enable shared crate development without publishing
-- pnpm workspaces enable shared package development without npm publishing
+- npm workspaces enable shared package development without npm publishing
 
 ## Consequences
 
 - Repository size grows with every service and application
 - CI must be path-scoped to avoid running all jobs on every change
 - Root-level configuration files must handle both Rust and JS tooling
-- Requires both Cargo and pnpm installed in CI environments
+- Requires both Cargo and npm installed in CI environments
 
 ## Compliance
 

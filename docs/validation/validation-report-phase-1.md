@@ -11,7 +11,7 @@
 | Criterion | Status | Notes |
 |---|---|---|
 | `cargo build --all` succeeds | 🔴 Pending | |
-| `pnpm install` succeeds | 🔴 Pending | |
+| `npm install` succeeds | 🔴 Pending | |
 | All CI workflows pass on a test push | 🔴 Pending | |
 | Docker Compose starts PostgreSQL cleanly | 🔴 Pending | |
 | ev-core tests pass | 🔴 Pending | |
@@ -59,8 +59,8 @@
 |---|---|---|
 | clippy zero warnings | 🔴 Pending | |
 | cargo test --all green | 🔴 Pending | |
-| pnpm build succeeds | 🔴 Pending | |
-| pnpm tsc --noEmit passes | 🔴 Pending | |
+| npm build succeeds | 🔴 Pending | |
+| npm tsc --noEmit passes | 🔴 Pending | |
 | Zero Class A bugs | 🔴 Pending | |
 | All CI workflows pass on main | 🔴 Pending | |
 | Location permission denial handled | 🔴 Pending | |

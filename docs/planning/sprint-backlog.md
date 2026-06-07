@@ -17,9 +17,9 @@
 **Status**: 🔴 Planned
 **Description**: Root Cargo.toml with workspace members and shared dependency versions.
 
-### TASK-03 — Configure pnpm workspace
+### TASK-03 — Configure npm workspace
 **Status**: 🔴 Planned
-**Description**: pnpm-workspace.yaml, root package.json with scripts, tsconfig.base.json.
+**Description**: root package.json with npm workspaces field and scripts, tsconfig.base.json.
 
 ### TASK-04 — Create ev-core shared crate
 **Status**: 🔴 Planned
@@ -31,7 +31,7 @@
 
 ### TASK-06 — Create ci.yml — full workspace CI
 **Status**: 🔴 Planned
-**Description**: Rust lint+test (cargo fmt, clippy, test) + Frontend lint+build (pnpm install, lint, build).
+**Description**: Rust lint+test (cargo fmt, clippy, test) + Frontend lint+build (npm install, lint, build).
 
 ### TASK-07 — Create ci-driver-service.yml
 **Status**: 🔴 Planned
@@ -43,15 +43,15 @@
 
 ### TASK-09 — Create ci-driver-web.yml
 **Status**: 🔴 Planned
-**Description**: Path-scoped to apps/driver-web and packages/. pnpm install, lint, build.
+**Description**: Path-scoped to apps/driver-web and packages/. npm install, lint, build.
 
 ### TASK-10 — Create ci-driver-mobile.yml
 **Status**: 🔴 Planned
-**Description**: Path-scoped to apps/driver-mobile and packages/. pnpm install, lint, tsc --noEmit.
+**Description**: Path-scoped to apps/driver-mobile and packages/. npm install, lint, tsc --noEmit.
 
 ### TASK-11 — Create ci-dashboard.yml
 **Status**: 🔴 Planned
-**Description**: Path-scoped to apps/dashboard and packages/. pnpm install, lint, build.
+**Description**: Path-scoped to apps/dashboard and packages/. npm install, lint, build.
 
 ### TASK-12 — Create environment file examples
 **Status**: 🔴 Planned
@@ -70,7 +70,7 @@
 ## Definition of Done
 
 - [ ] `cargo build --all` succeeds
-- [ ] `pnpm install` succeeds
+- [ ] `npm install` succeeds
 - [ ] All CI workflows pass on a test push
 - [ ] Docker Compose starts PostgreSQL cleanly
 - [ ] ev-core tests pass (`cargo test -p ev-core`)
