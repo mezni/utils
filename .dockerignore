@@ -1,0 +1,9 @@
+target/
+node_modules/
+.git/
+.specify/
+.gitignore
+.gitattributes
+*.md
+*.log
+.DS_Store

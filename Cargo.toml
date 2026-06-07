@@ -1,0 +1,29 @@
+[workspace]
+resolver = "2"
+members = [
+    "services/driver-service",
+    "services/admin-service",
+    "crates/ev-core",
+    "crates/ev-db",
+]
+
+[workspace.dependencies]
+ev-core = { path = "crates/ev-core" }
+ev-db = { path = "crates/ev-db" }
+actix-web = "4"
+actix-rt = "2"
+sqlx = { version = "0.8", features = ["postgres", "runtime-tokio", "tls-rustls"] }
+tokio = { version = "1", features = ["full"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+nanoid = "0.4"
+dotenvy = "0.15"
+thiserror = "1"
+chrono = { version = "0.4", features = ["serde"] }
+uuid = { version = "1", features = ["v4", "serde"] }
+
+[workspace.package]
+edition = "2021"
+rust-version = "1.95"

@@ -1,0 +1,33 @@
+name: CI - Dashboard
+
+on:
+  push:
+    paths:
+      - 'apps/dashboard/**'
+      - 'packages/**'
+  pull_request:
+    paths:
+      - 'apps/dashboard/**'
+      - 'packages/**'
+
+jobs:
+  test:
+    name: Frontend lint + build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/dashboard
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/cache@v4
+        id: npm-cache
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
+
+      - run: npm install
+        working-directory: .
+
+      - run: npm run lint
+      - run: npm run build

@@ -1,0 +1,21 @@
+{
+  "name": "borne-map",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:driver-web": "npm run dev -w apps/driver-web",
+    "dev:dashboard": "npm run dev -w apps/dashboard",
+    "dev:mobile": "npm run dev -w apps/driver-mobile",
+    "build:driver-web": "npm run build -w apps/driver-web",
+    "build:dashboard": "npm run build -w apps/dashboard",
+    "lint": "npm run lint -w apps/driver-web -w apps/dashboard",
+    "test": "npm run test -w apps/driver-web -w apps/dashboard"
+  },
+  "engines": {
+    "node": ">=20.20.0",
+    "npm": ">=10.8.0"
+  }
+}

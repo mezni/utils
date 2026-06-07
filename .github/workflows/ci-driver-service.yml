@@ -1,0 +1,47 @@
+name: CI - Driver Service
+
+on:
+  push:
+    paths:
+      - 'services/driver-service/**'
+      - 'crates/**'
+  pull_request:
+    paths:
+      - 'services/driver-service/**'
+      - 'crates/**'
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  test:
+    name: Rust integration test
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: ev_platform_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('Cargo.lock') }}
+
+      - run: cargo test -p driver-service
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/ev_platform_test

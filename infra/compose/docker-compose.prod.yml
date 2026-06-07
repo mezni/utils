@@ -1,0 +1,47 @@
+services:
+  postgres:
+    image: postgis/postgis:16-3.4
+    container_name: borne-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ev_platform
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  driver-service:
+    build:
+      context: ../../services/driver-service
+    container_name: borne-driver-service
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    env_file:
+      - ../env/driver-service.env.example
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  admin-service:
+    build:
+      context: ../../services/admin-service
+    container_name: borne-admin-service
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    env_file:
+      - ../env/admin-service.env.example
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres_data:

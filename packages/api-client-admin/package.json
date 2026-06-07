@@ -1,0 +1,9 @@
+{
+  "name": "@borne-map/api-client-admin",
+  "private": true,
+  "version": "0.1.0",
+  "main": "src/index.ts",
+  "scripts": {
+    "lint": "eslint . --ext .ts,.tsx"
+  }
+}

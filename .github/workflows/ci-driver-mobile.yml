@@ -1,0 +1,33 @@
+name: CI - Driver Mobile
+
+on:
+  push:
+    paths:
+      - 'apps/driver-mobile/**'
+      - 'packages/**'
+  pull_request:
+    paths:
+      - 'apps/driver-mobile/**'
+      - 'packages/**'
+
+jobs:
+  test:
+    name: Mobile lint + typecheck
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/driver-mobile
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/cache@v4
+        id: npm-cache
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
+
+      - run: npm install
+        working-directory: .
+
+      - run: npm run lint
+      - run: npx tsc --noEmit
