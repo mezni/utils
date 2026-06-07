@@ -18,6 +18,14 @@
 | `neutral500` | `#64748b` | Text neutral |
 | `neutral600` | `#475569` | Secondary text |
 | `neutral700` | `#334155` | Darkest neutral |
+| `bgSuccess` | `#d1fae5` | Success background |
+| `bgWarning` | `#fef3c7` | Warning background |
+| `bgError` | `#fee2e2` | Error background |
+| `bgNeutral400` | `#f1f5f9` | Neutral background |
+| `textSuccess` | `#065f46` | Success text |
+| `textWarning` | `#92400e` | Warning text |
+| `textError` | `#991b1b` | Error text |
+| `textNeutral400` | `#475569` | Neutral text |
 
 ## Typography
 

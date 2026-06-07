@@ -20,6 +20,7 @@ export const NavigationItem = ({ path, icon, label, badge }: NavigationItemProps
           ? 'bg-brand-sageLight text-brand-primary font-medium' 
           : 'text-text-muted hover:bg-surface-hover hover:text-text-primary'
         }
+        focus:outline-none focus:ring-2 focus:ring-brand-primary focus:ring-inset
       `}
     >
       <span className="text-xl">{icon}</span>

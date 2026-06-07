@@ -1,6 +1,6 @@
 import React from 'react'
 import type { StatusBadgeVariant, StatusBadgeState } from '../../types'
-import { success, warning, error as errorColor, neutral400 } from '../../tokens/colors'
+import { success, warning, error as errorColor, neutral400, bgSuccess, bgWarning, bgError, bgNeutral400, textSuccess, textWarning, textError, textNeutral400 } from '../../tokens/colors'
 import { fontSizeSm, fontWeightMedium } from '../../tokens/typography'
 import { spacing1, spacing2 } from '../../tokens/spacing'
 import { radiusSm } from '../../tokens/radius'
@@ -20,17 +20,17 @@ const dotColors: Record<StatusBadgeVariant, string> = {
 }
 
 const bgColors: Record<StatusBadgeVariant, string> = {
-  available: '#d1fae5',
-  'in-use': '#fef3c7',
-  maintenance: '#fee2e2',
-  offline: '#f1f5f9',
+  available: bgSuccess,
+  'in-use': bgWarning,
+  maintenance: bgError,
+  offline: bgNeutral400,
 }
 
 const textColors: Record<StatusBadgeVariant, string> = {
-  available: '#065f46',
-  'in-use': '#92400e',
-  maintenance: '#991b1b',
-  offline: '#475569',
+  available: textSuccess,
+  'in-use': textWarning,
+  maintenance: textError,
+  offline: textNeutral400,
 }
 
 export function StatusBadge({

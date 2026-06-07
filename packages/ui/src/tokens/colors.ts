@@ -7,6 +7,16 @@ export const success = '#10b981'
 export const warning = '#f59e0b'
 export const error = '#ef4444'
 
+export const bgSuccess = '#d1fae5'
+export const bgWarning = '#fef3c7'
+export const bgError = '#fee2e2'
+export const bgNeutral400 = '#f1f5f9'
+
+export const textSuccess = '#065f46'
+export const textWarning = '#92400e'
+export const textError = '#991b1b'
+export const textNeutral400 = '#475569'
+
 export const neutral100 = '#f8fafc'
 export const neutral200 = '#e2e8f0'
 export const neutral300 = '#cbd5e1'

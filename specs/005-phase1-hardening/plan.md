@@ -521,7 +521,144 @@ For each Class A bug found during audits, document in `docs/project/bugs.md`:
 
 ---
 
-**Status:** Ready for Implementation  
-**Start Date:** 2026-06-09  
-**End Date:** 2026-06-15  
+## Constitution Check
+
+### Principle Review
+
+**I. Pragmatic Architecture** ✅
+- Hardening sprint doesn't add new services
+- All work focuses on existing apps and design system
+- No architecture changes required
+
+**II. Single Source of Truth** ✅
+- Design tokens remain in `packages/ui` as single source of truth
+- No data model changes in this sprint
+- All visual values consumed from tokens
+
+**III. Simple Operations** ✅
+- Testing procedures are straightforward and manual
+- No complex operations required
+- Clear testing checklists provided
+
+**IV. Domain Separation by Schema** ✅
+- No database schema changes
+- Frontend-only work
+
+**V. Build for Current Scale** ✅
+- No optimization work required
+- Testing for current feature set
+
+**VI. Public Access First** ✅
+- All screens remain accessible without authentication
+- No feature gating changes
+
+**VII. RTL & Arabic Built-In** ✅
+- Core principle: RTL bugs are Class A
+- Arabic layout verification is key focus
+- Constitution requirement enforced
+
+**VIII. Visual Consistency** ✅
+- All visual values from `packages/ui` tokens
+- Cross-app consistency verification is key focus
+- No hardcoded values allowed
+
+### Non-Negotiable Rules
+
+- ✅ Arabic RTL layout works correctly on every screen
+- ✅ Design tokens used for all visual values
+- ✅ No additional services added (no backend work)
+
+### Gate Evaluation
+
+**FAIL if**:
+- ❌ RTL bugs prevent users from completing tasks
+- ❌ Hardcoded visual values found in components
+- ❌ Accessibility violations block basic usage
+
+**PASS if**:
+- ✅ Zero Class A bugs found
+- ✅ All screens work in Arabic RTL
+- ✅ Design tokens used for all visual values
+- ✅ Accessibility compliance verified
+
+---
+
+## Phase 1 Done When
+
+- [ ] All three apps run locally with `pnpm install --no-frozen-lockfile && pnpm dev`
+- [ ] All screens navigable in all three apps
+- [ ] Zero Class A bugs
+- [ ] RTL correct on every screen in all three apps
+- [ ] Cross-browser test passed (Chrome, Firefox, Safari)
+- [ ] iOS and Android smoke test passed
+- [ ] All documentation reflects reality
+- [ ] Accessibility audit passed (Driver Web and Dashboard)
+- [ ] Documentation updated (screens.md, components.md, design-tokens.md, onboarding.md)
+
+---
+
+**Status:** Ready for Implementation
+**Start Date:** 2026-06-09
+**End Date:** 2026-06-15
 **Expected Outcome:** Production-ready frontend applications with zero Class A bugs
+
+---
+
+## Technical Context
+
+**Resolved**: ✅ All unknowns resolved in research.md
+
+**Project Dependencies**:
+- Frontend Frameworks: React 19 + TypeScript 5.7 + Vite 6 (Driver Web & Dashboard)
+- UI Package: @borne-map/ui (design tokens + components)
+- Routing: React Router v7 (Driver Web & Dashboard), React Navigation (Driver Mobile)
+- Localization: react-i18next (Arabic, French, English)
+- Styling: Tailwind CSS (Driver Web & Dashboard), StyleSheet (Driver Mobile)
+- Testing: Vitest + React Testing Library (web), Jest + React Native Testing Library (mobile)
+
+**Architecture Patterns**:
+- Shared components in packages/ui
+- App-specific components in each app's src/components/
+- Composition over inheritance
+- Props-driven components
+- TypeScript for type safety
+- State management via React Context and hooks
+- RTL architecture using CSS logical properties and documentElement.dir
+
+**Development Tools**:
+- Package Manager: pnpm (latest)
+- Build Tools: Vite 6, Expo CLI
+- Linting: ESLint + Prettier
+- Testing: Vitest (web), Jest (mobile)
+- Version Control: Git with feature branches
+
+**Testing Strategy**:
+- Unit Testing: ≥ 80% coverage
+- Accessibility Testing: Lighthouse + axe DevTools + manual verification
+- Cross-Browser Testing: Chrome, Firefox, Safari
+- Mobile Testing: iOS Simulator, Android Simulator
+
+---
+
+## Research & Design
+
+**Research Completed**: ✅ research.md created
+- All unknowns resolved
+- Testing methodologies defined
+- Bug classification criteria established
+
+**Data Model**: ✅ data-model.md created
+- Documented existing data structures
+- Verified design token consistency requirements
+- No data model changes in this sprint
+
+**Quick Start Guide**: ✅ quickstart.md created
+- How to run all three applications
+- Testing checklist for RTL, accessibility, cross-browser, mobile
+- Bug tracking and documentation procedures
+
+---
+
+## Clarifications
+
+All clarifications documented in spec.md:

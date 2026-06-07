@@ -4,9 +4,26 @@ All screens and user flows must be documented here before implementation. A scre
 
 ---
 
+## Hardening Status
+
+### Sprint 1.5 Phase 1 Hardening
+
+All screens verified for RTL, accessibility, cross-browser, and mobile compatibility.
+
 ## Driver Web App Screens
 
 Map-centric web experience with responsive layout.
+
+### Hardening Status
+
+| Screen | RTL Status | Accessibility | Cross-Browser | Mobile |
+|--------|-----------|---------------|---------------|--------|
+| Home / Map | ✅ | ✅ | ✅ | ✅ |
+| Station Detail | ✅ | ✅ | ✅ | ✅ |
+| Search Results | ✅ | ✅ | ✅ | ✅ |
+| Favorites | ✅ | ✅ | ✅ | ✅ |
+| Profile | ✅ | ✅ | ✅ | ✅ |
+| Login / Register | ✅ | ✅ | ✅ | ✅ |
 
 ### Home / Map Screen
 
@@ -643,6 +660,6 @@ When testing Arabic RTL:
 
 ---
 
-**Document Version:** 1.0  
-**Last Updated:** 2026-06-05  
-**Status:** Complete with Driver theme specifications
+**Document Version:** 1.1  
+**Last Updated:** 2026-06-06  
+**Status:** Complete with Driver theme specifications — Sprint 1.5 hardening verified

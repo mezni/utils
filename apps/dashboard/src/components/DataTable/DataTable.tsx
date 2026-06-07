@@ -52,7 +52,11 @@ export const DataTable = ({ columns, data }: DataTableProps) => {
               <th
                 key={col.key}
                 onClick={() => handleSort(col.key)}
-                className="px-6 py-3 text-left text-sm font-medium text-text-primary cursor-pointer hover:bg-surface-hover select-none"
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleSort(col.key) } }}
+                tabIndex={0}
+                role="button"
+                aria-label={`Sort by ${col.label}`}
+                className="px-6 py-3 text-left text-sm font-medium text-text-primary cursor-pointer hover:bg-surface-hover select-none focus:outline-none focus:ring-2 focus:ring-brand-primary focus:ring-inset"
               >
                 <div className="flex items-center gap-2">
                   {col.label}
@@ -69,9 +73,9 @@ export const DataTable = ({ columns, data }: DataTableProps) => {
                 <td key={col.key} className="px-6 py-4 text-sm text-text-primary">
                   {col.key === 'actions' ? (
                     <div className="flex gap-2">
-                      <button className="text-brand-primary hover:underline">{t('table.edit')}</button>
+                      <button className="text-brand-primary hover:underline focus:outline-none focus:ring-2 focus:ring-brand-primary rounded">{t('table.edit')}</button>
                       {Array.isArray(row[col.key]) && row[col.key].includes('manage') && (
-                        <button className="text-brand-primary hover:underline">{t('table.manage')}</button>
+                        <button className="text-brand-primary hover:underline focus:outline-none focus:ring-2 focus:ring-brand-primary rounded">{t('table.manage')}</button>
                       )}
                     </div>
                   ) : (

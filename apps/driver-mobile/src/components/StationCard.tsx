@@ -2,6 +2,13 @@ import React from 'react'
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { StatusBadge } from '@borne-map/ui'
+import { neutral100, neutral700, neutral400, neutral600, neutral300 } from '@borne-map/ui/tokens/colors'
+import { radiusMd, radiusFull } from '@borne-map/ui/tokens/radius'
+import { spacing4, spacing1, spacing2 } from '@borne-map/ui/tokens/spacing'
+import { fontSizeBase, fontSizeSm } from '@borne-map/ui/tokens/typography'
+import { fontWeightBold } from '@borne-map/ui/tokens/typography'
+import { fontFamilySans } from '@borne-map/ui/tokens/typography'
+import { shadowCard } from '@borne-map/ui/tokens/shadows'
 
 interface StationCardProps {
   name: string

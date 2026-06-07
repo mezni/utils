@@ -79,7 +79,13 @@ import { StatusBadge } from '@borne-map/ui'
 | `showDot` | `boolean` | `true` | Show color dot indicator |
 | `children` | `React.ReactNode` | — | Label text |
 
-**Accessibility**: role="status", non-color dot indicator.
+**Accessibility**: role="status", non-color dot indicator, keyboard navigable.
+
+**Platform Variants**:
+- **Web**: `StatusBadge` — Tailwind CSS, focus ring, RTL-aware
+- **Native**: `StatusBadge.native` — StyleSheet, React Native SafeArea, RTL-compatible
+
+**Hardening Status**: ✅ RTL verified, keyboard accessible, color tokens used
 
 ## Skeleton
 

@@ -11,7 +11,7 @@ export const TopBar = () => {
         </h2>
       </div>
       <div className="flex items-center gap-4">
-        <button className="text-text-muted hover:text-text-primary">🔔</button>
+        <button className="text-text-muted hover:text-text-primary focus:outline-none focus:ring-2 focus:ring-brand-primary rounded"><span aria-label="Notifications">🔔</span></button>
         <div className="w-8 h-8 rounded-full bg-brand-primary text-white flex items-center justify-center text-sm font-medium">
           P
         </div>
