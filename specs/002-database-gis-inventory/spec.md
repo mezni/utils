@@ -23,7 +23,7 @@ A developer sets up the database from scratch by running migrations. The invento
 1. **Given** a fresh PostgreSQL 16 database with PostGIS 3.4, **When** all migrations run from start to finish, **Then** no errors occur and all four inventory tables exist
 2. **Given** the inventory schema exists, **When** a developer inspects `inventory.partner`, **Then** it has columns `id` (TEXT, PK), `name` (TEXT, NOT NULL), and `created_at` (TIMESTAMPTZ, DEFAULT now())
 3. **Given** the inventory schema exists, **When** a developer inspects `inventory.station`, **Then** it has a foreign key to `inventory.partner(id)` and latitude/longitude columns are NOT NULL
-4. **Given** the inventory schema exists, **When** a developer inspects `inventory.charger`, **Then** it has a foreign key to `inventory.station(id)` and a default status of 'available'
+4. **Given** the inventory schema exists, **When** a developer inspects `inventory.charger`, **Then** it has a foreign key to `inventory.station(id)` and a default status of 'Available'
 5. **Given** the inventory schema exists, **When** a developer runs the migrations a second time, **Then** no errors occur (idempotent)
 
 ---
@@ -74,7 +74,7 @@ A developer runs seed scripts after migrations and has realistic sample data in 
 
 - **FR-001**: Three database extensions MUST be installed: PostGIS, uuid-ossp, and pgcrypto. All must be idempotent (IF NOT EXISTS).
 - **FR-002**: Two PostgreSQL schemas MUST be created: `inventory` and `gis`. Creation must be idempotent.
-- **FR-003**: The `inventory` schema MUST contain four tables: `partner`, `station`, `charger`, and `station_availability`, matching the column definitions in the schema reference.
+- **FR-003**: The `inventory` schema MUST contain four tables: `partner`, `station`, `charger`, and `station_availability`, matching the column definitions in the schema reference. The `charger.connector_type` column MUST accept the values `Type2`, `Type2Combo`, `Chademo`, `CCS`, `Schuko`, `Wall` (matching the ev-core `ConnectorType` enum variants).
 - **FR-004**: Foreign key constraints MUST exist: `station.partner_id → partner.id`, `charger.station_id → station.id`, `station_availability.station_id → station.id`. Station latitude and longitude MUST be NOT NULL.
 - **FR-005**: Inventory indexes MUST exist: composite on `station(latitude, longitude)`, and individual indexes on `station(partner_id)`, `charger(station_id)`, and `station_availability(station_id)`.
 - **FR-006**: The `gis` schema MUST contain six tables: `osm_nodes`, `osm_ways`, `roads`, `boundaries`, `amenity_points`, and `station_locations`, matching the column definitions in the schema reference.
@@ -89,7 +89,7 @@ A developer runs seed scripts after migrations and has realistic sample data in 
 
 - **Partner**: An organization that owns charging stations. Has a NanoID (PRT-...) and a display name.
 - **Station**: A physical location with one or more chargers. Belongs to a partner. Has coordinates, name, and optional address.
-- **Charger**: An individual charging unit at a station. Has a connector type, power rating, and status. Belongs to a station.
+- **Charger**: An individual charging unit at a station. Has a connector type (matching ev-core `ConnectorType` enum: Type2, Type2Combo, Chademo, CCS, Schuko, Wall), power rating (kW), and status. Belongs to a station.
 - **StationAvailability**: The operational status of a station (available, unavailable, partial). Tracks who updated it and when.
 - **StationLocation** (gis schema): The PostGIS point geometry for a station, derived from inventory.station. Includes nearest road and region references.
 - **Roads, Boundaries, OSM Nodes/Ways, AmenityPoints** (gis schema): Spatial reference tables imported from OpenStreetMap data for route snapping, region lookup, and points of interest.
@@ -112,3 +112,9 @@ A developer runs seed scripts after migrations and has realistic sample data in 
 - The migration runner executes `.sql` files in filename order (0001, 0002, ... 0006)
 - No migration will ever be edited after it is committed (per constitution rule)
 - The `gis.station_locations` table is created with a foreign key to `inventory.station` but the GIS sync trigger (populating snapped_road_id, region_id) is deferred to Sprint 6.x
+
+## Clarifications
+
+### Session 2026-06-07
+
+- Q: Which connector type values should the migrations use — the schema reference values (type2, ccs, chademo, type1) or the ev-core crate enum variants (Type2, Type2Combo, Chademo, CCS, Schuko, Wall)? → A: Align with ev-core enum — migrations must store `Type2`, `Type2Combo`, `Chademo`, `CCS`, `Schuko`, `Wall` to match serialized enum values used by the application layer.
