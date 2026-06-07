@@ -1,3 +1,19 @@
+<!--
+  Sync Impact Report
+  Version change: 1.0.0 → 1.1.0
+  Modified principles:
+    - VII: "French Language First" → "English & French" (language support expanded)
+    - IX: API prefix updated from /api to /api/v1 (versioned API path)
+  Added sections: None
+  Removed sections: None
+  Templates requiring updates:
+    - plan-template.md ✅ (generic, no changes needed)
+    - spec-template.md ✅ (generic, no changes needed)
+    - tasks-template.md ✅ (generic, no changes needed)
+    - checklist-template.md ✅ (generic, no changes needed)
+  Follow-up TODOs: None
+-->
+
 # BorneMap Constitution
 
 ## Core Principles
@@ -37,7 +53,7 @@ All backend service endpoints are served under the /api/v1 prefix. No endpoint i
 - **Database**: PostgreSQL 16 + PostGIS 3.4
 - **Auth**: Keycloak 24
 - **Infrastructure**: Bare metal + Docker Compose + Traefik
-- **Package Management**: Cargo workspace (Rust), pnpm workspace (JS/TS)
+- **Package Management**: Cargo workspace (Rust), npm workspace (JS/TS)
 - **CI/CD**: GitHub Actions
 
 ## Data Architecture
@@ -75,4 +91,4 @@ This constitution supersedes all other practices. Amendments require an ADR with
 
 See `docs/planning/planning-bug-tracker.md` for current sprint details.
 
-**Version**: 1.0.0 | **Ratified**: 2026-06-07 | **Last Amended**: 2026-06-07
+**Version**: 1.1.0 | **Ratified**: 2026-06-07 | **Last Amended**: 2026-06-07

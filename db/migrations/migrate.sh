@@ -55,16 +55,16 @@ if [ -z "$MIGRATION_FILES" ]; then
 fi
 
 print_success "Found migration files:"
-echo "$MIGRATION_FILES" | while read -r file; do
+while read -r file; do
     echo "  - $(basename "$file")"
-done
+done <<< "$MIGRATION_FILES"
 
 # Apply each migration file
 print_info "Applying migrations..."
 COUNTER=0
 TOTAL=$(echo "$MIGRATION_FILES" | wc -l)
 
-echo "$MIGRATION_FILES" | while read -r file; do
+while read -r file; do
     COUNTER=$((COUNTER + 1))
     BASENAME=$(basename "$file")
     echo -e "${YELLOW}[$COUNTER/$TOTAL] Applying $BASENAME...${NC}"
@@ -76,7 +76,7 @@ echo "$MIGRATION_FILES" | while read -r file; do
         echo -e "${RED}Error: Failed to apply $BASENAME${NC}"
         exit 1
     fi
-done
+done <<< "$MIGRATION_FILES"
 
 print_success "All migrations applied successfully!"
 

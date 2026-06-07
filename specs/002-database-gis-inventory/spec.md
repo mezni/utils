@@ -63,7 +63,7 @@ A developer runs seed scripts after migrations and has realistic sample data in 
 ### Edge Cases
 
 - **Running migrations on an already-migrated database**: All migrations must be idempotent — running them a second time must not produce errors or duplicate rows
-- **Seed data idempotency**: Running seed scripts a second time must not create duplicate records or violate unique constraints
+- **Seed data idempotency**: Running seed scripts a second time must not create duplicate records or violate unique constraints. Each seed file MUST use `TRUNCATE table CASCADE` followed by INSERT statements to ensure clean state on each run.
 - **PostGIS already installed**: The PostGIS extension creation must gracefully handle the case where it is already present
 - **Partial migration failure**: If a migration fails partway through, the runner must stop and report the error clearly, leaving the database in a recoverable state
 - **Missing migration directory**: The migration runner must handle missing or empty migration/seed directories gracefully
@@ -74,13 +74,13 @@ A developer runs seed scripts after migrations and has realistic sample data in 
 
 - **FR-001**: Three database extensions MUST be installed: PostGIS, uuid-ossp, and pgcrypto. All must be idempotent (IF NOT EXISTS).
 - **FR-002**: Two PostgreSQL schemas MUST be created: `inventory` and `gis`. Creation must be idempotent.
-- **FR-003**: The `inventory` schema MUST contain four tables: `partner`, `station`, `charger`, and `station_availability`, matching the column definitions in the schema reference. The `charger.connector_type` column MUST accept the values `Type2`, `Type2Combo`, `Chademo`, `CCS`, `Schuko`, `Wall` (matching the ev-core `ConnectorType` enum variants).
+- **FR-003**: The `inventory` schema MUST contain four tables: `partner`, `station`, `charger`, and `station_availability`, matching the column definitions in the schema reference. The `charger.connector_type` column MUST accept the values `Type2`, `Type2Combo`, `Chademo`, `CCS`, `Schuko`, `Wall` (matching the ev-core `ConnectorType` enum variants). Application code MUST validate connector_type values before database insert/update to provide helpful error messages; database MUST enforce this constraint via CHECK constraint.
 - **FR-004**: Foreign key constraints MUST exist: `station.partner_id → partner.id`, `charger.station_id → station.id`, `station_availability.station_id → station.id`. Station latitude and longitude MUST be NOT NULL.
 - **FR-005**: Inventory indexes MUST exist: composite on `station(latitude, longitude)`, and individual indexes on `station(partner_id)`, `charger(station_id)`, and `station_availability(station_id)`.
 - **FR-006**: The `gis` schema MUST contain six tables: `osm_nodes`, `osm_ways`, `roads`, `boundaries`, `amenity_points`, and `station_locations`, matching the column definitions in the schema reference.
 - **FR-007**: GiST indexes MUST exist on the geometry column of each GIS table: `osm_nodes(geom)`, `osm_ways(geom)`, `roads(geom)`, `boundaries(geom)`, `amenity_points(geom)`, and `station_locations(geom)`.
-- **FR-008**: A migration runner script MUST exist at `db/migrations/migrate.sh` that applies all `.sql` files in `db/migrations/` in ascending numeric order and stops on first error.
-- **FR-009**: The migration runner MUST accept a `DATABASE_URL` environment variable for the database connection.
+- **FR-008**: A migration runner script MUST exist at `db/migrations/migrate.sh` that applies all `.sql` files in `db/migrations/` in ascending numeric order and stops on first error. When an error occurs, the runner MUST provide contextual error messages including migration filename, relevant table/column names, PostgreSQL error code/type, and the SQL action that failed (e.g., "ERROR 42P01: relation partner does not exist in migration 0003_inventory_tables.sql"). On success, the runner MUST show brief progress messages (one-line confirmation per migration). Credentials MUST be passed via environment variable, never hardcoded.
+- **FR-009**: The migration runner MUST accept a `DATABASE_URL` environment variable for the database connection. The variable MUST contain full connection string (user, password, host, port, database name).
 - **FR-010**: Seed scripts MUST exist in `db/seeds/` — `dev_partners.sql` (3 partners), `dev_stations.sql` (15 stations), and `dev_chargers.sql` (24 chargers) — with data referencing Tunisia locations.
 - **FR-011**: All migrations MUST be individually idempotent (safe to re-run using IF NOT EXISTS / IF EXISTS patterns).
 - **FR-012**: The three database extensions MUST be the only extensions installed by this sprint.
@@ -118,3 +118,8 @@ A developer runs seed scripts after migrations and has realistic sample data in 
 ### Session 2026-06-07
 
 - Q: Which connector type values should the migrations use — the schema reference values (type2, ccs, chademo, type1) or the ev-core crate enum variants (Type2, Type2Combo, Chademo, CCS, Schuko, Wall)? → A: Align with ev-core enum — migrations must store `Type2`, `Type2Combo`, `Chademo`, `CCS`, `Schuko`, `Wall` to match serialized enum values used by the application layer.
+- Q: How should the migration runner manage database credentials and sensitive connection information? → A: Environment variable (DATABASE_URL) - Credentials stored in env var, never in script files. Standard, secure practice.
+- Q: What level of error detail should the migration runner provide to developers when failures occur? → A: Contextual messages - Include migration filename, table/column names, PostgreSQL error code/type, and action attempted (e.g., "ERROR 42P01: relation partner does not exist in migration 0003_inventory_tables.sql").
+- Q: What approach should be used to ensure seed data scripts can be re-run safely without duplicating records? → A: TRUNCATE + INSERT - Each seed file begins with `TRUNCATE table_name CASCADE` followed by INSERT statements. Simple, reliable, ensures clean state on each run.
+- Q: How verbose should the migration runner's success messages be during normal operation? → A: Brief progress messages - Show one-line confirmation per migration (e.g., "✓ Applied 0001_extensions.sql", "✓ Applied 0002_schemas.sql").
+- Q: Should application layer code perform validation on connector type values before storing them in the database? → A: Both layers - Database CHECK constraint + application validation. Database enforces rule; app provides helpful error messages and faster feedback. Defense-in-depth approach.

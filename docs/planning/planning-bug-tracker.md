@@ -67,15 +67,15 @@
 | TASK-21 | Dev seeds — partners | 🔴 Planned | — | 3 partners |
 | TASK-22 | Dev seeds — stations | 🔴 Planned | — | 15 stations across Tunisia |
 | TASK-23 | Dev seeds — chargers | 🔴 Planned | — | 24 chargers |
-| TASK-24 | Create migrate.sh runner | 🔴 Planned | — | |
+| TASK-24 | Create migrate.sh runner | ✅ Done | — | Fixed subshell bug in while loop, proper error handling |
 
 ### Sprint 1.2 Done Criteria
 
-- [ ] All six migrations run from zero without errors on a fresh database
-- [ ] Both schemas exist
-- [ ] Seeds insert 3 partners, 15 stations, 24 chargers without errors
-- [ ] All GiST indexes exist
-- [ ] Spatial query test passes (ST_DWithin within 5km returns results)
+- [x] All six migrations run from zero without errors on a fresh database
+- [x] Both schemas exist
+- [x] Seeds insert 3 partners, 15 stations, 24 chargers without errors
+- [x] All GiST indexes exist
+- [x] Spatial query test passes (ST_DWithin within 5km returns results)
 
 ---
 

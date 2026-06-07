@@ -11,8 +11,8 @@
 
 | Sprint | Durée | Statut | Complétion |
 |---|---|---|---|
-| 1.1 — Monorepo et CI/CD | 2 semaines | 🔴 Not Started | 0% |
-| 1.2 — Base de données | 2 semaines | 🔴 Not Started | 0% |
+| 1.1 — Monorepo et CI/CD | 2 semaines | 🟢 Complete | 100% |
+| 1.2 — Base de données | 2 semaines | 🟢 Complete | 100% |
 | 1.3 — Driver Service | 2 semaines | 🔴 Not Started | 0% |
 | 1.4 — Admin Service | 2 semaines | 🔴 Not Started | 0% |
 | 1.5 — Frontend Apps | 2 semaines | 🔴 Not Started | 0% |
@@ -24,8 +24,8 @@
 
 - [ ] `cargo build --all` succeeds with zero warnings
 - [ ] `cargo test --all` passes
-- [ ] `pnpm build` succeeds for driver-web and dashboard
-- [ ] `pnpm tsc --noEmit` passes for driver-mobile
+- [ ] `npm build` succeeds for driver-web and dashboard
+- [ ] `npm tsc --noEmit` passes for driver-mobile
 - [ ] All six CI workflows pass on main branch
 - [ ] Both services start in Docker Compose and pass health checks
 - [ ] GET /api/v1/health returns ok with db:ok on both services
