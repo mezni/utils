@@ -1,5 +1,5 @@
 <!-- SPECKIT START -->
-Current plan: specs/002-database-gis-inventory/plan.md
-Database migrations for inventory (partner, station, charger, availability) and GIS (OSM spatial tables, station locations) schemas.
-PostgreSQL 16, PostGIS 3.4, 6 SQL migrations, 3 seed files, bash migration runner.
+Current plan: specs/003-driver-service/plan.md
+Driver Service API endpoints for discovering charging stations nearby with health check and spatial queries using PostgreSQL + PostGIS.
+Rust, Actix-web, integration tests, Docker containerization.
 <!-- SPECKIT END -->
