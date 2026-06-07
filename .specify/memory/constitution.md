@@ -19,15 +19,15 @@ Introduce complexity only when current scale justifies it. Premature optimizatio
 
 ### VI. Public Access is a First-Class Concern
 Anonymous public browsing must always work. Authentication must never be required to view stations, markers, or search results. Auth is only triggered at the moment a gated action is attempted.
+### VII. English & French
 
-### VII. French Language First
-The platform UI and documentation target French as the primary language. RTL layout and Arabic support are not in scope.
+The platform UI and documentation support English and French. RTL layout and Arabic support are not in scope.
 
 ### VIII. Visual Consistency Across All Surfaces
 All applications share the same design token foundation. Brand identity, color semantics, spacing, and typography are defined once in packages/ui and consumed everywhere. No hardcoded visual values anywhere in application code.
 
 ### IX. API Prefix Consistency
-All backend service endpoints are served under the /api prefix. No endpoint is exposed without this prefix.
+All backend service endpoints are served under the /api/v1 prefix. No endpoint is exposed without this prefix.
 
 ## Technology Stack
 
@@ -54,8 +54,8 @@ Cross-schema access rules are enforced by service boundaries. No service writes 
 
 - inventory.station is the source of truth for stations
 - gis is never the master of any business entity
-- All endpoints served under /api prefix
-- Every service exposes GET /api/health with database check
+- All endpoints served under /api/v1 prefix
+- Every service exposes GET /api/v1/health with database check
 - Every service runs migrations on startup before accepting requests
 - All SQL uses bind parameters — no string interpolation
 - Public driver access requires no login at any point
@@ -69,7 +69,7 @@ Cross-schema access rules are enforced by service boundaries. No service writes 
 
 ## Governance
 
-This constitution supersedes all other practices. Amendments require an ADR with clear rationale and migration plan. All PRs/reviews must verify constitution compliance. Complexity must be justified. The working language for all documentation, code comments, and communication is French.
+This constitution supersedes all other practices. Amendments require an ADR with clear rationale and migration plan. All PRs/reviews must verify constitution compliance. Complexity must be justified. Documentation and code comments are written in English. UI text supports English and French.
 
 ## Phase 1 — Foundation (Active)
 

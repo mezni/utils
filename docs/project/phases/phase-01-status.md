@@ -28,8 +28,8 @@
 - [ ] `pnpm tsc --noEmit` passes for driver-mobile
 - [ ] All six CI workflows pass on main branch
 - [ ] Both services start in Docker Compose and pass health checks
-- [ ] GET /api/health returns ok with db:ok on both services
-- [ ] GET /api/stations/nearby returns real stations from seeds
+- [ ] GET /api/v1/health returns ok with db:ok on both services
+- [ ] GET /api/v1/stations/nearby returns real stations from seeds
 - [ ] All 15 admin CRUD endpoints tested and working
 - [ ] Driver Web shows map with station markers from real API
 - [ ] Driver Mobile shows map with station markers from real API
@@ -37,7 +37,7 @@
 - [ ] Location permission denial handled gracefully on mobile
 - [ ] Zero Class A bugs open
 - [ ] docs/guides/onboarding.md complete and tested
-- [ ] docs/api/ documents for both services written
+- [ ] docs/api/v1/ documents for both services written
 
 ---
 

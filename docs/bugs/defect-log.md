@@ -30,8 +30,8 @@
 
 - Wrong data returned
 - Auth bypass
-- RTL layout broken (not applicable — French only)
+- RTL layout broken (not applicable — English/French only)
 - Spatial index missing
 - SQL injection possible
-- Endpoint missing /api prefix
+- Endpoint missing /api/v1 prefix
 - Migration fails on clean database

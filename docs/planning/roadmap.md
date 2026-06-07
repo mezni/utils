@@ -97,7 +97,7 @@ Key deliverables:
 | Payments / billing | Separate payment provider integration |
 | Routing / navigation | Navigation SDK integration |
 | Push notifications | Requires push notification service |
-| Arabic / RTL support | Simplified: French only for now |
+| Arabic / RTL support | English and French only |
 | ev-geo crate (Rust geo library) | Deferred — SQL/PostGIS sufficient for Phase 1-6 |
 | RabbitMQ / message queue | ADR-004 — direct insert sufficient |
 | Kubernetes | ADR-006 — Docker Compose sufficient |

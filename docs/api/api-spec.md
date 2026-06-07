@@ -2,14 +2,14 @@
 
 **Phase**: 1 — Foundation
 **Related Tasks**: TASK-25 through TASK-42
-**Base Path**: `/api`
+**Base Path**: `/api/v1`
 **Last Updated**: 2026-06-07
 
 ---
 
 ## Conventions
 
-- All endpoints are served under the `/api` prefix
+- All endpoints are served under the `/api/v1` prefix
 - Request and response bodies are JSON
 - Errors follow a consistent format:
   ```json
@@ -27,12 +27,12 @@
 ## Driver Service
 
 **Service Port**: 8080 (internal)
-**Base URL**: `/api`
+**Base URL**: `/api/v1`
 
 ### Health Check
 
 ```
-GET /api/health
+GET /api/v1/health
 ```
 
 **Response 200**:
@@ -56,7 +56,7 @@ GET /api/health
 ### Nearby Stations
 
 ```
-GET /api/stations/nearby
+GET /api/v1/stations/nearby
 ```
 
 **Query Parameters**:
@@ -94,12 +94,12 @@ GET /api/stations/nearby
 ## Admin Service
 
 **Service Port**: 8081 (internal)
-**Base URL**: `/api`
+**Base URL**: `/api/v1`
 
 ### Health Check
 
 ```
-GET /api/health
+GET /api/v1/health
 ```
 
 Same response format as Driver Service.
@@ -109,7 +109,7 @@ Same response format as Driver Service.
 #### Create Partner
 
 ```
-POST /api/partners
+POST /api/v1/partners
 ```
 
 **Request Body**:
@@ -131,7 +131,7 @@ POST /api/partners
 #### List Partners
 
 ```
-GET /api/partners
+GET /api/v1/partners
 ```
 
 **Response 200**:
@@ -151,7 +151,7 @@ GET /api/partners
 #### Get Partner
 
 ```
-GET /api/partners/{id}
+GET /api/v1/partners/{id}
 ```
 
 **Response 200**: Single partner object
@@ -160,7 +160,7 @@ GET /api/partners/{id}
 #### Update Partner
 
 ```
-PUT /api/partners/{id}
+PUT /api/v1/partners/{id}
 ```
 
 **Request Body**:
@@ -176,7 +176,7 @@ PUT /api/partners/{id}
 #### Delete Partner
 
 ```
-DELETE /api/partners/{id}
+DELETE /api/v1/partners/{id}
 ```
 
 **Response 204**: No content
@@ -189,7 +189,7 @@ DELETE /api/partners/{id}
 #### Create Station
 
 ```
-POST /api/stations
+POST /api/v1/stations
 ```
 
 **Request Body**:
@@ -220,7 +220,7 @@ POST /api/stations
 #### List Stations
 
 ```
-GET /api/stations
+GET /api/v1/stations
 ```
 
 **Query Parameters**:
@@ -241,7 +241,7 @@ GET /api/stations
 #### Get Station
 
 ```
-GET /api/stations/{id}
+GET /api/v1/stations/{id}
 ```
 
 **Response 200**: Single station object
@@ -250,7 +250,7 @@ GET /api/stations/{id}
 #### Update Station
 
 ```
-PUT /api/stations/{id}
+PUT /api/v1/stations/{id}
 ```
 
 **Request Body** (all fields optional):
@@ -269,7 +269,7 @@ PUT /api/stations/{id}
 #### Delete Station
 
 ```
-DELETE /api/stations/{id}
+DELETE /api/v1/stations/{id}
 ```
 
 **Response 204**: No content
@@ -282,7 +282,7 @@ DELETE /api/stations/{id}
 #### Create Charger
 
 ```
-POST /api/chargers
+POST /api/v1/chargers
 ```
 
 **Request Body**:
@@ -310,7 +310,7 @@ POST /api/chargers
 #### List Chargers
 
 ```
-GET /api/chargers
+GET /api/v1/chargers
 ```
 
 **Query Parameters**:
@@ -329,7 +329,7 @@ GET /api/chargers
 #### Get Charger
 
 ```
-GET /api/chargers/{id}
+GET /api/v1/chargers/{id}
 ```
 
 **Response 200**: Single charger object
@@ -338,7 +338,7 @@ GET /api/chargers/{id}
 #### Update Charger
 
 ```
-PUT /api/chargers/{id}
+PUT /api/v1/chargers/{id}
 ```
 
 **Request Body**:
@@ -355,7 +355,7 @@ PUT /api/chargers/{id}
 #### Delete Charger
 
 ```
-DELETE /api/chargers/{id}
+DELETE /api/v1/chargers/{id}
 ```
 
 **Response 204**: No content

@@ -18,7 +18,7 @@ Use React 18 with Vite 5 for web applications.
 - Tailwind CSS integration is straightforward with Vite
 - No server-side rendering needed (static SPA is sufficient for this use case)
 - Lighter than Next.js — no Node.js server in production
-- Vite's proxy configuration simplifies development (proxy /api to backend services)
+- Vite's proxy configuration simplifies development (proxy /api/v1 to backend services)
 
 ## Consequences
 

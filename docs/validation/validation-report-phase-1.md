@@ -30,8 +30,8 @@
 
 | Criterion | Status | Notes |
 |---|---|---|
-| GET /api/health returns ok | 🔴 Pending | |
-| GET /api/stations/nearby returns data | 🔴 Pending | |
+| GET /api/v1/health returns ok | 🔴 Pending | |
+| GET /api/v1/stations/nearby returns data | 🔴 Pending | |
 | Integration tests pass | 🔴 Pending | |
 | Service starts via Docker Compose | 🔴 Pending | |
 
@@ -65,4 +65,4 @@
 | All CI workflows pass on main | 🔴 Pending | |
 | Location permission denial handled | 🔴 Pending | |
 | docs/guides/onboarding.md complete | 🔴 Pending | |
-| docs/api/ documents written | 🔴 Pending | |
+| docs/api/v1/ documents written | 🔴 Pending | |

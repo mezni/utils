@@ -123,8 +123,8 @@ Cela lance : postgres, pgadmin, driver-service, admin-service.
 Vérifier les health checks :
 
 ```bash
-curl http://localhost:8080/api/health
-curl http://localhost:8081/api/health
+curl http://localhost:8080/api/v1/health
+curl http://localhost:8081/api/v1/health
 ```
 
 ---

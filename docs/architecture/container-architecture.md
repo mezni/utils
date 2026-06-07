@@ -46,7 +46,7 @@
                            ▼
                     ┌──────────────┐
                     │   Traefik    │
-                    │  /api/*      │
+                    │  /api/v1/*      │
                     └──────┬───────┘
                            │
               ┌────────────┼────────────┐
@@ -67,7 +67,7 @@
 - Language: Rust (Actix-web)
 - Port: 8080 (internal)
 - Image: Built locally from `services/driver-service/Dockerfile`
-- Health: `GET /api/health`
+- Health: `GET /api/v1/health`
 - Owns: Public station discovery, driver profile, favorites, reviews
 - Reads: inventory, gis
 - Writes: users
@@ -76,7 +76,7 @@
 - Language: Rust (Actix-web)
 - Port: 8081 (internal)
 - Image: Built locally from `services/admin-service/Dockerfile`
-- Health: `GET /api/health`
+- Health: `GET /api/v1/health`
 - Owns: Partner/Station/Charger CRUD, reporting
 - Writes: inventory
 - Reads: inventory, users, analytics
@@ -89,7 +89,7 @@
 ### Traefik
 - Image: `traefik:v3`
 - Ports: 80 (HTTP), 443 (HTTPS)
-- Routes: `/api/*` to internal services by domain/path
+- Routes: `/api/v1/*` to internal services by domain/path
 - TLS: Let's Encrypt automatic certificates
 
 ### pgAdmin (Development Only)
@@ -109,5 +109,5 @@ See `infra/compose/docker-compose.yml` for the full configuration.
 
 ### Health Check Chain
 - PostgreSQL → pg_isready
-- Rust services → GET /api/health (validates database connectivity)
+- Rust services → GET /api/v1/health (validates database connectivity)
 - Docker depends_on with `condition: service_healthy`

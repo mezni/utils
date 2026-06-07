@@ -63,7 +63,7 @@ The platform follows a **pragmatic monolith** approach: multiple services owned 
 ## Communication Patterns
 
 - **Service-to-Database**: Direct SQL via sqlx with bind parameters. No ORM.
-- **Public-to-Service**: HTTP via Traefik reverse proxy. All endpoints under /api prefix.
+- **Public-to-Service**: HTTP via Traefik reverse proxy. All endpoints under /api/v1 prefix.
 - **Frontend-to-Backend**: REST/JSON via typed API client packages.
 - **Inter-service**: None in Phase 1. Services do not call each other.
 - **Asynchronous**: None in Phase 1. Future analytics events use direct HTTP POST.
@@ -78,9 +78,9 @@ Internet
     ▼
   Traefik (ports 80/443)
     │
-    ├── /api/* → driver-service:8080  (public discovery)
-    ├── /api/* → admin-service:8081   (admin/partner CRUD)
-    └── /api/* → clickstream-service:8082 (analytics - Phase 5)
+    ├── /api/v1/* → driver-service:8080  (public discovery)
+    ├── /api/v1/* → admin-service:8081   (admin/partner CRUD)
+    └── /api/v1/* → clickstream-service:8082 (analytics - Phase 5)
 ```
 
 All Rust services expose internal ports only. Traefik is the sole public entrypoint.

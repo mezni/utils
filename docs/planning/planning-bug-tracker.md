@@ -4,7 +4,7 @@
 
 **Platform**: EV station discovery and management for Tunisia
 **Stack**: Rust + React + React Native + PostgreSQL/PostGIS + Keycloak
-**Language**: French (primary)
+**Language**: English, French
 **Repository**: github.com/mezni/BorneMap
 
 ---
@@ -90,8 +90,8 @@
 |---|---|---|---|---|
 | TASK-25 | Driver Service — Cargo.toml and structure | 🔴 Planned | — | |
 | TASK-26 | Driver Service — Config, errors | 🔴 Planned | — | |
-| TASK-27 | Driver Service — Health endpoint | 🔴 Planned | — | GET /api/health |
-| TASK-28 | Driver Service — Stations nearby endpoint | 🔴 Planned | — | GET /api/stations/nearby |
+| TASK-27 | Driver Service — Health endpoint | 🔴 Planned | — | GET /api/v1/health |
+| TASK-28 | Driver Service — Stations nearby endpoint | 🔴 Planned | — | GET /api/v1/stations/nearby |
 | TASK-29 | Driver Service — Router configuration | 🔴 Planned | — | |
 | TASK-30 | Driver Service — Main with migrations | 🔴 Planned | — | |
 | TASK-31 | Driver Service — Dockerfile | 🔴 Planned | — | Multi-stage Rust build |
@@ -99,8 +99,8 @@
 
 ### Sprint 1.3 Done Criteria
 
-- [ ] GET /api/health returns `{"status":"ok","service":"driver-service","db":"ok"}`
-- [ ] GET /api/stations/nearby?lat=36.8188&lng=10.1657&radius_km=5 returns stations from seeds
+- [ ] GET /api/v1/health returns `{"status":"ok","service":"driver-service","db":"ok"}`
+- [ ] GET /api/v1/stations/nearby?lat=36.8188&lng=10.1657&radius_km=5 returns stations from seeds
 - [ ] Both integration tests pass
 - [ ] Service starts and connects to PostgreSQL via Docker Compose
 - [ ] CI pipeline passes for driver-service
@@ -118,22 +118,22 @@
 |---|---|---|---|---|
 | TASK-33 | Admin Service — Cargo.toml and structure | 🔴 Planned | — | |
 | TASK-34 | Admin Service — Config, errors | 🔴 Planned | — | |
-| TASK-35 | Admin Service — Health endpoint | 🔴 Planned | — | GET /api/health |
+| TASK-35 | Admin Service — Health endpoint | 🔴 Planned | — | GET /api/v1/health |
 | TASK-36 | Admin Service — Partner CRUD (5 endpoints) | 🔴 Planned | — | POST/GET/GET/PUT/DELETE |
 | TASK-37 | Admin Service — Station CRUD (5 endpoints) | 🔴 Planned | — | POST/GET/GET/PUT/DELETE |
 | TASK-38 | Admin Service — Charger CRUD (5 endpoints) | 🔴 Planned | — | POST/GET/GET/PUT/DELETE |
-| TASK-39 | Admin Service — Router configuration | 🔴 Planned | — | All 15 endpoints under /api |
+| TASK-39 | Admin Service — Router configuration | 🔴 Planned | — | All 15 endpoints under /api/v1 |
 | TASK-40 | Admin Service — Main with migrations | 🔴 Planned | — | |
 | TASK-41 | Admin Service — Dockerfile | 🔴 Planned | — | Multi-stage Rust build |
 | TASK-42 | Admin Service — Integration tests | 🔴 Planned | — | Partners, stations, chargers |
 
 ### Sprint 1.4 Done Criteria
 
-- [ ] GET /api/health returns 200
+- [ ] GET /api/v1/health returns 200
 - [ ] All 15 CRUD endpoints return correct responses
-- [ ] POST /api/partners creates a partner with PRT-... ID
-- [ ] POST /api/stations creates a station for that partner
-- [ ] POST /api/chargers creates a charger for that station
+- [ ] POST /api/v1/partners creates a partner with PRT-... ID
+- [ ] POST /api/v1/stations creates a station for that partner
+- [ ] POST /api/v1/chargers creates a charger for that station
 - [ ] All integration tests pass
 - [ ] CI pipeline passes for admin-service
 
@@ -150,7 +150,7 @@
 |---|---|---|---|---|
 | TASK-43 | Driver Web — Project setup (Vite + React + Tailwind) | 🔴 Planned | — | |
 | TASK-44 | Driver Web — MapPage with Leaflet | 🔴 Planned | — | Map + station markers from real API |
-| TASK-45 | Driver Web — Proxy config for /api | 🔴 Planned | — | Vite proxy to driver-service |
+| TASK-45 | Driver Web — Proxy config for /api/v1 | 🔴 Planned | — | Vite proxy to driver-service |
 | TASK-46 | Driver Mobile — Project setup (Expo SDK 54) | 🔴 Planned | — | |
 | TASK-47 | Driver Mobile — MapScreen with react-native-maps | 🔴 Planned | — | MapView + markers from real API |
 | TASK-48 | Driver Mobile — Location permission handling | 🔴 Planned | — | Graceful denial → default coords |
@@ -182,8 +182,8 @@
 | TASK-53 | Frontend fix sweep | 🔴 Planned | — | Network calls, mobile layout, responsive, graceful errors |
 | TASK-54 | CI verification | 🔴 Planned | — | Break commits, verify workflow triggers |
 | TASK-55 | Write onboarding guide | 🔴 Planned | — | docs/guides/onboarding.md |
-| TASK-56 | Write API docs for driver-service | 🔴 Planned | — | docs/api/driver-service.md |
-| TASK-57 | Write API docs for admin-service | 🔴 Planned | — | docs/api/admin-service.md |
+| TASK-56 | Write API docs for driver-service | 🔴 Planned | — | docs/api/v1/driver-service.md |
+| TASK-57 | Write API docs for admin-service | 🔴 Planned | — | docs/api/v1/admin-service.md |
 | TASK-58 | Write Phase 1 status report | 🔴 Planned | — | docs/project/phases/phase-01-status.md |
 
 ### Phase 1 Done Criteria
@@ -194,8 +194,8 @@
 - [ ] `pnpm tsc --noEmit` passes for driver-mobile
 - [ ] All six CI workflows pass on main branch
 - [ ] Both services start in Docker Compose and pass health checks
-- [ ] GET /api/health returns ok with db:ok on both services
-- [ ] GET /api/stations/nearby returns real stations from seeds
+- [ ] GET /api/v1/health returns ok with db:ok on both services
+- [ ] GET /api/v1/stations/nearby returns real stations from seeds
 - [ ] All 15 admin CRUD endpoints tested and working
 - [ ] Driver Web shows map with station markers from real API
 - [ ] Driver Mobile shows map with station markers from real API
@@ -203,7 +203,7 @@
 - [ ] Location permission denial handled gracefully on mobile
 - [ ] Zero Class A bugs open
 - [ ] docs/guides/onboarding.md complete and tested
-- [ ] docs/api/ documents for both services written
+- [ ] docs/api/v1/ documents for both services written
 
 ---
 
@@ -224,7 +224,7 @@
 | Routing / navigation | Out of scope per constitution | Future phase |
 | Push notifications | Deferred per constitution | Future phase |
 | Real-time availability (OCPP-driven) | Deferred per constitution | Future phase |
-| Arabic / RTL support | Simplified: French only for now | Future phase |
+| Arabic / RTL support | Not in scope for current phase | Future phase |
 | Keycloak / auth integration | Phase 2 | Sprint 2.x |
 | Clickstream Service / analytics | Phase 2+ | Sprint 2.x |
 | ev-auth shared crate | Phase 2 | Sprint 2.x |
@@ -239,7 +239,7 @@
 - Route planning / navigation
 - Real-time charger availability via OCPP
 - Push notifications
-- Arabic / RTL support
+- Arabic / RTL support (English and French only)
 - Kubernetes or container orchestration
 - Image registry (images built on host)
 - Automated deployment
