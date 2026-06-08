@@ -28,6 +28,7 @@ All accepted decisions recorded as ADRs. Start with the index in `constitution.m
 - **[docs/project/bugs.md](project/bugs.md)** — Bug tracker with classification system
 - **[docs/project/decisions.md](project/decisions.md)** — Small decisions that don't rise to ADR level
 - **[docs/project/phases/mvp-01-status.md](project/phases/mvp-01-status.md)** — Current MVP phase status, sprint breakdown, and done criteria
+- **[docs/project/sprints/sprint-1.1-completed.md](project/sprints/sprint-1.1-completed.md)** — Sprint 1.1 completion report (API Versioning & Backend)
 
 ## API and Database
 
@@ -107,4 +108,4 @@ All accepted decisions recorded as ADRs. Start with the index in `constitution.m
 
 ---
 
-**Last Updated**: Sprint 1.1 (in progress)
+**Last Updated**: Sprint 1.1 (✅ COMPLETED - June 8, 2026)
