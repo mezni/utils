@@ -274,26 +274,29 @@ All project documentation is in `docs/`:
 - When in doubt, inspect config files and scripts (sources of truth) before guessing at conventions.
 
 <!-- SPECKIT START -->
-**Current Feature**: API Versioning (Sprint 1.1)
+**Current Feature**: Dashboard App (Sprint 1.2)
 
 **Feature Branch**: `001-backend-and-database`
 
-**Feature Directory**: `specs/001-backend-and-database/`
+**Feature Directory**: `specs/002-dashboard-app/`
 
 **Plan Files**:
-- **spec.md** — Feature specification (clarified, ready for implementation)
-- **plan.md** — Implementation plan with technical context and constitution check
-- **research.md** — Phase 0 research findings (versioning strategy decisions)
-- **data-model.md** — Phase 1 design (router-based v1 architecture)
-- **contracts/api-v1.md** — API contract (frozen v1 endpoints)
-- **quickstart.md** — Developer quickstart guide for implementing versioning
+- **spec.md** — Feature specification (4 user stories, 25 functional requirements)
+- **plan.md** — Implementation plan (Phase 1 complete: design, technical context, constitution check)
+- **data-model.md** — Phase 1 design (Partner, Station, Charger entities, validation rules)
+- **contracts/api-integration.md** — API contract with all 16 backend endpoints
+- **quickstart.md** — Developer quickstart guide for local development setup
 
 **Key Decisions**:
-- URL-based versioning: `/api/v1/`, `/api/v2/`, etc.
-- Router-based implementation in FastAPI (separate v1, v2 modules)
-- 12-month support window per version
-- No version field in responses (implicit in URL path)
-- Unversioned endpoints return 404 (no aliases)
+- React 18 + Vite 5 + TypeScript 5 for SPA
+- React Hook Form for form state management
+- shadcn/ui + Headless UI for components
+- Tailwind CSS extending shared token base from `source/packages/ui/`
+- Axios for HTTP client
+- Context API + custom hooks for data fetching
+- Router-based navigation (4 screens: Overview, Partners, Stations, Chargers)
 
-**Technologies**: Python 3.11, FastAPI, SQLAlchemy, PostgreSQL
+**Status**: READY FOR TASK GENERATION (Phase 2)
+
+**Technologies**: React 18, TypeScript 5, Vite 5, Tailwind CSS, React Router v6, Axios, React Hook Form
 <!-- SPECKIT END -->
