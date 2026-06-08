@@ -1,0 +1,46 @@
+# Rust binary output
+/target/
+debug/
+release/
+
+# Rust source backup files
+*.rs.bk
+
+# Rust libraries
+*.rlib
+
+# Rust profiler data
+*.prof*
+
+# Rust analysis files
+.rustc_info.json
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test coverage
+coverage/
+*.profraw
+
+# Build artifacts
+*.o
+*.so
+*.a
+*.exe
+*.dll
+
+# Cargo.lock (optional - remove if you want to avoid locking versions)
+# Cargo.lock
