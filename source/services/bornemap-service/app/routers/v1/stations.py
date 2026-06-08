@@ -76,10 +76,18 @@ async def list_stations(partner_id: UUID = Query(None), db: Session = Depends(ge
     data = []
     for station in stations:
         charger_count, available_count = add_charger_counts(station, db)
-        station_dict = StationResponse.model_validate(station).model_dump()
-        station_dict["charger_count"] = charger_count
-        station_dict["available_count"] = available_count
-        data.append(StationResponse(**station_dict))
+        data.append(StationResponse(
+            id=station.id,
+            partner_id=station.partner_id,
+            name=station.name,
+            address=station.address,
+            latitude=station.latitude,
+            longitude=station.longitude,
+            charger_count=charger_count,
+            available_count=available_count,
+            created_at=station.created_at,
+            updated_at=station.updated_at,
+        ))
     
     return {
         "data": data,
@@ -145,10 +153,19 @@ async def get_nearby_stations(
         distance_m = calculate_distance(lat, lng, station.latitude, station.longitude)
         if distance_m <= radius_km * 1000:  # Convert radius to meters
             charger_count, available_count = add_charger_counts(station, db)
-            station_dict = StationResponse.model_validate(station).model_dump()
-            station_dict["charger_count"] = charger_count
-            station_dict["available_count"] = available_count
-            nearby.append((StationResponse(**station_dict), distance_m))
+            station_response = StationResponse(
+                id=station.id,
+                partner_id=station.partner_id,
+                name=station.name,
+                address=station.address,
+                latitude=station.latitude,
+                longitude=station.longitude,
+                charger_count=charger_count,
+                available_count=available_count,
+                created_at=station.created_at,
+                updated_at=station.updated_at,
+            )
+            nearby.append((station_response, distance_m))
     
     # Sort by distance
     nearby.sort(key=lambda x: x[1])
@@ -216,10 +233,18 @@ async def create_station(station: StationCreate, db: Session = Depends(get_db)):
     db.refresh(db_station)
     
     charger_count, available_count = add_charger_counts(db_station, db)
-    station_dict = StationResponse.model_validate(db_station).model_dump()
-    station_dict["charger_count"] = charger_count
-    station_dict["available_count"] = available_count
-    return StationResponse(**station_dict)
+    return StationResponse(
+        id=db_station.id,
+        partner_id=db_station.partner_id,
+        name=db_station.name,
+        address=db_station.address,
+        latitude=db_station.latitude,
+        longitude=db_station.longitude,
+        charger_count=charger_count,
+        available_count=available_count,
+        created_at=db_station.created_at,
+        updated_at=db_station.updated_at,
+    )
 
 
 @router.get("/{station_id}", summary="Get Station", response_model=StationDetailResponse, tags=["v1"])
@@ -336,10 +361,18 @@ async def update_station(station_id: UUID, station_update: StationCreate, db: Se
     db.refresh(station)
     
     charger_count, available_count = add_charger_counts(station, db)
-    station_dict = StationResponse.model_validate(station).model_dump()
-    station_dict["charger_count"] = charger_count
-    station_dict["available_count"] = available_count
-    return StationResponse(**station_dict)
+    return StationResponse(
+        id=station.id,
+        partner_id=station.partner_id,
+        name=station.name,
+        address=station.address,
+        latitude=station.latitude,
+        longitude=station.longitude,
+        charger_count=charger_count,
+        available_count=available_count,
+        created_at=station.created_at,
+        updated_at=station.updated_at,
+    )
 
 
 @router.delete("/{station_id}", summary="Delete Station", status_code=204, tags=["v1"])

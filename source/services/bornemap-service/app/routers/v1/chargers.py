@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from uuid import UUID
 from app.database import get_db
-from app.models import Charger
+from app.models import Charger, ChargerStatus
 from app.schemas import ChargerCreate, ChargerResponse, ChargersListResponse
 
 router = APIRouter(prefix="/chargers", tags=["chargers"])
@@ -110,6 +110,7 @@ async def create_charger(charger: ChargerCreate, db: Session = Depends(get_db)):
         station_id=charger.station_id,
         connector_type=charger.connector_type,
         power_kw=charger.power_kw,
+        status="available",
     )
     db.add(db_charger)
     db.commit()

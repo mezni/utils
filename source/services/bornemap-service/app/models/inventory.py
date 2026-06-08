@@ -51,6 +51,6 @@ class Charger(Base):
     station_id = Column(UUID(as_uuid=True), ForeignKey("inventory.station.id"), nullable=False)
     connector_type = Column(String(50), nullable=False)  # Type2, CCS, CHAdeMO, etc.
     power_kw = Column(Float, nullable=False)  # Power in kilowatts
-    status = Column(Enum(ChargerStatus), nullable=False, default=ChargerStatus.AVAILABLE)
+    status = Column(Enum(ChargerStatus, native_enum=False), nullable=False, default="available")
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
     updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
