@@ -272,3 +272,28 @@ All project documentation is in `docs/`:
 - Use `Task` agents for open-ended codebase exploration (`explore` agent) or complex multi-step research (`general` agent).
 - Verify solutions with executable commands (tests, type checking, builds) rather than prose claims.
 - When in doubt, inspect config files and scripts (sources of truth) before guessing at conventions.
+
+<!-- SPECKIT START -->
+**Current Feature**: API Versioning (Sprint 1.1)
+
+**Feature Branch**: `001-backend-and-database`
+
+**Feature Directory**: `specs/001-backend-and-database/`
+
+**Plan Files**:
+- **spec.md** — Feature specification (clarified, ready for implementation)
+- **plan.md** — Implementation plan with technical context and constitution check
+- **research.md** — Phase 0 research findings (versioning strategy decisions)
+- **data-model.md** — Phase 1 design (router-based v1 architecture)
+- **contracts/api-v1.md** — API contract (frozen v1 endpoints)
+- **quickstart.md** — Developer quickstart guide for implementing versioning
+
+**Key Decisions**:
+- URL-based versioning: `/api/v1/`, `/api/v2/`, etc.
+- Router-based implementation in FastAPI (separate v1, v2 modules)
+- 12-month support window per version
+- No version field in responses (implicit in URL path)
+- Unversioned endpoints return 404 (no aliases)
+
+**Technologies**: Python 3.11, FastAPI, SQLAlchemy, PostgreSQL
+<!-- SPECKIT END -->
