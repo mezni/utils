@@ -45,9 +45,8 @@ def run_migrations_online() -> None:
     """Run migrations in 'online' mode."""
     # Create engine with database URL
     engine = engine_from_config(
-        config.get_section(config.config_prefix),
+        {"sqlalchemy.url": database_url},
         prefix="sqlalchemy.",
-        url=database_url,
         poolclass=pool.NullPool,
     )
 

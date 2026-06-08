@@ -1,5 +1,5 @@
 """SQLAlchemy models for BorneMap."""
 
-from .inventory import Partner, Station, Charger, ChargerStatus
+from .inventory import Base, Partner, Station, Charger, ChargerStatus
 
-__all__ = ["Partner", "Station", "Charger", "ChargerStatus"]
+__all__ = ["Base", "Partner", "Station", "Charger", "ChargerStatus"]
