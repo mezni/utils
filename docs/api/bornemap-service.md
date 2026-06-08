@@ -1,22 +1,51 @@
-# BorneMap Service API
+# BorneMap API v1 Documentation
 
-MVP-1 FastAPI service endpoints and contracts.
-
-**Base URL**: `http://localhost:8000`
-
-**Prefix**: All endpoints under `/api`
-
-**Status**: In progress (Sprint 1.1)
+**Service**: bornemap-service  
+**Version**: 1.0  
+**API Prefix**: `/api/v1`  
+**Status**: Active  
+**Base URL**: `http://localhost:8000/api/v1` (local) | `https://api.bornemap.tn/api/v1` (production)
 
 ---
 
-## Health
+## API Versioning
 
-### GET /api/health
+All BorneMap API endpoints are versioned through the URL path prefix. This document describes **v1**, the first active version released in Sprint 1.1.
 
-Service health check with database connectivity.
+### Version Support Policy
 
-**Response** (200):
+- **Active Version**: v1 (current)
+- **Support Window**: 12 months from v2 release
+- **Deprecation Notice Period**: 30 days before version sunset
+
+### URL-Based Versioning
+
+All endpoints must include the version in the URL path:
+
+- ✅ Correct: `/api/v1/stations`
+- ❌ Incorrect: `/api/stations` (returns 404)
+- ❌ Incorrect: `/api/v999/stations` (returns 404)
+
+### No Version Field in Responses
+
+Responses do not include a version field. The version is implicit in the URL path.
+
+---
+
+## Endpoints
+
+### Health Endpoint
+
+#### GET /api/v1/health
+
+Returns service health status and database connectivity.
+
+**Request**:
+```http
+GET /api/v1/health
+```
+
+**Response** (200 OK):
 ```json
 {
   "status": "ok",
@@ -25,451 +54,501 @@ Service health check with database connectivity.
 }
 ```
 
-**Response** (503 if database unavailable):
+**Response** (Database Error, 200 OK):
 ```json
 {
-  "status": "error",
+  "status": "ok",
   "service": "bornemap-service",
   "db": "error"
 }
 ```
 
+**Error Responses**: None (always returns 200)
+
 ---
 
-## Partners
+### Partners Endpoints
 
-### GET /api/partners
+#### GET /api/v1/partners
 
-List all partners.
+List all partners (EV charging station operators).
 
-**Query Parameters**: None
-
-**Response** (200):
-```json
-[
-  {
-    "id": "550e8400-e29b-41d4-a716-446655440000",
-    "name": "SolaRent Tunisia",
-    "created_at": "2026-01-15T10:30:00Z"
-  },
-  {
-    "id": "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
-    "name": "TunisEnergie",
-    "created_at": "2026-01-15T10:35:00Z"
-  }
-]
+**Request**:
+```http
+GET /api/v1/partners
 ```
 
----
-
-### GET /api/partners/:id
-
-Get partner detail.
-
-**Path Parameters**:
-- `id` (UUID): Partner ID
-
-**Response** (200):
+**Response** (200 OK):
 ```json
 {
-  "id": "550e8400-e29b-41d4-a716-446655440000",
-  "name": "SolaRent Tunisia",
-  "created_at": "2026-01-15T10:30:00Z"
+  "data": [
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "name": "TuniCharge",
+      "created_at": "2026-01-15T10:30:00Z"
+    }
+  ],
+  "count": 1
 }
 ```
 
-**Response** (404):
-```json
-{
-  "detail": "Partner not found"
-}
-```
+**Error Responses**: None
 
 ---
 
-### POST /api/partners
+#### POST /api/v1/partners
 
 Create a new partner.
 
-**Request Body**:
+**Request**:
 ```json
 {
-  "name": "NewPartner Inc"
+  "name": "New Charging Company"
 }
 ```
 
-**Response** (201):
+**Response** (201 Created):
 ```json
 {
-  "id": "7cb64810-9dad-11d1-80b4-00c04fd430c8",
-  "name": "NewPartner Inc",
-  "created_at": "2026-01-15T11:00:00Z"
+  "id": "660e8400-e29b-41d4-a716-446655440000",
+  "name": "New Charging Company",
+  "created_at": "2026-06-08T14:30:00Z"
 }
 ```
 
-**Response** (422 if name missing):
-```json
-{
-  "detail": [
-    {
-      "loc": ["body", "name"],
-      "msg": "field required",
-      "type": "value_error.missing"
-    }
-  ]
-}
-```
+**Error Responses**:
+- 422 Unprocessable Entity: `name` field missing or invalid
 
 ---
 
-### PUT /api/partners/:id
+#### GET /api/v1/partners/{id}
 
-Update partner name.
+Get a single partner by ID.
 
-**Path Parameters**:
-- `id` (UUID): Partner ID
-
-**Request Body**:
-```json
-{
-  "name": "UpdatedPartner Name"
-}
+**Request**:
+```http
+GET /api/v1/partners/550e8400-e29b-41d4-a716-446655440000
 ```
 
-**Response** (200):
+**Response** (200 OK):
 ```json
 {
   "id": "550e8400-e29b-41d4-a716-446655440000",
-  "name": "UpdatedPartner Name",
+  "name": "TuniCharge",
   "created_at": "2026-01-15T10:30:00Z"
 }
 ```
 
-**Response** (404):
-```json
-{
-  "detail": "Partner not found"
-}
-```
+**Error Responses**:
+- 404 Not Found: Partner does not exist
 
 ---
 
-### DELETE /api/partners/:id
+#### PUT /api/v1/partners/{id}
 
-Delete partner.
+Update a partner.
 
-**Path Parameters**:
-- `id` (UUID): Partner ID
-
-**Response** (204): No content
-
-**Response** (404):
+**Request**:
 ```json
 {
-  "detail": "Partner not found"
+  "name": "Updated Partner Name"
 }
 ```
 
-**Note**: Deleting a partner with associated stations cascades or returns error (to be decided).
+**Response** (200 OK):
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "name": "Updated Partner Name",
+  "created_at": "2026-01-15T10:30:00Z"
+}
+```
+
+**Error Responses**:
+- 404 Not Found: Partner does not exist
+- 422 Unprocessable Entity: Invalid request body
 
 ---
 
-## Stations
+#### DELETE /api/v1/partners/{id}
 
-### GET /api/stations
+Delete a partner.
 
-List all stations.
+**Request**:
+```http
+DELETE /api/v1/partners/550e8400-e29b-41d4-a716-446655440000
+```
+
+**Response** (204 No Content):
+```
+(empty body)
+```
+
+**Error Responses**:
+- 404 Not Found: Partner does not exist
+
+---
+
+### Stations Endpoints
+
+#### GET /api/v1/stations
+
+List all stations with optional partner filter.
+
+**Request**:
+```http
+GET /api/v1/stations
+GET /api/v1/stations?partner_id=550e8400-e29b-41d4-a716-446655440000
+```
 
 **Query Parameters**:
-- `partner_id` (UUID, optional): Filter by partner
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `partner_id` | UUID | No | Filter by partner ID |
 
-**Response** (200):
-```json
-[
-  {
-    "id": "550e8400-e29b-41d4-a716-446655440001",
-    "partner_id": "550e8400-e29b-41d4-a716-446655440000",
-    "name": "Tunis Central Hub",
-    "address": "Avenue de la Liberté, Tunis",
-    "latitude": 36.8065,
-    "longitude": 10.1815,
-    "charger_count": 4,
-    "available_count": 2,
-    "created_at": "2026-01-15T10:30:00Z",
-    "updated_at": "2026-01-15T10:30:00Z"
-  }
-]
-```
-
----
-
-### GET /api/stations/:id
-
-Get station detail with all chargers.
-
-**Path Parameters**:
-- `id` (UUID): Station ID
-
-**Response** (200):
+**Response** (200 OK):
 ```json
 {
-  "id": "550e8400-e29b-41d4-a716-446655440001",
-  "partner_id": "550e8400-e29b-41d4-a716-446655440000",
-  "name": "Tunis Central Hub",
-  "address": "Avenue de la Liberté, Tunis",
-  "latitude": 36.8065,
-  "longitude": 10.1815,
-  "chargers": [
+  "data": [
     {
-      "id": "550e8400-e29b-41d4-a716-446655440010",
-      "connector_type": "Type2",
-      "power_kw": 22,
-      "status": "available",
-      "updated_at": "2026-01-15T10:30:00Z"
-    },
-    {
-      "id": "550e8400-e29b-41d4-a716-446655440011",
-      "connector_type": "CCS",
-      "power_kw": 50,
-      "status": "in_use",
-      "updated_at": "2026-01-15T10:35:00Z"
+      "id": "770e8400-e29b-41d4-a716-446655440000",
+      "partner_id": "550e8400-e29b-41d4-a716-446655440000",
+      "name": "Tunis Central Station",
+      "address": "123 Avenue Bourguiba, Tunis",
+      "latitude": 36.8065,
+      "longitude": 10.1815,
+      "charger_count": 4,
+      "available_count": 3,
+      "created_at": "2026-01-15T10:30:00Z",
+      "updated_at": "2026-06-08T14:30:00Z"
     }
   ],
-  "created_at": "2026-01-15T10:30:00Z",
-  "updated_at": "2026-01-15T10:30:00Z"
+  "count": 1
 }
 ```
 
-**Response** (404):
-```json
-{
-  "detail": "Station not found"
-}
-```
+**Error Responses**: None
 
 ---
 
-### GET /api/stations/nearby
+#### GET /api/v1/stations/nearby
 
-Find nearby stations using Euclidean distance.
+Find stations near coordinates, ordered by Euclidean distance.
+
+**Request**:
+```http
+GET /api/v1/stations/nearby?lat=36.8065&lng=10.1815&radius_km=50
+```
 
 **Query Parameters**:
-- `lat` (float, required): Latitude (-90 to 90)
-- `lng` (float, required): Longitude (-180 to 180)
-- `radius_km` (float, required): Search radius in kilometers
+| Name | Type | Required | Default | Description |
+|------|------|----------|---------|-------------|
+| `lat` | float | Yes | — | Latitude (-90 to 90) |
+| `lng` | float | Yes | — | Longitude (-180 to 180) |
+| `radius_km` | float | No | 50 | Search radius in kilometers |
 
-**Response** (200):
+**Response** (200 OK):
 ```json
-[
-  {
-    "id": "550e8400-e29b-41d4-a716-446655440001",
-    "partner_id": "550e8400-e29b-41d4-a716-446655440000",
-    "name": "Tunis Central Hub",
-    "address": "Avenue de la Liberté, Tunis",
-    "latitude": 36.8065,
-    "longitude": 10.1815,
-    "charger_count": 4,
-    "available_count": 2,
-    "distance_m": 250,
-    "created_at": "2026-01-15T10:30:00Z",
-    "updated_at": "2026-01-15T10:30:00Z"
-  }
-]
+{
+  "data": [
+    {
+      "id": "770e8400-e29b-41d4-a716-446655440000",
+      "partner_id": "550e8400-e29b-41d4-a716-446655440000",
+      "name": "Tunis Central Station",
+      "address": "123 Avenue Bourguiba, Tunis",
+      "latitude": 36.8065,
+      "longitude": 10.1815,
+      "charger_count": 4,
+      "available_count": 3,
+      "created_at": "2026-01-15T10:30:00Z",
+      "updated_at": "2026-06-08T14:30:00Z"
+    }
+  ],
+  "count": 1
+}
 ```
 
-**Sorted by**: `distance_m` ascending
+**Distance Calculation**: Euclidean distance (simplified), returns empty list if no stations within radius.
+
+**Error Responses**:
+- 422 Unprocessable Entity: Invalid latitude (-90 to 90) or longitude (-180 to 180)
 
 ---
 
-### POST /api/stations
+#### POST /api/v1/stations
 
 Create a new station.
 
-**Request Body**:
+**Request**:
 ```json
 {
   "partner_id": "550e8400-e29b-41d4-a716-446655440000",
   "name": "New Station",
-  "address": "Street Name, City",
+  "address": "456 Rue de la Paix, Sfax",
+  "latitude": 34.7406,
+  "longitude": 10.7603
+}
+```
+
+**Response** (201 Created):
+```json
+{
+  "id": "880e8400-e29b-41d4-a716-446655440000",
+  "partner_id": "550e8400-e29b-41d4-a716-446655440000",
+  "name": "New Station",
+  "address": "456 Rue de la Paix, Sfax",
+  "latitude": 34.7406,
+  "longitude": 10.7603,
+  "charger_count": 0,
+  "available_count": 0,
+  "created_at": "2026-06-08T14:30:00Z",
+  "updated_at": "2026-06-08T14:30:00Z"
+}
+```
+
+**Error Responses**:
+- 422 Unprocessable Entity: Invalid latitude/longitude or missing required fields
+
+---
+
+#### GET /api/v1/stations/{id}
+
+Get a single station with all chargers.
+
+**Request**:
+```http
+GET /api/v1/stations/770e8400-e29b-41d4-a716-446655440000
+```
+
+**Response** (200 OK):
+```json
+{
+  "id": "770e8400-e29b-41d4-a716-446655440000",
+  "partner_id": "550e8400-e29b-41d4-a716-446655440000",
+  "name": "Tunis Central Station",
+  "address": "123 Avenue Bourguiba, Tunis",
+  "latitude": 36.8065,
+  "longitude": 10.1815,
+  "chargers": [
+    {
+      "id": "990e8400-e29b-41d4-a716-446655440000",
+      "connector_type": "Type2",
+      "power_kw": 22.0,
+      "status": "available"
+    }
+  ],
+  "charger_count": 1,
+  "available_count": 1,
+  "created_at": "2026-01-15T10:30:00Z",
+  "updated_at": "2026-06-08T14:30:00Z"
+}
+```
+
+**Error Responses**:
+- 404 Not Found: Station does not exist
+
+---
+
+#### PUT /api/v1/stations/{id}
+
+Update a station.
+
+**Request**:
+```json
+{
+  "partner_id": "550e8400-e29b-41d4-a716-446655440000",
+  "name": "Updated Station Name",
+  "address": "Updated Address",
   "latitude": 36.8065,
   "longitude": 10.1815
 }
 ```
 
-**Response** (201):
+**Response** (200 OK):
 ```json
 {
-  "id": "550e8400-e29b-41d4-a716-446655440002",
+  "id": "770e8400-e29b-41d4-a716-446655440000",
   "partner_id": "550e8400-e29b-41d4-a716-446655440000",
-  "name": "New Station",
-  "address": "Street Name, City",
+  "name": "Updated Station Name",
+  "address": "Updated Address",
   "latitude": 36.8065,
   "longitude": 10.1815,
-  "created_at": "2026-01-15T11:00:00Z",
-  "updated_at": "2026-01-15T11:00:00Z"
+  "charger_count": 1,
+  "available_count": 1,
+  "created_at": "2026-01-15T10:30:00Z",
+  "updated_at": "2026-06-08T15:00:00Z"
 }
 ```
 
-**Response** (422 if validation fails):
-```json
-{
-  "detail": [
-    {
-      "loc": ["body", "latitude"],
-      "msg": "ensure this value is less than or equal to 90",
-      "type": "value_error.number.not_le"
-    }
-  ]
-}
+**Error Responses**:
+- 404 Not Found: Station does not exist
+- 422 Unprocessable Entity: Invalid latitude/longitude
+
+---
+
+#### DELETE /api/v1/stations/{id}
+
+Delete a station.
+
+**Request**:
+```http
+DELETE /api/v1/stations/770e8400-e29b-41d4-a716-446655440000
 ```
 
----
-
-### PUT /api/stations/:id
-
-Update station fields.
-
-**Path Parameters**:
-- `id` (UUID): Station ID
-
-**Request Body** (all fields optional):
-```json
-{
-  "name": "Updated Station Name",
-  "address": "New Address",
-  "latitude": 36.7800,
-  "longitude": 10.2000
-}
+**Response** (204 No Content):
+```
+(empty body)
 ```
 
-**Response** (200): Updated station object
-
-**Response** (404): Station not found
-
----
-
-### DELETE /api/stations/:id
-
-Delete station (cascades to chargers).
-
-**Path Parameters**:
-- `id` (UUID): Station ID
-
-**Response** (204): No content
-
-**Response** (404): Station not found
+**Error Responses**:
+- 404 Not Found: Station does not exist
 
 ---
 
-## Chargers
+### Chargers Endpoints
 
-### GET /api/chargers
+#### GET /api/v1/chargers
 
-List all chargers.
+List all chargers with optional station filter.
+
+**Request**:
+```http
+GET /api/v1/chargers
+GET /api/v1/chargers?station_id=770e8400-e29b-41d4-a716-446655440000
+```
 
 **Query Parameters**:
-- `station_id` (UUID, optional): Filter by station
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `station_id` | UUID | No | Filter by station ID |
 
-**Response** (200):
-```json
-[
-  {
-    "id": "550e8400-e29b-41d4-a716-446655440010",
-    "station_id": "550e8400-e29b-41d4-a716-446655440001",
-    "connector_type": "Type2",
-    "power_kw": 22,
-    "status": "available",
-    "updated_at": "2026-01-15T10:30:00Z"
-  }
-]
-```
-
----
-
-### GET /api/chargers/:id
-
-Get charger detail.
-
-**Path Parameters**:
-- `id` (UUID): Charger ID
-
-**Response** (200):
+**Response** (200 OK):
 ```json
 {
-  "id": "550e8400-e29b-41d4-a716-446655440010",
-  "station_id": "550e8400-e29b-41d4-a716-446655440001",
-  "connector_type": "Type2",
-  "power_kw": 22,
-  "status": "available",
-  "updated_at": "2026-01-15T10:30:00Z"
+  "data": [
+    {
+      "id": "990e8400-e29b-41d4-a716-446655440000",
+      "station_id": "770e8400-e29b-41d4-a716-446655440000",
+      "connector_type": "Type2",
+      "power_kw": 22.0,
+      "status": "available",
+      "created_at": "2026-01-15T10:30:00Z",
+      "updated_at": "2026-06-08T14:30:00Z"
+    }
+  ],
+  "count": 1
 }
 ```
 
-**Response** (404): Charger not found
+**Error Responses**: None
 
 ---
 
-### POST /api/chargers
+#### POST /api/v1/chargers
 
 Create a new charger.
 
-**Request Body**:
+**Request**:
 ```json
 {
-  "station_id": "550e8400-e29b-41d4-a716-446655440001",
-  "connector_type": "Type2",
-  "power_kw": 22
-}
-```
-
-**Response** (201):
-```json
-{
-  "id": "550e8400-e29b-41d4-a716-446655440012",
-  "station_id": "550e8400-e29b-41d4-a716-446655440001",
-  "connector_type": "Type2",
-  "power_kw": 22,
-  "status": "available",
-  "updated_at": "2026-01-15T11:00:00Z"
-}
-```
-
-**Response** (422): Validation error
-
----
-
-### PUT /api/chargers/:id
-
-Update charger (primarily status updates).
-
-**Path Parameters**:
-- `id` (UUID): Charger ID
-
-**Request Body** (all fields optional):
-```json
-{
-  "status": "maintenance",
+  "station_id": "770e8400-e29b-41d4-a716-446655440000",
   "connector_type": "CCS",
-  "power_kw": 50
+  "power_kw": 50.0
 }
 ```
 
-**Response** (200): Updated charger object
+**Response** (201 Created):
+```json
+{
+  "id": "aa0e8400-e29b-41d4-a716-446655440000",
+  "station_id": "770e8400-e29b-41d4-a716-446655440000",
+  "connector_type": "CCS",
+  "power_kw": 50.0,
+  "status": "available",
+  "created_at": "2026-06-08T14:30:00Z",
+  "updated_at": "2026-06-08T14:30:00Z"
+}
+```
 
-**Response** (404): Charger not found
+**Error Responses**:
+- 422 Unprocessable Entity: Missing required fields or invalid power_kw
 
 ---
 
-### DELETE /api/chargers/:id
+#### GET /api/v1/chargers/{id}
 
-Delete charger.
+Get a single charger.
 
-**Path Parameters**:
-- `id` (UUID): Charger ID
+**Request**:
+```http
+GET /api/v1/chargers/990e8400-e29b-41d4-a716-446655440000
+```
 
-**Response** (204): No content
+**Response** (200 OK):
+```json
+{
+  "id": "990e8400-e29b-41d4-a716-446655440000",
+  "station_id": "770e8400-e29b-41d4-a716-446655440000",
+  "connector_type": "Type2",
+  "power_kw": 22.0,
+  "status": "available",
+  "created_at": "2026-01-15T10:30:00Z",
+  "updated_at": "2026-06-08T14:30:00Z"
+}
+```
 
-**Response** (404): Charger not found
+**Error Responses**:
+- 404 Not Found: Charger does not exist
+
+---
+
+#### PUT /api/v1/chargers/{id}
+
+Update a charger (primary use case: updating status).
+
+**Request**:
+```json
+{
+  "connector_type": "Type2",
+  "power_kw": 22.0
+}
+```
+
+**Response** (200 OK):
+```json
+{
+  "id": "990e8400-e29b-41d4-a716-446655440000",
+  "station_id": "770e8400-e29b-41d4-a716-446655440000",
+  "connector_type": "Type2",
+  "power_kw": 22.0,
+  "status": "available",
+  "created_at": "2026-01-15T10:30:00Z",
+  "updated_at": "2026-06-08T15:00:00Z"
+}
+```
+
+**Error Responses**:
+- 404 Not Found: Charger does not exist
+- 422 Unprocessable Entity: Invalid request body
+
+---
+
+#### DELETE /api/v1/chargers/{id}
+
+Delete a charger.
+
+**Request**:
+```http
+DELETE /api/v1/chargers/990e8400-e29b-41d4-a716-446655440000
+```
+
+**Response** (204 No Content):
+```
+(empty body)
+```
+
+**Error Responses**:
+- 404 Not Found: Charger does not exist
 
 ---
 
@@ -479,33 +558,145 @@ All error responses follow this format:
 
 ```json
 {
-  "detail": "Human-readable error message"
+  "detail": "Error message describing what went wrong"
 }
 ```
 
-### HTTP Status Codes
+### Common HTTP Status Codes
 
-| Code | Meaning |
-|------|---------|
-| 200 | OK — Request succeeded |
-| 201 | Created — Resource created successfully |
-| 204 | No Content — Request succeeded, no response body (DELETE) |
-| 400 | Bad Request — Malformed request |
-| 404 | Not Found — Resource not found |
-| 422 | Unprocessable Entity — Validation error |
-| 500 | Internal Server Error — Server error |
-| 503 | Service Unavailable — Database unreachable |
+| Status | Meaning | Example |
+|--------|---------|---------|
+| 200 | OK | Successful GET, PUT request |
+| 201 | Created | Successful POST request |
+| 204 | No Content | Successful DELETE request |
+| 404 | Not Found | Resource does not exist |
+| 422 | Unprocessable Entity | Invalid request data (validation error) |
+| 500 | Internal Server Error | Unexpected server error |
 
 ---
 
-## Notes
+## Request/Response Formats
 
-- All timestamps are ISO 8601 UTC format.
-- All IDs are UUIDs (v4) in MVP-1.
-- Latitude: -90 to 90. Longitude: -180 to 180.
-- Charger status: `available`, `in_use`, `maintenance`.
-- No pagination or filtering beyond listed query parameters in MVP-1.
+### Request Headers
+
+All requests should include:
+
+```http
+Content-Type: application/json
+```
+
+### Response Headers
+
+All responses include:
+
+```http
+Content-Type: application/json
+```
 
 ---
 
-**Last Updated**: Sprint 1.1 (in progress)
+## Pagination
+
+List endpoints return a paginated response format:
+
+```json
+{
+  "data": [/* array of items */],
+  "count": 10
+}
+```
+
+**Note**: MVP-1 returns all items (no limit/offset parameters). Pagination will be added in MVP-2.
+
+---
+
+## Field Types & Validation
+
+### UUIDs
+
+All IDs are UUID v4 strings:
+```
+550e8400-e29b-41d4-a716-446655440000
+```
+
+### Coordinates (Latitude/Longitude)
+
+- **Latitude**: Float, range -90 to 90
+- **Longitude**: Float, range -180 to 180
+
+### Charger Status
+
+Valid values:
+- `available`: Charger is available for use
+- `in_use`: Charger is currently in use
+- `maintenance`: Charger is under maintenance
+
+### Connector Types
+
+Valid values include (not exhaustive):
+- `Type2` — IEC 62196 Type 2 (European standard)
+- `CCS` — Combined Charging System
+- `CHAdeMO` — Japanese fast charging standard
+- `Tesla` — Tesla proprietary connector
+
+---
+
+## API Documentation
+
+### Interactive Documentation
+
+- **Swagger UI**: `http://localhost:8000/api/docs`
+- **ReDoc**: `http://localhost:8000/api/redoc`
+- **OpenAPI Spec**: `http://localhost:8000/api/openapi.json`
+
+---
+
+## Deprecation Policy
+
+### Notification
+
+When a version is scheduled for deprecation:
+
+1. **6 months before sunset**: Announcement on `/api/docs`
+2. **1 month before sunset**: Deprecation header added to responses
+3. **Sunset date**: Version endpoint returns 404
+
+### Migration to v2
+
+See `docs/guides/api-migration-v1-to-v2.md` (available when v2 released in MVP-2).
+
+---
+
+## Rate Limiting
+
+Not implemented in MVP-1. Coming in MVP-2.
+
+---
+
+## Changelog
+
+### v1.0.0 (Sprint 1.1 - 2026-06-08)
+
+**Endpoints** (16 total):
+- 1 Health endpoint
+- 5 Partners endpoints
+- 7 Stations endpoints (includes nearby search)
+- 5 Chargers endpoints
+
+**Features**:
+- URL-based versioning at `/api/v1`
+- JSON request/response format
+- UUID identifiers
+- Coordinate validation (latitude -90 to 90, longitude -180 to 180)
+- Station charger counts (total & available)
+- Nearby stations search (Euclidean distance)
+
+---
+
+## Support
+
+For questions or issues:
+- Review this documentation at `docs/api/bornemap-service.md`
+- Check architectural decisions at `docs/adr/ADR-018-api-versioning.md`
+- View API contracts at `specs/001-backend-and-database/contracts/api-v1.md`
+- See feature specification at `specs/001-backend-and-database/spec.md`

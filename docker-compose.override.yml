@@ -1,0 +1,8 @@
+version: '3.9'
+
+services:
+  bornemap-service:
+    volumes:
+      - ./source/services/bornemap-service/app:/app/app
+    environment:
+      PYTHONUNBUFFERED: 1
