@@ -23,7 +23,7 @@ pub struct PartnerRequest {
 }
 
 /// Partner response
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, sqlx::FromRow)]
 pub struct PartnerResponse {
     pub id: String,
     pub name: String,
@@ -50,7 +50,7 @@ pub struct StationRequest {
 }
 
 /// Station response
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, sqlx::FromRow)]
 pub struct StationResponse {
     pub id: String,
     pub partner_id: String,
@@ -77,7 +77,7 @@ pub struct ChargerRequest {
 }
 
 /// Charger response
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, sqlx::FromRow)]
 pub struct ChargerResponse {
     pub id: String,
     pub station_id: String,

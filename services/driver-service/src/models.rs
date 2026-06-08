@@ -22,7 +22,7 @@ pub struct NearbyStationsRequest {
 }
 
 /// Station response
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, sqlx::FromRow)]
 pub struct StationResponse {
     pub id: String,
     pub name: String,

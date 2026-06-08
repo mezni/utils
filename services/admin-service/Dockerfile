@@ -1,50 +1,45 @@
 # Stage 1: Builder
-FROM rust:1.70-alpine AS builder
+FROM rust:1.86-alpine AS builder
+
+RUN apk add --no-cache musl-dev openssl-dev pkgconf
 
 WORKDIR /app
 
-# Install build dependencies
-RUN apk add --no-cache musl-dev openssl-dev pkg-config
-
-# Copy dependency files
 COPY Cargo.toml Cargo.lock ./
+COPY crates/ ./crates/
+COPY services/admin-service/Cargo.toml ./services/admin-service/
+COPY services/driver-service/Cargo.toml ./services/driver-service/
 
-# Build dependencies (cached layer)
-RUN cargo build --release --bins --all-features
+# Create dummy mains for dependency caching
+RUN mkdir -p services/admin-service/src && \
+    echo "fn main() {}" > services/admin-service/src/main.rs && \
+    mkdir -p services/driver-service/src && \
+    echo "fn main() {}" > services/driver-service/src/main.rs
 
-# Copy source code
-COPY src ./src
+RUN cargo build --release --package admin-service
 
-# Build binary
-RUN cargo build --release --bins --all-features
+COPY services/admin-service/src ./services/admin-service/src
+
+RUN cargo build --release --package admin-service
 
 # Stage 2: Runner
 FROM alpine:3.18
 
-# Install runtime dependencies
 RUN apk add --no-cache ca-certificates libgcc
 
-# Copy binary from builder
 COPY --from=builder /app/target/release/admin-service /usr/local/bin/admin-service
 
-# Create non-root user
 RUN addgroup -g 1000 appuser && \
     adduser -D -u 1000 -G appuser appuser && \
     chown -R appuser:appuser /usr/local/bin
 
-# Switch to non-root user
 USER appuser
-
-# Create app directory
 WORKDIR /app
 
-# Set environment
 ENV POSTGRES_URL=postgres://postgres:postgres@localhost:5432/ev_platform
 ENV LOG_LEVEL=info
-ENV PORT=8080
+ENV PORT=8081
 
-# Expose port
-EXPOSE 8080
+EXPOSE 8081
 
-# Run as non-root user
 CMD ["admin-service"]

@@ -1,9 +1,7 @@
-// Error types module
-use actix_web::{error, ResponseError, HttpResponse};
-use serde::{Deserialize, Serialize};
+use actix_web::{HttpResponse, ResponseError};
+use serde::Serialize;
 use std::fmt;
 
-/// Custom error types for the admin service
 #[derive(Debug, Serialize)]
 pub enum AppError {
     ValidationError(String),
@@ -29,30 +27,22 @@ impl ResponseError for AppError {
     fn error_response(&self) -> HttpResponse {
         match self {
             AppError::ValidationError(msg) => {
-                HttpResponse::BadRequest().json(serde_json::json!({
-                    "error": msg
-                }))
+                HttpResponse::BadRequest().json(serde_json::json!({ "error": msg }))
             }
             AppError::DatabaseError(msg) => {
-                HttpResponse::InternalServerError().json(serde_json::json!({
-                    "error": msg
-                }))
+                HttpResponse::InternalServerError().json(serde_json::json!({ "error": msg }))
             }
             AppError::HealthCheckError(msg) => {
-                HttpResponse::InternalServerError().json(serde_json::json!({
-                    "error": msg
-                }))
+                HttpResponse::InternalServerError().json(serde_json::json!({ "error": msg }))
             }
             AppError::EntityNotFoundError(msg) => {
-                HttpResponse::NotFound().json(serde_json::json!({
-                    "error": msg
-                }))
+                HttpResponse::NotFound().json(serde_json::json!({ "error": msg }))
             }
         }
     }
 }
 
-/// API errors for integration tests
+#[derive(Debug)]
 pub struct ApiError {
     pub status_code: u16,
     pub error: String,
@@ -66,10 +56,10 @@ impl fmt::Display for ApiError {
 
 impl std::error::Error for ApiError {}
 
-impl error::ResponseError for ApiError {
+impl ResponseError for ApiError {
     fn error_response(&self) -> HttpResponse {
-        HttpResponse::new(self.status_code).json(serde_json::json!({
-            "error": self.error
-        }))
+        let status = actix_web::http::StatusCode::from_u16(self.status_code)
+            .unwrap_or(actix_web::http::StatusCode::INTERNAL_SERVER_ERROR);
+        HttpResponse::build(status).json(serde_json::json!({ "error": self.error }))
     }
 }

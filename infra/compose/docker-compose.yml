@@ -24,7 +24,7 @@ services:
     ports:
       - "5050:80"
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@borne-map.local
+      PGADMIN_DEFAULT_EMAIL: admin@borne-map.com
       PGADMIN_DEFAULT_PASSWORD: admin
     depends_on:
       postgres:
@@ -32,7 +32,8 @@ services:
 
   driver-service:
     build:
-      context: ../../services/driver-service
+      context: ../../
+      dockerfile: services/driver-service/Dockerfile
     container_name: borne-driver-service
     restart: unless-stopped
     ports:
@@ -45,7 +46,8 @@ services:
 
   admin-service:
     build:
-      context: ../../services/admin-service
+      context: ../../
+      dockerfile: services/admin-service/Dockerfile
     container_name: borne-admin-service
     restart: unless-stopped
     ports:

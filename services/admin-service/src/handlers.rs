@@ -1,32 +1,19 @@
-// Handlers module
-use std::sync::Arc;
 use actix_web::{web, HttpResponse};
-use ev_db::PgPool;
+use sqlx::PgPool;
 
 use crate::{
-    config::PostgresUrl,
-    db::create_pool,
-    error::{AppError, EntityNotFoundError},
+    error::AppError,
     models::{
-        HealthCheckRequest, HealthCheckResponse, PartnerRequest, PartnerResponse,
-        PartnerListResponse, StationRequest, StationResponse, StationListResponse,
-        ChargerRequest, ChargerResponse, ChargerListResponse,
+        ChargerListResponse, ChargerRequest, ChargerResponse, PartnerListResponse,
+        PartnerRequest, PartnerResponse, StationListResponse, StationRequest, StationResponse,
     },
 };
 
-/// Health check handler
 pub async fn health_check_handler(
-    postgres_url: web::Data<Arc<PostgresUrl>>,
+    pool: web::Data<PgPool>,
 ) -> Result<HttpResponse, AppError> {
-    let pool = create_pool(postgres_url.as_ref())
-        .await
-        .map_err(|e| {
-            tracing::error!("Database connection failed: {}", e);
-            AppError::HealthCheckError(format!("Database error: {}", e))
-        })?;
-
     sqlx::query("SELECT 1")
-        .fetch_one(&pool)
+        .fetch_one(pool.get_ref())
         .await
         .map_err(|e| {
             tracing::error!("Database query failed during health check: {}", e);
@@ -40,25 +27,23 @@ pub async fn health_check_handler(
     })))
 }
 
-/// Partner CRUD handlers
 pub async fn partner_create_handler(
     pool: web::Data<PgPool>,
     partner: web::Json<PartnerRequest>,
 ) -> Result<HttpResponse, AppError> {
-    // Generate unique ID using ev-core NanoID
     let id = uuid::Uuid::new_v4().to_string();
 
-    sqlx::query!(
+    sqlx::query(
         r#"
         INSERT INTO inventory.partner (id, name, email, phone, address, created_at, updated_at)
         VALUES ($1, $2, $3, $4, $5, NOW(), NOW())
         "#,
-        id,
-        partner.name,
-        partner.email,
-        partner.phone,
-        partner.address
     )
+    .bind(&id)
+    .bind(&partner.name)
+    .bind(&partner.email)
+    .bind(&partner.phone)
+    .bind(&partner.address)
     .execute(pool.get_ref())
     .await
     .map_err(|e| {
@@ -79,15 +64,14 @@ pub async fn partner_get_handler(
     id: web::Path<String>,
     pool: web::Data<PgPool>,
 ) -> Result<HttpResponse, AppError> {
-    let result = sqlx::query_as!(
-        PartnerResponse,
+    let result = sqlx::query_as::<_, PartnerResponse>(
         r#"
-        SELECT id, name, email, phone, address
+        SELECT id::text AS id, name, email, phone, address
         FROM inventory.partner
         WHERE id = $1
         "#,
-        id.to_string()
     )
+    .bind(id.to_string())
     .fetch_optional(pool.get_ref())
     .await
     .map_err(|e| {
@@ -105,13 +89,12 @@ pub async fn partner_get_handler(
 }
 
 pub async fn partner_list_handler(pool: web::Data<PgPool>) -> Result<HttpResponse, AppError> {
-    let partners = sqlx::query_as!(
-        PartnerResponse,
+    let partners = sqlx::query_as::<_, PartnerResponse>(
         r#"
-        SELECT id, name, email, phone, address
+        SELECT id::text AS id, name, email, phone, address
         FROM inventory.partner
         ORDER BY name ASC
-        "#
+        "#,
     )
     .fetch_all(pool.get_ref())
     .await
@@ -131,18 +114,18 @@ pub async fn partner_update_handler(
     partner: web::Json<PartnerRequest>,
     pool: web::Data<PgPool>,
 ) -> Result<HttpResponse, AppError> {
-    sqlx::query!(
+    sqlx::query(
         r#"
         UPDATE inventory.partner
         SET name = $1, email = $2, phone = $3, address = $4, updated_at = NOW()
         WHERE id = $5
         "#,
-        partner.name,
-        partner.email,
-        partner.phone,
-        partner.address,
-        id.to_string()
     )
+    .bind(&partner.name)
+    .bind(&partner.email)
+    .bind(&partner.phone)
+    .bind(&partner.address)
+    .bind(id.to_string())
     .execute(pool.get_ref())
     .await
     .map_err(|e| {
@@ -157,13 +140,16 @@ pub async fn partner_delete_handler(
     id: web::Path<String>,
     pool: web::Data<PgPool>,
 ) -> Result<HttpResponse, AppError> {
-    let result = sqlx::query!("DELETE FROM inventory.partner WHERE id = $1 RETURNING id", id.to_string())
-        .fetch_optional(pool.get_ref())
-        .await
-        .map_err(|e| {
-            tracing::error!("Failed to delete partner: {}", e);
-            AppError::DatabaseError(format!("Failed to delete partner: {}", e))
-        })?;
+    let result = sqlx::query(
+        "DELETE FROM inventory.partner WHERE id = $1 RETURNING id",
+    )
+    .bind(id.to_string())
+    .fetch_optional(pool.get_ref())
+    .await
+    .map_err(|e| {
+        tracing::error!("Failed to delete partner: {}", e);
+        AppError::DatabaseError(format!("Failed to delete partner: {}", e))
+    })?;
 
     match result {
         Some(_) => Ok(HttpResponse::NoContent().finish()),
@@ -174,16 +160,14 @@ pub async fn partner_delete_handler(
     }
 }
 
-/// Station CRUD handlers
 pub async fn station_create_handler(
     pool: web::Data<PgPool>,
     station: web::Json<StationRequest>,
 ) -> Result<HttpResponse, AppError> {
-    // Generate unique ID
     let id = uuid::Uuid::new_v4().to_string();
 
-    // Validate partner_id exists
-    sqlx::query!("SELECT id FROM inventory.partner WHERE id = $1", station.partner_id.clone())
+    sqlx::query("SELECT id FROM inventory.partner WHERE id = $1")
+        .bind(&station.partner_id)
         .fetch_optional(pool.get_ref())
         .await
         .map_err(|e| {
@@ -191,18 +175,18 @@ pub async fn station_create_handler(
             AppError::DatabaseError(format!("Failed to validate partner: {}", e))
         })?;
 
-    sqlx::query!(
+    sqlx::query(
         r#"
         INSERT INTO inventory.station (id, partner_id, name, latitude, longitude, address, created_at, updated_at)
         VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())
         "#,
-        id,
-        station.partner_id,
-        station.name,
-        station.latitude,
-        station.longitude,
-        station.address
     )
+    .bind(&id)
+    .bind(&station.partner_id)
+    .bind(&station.name)
+    .bind(station.latitude)
+    .bind(station.longitude)
+    .bind(&station.address)
     .execute(pool.get_ref())
     .await
     .map_err(|e| {
@@ -224,15 +208,14 @@ pub async fn station_get_handler(
     id: web::Path<String>,
     pool: web::Data<PgPool>,
 ) -> Result<HttpResponse, AppError> {
-    let result = sqlx::query_as!(
-        StationResponse,
+    let result = sqlx::query_as::<_, StationResponse>(
         r#"
-        SELECT id, partner_id, name, latitude, longitude, address
+        SELECT id::text AS id, partner_id::text AS partner_id, name, latitude, longitude, address
         FROM inventory.station
         WHERE id = $1
         "#,
-        id.to_string()
     )
+    .bind(id.to_string())
     .fetch_optional(pool.get_ref())
     .await
     .map_err(|e| {
@@ -250,13 +233,12 @@ pub async fn station_get_handler(
 }
 
 pub async fn station_list_handler(pool: web::Data<PgPool>) -> Result<HttpResponse, AppError> {
-    let stations = sqlx::query_as!(
-        StationResponse,
+    let stations = sqlx::query_as::<_, StationResponse>(
         r#"
-        SELECT id, partner_id, name, latitude, longitude, address
+        SELECT id::text AS id, partner_id::text AS partner_id, name, latitude, longitude, address
         FROM inventory.station
         ORDER BY name ASC
-        "#
+        "#,
     )
     .fetch_all(pool.get_ref())
     .await
@@ -276,30 +258,28 @@ pub async fn station_update_handler(
     station: web::Json<StationRequest>,
     pool: web::Data<PgPool>,
 ) -> Result<HttpResponse, AppError> {
-    // Validate partner_id exists if being updated
-    if let Some(ref partner_id) = station.partner_id.clone() {
-        sqlx::query!("SELECT id FROM inventory.partner WHERE id = $1", partner_id.clone())
-            .fetch_optional(pool.get_ref())
-            .await
-            .map_err(|e| {
-                tracing::error!("Failed to validate partner: {}", e);
-                AppError::DatabaseError(format!("Failed to validate partner: {}", e))
-            })?;
-    }
+    sqlx::query("SELECT id FROM inventory.partner WHERE id = $1")
+        .bind(&station.partner_id)
+        .fetch_optional(pool.get_ref())
+        .await
+        .map_err(|e| {
+            tracing::error!("Failed to validate partner: {}", e);
+            AppError::DatabaseError(format!("Failed to validate partner: {}", e))
+        })?;
 
-    sqlx::query!(
+    sqlx::query(
         r#"
         UPDATE inventory.station
         SET partner_id = COALESCE($1, partner_id), name = $2, latitude = $3, longitude = $4, address = $5, updated_at = NOW()
         WHERE id = $6
         "#,
-        station.partner_id,
-        station.name,
-        station.latitude,
-        station.longitude,
-        station.address,
-        id.to_string()
     )
+    .bind(&station.partner_id)
+    .bind(&station.name)
+    .bind(station.latitude)
+    .bind(station.longitude)
+    .bind(&station.address)
+    .bind(id.to_string())
     .execute(pool.get_ref())
     .await
     .map_err(|e| {
@@ -314,13 +294,16 @@ pub async fn station_delete_handler(
     id: web::Path<String>,
     pool: web::Data<PgPool>,
 ) -> Result<HttpResponse, AppError> {
-    let result = sqlx::query!("DELETE FROM inventory.station WHERE id = $1 RETURNING id", id.to_string())
-        .fetch_optional(pool.get_ref())
-        .await
-        .map_err(|e| {
-            tracing::error!("Failed to delete station: {}", e);
-            AppError::DatabaseError(format!("Failed to delete station: {}", e))
-        })?;
+    let result = sqlx::query(
+        "DELETE FROM inventory.station WHERE id = $1 RETURNING id",
+    )
+    .bind(id.to_string())
+    .fetch_optional(pool.get_ref())
+    .await
+    .map_err(|e| {
+        tracing::error!("Failed to delete station: {}", e);
+        AppError::DatabaseError(format!("Failed to delete station: {}", e))
+    })?;
 
     match result {
         Some(_) => Ok(HttpResponse::NoContent().finish()),
@@ -331,16 +314,14 @@ pub async fn station_delete_handler(
     }
 }
 
-/// Charger CRUD handlers
 pub async fn charger_create_handler(
     pool: web::Data<PgPool>,
     charger: web::Json<ChargerRequest>,
 ) -> Result<HttpResponse, AppError> {
-    // Generate unique ID
     let id = uuid::Uuid::new_v4().to_string();
 
-    // Validate station_id exists
-    sqlx::query!("SELECT id FROM inventory.station WHERE id = $1", charger.station_id.clone())
+    sqlx::query("SELECT id FROM inventory.station WHERE id = $1")
+        .bind(&charger.station_id)
         .fetch_optional(pool.get_ref())
         .await
         .map_err(|e| {
@@ -348,17 +329,17 @@ pub async fn charger_create_handler(
             AppError::DatabaseError(format!("Failed to validate station: {}", e))
         })?;
 
-    sqlx::query!(
+    sqlx::query(
         r#"
         INSERT INTO inventory.charger (id, station_id, connector_type, power_kw, status, created_at, updated_at)
         VALUES ($1, $2, $3, $4, $5, NOW(), NOW())
         "#,
-        id,
-        charger.station_id,
-        charger.connector_type,
-        charger.power_kw,
-        charger.status
     )
+    .bind(&id)
+    .bind(&charger.station_id)
+    .bind(&charger.connector_type)
+    .bind(charger.power_kw)
+    .bind(&charger.status)
     .execute(pool.get_ref())
     .await
     .map_err(|e| {
@@ -379,15 +360,14 @@ pub async fn charger_get_handler(
     id: web::Path<String>,
     pool: web::Data<PgPool>,
 ) -> Result<HttpResponse, AppError> {
-    let result = sqlx::query_as!(
-        ChargerResponse,
+    let result = sqlx::query_as::<_, ChargerResponse>(
         r#"
-        SELECT id, station_id, connector_type, power_kw, status
+        SELECT id::text AS id, station_id::text AS station_id, connector_type, power_kw, status
         FROM inventory.charger
         WHERE id = $1
         "#,
-        id.to_string()
     )
+    .bind(id.to_string())
     .fetch_optional(pool.get_ref())
     .await
     .map_err(|e| {
@@ -405,13 +385,12 @@ pub async fn charger_get_handler(
 }
 
 pub async fn charger_list_handler(pool: web::Data<PgPool>) -> Result<HttpResponse, AppError> {
-    let chargers = sqlx::query_as!(
-        ChargerResponse,
+    let chargers = sqlx::query_as::<_, ChargerResponse>(
         r#"
-        SELECT id, station_id, connector_type, power_kw, status
+        SELECT id::text AS id, station_id::text AS station_id, connector_type, power_kw, status
         FROM inventory.charger
         ORDER BY station_id ASC, connector_type ASC
-        "#
+        "#,
     )
     .fetch_all(pool.get_ref())
     .await
@@ -431,29 +410,27 @@ pub async fn charger_update_handler(
     charger: web::Json<ChargerRequest>,
     pool: web::Data<PgPool>,
 ) -> Result<HttpResponse, AppError> {
-    // Validate station_id exists if being updated
-    if let Some(ref station_id) = charger.station_id.clone() {
-        sqlx::query!("SELECT id FROM inventory.station WHERE id = $1", station_id.clone())
-            .fetch_optional(pool.get_ref())
-            .await
-            .map_err(|e| {
-                tracing::error!("Failed to validate station: {}", e);
-                AppError::DatabaseError(format!("Failed to validate station: {}", e))
-            })?;
-    }
+    sqlx::query("SELECT id FROM inventory.station WHERE id = $1")
+        .bind(&charger.station_id)
+        .fetch_optional(pool.get_ref())
+        .await
+        .map_err(|e| {
+            tracing::error!("Failed to validate station: {}", e);
+            AppError::DatabaseError(format!("Failed to validate station: {}", e))
+        })?;
 
-    sqlx::query!(
+    sqlx::query(
         r#"
         UPDATE inventory.charger
         SET station_id = COALESCE($1, station_id), connector_type = $2, power_kw = $3, status = $4, updated_at = NOW()
         WHERE id = $5
         "#,
-        charger.station_id,
-        charger.connector_type,
-        charger.power_kw,
-        charger.status,
-        id.to_string()
     )
+    .bind(&charger.station_id)
+    .bind(&charger.connector_type)
+    .bind(charger.power_kw)
+    .bind(&charger.status)
+    .bind(id.to_string())
     .execute(pool.get_ref())
     .await
     .map_err(|e| {
@@ -468,13 +445,16 @@ pub async fn charger_delete_handler(
     id: web::Path<String>,
     pool: web::Data<PgPool>,
 ) -> Result<HttpResponse, AppError> {
-    let result = sqlx::query!("DELETE FROM inventory.charger WHERE id = $1 RETURNING id", id.to_string())
-        .fetch_optional(pool.get_ref())
-        .await
-        .map_err(|e| {
-            tracing::error!("Failed to delete charger: {}", e);
-            AppError::DatabaseError(format!("Failed to delete charger: {}", e))
-        })?;
+    let result = sqlx::query(
+        "DELETE FROM inventory.charger WHERE id = $1 RETURNING id",
+    )
+    .bind(id.to_string())
+    .fetch_optional(pool.get_ref())
+    .await
+    .map_err(|e| {
+        tracing::error!("Failed to delete charger: {}", e);
+        AppError::DatabaseError(format!("Failed to delete charger: {}", e))
+    })?;
 
     match result {
         Some(_) => Ok(HttpResponse::NoContent().finish()),

@@ -1,4 +1,3 @@
-// Library entry point with public API
 mod config;
 mod db;
 mod error;
@@ -7,5 +6,9 @@ mod models;
 mod routes;
 
 pub use config::PostgresUrl;
-pub use error::{AppError, ApiError, EntityNotFoundError};
-pub use models::{HealthCheckRequest, HealthCheckResponse, PartnerRequest, PartnerResponse, PartnerListResponse, StationRequest, StationResponse, StationListResponse, ChargerRequest, ChargerResponse, ChargerListResponse};
+pub use error::{ApiError, AppError};
+pub use models::{
+    ChargerListResponse, ChargerRequest, ChargerResponse, HealthCheckRequest,
+    HealthCheckResponse, PartnerListResponse, PartnerRequest, PartnerResponse,
+    StationListResponse, StationRequest, StationResponse,
+};

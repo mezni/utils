@@ -1,8 +1,8 @@
--- Admin Service Migrations
--- Sprint 1.4 - Admin Service
+-- Driver Service Migrations
+-- Sprint 1.3 - Driver Service
 
--- Migration 001: Create admin service migration directory
--- No schema changes needed for this sprint
+-- Migration 001: Create driver service migration directory
+-- No schema changes needed for Sprint 1.3
 -- The service reads from existing inventory and gis schemas
 
 -- Verify that the inventory and gis schemas exist
@@ -62,4 +62,4 @@ BEGIN
 END $$;
 
 -- Migration 001 complete
-SELECT 'Migration 001 complete: Admin Service prerequisites verified' AS message;
+SELECT 'Migration 001 complete: Driver Service prerequisites verified' AS message;

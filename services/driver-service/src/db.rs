@@ -1,18 +1,17 @@
-// Database module
-use ev_db::{PgPool, PostgresUrl};
+use sqlx::PgPool;
 
-/// Initialize database connection pool
-pub fn create_pool(postgres_url: &PostgresUrl) -> Result<PgPool, String> {
+use crate::config::PostgresUrl;
+
+pub async fn create_pool(postgres_url: &PostgresUrl) -> Result<PgPool, String> {
     postgres_url
         .validate()
         .map_err(|e| format!("Invalid database URL: {}", e))?;
 
-    // Create connection pool from the URL
-    PgPool::new(postgres_url.as_str())
+    ev_db::create_pool(postgres_url.as_str())
+        .await
         .map_err(|e| format!("Failed to create database connection pool: {}", e))
 }
 
-/// Apply migrations on startup
 pub async fn apply_migrations(pool: &PgPool) -> Result<(), String> {
     sqlx::migrate!("./migrations")
         .run(pool)
