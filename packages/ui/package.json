@@ -3,6 +3,10 @@
   "private": true,
   "version": "0.1.0",
   "main": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./tokens.css": "./tokens.css"
+  },
   "scripts": {
     "lint": "eslint . --ext .ts,.tsx"
   }

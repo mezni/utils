@@ -1,0 +1,6 @@
+{
+  "files": ["apps/driver-web/index.html", "apps/dashboard/index.html"],
+  "insertBefore": "</body>",
+  "commentSyntax": "html",
+  "cspChecked": true
+}

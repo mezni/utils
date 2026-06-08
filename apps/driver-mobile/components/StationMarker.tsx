@@ -1,6 +1,7 @@
 import { Marker, Callout } from 'react-native-maps';
 import { View, Text, StyleSheet } from 'react-native';
 import type { Station } from '../services/api';
+import { colors } from '../src/theme';
 
 interface Props {
   station: Station;
@@ -38,14 +39,15 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 14,
     marginBottom: 2,
+    color: colors.ink,
   },
   address: {
     fontSize: 12,
-    color: '#666',
+    color: colors.inkMuted,
     marginBottom: 4,
   },
   chargers: {
     fontSize: 12,
-    color: '#166534',
+    color: colors.pineDeep,
   },
 });

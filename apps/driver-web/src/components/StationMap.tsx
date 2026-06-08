@@ -37,12 +37,12 @@ export default function StationMap() {
   return (
     <div className="h-screen w-full relative">
       {loading && (
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] bg-white px-4 py-2 rounded shadow text-sm">
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] bg-surface px-4 py-2 rounded-md text-sm text-ink-muted">
           Loading stations...
         </div>
       )}
       {error && (
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] bg-red-50 border border-red-200 px-4 py-2 rounded shadow text-sm text-red-700">
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] bg-error-surface px-4 py-2 rounded-md text-sm text-error">
           {error}
         </div>
       )}
@@ -67,11 +67,11 @@ export default function StationMap() {
                 <br />
                 {station.address}
                 <br />
-                <span className="text-green-700">
+                <span className="text-success">
                   {station.available_chargers}/{station.total_chargers} available
                 </span>
                 <br />
-                <span className="text-gray-500">
+                <span className="text-ink-muted">
                   {haversineDistance(
                     34.0,
                     9.0,

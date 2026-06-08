@@ -1,0 +1,239 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-06-07T00:00:00.000Z",
+  "title": "Design System: BorneMap",
+  "extensions": {
+    "colorMeta": {
+      "pine": {
+        "role": "primary",
+        "displayName": "Pine",
+        "canonical": "oklch(52% 0.13 150)",
+        "tonalRamp": [
+          "oklch(15% 0.13 150)",
+          "oklch(25% 0.13 150)",
+          "oklch(35% 0.13 150)",
+          "oklch(45% 0.13 150)",
+          "oklch(52% 0.13 150)",
+          "oklch(65% 0.13 150)",
+          "oklch(78% 0.13 150)",
+          "oklch(92% 0.08 150)"
+        ]
+      },
+      "pine-deep": {
+        "role": "primary",
+        "displayName": "Deep Pine",
+        "canonical": "oklch(44% 0.10 150)",
+        "tonalRamp": [
+          "oklch(12% 0.10 150)",
+          "oklch(22% 0.10 150)",
+          "oklch(32% 0.10 150)",
+          "oklch(44% 0.10 150)",
+          "oklch(55% 0.10 150)",
+          "oklch(68% 0.10 150)",
+          "oklch(80% 0.10 150)",
+          "oklch(93% 0.06 150)"
+        ]
+      },
+      "moss-tint": {
+        "role": "primary",
+        "displayName": "Moss Tint",
+        "canonical": "oklch(93% 0.02 140)",
+        "tonalRamp": [
+          "oklch(15% 0.02 140)",
+          "oklch(30% 0.02 140)",
+          "oklch(45% 0.02 140)",
+          "oklch(60% 0.02 140)",
+          "oklch(75% 0.02 140)",
+          "oklch(85% 0.02 140)",
+          "oklch(90% 0.02 140)",
+          "oklch(93% 0.02 140)"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "oklch(33% 0 0)",
+        "tonalRamp": [
+          "oklch(10% 0 0)",
+          "oklch(20% 0 0)",
+          "oklch(33% 0 0)",
+          "oklch(45% 0 0)",
+          "oklch(55% 0 0)",
+          "oklch(70% 0 0)",
+          "oklch(85% 0 0)",
+          "oklch(95% 0 0)"
+        ]
+      },
+      "ink-muted": {
+        "role": "neutral",
+        "displayName": "Ink Muted",
+        "canonical": "oklch(52% 0.01 250)",
+        "tonalRamp": [
+          "oklch(15% 0.01 250)",
+          "oklch(28% 0.01 250)",
+          "oklch(40% 0.01 250)",
+          "oklch(52% 0.01 250)",
+          "oklch(62% 0.01 250)",
+          "oklch(74% 0.01 250)",
+          "oklch(86% 0.01 250)",
+          "oklch(96% 0.01 250)"
+        ]
+      },
+      "error": {
+        "role": "semantic",
+        "displayName": "Error",
+        "canonical": "oklch(55% 0.19 26)",
+        "tonalRamp": [
+          "oklch(15% 0.19 26)",
+          "oklch(28% 0.19 26)",
+          "oklch(40% 0.19 26)",
+          "oklch(55% 0.19 26)",
+          "oklch(65% 0.19 26)",
+          "oklch(78% 0.14 26)",
+          "oklch(88% 0.08 26)",
+          "oklch(96% 0.03 26)"
+        ]
+      },
+      "success": {
+        "role": "semantic",
+        "displayName": "Success",
+        "canonical": "oklch(55% 0.13 150)",
+        "tonalRamp": [
+          "oklch(15% 0.13 150)",
+          "oklch(28% 0.13 150)",
+          "oklch(40% 0.13 150)",
+          "oklch(55% 0.13 150)",
+          "oklch(65% 0.13 150)",
+          "oklch(78% 0.13 150)",
+          "oklch(88% 0.08 150)",
+          "oklch(96% 0.04 150)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Page titles. Appears exactly once per page."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Card headings, sidebar app name, subsection titles."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Primary reading text. 14px system default."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Metadata, stat card labels, nav items."
+      }
+    },
+    "shadows": [],
+    "motion": [
+      {
+        "name": "state-transition",
+        "value": "transition: background-color 0.15s ease, color 0.15s ease",
+        "purpose": "Default state transition for interactive elements."
+      }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Sidebar Nav Item",
+      "kind": "nav",
+      "refersTo": "nav-item",
+      "description": "Navigation link in the dashboard sidebar. Active state uses Pine + Moss Tint.",
+      "html": "<a class=\"ds-nav-item ds-nav-item-active\" href=\"/stations\">Stations</a>",
+      "css": ".ds-nav-item { display: flex; align-items: center; padding: 8px 12px; border-radius: 6px; font-family: system-ui, -apple-system, sans-serif; font-size: 14px; font-weight: 500; color: #6b7280; text-decoration: none; transition: background-color 0.15s ease, color 0.15s ease; } .ds-nav-item:hover { background-color: #f9fafb; color: #1f2937; } .ds-nav-item-active { background-color: #eaf0e6; color: #007943; } .ds-nav-item-active:hover { background-color: #eaf0e6; color: #007943; }"
+    },
+    {
+      "name": "Stat Card",
+      "kind": "card",
+      "refersTo": "stat-card",
+      "description": "Metric display card on the dashboard overview.",
+      "html": "<div class=\"ds-stat-card\"><p class=\"ds-stat-card-label\">Total Stations</p><p class=\"ds-stat-card-value\">42</p></div>",
+      "css": ".ds-stat-card { background: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px 24px; font-family: system-ui, -apple-system, sans-serif; } .ds-stat-card-label { margin: 0 0 4px 0; font-size: 12px; font-weight: 500; color: #6b7280; letter-spacing: 0.025em; } .ds-stat-card-value { margin: 0; font-size: clamp(1.5rem, 4vw, 2rem); font-weight: 700; color: #1f2937; line-height: 1.2; }"
+    },
+    {
+      "name": "Error Banner",
+      "kind": "custom",
+      "refersTo": "error-banner",
+      "description": "Inline error message banner.",
+      "html": "<div class=\"ds-error-banner\" role=\"alert\">Failed to load stations. Please try again.</div>",
+      "css": ".ds-error-banner { background: #fef2f2; color: #dc2626; padding: 8px 16px; border-radius: 6px; font-family: system-ui, -apple-system, sans-serif; font-size: 14px; line-height: 1.5; }"
+    },
+    {
+      "name": "Loading Indicator",
+      "kind": "custom",
+      "refersTo": "loading-indicator",
+      "description": "Inline loading state with descriptive text.",
+      "html": "<div class=\"ds-loading\">Loading stations...</div>",
+      "css": ".ds-loading { background: #ffffff; padding: 8px 16px; border-radius: 6px; font-family: system-ui, -apple-system, sans-serif; font-size: 14px; color: #6b7280; display: inline-flex; align-items: center; gap: 8px; } .ds-loading::before { content: ''; width: 14px; height: 14px; border: 2px solid #e5e7eb; border-top-color: #007943; border-radius: 50%; animation: ds-spin 0.6s linear infinite; } @keyframes ds-spin { to { transform: rotate(360deg); } }"
+    },
+    {
+      "name": "Page Heading",
+      "kind": "custom",
+      "refersTo": "display",
+      "description": "Primary page heading. Appears once per page.",
+      "html": "<h1 class=\"ds-page-heading\">Overview</h1>",
+      "css": ".ds-page-heading { font-family: system-ui, -apple-system, sans-serif; font-size: clamp(1.5rem, 4vw, 2rem); font-weight: 700; color: #1f2937; line-height: 1.2; margin: 0 0 24px 0; text-wrap: balance; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Quiet Dashboard",
+    "overview": "BorneMap's interfaces feel like a calm, reliable instrument \u2014 precise without being cold, present without being loud. The design steps back so the data leads. This system explicitly rejects the generic corporate dashboard aesthetic: overdesigned admin panels, dark-themed SaaS interiors, heavy cards-and-gradients. Instead, it is flat by default, using tonal layering rather than shadows to create hierarchy. Surfaces sit quietly; the information on them is what catches your eye.",
+    "keyCharacteristics": [
+      "Flat, tonal hierarchy \u2014 no drop shadows at rest",
+      "Earthy green accent (Pine) used sparingly \u2014 it signals active state, never decoration",
+      "Refined and restrained components \u2014 clean lines, generous padding, gentle rounding (6-8px)",
+      "System font stack \u2014 no custom typefaces; clarity over personality",
+      "Calm colors, calm spacing, calm motion \u2014 nothing competes for attention"
+    ],
+    "rules": [
+      {
+        "name": "The Quiet Accent Rule",
+        "body": "Pine (the primary green) is used on 10% or less of any given screen. Most of the interface is neutral. Color draws attention to the active thing and nothing else.",
+        "section": "colors"
+      },
+      {
+        "name": "The Status-Last Rule",
+        "body": "Semantic colors (error, success) always appear after the neutral information they qualify, never before. A station name and address come first; availability color follows.",
+        "section": "colors"
+      },
+      {
+        "name": "The One-Page Ceiling Rule",
+        "body": "Display type appears exactly once per page. It names the current surface. Everything below it uses Title or Body.",
+        "section": "typography"
+      },
+      {
+        "name": "The Flat-By-Default Rule",
+        "body": "Surfaces are flat at rest. No box-shadow on cards, panels, sidebars, or modals. Depth is communicated through tonal contrast, not simulated elevation.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do use Pine (#007943) as the single accent color. One green, one role: active state.",
+      "Do keep surfaces flat. Use tonal layering (border + background tint) for hierarchy, never box-shadow on cards or panels.",
+      "Do put information first, status second. Station name and address before charger count.",
+      "Do use the system font stack for all text. No imported web fonts - clarity and speed over typographic personality.",
+      "Do use gentle rounding: 6px for nav items and inputs, 8px for cards. Nothing more rounded than 8px.",
+      "Do space generously. 24px between cards, 16px internal padding as the default unit."
+    ],
+    "donts": [
+      "Don't apply shadows to cards, panels, or sidebars. No shadow-sm, shadow-md, or any box-shadow on resting surfaces.",
+      "Don't use Pine as a decorative background. It is for interactive or active states only.",
+      "Don't use the green accent on more than 10% of any given screen. If the page looks green, the accent has lost its signal.",
+      "Don't build generic corporate dashboard patterns: no dark sidebars, no glowing gradients on stat cards, no icon-filled nav with tooltip labels, no border-left colored stripes on list items.",
+      "Don't use border-radius larger than 8px on any container, card, or section. Reserve pill shapes for badges only (and badges should be rare).",
+      "Don't use a spinner alone for loading. Always pair with a text description of what is loading.",
+      "Don't uppercase body text. Uppercase is for badges (max 4 words) only.",
+      "Don't nest cards. If a surface has multiple information groups, separate them with spacing and borders, not nested containers."
+    ]
+  }
+}

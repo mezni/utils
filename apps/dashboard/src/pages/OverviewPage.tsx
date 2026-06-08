@@ -66,14 +66,14 @@ export default function OverviewPage() {
 
   return (
     <div>
-      <h2 className="text-2xl font-bold text-gray-800 mb-6">Overview</h2>
+      <h2 className="text-2xl font-bold text-ink mb-6">Overview</h2>
 
       {loading && (
-        <div className="text-sm text-gray-500">Loading overview data...</div>
+        <div className="text-sm text-ink-muted">Loading overview data...</div>
       )}
 
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-2 rounded text-sm">
+        <div className="bg-error-surface text-error px-4 py-2 rounded-md text-sm">
           {error}
         </div>
       )}
@@ -83,10 +83,10 @@ export default function OverviewPage() {
           {cards.map((card) => (
             <div
               key={card.label}
-              className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm"
+              className="bg-surface rounded-lg border border-border-subtle p-6"
             >
-              <p className="text-sm text-gray-500 mb-1">{card.label}</p>
-              <p className="text-3xl font-bold text-gray-800">{card.value}</p>
+              <p className="text-sm text-ink-muted mb-1">{card.label}</p>
+              <p className="text-3xl font-bold text-ink">{card.value}</p>
             </div>
           ))}
         </div>

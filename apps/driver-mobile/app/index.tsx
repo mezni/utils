@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useLocation } from '../hooks/useLocation';
 import { fetchStationsNearby, type Station } from '../services/api';
 import StationMarker from '../components/StationMarker';
+import { colors } from '../src/theme';
 
 const DEFAULT_REGION = {
   latitude: 36.8065,
@@ -48,7 +49,7 @@ export default function MapScreen() {
     <View style={styles.container}>
       {loading && (
         <View style={styles.overlay}>
-          <ActivityIndicator size="small" color="#166534" />
+          <ActivityIndicator size="small" color={colors.pineDeep} />
           <Text style={styles.loadingText}>Loading stations...</Text>
         </View>
       )}
@@ -92,10 +93,10 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 4,
     fontSize: 12,
-    color: '#166534',
+    color: colors.pineDeep,
   },
   errorText: {
     fontSize: 12,
-    color: '#dc2626',
+    color: colors.error,
   },
 });

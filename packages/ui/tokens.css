@@ -1,0 +1,35 @@
+:root {
+  /* Primary palette */
+  --color-pine: #007943;
+  --color-pine-deep: #166534;
+  --color-moss-tint: #eaf0e6;
+
+  /* Neutral palette */
+  --color-ink: #1f2937;
+  --color-ink-muted: #6b7280;
+  --color-ink-subtle: #9ca3af;
+  --color-surface: #ffffff;
+  --color-surface-muted: #f3f4f6;
+  --color-border: #d1d5db;
+  --color-border-subtle: #e5e7eb;
+
+  /* Semantic palette */
+  --color-error: #dc2626;
+  --color-error-surface: #fef2f2;
+  --color-success: #16a34a;
+
+  /* Typography */
+  --font-body: system-ui, -apple-system, sans-serif;
+
+  /* Rounding */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+
+  /* Spacing */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+}
