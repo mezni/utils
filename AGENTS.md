@@ -1,4 +1,4 @@
 <!-- SPECKIT START -->
-Current plan: specs/004-admin-service/plan.md
-Admin Service CRUD endpoints for partners, stations, and chargers with health check. RESTful API with PostgreSQL + PostGIS, Rust, Actix-web, integration tests, Docker containerization.
+Current plan: specs/005-frontend-apps-scaffold/plan.md
+Scaffold three frontend apps — Driver Web (Vite+React+Leaflet), Driver Mobile (Expo+react-native-maps), Dashboard (Vite+React+AppShell) — with maps, station markers from real API, location handling, and sidebar navigation.
 <!-- SPECKIT END -->

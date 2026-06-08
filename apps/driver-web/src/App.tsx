@@ -1,3 +1,5 @@
+import StationMap from './components/StationMap';
+
 export default function App() {
-  return <h1>BorneMap Driver</h1>;
+  return <StationMap />;
 }

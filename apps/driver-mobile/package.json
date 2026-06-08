@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "expo start",
     "lint": "eslint . --ext .ts,.tsx",
-    "test": "vitest run"
+    "test": "vitest run",
+    "tsc": "tsc --noEmit"
   },
   "dependencies": {
     "expo": "~54.0.0",
