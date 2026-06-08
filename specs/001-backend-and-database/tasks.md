@@ -39,6 +39,26 @@ User Stories 2 and 3 are delivered in parallel but can be deferred to Sprint 1.2
 - [ ] T002 Create `app/routers/__init__.py` (empty init file for package)
 - [ ] T003 [P] Create `app/routers/v1/__init__.py` (empty init file for v1 package)
 
+**Docker Compose Setup**:
+
+- [ ] T004 [P] Create `docker-compose.yml` at repository root with PostgreSQL 15 service (`ev_platform` database, credentials from .env)
+- [ ] T005 [P] Create `docker-compose.override.yml` for local development with volume mounts for `source/services/bornemap-service/app/` (hot reload)
+- [ ] T006 [P] Create `.env.example` at repository root with DATABASE_URL, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB, API_PORT variables
+- [ ] T007 [P] Create `.env` from `.env.example` with local development values (PostgreSQL localhost:5432, credentials, database name ev_platform)
+- [ ] T008 Add `docker-compose.yml` and `.env.example` to git; add `.env` to `.gitignore` (do not commit secrets)
+- [ ] T009 Create `Dockerfile` at `source/services/bornemap-service/Dockerfile` for FastAPI application (Python 3.11, dependencies from requirements.txt)
+- [ ] T010 Update `source/services/bornemap-service/requirements.txt` to include psycopg2-binary (PostgreSQL adapter)
+
+**Local Development Guide**:
+
+- [ ] T011 Create `docs/guides/local-setup.md` documenting:
+  - Docker Compose startup: `docker-compose up -d`
+  - Database initialization: `alembic upgrade head`
+  - Running tests: `pytest`
+  - Seed data loading (optional): `python -m app.seed`
+  - API access: `http://localhost:8000/api/docs`
+  - Stopping services: `docker-compose down`
+
 ---
 
 ## Phase 2: Foundational (Blocking Prerequisites)
@@ -47,12 +67,12 @@ User Stories 2 and 3 are delivered in parallel but can be deferred to Sprint 1.2
 
 **⚠️ CRITICAL**: No endpoint implementation can begin until Phase 2 is complete
 
-- [ ] T004 [P] Create v1 health router at `source/services/bornemap-service/app/routers/v1/health.py` with stub endpoint
-- [ ] T005 [P] Create v1 partners router at `source/services/bornemap-service/app/routers/v1/partners.py` with stub endpoints
-- [ ] T006 [P] Create v1 stations router at `source/services/bornemap-service/app/routers/v1/stations.py` with stub endpoints
-- [ ] T007 [P] Create v1 chargers router at `source/services/bornemap-service/app/routers/v1/chargers.py` with stub endpoints
-- [ ] T008 Update `source/services/bornemap-service/app/main.py` to register all v1 routers under `/api/v1` prefix with proper FastAPI `include_router()` calls
-- [ ] T009 [P] Create smoke test file at `source/services/bornemap-service/tests/test_versioning.py` with placeholder tests for versioned and unversioned endpoints
+- [ ] T012 [P] Create v1 health router at `source/services/bornemap-service/app/routers/v1/health.py` with stub endpoint
+- [ ] T013 [P] Create v1 partners router at `source/services/bornemap-service/app/routers/v1/partners.py` with stub endpoints
+- [ ] T014 [P] Create v1 stations router at `source/services/bornemap-service/app/routers/v1/stations.py` with stub endpoints
+- [ ] T015 [P] Create v1 chargers router at `source/services/bornemap-service/app/routers/v1/chargers.py` with stub endpoints
+- [ ] T016 Update `source/services/bornemap-service/app/main.py` to register all v1 routers under `/api/v1` prefix with proper FastAPI `include_router()` calls
+- [ ] T017 [P] Create smoke test file at `source/services/bornemap-service/tests/test_versioning.py` with placeholder tests for versioned and unversioned endpoints
 
 **Checkpoint**: Routing infrastructure ready. All routers registered. Smoke tests can run. Foundation complete - endpoint implementation can now begin in parallel.
 
@@ -68,56 +88,56 @@ User Stories 2 and 3 are delivered in parallel but can be deferred to Sprint 1.2
 
 > **NOTE: These tests are written to verify versioning behavior. Run first to verify all fail before implementation.**
 
-- [ ] T010 [P] [US1] Add smoke test for GET /api/v1/health returns 200 with correct schema in `source/services/bornemap-service/tests/test_versioning.py`
-- [ ] T011 [P] [US1] Add smoke test for GET /api/v1/partners returns 200 with data array in `source/services/bornemap-service/tests/test_versioning.py`
-- [ ] T012 [P] [US1] Add smoke test for GET /api/v1/stations returns 200 with data array in `source/services/bornemap-service/tests/test_versioning.py`
-- [ ] T013 [P] [US1] Add smoke test for GET /api/v1/chargers returns 200 with data array in `source/services/bornemap-service/tests/test_versioning.py`
-- [ ] T014 [P] [US1] Add smoke test for GET /api/stations (unversioned) returns 404 in `source/services/bornemap-service/tests/test_versioning.py`
-- [ ] T015 [P] [US1] Add smoke test for GET /api/v999/stations (invalid version) returns 404 in `source/services/bornemap-service/tests/test_versioning.py`
+- [ ] T018 [P] [US1] Add smoke test for GET /api/v1/health returns 200 with correct schema in `source/services/bornemap-service/tests/test_versioning.py`
+- [ ] T019 [P] [US1] Add smoke test for GET /api/v1/partners returns 200 with data array in `source/services/bornemap-service/tests/test_versioning.py`
+- [ ] T020 [P] [US1] Add smoke test for GET /api/v1/stations returns 200 with data array in `source/services/bornemap-service/tests/test_versioning.py`
+- [ ] T021 [P] [US1] Add smoke test for GET /api/v1/chargers returns 200 with data array in `source/services/bornemap-service/tests/test_versioning.py`
+- [ ] T022 [P] [US1] Add smoke test for GET /api/stations (unversioned) returns 404 in `source/services/bornemap-service/tests/test_versioning.py`
+- [ ] T023 [P] [US1] Add smoke test for GET /api/v999/stations (invalid version) returns 404 in `source/services/bornemap-service/tests/test_versioning.py`
 
 ### Implementation for User Story 1
 
 **Health Endpoint** (1 endpoint):
 
-- [ ] T016 [US1] Implement GET /api/v1/health in `source/services/bornemap-service/app/routers/v1/health.py` returning `{"status":"ok","service":"bornemap-service","db":"ok"}`
+- [ ] T024 [US1] Implement GET /api/v1/health in `source/services/bornemap-service/app/routers/v1/health.py` returning `{"status":"ok","service":"bornemap-service","db":"ok"}`
 
 **Partners Endpoints** (5 endpoints):
 
-- [ ] T017 [P] [US1] Implement GET /api/v1/partners in `source/services/bornemap-service/app/routers/v1/partners.py` returning list with data and count fields
-- [ ] T018 [P] [US1] Implement POST /api/v1/partners in `source/services/bornemap-service/app/routers/v1/partners.py` creating partner, returning 201
-- [ ] T019 [P] [US1] Implement GET /api/v1/partners/{id} in `source/services/bornemap-service/app/routers/v1/partners.py` returning single partner or 404
-- [ ] T020 [P] [US1] Implement PUT /api/v1/partners/{id} in `source/services/bornemap-service/app/routers/v1/partners.py` updating partner or returning 404
-- [ ] T021 [P] [US1] Implement DELETE /api/v1/partners/{id} in `source/services/bornemap-service/app/routers/v1/partners.py` deleting partner, returning 204
+- [ ] T025 [P] [US1] Implement GET /api/v1/partners in `source/services/bornemap-service/app/routers/v1/partners.py` returning list with data and count fields
+- [ ] T026 [P] [US1] Implement POST /api/v1/partners in `source/services/bornemap-service/app/routers/v1/partners.py` creating partner, returning 201
+- [ ] T027 [P] [US1] Implement GET /api/v1/partners/{id} in `source/services/bornemap-service/app/routers/v1/partners.py` returning single partner or 404
+- [ ] T028 [P] [US1] Implement PUT /api/v1/partners/{id} in `source/services/bornemap-service/app/routers/v1/partners.py` updating partner or returning 404
+- [ ] T029 [P] [US1] Implement DELETE /api/v1/partners/{id} in `source/services/bornemap-service/app/routers/v1/partners.py` deleting partner, returning 204
 
 **Stations Endpoints** (7 endpoints):
 
-- [ ] T022 [P] [US1] Implement GET /api/v1/stations in `source/services/bornemap-service/app/routers/v1/stations.py` with optional partner_id filter, returning list with charger counts
-- [ ] T023 [P] [US1] Implement GET /api/v1/stations/nearby in `source/services/bornemap-service/app/routers/v1/stations.py` with lat/lng/radius_km params, ordered by distance_m
-- [ ] T024 [P] [US1] Implement POST /api/v1/stations in `source/services/bornemap-service/app/routers/v1/stations.py` creating station, returning 201
-- [ ] T025 [P] [US1] Implement GET /api/v1/stations/{id} in `source/services/bornemap-service/app/routers/v1/stations.py` returning station with chargers array or 404
-- [ ] T026 [P] [US1] Implement PUT /api/v1/stations/{id} in `source/services/bornemap-service/app/routers/v1/stations.py` updating station or returning 404
-- [ ] T027 [P] [US1] Implement DELETE /api/v1/stations/{id} in `source/services/bornemap-service/app/routers/v1/stations.py` deleting station, returning 204
-- [ ] T028 [P] [US1] Add field calculation to stations responses: charger_count (total), available_count (status=="available") in `source/services/bornemap-service/app/routers/v1/stations.py`
+- [ ] T030 [P] [US1] Implement GET /api/v1/stations in `source/services/bornemap-service/app/routers/v1/stations.py` with optional partner_id filter, returning list with charger counts
+- [ ] T031 [P] [US1] Implement GET /api/v1/stations/nearby in `source/services/bornemap-service/app/routers/v1/stations.py` with lat/lng/radius_km params, ordered by distance_m
+- [ ] T032 [P] [US1] Implement POST /api/v1/stations in `source/services/bornemap-service/app/routers/v1/stations.py` creating station, returning 201
+- [ ] T033 [P] [US1] Implement GET /api/v1/stations/{id} in `source/services/bornemap-service/app/routers/v1/stations.py` returning station with chargers array or 404
+- [ ] T034 [P] [US1] Implement PUT /api/v1/stations/{id} in `source/services/bornemap-service/app/routers/v1/stations.py` updating station or returning 404
+- [ ] T035 [P] [US1] Implement DELETE /api/v1/stations/{id} in `source/services/bornemap-service/app/routers/v1/stations.py` deleting station, returning 204
+- [ ] T036 [P] [US1] Add field calculation to stations responses: charger_count (total), available_count (status=="available") in `source/services/bornemap-service/app/routers/v1/stations.py`
 
 **Chargers Endpoints** (5 endpoints):
 
-- [ ] T029 [P] [US1] Implement GET /api/v1/chargers in `source/services/bornemap-service/app/routers/v1/chargers.py` with optional station_id filter, returning list with data and count
-- [ ] T030 [P] [US1] Implement POST /api/v1/chargers in `source/services/bornemap-service/app/routers/v1/chargers.py` creating charger, returning 201
-- [ ] T031 [P] [US1] Implement GET /api/v1/chargers/{id} in `source/services/bornemap-service/app/routers/v1/chargers.py` returning single charger or 404
-- [ ] T032 [P] [US1] Implement PUT /api/v1/chargers/{id} in `source/services/bornemap-service/app/routers/v1/chargers.py` updating charger (primary use: status changes) or returning 404
-- [ ] T033 [P] [US1] Implement DELETE /api/v1/chargers/{id} in `source/services/bornemap-service/app/routers/v1/chargers.py` deleting charger, returning 204
+- [ ] T037 [P] [US1] Implement GET /api/v1/chargers in `source/services/bornemap-service/app/routers/v1/chargers.py` with optional station_id filter, returning list with data and count
+- [ ] T038 [P] [US1] Implement POST /api/v1/chargers in `source/services/bornemap-service/app/routers/v1/chargers.py` creating charger, returning 201
+- [ ] T039 [P] [US1] Implement GET /api/v1/chargers/{id} in `source/services/bornemap-service/app/routers/v1/chargers.py` returning single charger or 404
+- [ ] T040 [P] [US1] Implement PUT /api/v1/chargers/{id} in `source/services/bornemap-service/app/routers/v1/chargers.py` updating charger (primary use: status changes) or returning 404
+- [ ] T041 [P] [US1] Implement DELETE /api/v1/chargers/{id} in `source/services/bornemap-service/app/routers/v1/chargers.py` deleting charger, returning 204
 
 **Validation & Error Handling**:
 
-- [ ] T034 [US1] Add input validation to all endpoint request schemas in Pydantic models, ensuring 422 Unprocessable Entity on invalid input (e.g., lat out of range -90 to 90)
-- [ ] T035 [US1] Add error handling for 404 Not Found responses across all GET, PUT, DELETE endpoints in `source/services/bornemap-service/app/routers/v1/`
-- [ ] T036 [US1] Add error response format documentation in endpoint docstrings (all errors return `{"detail": "error message"}`)
+- [ ] T042 [US1] Add input validation to all endpoint request schemas in Pydantic models, ensuring 422 Unprocessable Entity on invalid input (e.g., lat out of range -90 to 90)
+- [ ] T043 [US1] Add error handling for 404 Not Found responses across all GET, PUT, DELETE endpoints in `source/services/bornemap-service/app/routers/v1/`
+- [ ] T044 [US1] Add error response format documentation in endpoint docstrings (all errors return `{"detail": "error message"}`)
 
 **Testing User Story 1**:
 
-- [ ] T037 [US1] Run all smoke tests: `pytest source/services/bornemap-service/tests/test_versioning.py -v` — verify all 16 endpoints respond correctly
-- [ ] T038 [US1] Test nearby endpoint with coordinates far from Tunisia — verify returns empty list correctly in `source/services/bornemap-service/tests/test_versioning.py`
-- [ ] T039 [US1] Test invalid latitude/longitude values — verify 422 Unprocessable Entity response in `source/services/bornemap-service/tests/test_versioning.py`
+- [ ] T045 [US1] Run all smoke tests: `pytest source/services/bornemap-service/tests/test_versioning.py -v` — verify all 16 endpoints respond correctly
+- [ ] T046 [US1] Test nearby endpoint with coordinates far from Tunisia — verify returns empty list correctly in `source/services/bornemap-service/tests/test_versioning.py`
+- [ ] T047 [US1] Test invalid latitude/longitude values — verify 422 Unprocessable Entity response in `source/services/bornemap-service/tests/test_versioning.py`
 
 **Checkpoint**: User Story 1 complete. All 16 endpoints under `/api/v1/`. Smoke tests passing. Ready for US2 and US3.
 
@@ -133,23 +153,23 @@ User Stories 2 and 3 are delivered in parallel but can be deferred to Sprint 1.2
 
 **OpenAPI/Swagger Documentation**:
 
-- [ ] T040 [US2] Add endpoint docstrings and descriptions to all v1 health router endpoints in `source/services/bornemap-service/app/routers/v1/health.py`
-- [ ] T041 [US2] Add endpoint docstrings and descriptions to all v1 partners router endpoints in `source/services/bornemap-service/app/routers/v1/partners.py`
-- [ ] T042 [US2] Add endpoint docstrings and descriptions to all v1 stations router endpoints in `source/services/bornemap-service/app/routers/v1/stations.py` with Euclidean distance calculation details
-- [ ] T043 [US2] Add endpoint docstrings and descriptions to all v1 chargers router endpoints in `source/services/bornemap-service/app/routers/v1/chargers.py`
-- [ ] T044 [US2] Add response schema examples (Pydantic models) to all endpoints for auto-documentation in `source/services/bornemap-service/app/schemas/`
-- [ ] T045 [US2] Update FastAPI app title and description in `source/services/bornemap-service/app/main.py` to mention API versioning and 12-month support policy
+- [ ] T048 [US2] Add endpoint docstrings and descriptions to all v1 health router endpoints in `source/services/bornemap-service/app/routers/v1/health.py`
+- [ ] T049 [US2] Add endpoint docstrings and descriptions to all v1 partners router endpoints in `source/services/bornemap-service/app/routers/v1/partners.py`
+- [ ] T050 [US2] Add endpoint docstrings and descriptions to all v1 stations router endpoints in `source/services/bornemap-service/app/routers/v1/stations.py` with Euclidean distance calculation details
+- [ ] T051 [US2] Add endpoint docstrings and descriptions to all v1 chargers router endpoints in `source/services/bornemap-service/app/routers/v1/chargers.py`
+- [ ] T052 [US2] Add response schema examples (Pydantic models) to all endpoints for auto-documentation in `source/services/bornemap-service/app/schemas/`
+- [ ] T053 [US2] Update FastAPI app title and description in `source/services/bornemap-service/app/main.py` to mention API versioning and 12-month support policy
 
 **API Documentation File**:
 
-- [ ] T046 [US2] Update `docs/api/bornemap-service.md` to document all v1 endpoints with `/api/v1/` prefix, adding "API Versioning" section explaining v1 is current active version, 12-month support window, and link to v2 migration guide (when v2 released)
-- [ ] T047 [US2] Add deprecation policy documentation to `docs/api/bornemap-service.md` explaining 12-month support timeline and how clients will be notified
+- [ ] T054 [US2] Update `docs/api/bornemap-service.md` to document all v1 endpoints with `/api/v1/` prefix, adding "API Versioning" section explaining v1 is current active version, 12-month support window, and link to v2 migration guide (when v2 released)
+- [ ] T055 [US2] Add deprecation policy documentation to `docs/api/bornemap-service.md` explaining 12-month support timeline and how clients will be notified
 
 **Testing User Story 2**:
 
-- [ ] T048 [US2] Verify OpenAPI spec at `/api/docs` loads without errors and shows all endpoints in `test_versioning.py`
-- [ ] T049 [US2] Verify all endpoint descriptions mention v1 version in docstrings, confirming developers can quickly identify version
-- [ ] T050 [US2] Verify API documentation file `docs/api/bornemap-service.md` is accurate and lists all 16 endpoints with v1 prefix
+- [ ] T056 [US2] Verify OpenAPI spec at `/api/docs` loads without errors and shows all endpoints in `test_versioning.py`
+- [ ] T057 [US2] Verify all endpoint descriptions mention v1 version in docstrings, confirming developers can quickly identify version
+- [ ] T058 [US2] Verify API documentation file `docs/api/bornemap-service.md` is accurate and lists all 16 endpoints with v1 prefix
 
 **Checkpoint**: User Story 2 complete. Documentation auto-generated. Clear path for developers to identify v1 and future upgrades.
 
@@ -165,22 +185,22 @@ User Stories 2 and 3 are delivered in parallel but can be deferred to Sprint 1.2
 
 **Schema Immutability Documentation**:
 
-- [ ] T051 [US3] Create architecture decision record (ADR) at `docs/adr/ADR-018-api-versioning.md` documenting URL-based versioning decision, 12-month support window, and immutability guarantee
-- [ ] T052 [US3] Add schema lock documentation in `specs/001-backend-and-database/contracts/api-v1.md` (already written) marking all v1 endpoint schemas as frozen and immutable
+- [ ] T059 [US3] Create architecture decision record (ADR) at `docs/adr/ADR-018-api-versioning.md` documenting URL-based versioning decision, 12-month support window, and immutability guarantee
+- [ ] T060 [US3] Add schema lock documentation in `specs/001-backend-and-database/contracts/api-v1.md` (already written) marking all v1 endpoint schemas as frozen and immutable
 
 **Validation for Cross-Service Migration**:
 
-- [ ] T053 [US3] Document in `source/services/bornemap-service/app/routers/v1/__init__.py` that v1 routers must NEVER be modified; new versions created in separate modules
-- [ ] T054 [US3] Add smoke test for schema stability: verify v1 response fields match contract in `source/services/bornemap-service/tests/test_versioning.py`
+- [ ] T061 [US3] Document in `source/services/bornemap-service/app/routers/v1/__init__.py` that v1 routers must NEVER be modified; new versions created in separate modules
+- [ ] T062 [US3] Add smoke test for schema stability: verify v1 response fields match contract in `source/services/bornemap-service/tests/test_versioning.py`
 
 **Migration Runbook (for MVP-2)**:
 
-- [ ] T055 [US3] Create `docs/guides/api-migration-v1-to-v2.md` (draft) outlining how Rust services will add `/api/v2/` routers alongside `/api/v1/` without modifying v1 code
+- [ ] T063 [US3] Create `docs/guides/api-migration-v1-to-v2.md` (draft) outlining how Rust services will add `/api/v2/` routers alongside `/api/v1/` without modifying v1 code
 
 **Testing User Story 3**:
 
-- [ ] T056 [US3] Verify v1 schemas match contracts in `source/services/bornemap-service/tests/test_versioning.py` (validates foundation for MVP-2 migration)
-- [ ] T057 [US3] Document in test comments that these tests will be replicated in MVP-2 Rust services to verify v1 endpoint compatibility
+- [ ] T064 [US3] Verify v1 schemas match contracts in `source/services/bornemap-service/tests/test_versioning.py` (validates foundation for MVP-2 migration)
+- [ ] T065 [US3] Document in test comments that these tests will be replicated in MVP-2 Rust services to verify v1 endpoint compatibility
 
 **Checkpoint**: User Story 3 complete. Foundation laid for safe MVP-2 migration. v1 contracts frozen and documented.
 
@@ -190,14 +210,14 @@ User Stories 2 and 3 are delivered in parallel but can be deferred to Sprint 1.2
 
 **Purpose**: Final integration, performance validation, and documentation
 
-- [ ] T058 [P] Run full test suite: `pytest source/services/bornemap-service/tests/ -v` — all tests pass
-- [ ] T059 [P] Test endpoint latency: verify all 16 endpoints respond in <200ms p95 using load test or timing measurements
-- [ ] T060 [P] Test max throughput: verify service handles 1000 req/s without degradation (use `ab` or `wrk` load test)
-- [ ] T061 Verify all responses follow error format: `{"detail": "message"}` for 400, 404, 422, 500 errors
-- [ ] T062 Add logging to v1 routers: log each endpoint call with method, path, status code, latency in `source/services/bornemap-service/app/routers/v1/`
-- [ ] T063 Update README in `source/services/bornemap-service/` with API versioning overview and link to `docs/api/bornemap-service.md`
-- [ ] T064 Update onboarding guide `docs/guides/onboarding.md` to instruct developers to use `/api/v1/` endpoints when testing locally
-- [ ] T065 Smoke test final: `pytest source/services/bornemap-service/tests/test_versioning.py::test_versioning -v` — all versioning-specific tests pass
+- [ ] T066 [P] Run full test suite: `pytest source/services/bornemap-service/tests/ -v` — all tests pass
+- [ ] T067 [P] Test endpoint latency: verify all 16 endpoints respond in <200ms p95 using load test or timing measurements
+- [ ] T068 [P] Test max throughput: verify service handles 1000 req/s without degradation (use `ab` or `wrk` load test)
+- [ ] T069 Verify all responses follow error format: `{"detail": "message"}` for 400, 404, 422, 500 errors
+- [ ] T070 Add logging to v1 routers: log each endpoint call with method, path, status code, latency in `source/services/bornemap-service/app/routers/v1/`
+- [ ] T071 Update README in `source/services/bornemap-service/` with API versioning overview and link to `docs/api/bornemap-service.md`
+- [ ] T072 Update onboarding guide `docs/guides/onboarding.md` to instruct developers to use `/api/v1/` endpoints when testing locally
+- [ ] T073 Smoke test final: `pytest source/services/bornemap-service/tests/test_versioning.py::test_versioning -v` — all versioning-specific tests pass
 
 **Checkpoint**: All endpoints tested, documented, and ready for integration testing with Dashboard and Driver apps.
 
@@ -227,13 +247,13 @@ Within each phase:
 **Day 1 Morning**: Phase 1 (3 tasks in parallel, 30 min)
 **Day 1 Afternoon**: Phase 2 (T004-T007 in parallel + T008 sequential + T009 parallel, 2 hours)
 **Day 2**: Phase 3 User Story 1
-  - T010-T015: Write all tests in parallel (1 hour)
-  - T016-T033: Implement all endpoints in parallel by router (4 hours)
-  - T034-T036: Add validation in parallel by router (1 hour)
-  - T037-T039: Run tests (30 min)
+  - T018-T023: Write all tests in parallel (1 hour)
+  - T024-T041: Implement all endpoints in parallel by router (4 hours)
+  - T042-T044: Add validation in parallel by router (1 hour)
+  - T045-T047: Run tests (30 min)
 **Day 3**: Phase 4 & 5 in parallel
-  - Phase 4: T040-T050 (documentation)
-  - Phase 5: T051-T057 (schema + migration docs)
+  - Phase 4: T048-T058 (documentation)
+  - Phase 5: T059-T065 (schema + migration docs)
 **Day 4 Morning**: Phase 6 (Polish, testing, 2 hours)
 
 **Total: ~4-5 days with parallelization**
@@ -272,12 +292,12 @@ This MVP-first approach validates the versioning concept with the core endpoints
 
 ## Summary
 
-- **Total Tasks**: 65
+- **Total Tasks**: 73 (added 8 Docker Compose tasks)
 - **Tasks by User Story**:
-  - US1 (Versioned Endpoints): 28 tasks (T010-T037)
-  - US2 (Documentation): 11 tasks (T040-T050)
-  - US3 (Backward Compatibility): 7 tasks (T051-T057)
-  - Shared (Setup + Polish): 19 tasks (T001-T009, T058-T065)
-- **Parallelizable**: 45+ tasks can run in parallel (marked [P])
-- **MVP Scope**: 28 tasks (Phase 1, 2, 3)
+  - US1 (Versioned Endpoints): 30 tasks (T018-T047)
+  - US2 (Documentation): 11 tasks (T048-T058)
+  - US3 (Backward Compatibility): 7 tasks (T059-T065)
+  - Shared (Setup + Docker + Polish): 25 tasks (T001-T017, T066-T073)
+- **Parallelizable**: 50+ tasks can run in parallel (marked [P])
+- **MVP Scope**: 45 tasks (Phase 1, 2, 3 including Docker Compose setup)
 - **Estimated Duration**: 4-5 days with full parallelization; 7-10 days sequential
