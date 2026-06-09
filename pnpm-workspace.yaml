@@ -1,0 +1,4 @@
+packages:
+  - 'source/apps/*'
+  - 'source/packages/*'
+  - 'source/mock'

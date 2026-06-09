@@ -1,0 +1,14 @@
+{
+  "name": "borne-map",
+  "private": true,
+  "scripts": {
+    "mock": "pnpm --filter @borne-map/mock dev",
+    "dev:dashboard": "echo 'TBD: Dashboard dev server'",
+    "dev:web": "echo 'TBD: Driver Web dev server'",
+    "dev:mobile": "echo 'TBD: Driver Mobile dev server'",
+    "dev": "echo 'Available: mock, dev:dashboard, dev:web, dev:mobile'"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
