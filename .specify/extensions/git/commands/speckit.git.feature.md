@@ -36,8 +36,9 @@ Determine the branch numbering strategy by checking configuration in this order:
 
 ## Execution
 
-Generate a concise short name (2-4 words) for the branch:
-- Analyze the feature description and extract the most meaningful keywords
+Generate a concise short name for the branch:
+- **Sprint pattern detection**: If the feature description matches `Sprint X.X — <sprint name>` (e.g., "Sprint 1.1 — Mock API and Design System Foundation"), extract the sprint name portion and use it as the short name directly (e.g., "Mock-API-and-Design-System-Foundation"). Preserve the sprint name's original words, only slugify for URL/branch safety.
+- Otherwise, analyze the feature description and extract the most meaningful keywords (2-4 words)
 - Use action-noun format when possible (e.g., "add-user-auth", "fix-payment-bug")
 - Preserve technical terms and acronyms (OAuth2, API, JWT, etc.)
 
