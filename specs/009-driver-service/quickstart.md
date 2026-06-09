@@ -28,7 +28,7 @@ DATABASE_URL="postgres://postgres:borne_map@localhost:5432/borne_map" \
 
 ```bash
 # Build
-docker build -t borne-driver-service -f source/apps/driver-service/Dockerfile .
+docker build -t borne-driver-service -f source/services/driver-service/Dockerfile .
 
 # Run
 docker run -p 8080:8080 \

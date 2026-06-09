@@ -65,7 +65,7 @@ source/
 ├── crates/
 │   ├── ev-core/         # enums + id generation
 │   └── ev-db/           # PgPool + pagination
-└── apps/
+└── services/
     ├── driver-service/  # existing (port 8080)
     └── admin-service/   # NEW (port 8081)
         ├── Cargo.toml

@@ -37,7 +37,7 @@ cargo run --package admin-service
 
 ```bash
 # Build
-docker build -f source/apps/admin-service/Dockerfile -t admin-service .
+docker build -f source/services/admin-service/Dockerfile -t admin-service .
 
 # Run
 docker run -p 8081:8081 \

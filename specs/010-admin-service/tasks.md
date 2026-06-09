@@ -16,7 +16,7 @@
 
 ## Path Conventions
 
-All paths are relative to workspace root `source/`. Admin service lives at `source/apps/admin-service/`.
+All paths are relative to workspace root `source/`. Admin service lives at `source/services/admin-service/`.
 
 ---
 

@@ -3,8 +3,8 @@ resolver = "2"
 members = [
     "crates/ev-core",
     "crates/ev-db",
-    "apps/driver-service",
-    "apps/admin-service",
+    "services/driver-service",
+    "services/admin-service",
 ]
 
 [workspace.package]

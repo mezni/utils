@@ -4,10 +4,10 @@ FROM rust:1.85-slim-bookworm AS builder
 WORKDIR /app
 COPY Cargo.toml Cargo.lock ./
 COPY crates/ ./crates/
-COPY apps/admin-service/ ./apps/admin-service/
+COPY services/driver-service/ ./services/driver-service/
 
-RUN cargo build --package admin-service --release && \
-    cp target/release/admin-service /admin-service
+RUN cargo build --package driver-service --release && \
+    cp target/release/driver-service /driver-service
 
 FROM debian:bookworm-slim AS runtime
 
@@ -15,8 +15,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates libssl3 libpq5 && \
     rm -rf /var/lib/apt/lists/*
 
-COPY --from=builder /admin-service /admin-service
+COPY --from=builder /driver-service /driver-service
 
-EXPOSE 8081
+EXPOSE 8080
 
-CMD ["/admin-service"]
+CMD ["/driver-service"]
