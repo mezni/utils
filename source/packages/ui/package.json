@@ -1,0 +1,14 @@
+{
+  "name": "@borne-map/ui",
+  "version": "1.0.0",
+  "private": true,
+  "main": "src/tokens/index.ts",
+  "types": "src/tokens/index.ts",
+  "files": [
+    "src/tokens",
+    "tailwind.config.base.js"
+  ],
+  "devDependencies": {
+    "typescript": "5.7.3"
+  }
+}

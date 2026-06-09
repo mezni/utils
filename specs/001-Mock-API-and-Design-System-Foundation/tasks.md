@@ -24,9 +24,9 @@ Project paths follow the monorepo structure under `source/` as defined in the co
 
 **Purpose**: Initialize pnpm workspace and project root
 
-- [ ] T001 Create pnpm-workspace.yaml listing source/apps/* and source/packages/* in pnpm-workspace.yaml
-- [ ] T002 [P] Create root package.json with scripts: mock, dev:dashboard, dev:web, dev:mobile, dev in package.json
-- [ ] T003 [P] Create .gitignore for Node.js/pnpm monorepo at .gitignore
+- [X] T001 Create pnpm-workspace.yaml listing source/apps/* and source/packages/* in pnpm-workspace.yaml
+- [X] T002 [P] Create root package.json with scripts: mock, dev:dashboard, dev:web, dev:mobile, dev in package.json
+- [X] T003 [P] Create .gitignore for Node.js/pnpm monorepo at .gitignore
 
 ---
 
@@ -36,9 +36,9 @@ Project paths follow the monorepo structure under `source/` as defined in the co
 
 **⚠️ CRITICAL**: No US1 verification can begin until this phase is complete
 
-- [ ] T004 Create source/mock/ directory and install json-server dependency in source/mock/package.json
-- [ ] T005 Write routes.json for /api/* → /$1 rewrite in source/mock/routes.json
-- [ ] T006 Create source/packages/ui/ directory with package.json, tsconfig.json for the design token package in source/packages/ui/package.json
+- [X] T004 Create source/mock/ directory and install json-server dependency in source/mock/package.json
+- [X] T005 Write routes.json for /api/* → /$1 rewrite in source/mock/routes.json
+- [X] T006 Create source/packages/ui/ directory with package.json, tsconfig.json for the design token package in source/packages/ui/package.json
 
 **Checkpoint**: Foundation ready — mock API and token package infrastructure exists
 
@@ -52,11 +52,11 @@ Project paths follow the monorepo structure under `source/` as defined in the co
 
 ### Implementation for User Story 1
 
-- [ ] T007 [P] [US1] Define partner data: 3 partners with distinct flag states in source/mock/db.json
-- [ ] T008 [P] [US1] Define station data: 15 stations across 15 Tunisian cities in source/mock/db.json
-- [ ] T009 [P] [US1] Define charger data: 24 chargers with mixed connector types in source/mock/db.json
-- [ ] T010 [P] [US1] Define station_availability data: 15 availability records in source/mock/db.json
-- [ ] T011 [US1] Wire all four resources together in source/mock/db.json and verify relationships
+- [X] T007 [P] [US1] Define partner data: 3 partners with distinct flag states in source/mock/db.json
+- [X] T008 [P] [US1] Define station data: 15 stations across 15 Tunisian cities in source/mock/db.json
+- [X] T009 [P] [US1] Define charger data: 24 chargers with mixed connector types in source/mock/db.json
+- [X] T010 [P] [US1] Define station_availability data: 15 availability records in source/mock/db.json
+- [X] T011 [US1] Wire all four resources together in source/mock/db.json and verify relationships
 
 **Checkpoint**: At this point, User Story 1 should be fully functional — all API endpoints respond correctly
 
@@ -70,13 +70,13 @@ Project paths follow the monorepo structure under `source/` as defined in the co
 
 ### Implementation for User Story 2
 
-- [ ] T012 [P] [US2] Create color tokens with all brand.*, surface.*, text.*, border.*, status.* values in source/packages/ui/src/tokens/colors.ts
-- [ ] T013 [P] [US2] Create typography tokens with font family, size, weight values in source/packages/ui/src/tokens/typography.ts
-- [ ] T014 [P] [US2] Create spacing and radius tokens in source/packages/ui/src/tokens/spacing.ts and source/packages/ui/src/tokens/radius.ts
-- [ ] T015 [P] [US2] Create shadow tokens (card, panel, float, pin) in source/packages/ui/src/tokens/shadows.ts
-- [ ] T016 [P] [US2] Create native.ts with same values as colors.ts for React Native in source/packages/ui/src/tokens/native.ts
-- [ ] T017 [US2] Create barrel export index.ts for all tokens in source/packages/ui/src/tokens/index.ts
-- [ ] T018 [US2] Create tailwind.config.base.js extending all tokens in source/packages/ui/tailwind.config.base.js
+- [X] T012 [P] [US2] Create color tokens with all brand.*, surface.*, text.*, border.*, status.* values in source/packages/ui/src/tokens/colors.ts
+- [X] T013 [P] [US2] Create typography tokens with font family, size, weight values in source/packages/ui/src/tokens/typography.ts
+- [X] T014 [P] [US2] Create spacing and radius tokens in source/packages/ui/src/tokens/spacing.ts and source/packages/ui/src/tokens/radius.ts
+- [X] T015 [P] [US2] Create shadow tokens (card, panel, float, pin) in source/packages/ui/src/tokens/shadows.ts
+- [X] T016 [P] [US2] Create native.ts with same values as colors.ts for React Native in source/packages/ui/src/tokens/native.ts
+- [X] T017 [US2] Create barrel export index.ts for all tokens in source/packages/ui/src/tokens/index.ts
+- [X] T018 [US2] Create tailwind.config.base.js extending all tokens in source/packages/ui/tailwind.config.base.js
 
 **Checkpoint**: All design tokens defined and exportable — usable by web and React Native apps
 
@@ -90,9 +90,9 @@ Project paths follow the monorepo structure under `source/` as defined in the co
 
 ### Implementation for User Story 3
 
-- [ ] T019 [P] [US3] Add json-server dev dependency and mock script in source/mock/package.json
-- [ ] T020 [US3] Wire root pnpm mock script to run json-server from source/mock/ in package.json
-- [ ] T021 [US3] Add placeholder dev:dashboard, dev:web, dev:mobile scripts in root package.json
+- [X] T019 [P] [US3] Add json-server dev dependency and mock script in source/mock/package.json
+- [X] T020 [US3] Wire root pnpm mock script to run json-server from source/mock/ in package.json
+- [X] T021 [US3] Add placeholder dev:dashboard, dev:web, dev:mobile scripts in root package.json
 
 **Checkpoint**: Workspace fully operational — single command starts the mock API
 
@@ -102,12 +102,12 @@ Project paths follow the monorepo structure under `source/` as defined in the co
 
 **Purpose**: Verification and documentation
 
-- [ ] T022 [P] Verify all four resources reachable under /api prefix with curl
-- [ ] T023 [P] Verify filter queries (stations by partner_id, chargers by station_id)
-- [ ] T024 [P] Verify all token files compile without TypeScript errors
-- [ ] T025 [P] Verify native.ts values match colors.ts (no diff)
-- [ ] T026 Verify tailwind.config.base.js resolves brand.primary to #007943
-- [ ] T027 Run quickstart.md validation from scratch
+- [X] T022 [P] Verify all four resources reachable under /api prefix with curl
+- [X] T023 [P] Verify filter queries (stations by partner_id, chargers by station_id)
+- [X] T024 [P] Verify all token files compile without TypeScript errors
+- [X] T025 [P] Verify native.ts values match colors.ts (no diff)
+- [X] T026 Verify tailwind.config.base.js resolves brand.primary to #007943
+- [X] T027 Run quickstart.md validation from scratch
 
 ---
 

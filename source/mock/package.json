@@ -1,0 +1,11 @@
+{
+  "name": "@borne-map/mock",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "json-server --watch db.json --routes routes.json --port 3001"
+  },
+  "devDependencies": {
+    "json-server": "^0.17.4"
+  }
+}
