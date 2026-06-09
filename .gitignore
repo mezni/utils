@@ -18,6 +18,9 @@ build/
 *.swp
 *.swo
 
+# Rust
+source/target/
+
 # OS
 .DS_Store
 Thumbs.db
