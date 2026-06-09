@@ -1,0 +1,36 @@
+{
+  "expo": {
+    "name": "BorneMap",
+    "slug": "borne-map-driver",
+    "version": "0.0.1",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.bornemap.driver",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "BorneMap uses your location to show nearby charging stations on the map."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.bornemap.driver",
+      "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"]
+    },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "BorneMap uses your location to show nearby charging stations on the map."
+        }
+      ]
+    ]
+  }
+}
