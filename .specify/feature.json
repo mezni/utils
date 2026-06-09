@@ -1,3 +1,3 @@
 {
-  "feature_directory": "specs/006-integration-hardening"
+  "feature_directory": "specs/007-cargo-workspace-and-shared-crates"
 }
