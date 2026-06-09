@@ -17,15 +17,22 @@ interface Partner {
   is_active: boolean;
 }
 
+interface Station {
+  id: string;
+  partner_id: string;
+}
+
 const partnerTypes = ['business', 'personal'] as const;
 
 export function PartnersPage() {
   const [data, setData] = useState<Partner[]>([]);
+  const [stations, setStations] = useState<Station[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [editItem, setEditItem] = useState<Partner | null>(null);
   const [deleteItem, setDeleteItem] = useState<Partner | null>(null);
+  const [deleteBlocked, setDeleteBlocked] = useState<{ name: string; stationCount: number } | null>(null);
   const [form, setForm] = useState({ name: '', type: 'business' });
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
@@ -33,7 +40,12 @@ export function PartnersPage() {
     setLoading(true);
     setError(null);
     try {
-      setData(await list<Partner>('partners'));
+      const [partnersData, stationsData] = await Promise.all([
+        list<Partner>('partners'),
+        list<Station>('stations'),
+      ]);
+      setData(partnersData);
+      setStations(stationsData);
     } catch {
       setError('Failed to load partners');
     } finally {
@@ -91,6 +103,12 @@ export function PartnersPage() {
 
   const handleDelete = async () => {
     if (!deleteItem) return;
+    const ownedStations = stations.filter(s => s.partner_id === deleteItem.id);
+    if (ownedStations.length > 0) {
+      setDeleteBlocked({ name: deleteItem.name, stationCount: ownedStations.length });
+      setDeleteItem(null);
+      return;
+    }
     await remove('partners', deleteItem.id);
     setDeleteItem(null);
     fetchData();
@@ -175,6 +193,16 @@ export function PartnersPage() {
         <div className="flex justify-end gap-2">
           <Button variant="secondary" onClick={() => setDeleteItem(null)}>Cancel</Button>
           <Button variant="danger" onClick={handleDelete}>Delete</Button>
+        </div>
+      </Modal>
+
+      <Modal isOpen={!!deleteBlocked} onClose={() => setDeleteBlocked(null)} title="Cannot Delete Partner">
+        <p className="mb-4 text-sm text-muted">
+          <strong>{deleteBlocked?.name}</strong> owns <strong>{deleteBlocked?.stationCount}</strong> station(s).
+          Delete those stations first, then delete the partner.
+        </p>
+        <div className="flex justify-end gap-2">
+          <Button variant="secondary" onClick={() => setDeleteBlocked(null)}>OK</Button>
         </div>
       </Modal>
     </div>
