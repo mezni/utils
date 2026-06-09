@@ -20,7 +20,7 @@
 
 **Purpose**: No infrastructure changes needed — the Dashboard App is already created and configured.
 
-- [ ] T001 No setup tasks required — project exists at `source/apps/dashboard/` with all dependencies installed
+- [X] T001 No setup tasks required — project exists at `source/apps/dashboard/` with all dependencies installed
 
 ---
 
@@ -30,9 +30,9 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T002 [P] Register partner routes in `source/apps/dashboard/src/App.tsx` — add Route elements for `/my-stations`, `/my-chargers`, `/availability` alongside the existing admin routes
+- [X] T002 [P] Register partner routes in `source/apps/dashboard/src/App.tsx` — add Route elements for `/my-stations`, `/my-chargers`, `/availability` alongside the existing admin routes
 
-**Checkpoint**: Foundation ready — partner pages are routable (will show blank page until implemented)
+**Checkpoint**: Foundation ready — partner pages are routable
 
 ---
 
@@ -44,15 +44,15 @@
 
 ### Implementation for User Story 1
 
-- [ ] T003 [P] [US1] Create PartnerOverview directory at `source/apps/dashboard/src/pages/PartnerOverview/`
-- [ ] T004 [P] [US1] Create `PartnerOverviewPage.tsx` — fetch partner data via `list<Partner>('partners/' + selectedPartnerId)`, stations via `list<Station>('stations?partner_id=' + selectedPartnerId)`, chargers via collecting station IDs then `list<Charger>('chargers?station_id=' + ids)`, and station_availability records for latest-per-station computation
-- [ ] T005 [P] [US1] Fetch partner data for status bar — `list<Partner>('partners/' + selectedPartnerId)` returns is_verified, is_live, is_active flags
-- [ ] T006 [P] [US1] Render three StatCards in `PartnerOverviewPage.tsx`: own stations count, own chargers count, available chargers count
-- [ ] T007 [US1] Render status bar with three StatusBadge groups in `PartnerOverviewPage.tsx`: Verified/Awaiting (green/gray), Live/Not Live (green/gray), Active/Suspended (green/red) — driven by partner.is_verified, partner.is_live, partner.is_active
-- [ ] T008 [US1] Render DataTable of own stations in `PartnerOverviewPage.tsx` with columns: name, charger count (computed from filtered charger list), current availability (latest station_availability per station)
-- [ ] T009 [US1] Add loading state (`<Skeleton>`) and error state (`<ErrorState>` with retry) to `PartnerOverviewPage.tsx`
-- [ ] T010 [US1] Add no-partner-selected prompt — when `selectedPartnerId` is null, show a message to select a partner from the dropdown
-- [ ] T011 [US1] Wire `PartnerOverviewPage` to the root `/` route in App.tsx partner section
+- [X] T003 [P] [US1] Create PartnerOverview directory at `source/apps/dashboard/src/pages/PartnerOverview/`
+- [X] T004 [P] [US1] Create `PartnerOverviewPage.tsx` — fetch partner data via `get<Partner>('partners', selectedPartnerId)`, stations via `list<Station>('stations', { partner_id })`, chargers via collecting station IDs then `list<Charger>('chargers?' + qs)`, and station_availability records for latest-per-station computation
+- [X] T005 [P] [US1] Fetch partner data for status bar — `get<Partner>('partners', selectedPartnerId)` returns is_verified, is_live, is_active flags
+- [X] T006 [P] [US1] Render three StatCards in `PartnerOverviewPage.tsx`: own stations count, own chargers count, available chargers count
+- [X] T007 [US1] Render status bar with three Badge groups in `PartnerOverviewPage.tsx`: Verified/Awaiting (green/gray), Live/Not Live (green/gray), Active/Suspended (green/red) — driven by partner.is_verified, partner.is_live, partner.is_active
+- [X] T008 [US1] Render DataTable of own stations in `PartnerOverviewPage.tsx` with columns: name, charger count (computed from filtered charger list), current availability (latest station_availability per station)
+- [X] T009 [US1] Add loading state (`<Skeleton>`) and error state (`<ErrorState>` with retry) to `PartnerOverviewPage.tsx`
+- [X] T010 [US1] Add no-partner-selected prompt — when `selectedPartnerId` is null, show a message to select a partner from the dropdown
+- [X] T011 [US1] Wire `PartnerOverviewPage` to the root `/` route in App.tsx partner section via conditional rendering on role
 
 **Checkpoint**: Partner Overview fully functional — stat cards, status bar, stations table — all scoped to selected partner
 
@@ -66,13 +66,13 @@
 
 ### Implementation for User Story 2
 
-- [ ] T012 [P] [US2] Create PartnerStations directory at `source/apps/dashboard/src/pages/PartnerStations/`
-- [ ] T013 [P] [US2] Create `PartnerStationsPage.tsx` — fetch stations via `list<Station>('stations?partner_id=' + selectedPartnerId)`, wire CRUD create/update/remove from `api/client`
-- [ ] T014 [P] [US2] Implement Add Station modal — form fields match Station entity (name, address, lat, lng, charger_count), partner_id field pre-filled and locked (read-only display) from role context
-- [ ] T015 [P] [US2] Implement Edit Station modal — pre-fill form from existing station data, partner_id is locked/read-only
-- [ ] T016 [US2] Implement Delete Station with confirmation modal
-- [ ] T017 [US2] Add loading, error (with retry), and empty states to `PartnerStationsPage.tsx` — EmptyState for zero records with "Add your first station" prompt
-- [ ] T018 [US2] Add no-partner-selected prompt — when `selectedPartnerId` is null, show select-partner message
+- [X] T012 [P] [US2] Create PartnerStations directory at `source/apps/dashboard/src/pages/PartnerStations/`
+- [X] T013 [P] [US2] Create `PartnerStationsPage.tsx` — fetch stations via `list<Station>('stations', { partner_id })`, wire CRUD create/update/remove from `api/client`
+- [X] T014 [P] [US2] Implement Add Station modal — form fields match Station entity (name, address, lat, lng), partner_id field pre-filled and locked (read-only disabled input) from role context
+- [X] T015 [P] [US2] Implement Edit Station modal — pre-fill form from existing station data, partner_id is locked/read-only
+- [X] T016 [US2] Implement Delete Station with confirmation modal
+- [X] T017 [US2] Add loading, error (with retry), and empty states to `PartnerStationsPage.tsx` — EmptyState for zero records with "Add your first station" prompt
+- [X] T018 [US2] Add no-partner-selected prompt — when `selectedPartnerId` is null, show select-partner message
 
 **Checkpoint**: Partner Stations CRUD fully functional — all operations scoped to selected partner
 
@@ -86,14 +86,14 @@
 
 ### Implementation for User Story 3
 
-- [ ] T019 [P] [US3] Create PartnerChargers directory at `source/apps/dashboard/src/pages/PartnerChargers/`
-- [ ] T020 [P] [US3] Create `PartnerChargersPage.tsx` — fetch partner's stations first via `list<Station>('stations?partner_id=' + selectedPartnerId)`, then fetch chargers via `list<Charger>('chargers?station_id=' + stationIds)`
-- [ ] T021 [P] [US3] Implement station filter dropdown in `PartnerChargersPage.tsx` — options populated from partner's own stations list
-- [ ] T022 [P] [US3] Implement Add Charger modal — station select dropdown shows only partner's own stations, form fields match Charger entity
-- [ ] T023 [US3] Implement Edit Charger modal — pre-filled from existing charger data, station_id field shows partner's stations only
-- [ ] T024 [US3] Implement Delete Charger with confirmation modal
-- [ ] T025 [US3] Add loading, error (with retry), and empty states to `PartnerChargersPage.tsx`
-- [ ] T026 [US3] Add no-partner-selected prompt
+- [X] T019 [P] [US3] Create PartnerChargers directory at `source/apps/dashboard/src/pages/PartnerChargers/`
+- [X] T020 [P] [US3] Create `PartnerChargersPage.tsx` — fetch partner's stations first via `list<Station>('stations', { partner_id })`, then fetch chargers via `list<Charger>('chargers?' + qs)`
+- [X] T021 [P] [US3] Implement station filter dropdown in `PartnerChargersPage.tsx` — options populated from partner's own stations list (hidden when only 1 station)
+- [X] T022 [P] [US3] Implement Add Charger modal — station select dropdown shows only partner's own stations, form fields match Charger entity
+- [X] T023 [US3] Implement Edit Charger modal — pre-filled from existing charger data, station_id field shows partner's stations only
+- [X] T024 [US3] Implement Delete Charger with confirmation modal
+- [X] T025 [US3] Add loading, error (with retry), and empty states to `PartnerChargersPage.tsx`
+- [X] T026 [US3] Add no-partner-selected prompt
 
 **Checkpoint**: Partner Chargers CRUD fully functional — all scoped to selected partner's stations
 
@@ -107,13 +107,13 @@
 
 ### Implementation for User Story 4
 
-- [ ] T027 [P] [US4] Create PartnerAvailability directory at `source/apps/dashboard/src/pages/PartnerAvailability/`
-- [ ] T028 [P] [US4] Create `PartnerAvailabilityPage.tsx` — fetch partner's stations via `list<Station>('stations?partner_id=' + selectedPartnerId)`, fetch station_availability via `list<StationAvailability>('station_availability?station_id=' + stationIds)`, compute latest-per-station status client-side
-- [ ] T029 [P] [US4] Render DataTable with columns: station name, current availability status (computed from latest record, default "Unknown" if no records), three-option toggle buttons (Available / Partial / Unavailable)
-- [ ] T030 [US4] Implement toggle click handler — if clicked status matches current status, no-op (FR-015); otherwise POST to `station_availability` with `{ station_id, status, updated_by, updated_at }` via `create`, then refetch
-- [ ] T031 [US4] Implement pessimistic update UX — disable all three toggle buttons during POST, show loading indicator on active button, enable on success; on error, revert status display and show error message
-- [ ] T032 [US4] Add loading, error (with retry), and empty states to `PartnerAvailabilityPage.tsx`
-- [ ] T033 [US4] Add no-partner-selected prompt
+- [X] T027 [P] [US4] Create PartnerAvailability directory at `source/apps/dashboard/src/pages/PartnerAvailability/`
+- [X] T028 [P] [US4] Create `PartnerAvailabilityPage.tsx` — fetch partner's stations via `list<Station>('stations', { partner_id })`, fetch station_availability via `list<StationAvailability>('station_availability?' + qs)`, compute latest-per-station status client-side
+- [X] T029 [P] [US4] Render DataTable with columns: station name, current availability status (computed from latest record, default "Unknown" if no records), three-option toggle buttons (Available / Partial / Unavailable)
+- [X] T030 [US4] Implement toggle click handler — if clicked status matches current status, no-op (FR-015); otherwise POST to `station_availability` with `{ station_id, status, updated_by, updated_at }` via `create`, then refetch
+- [X] T031 [US4] Implement pessimistic update UX — disable all three toggle buttons during POST, refetch on success/failure, show error banner on failure
+- [X] T032 [US4] Add loading, error (with retry), and empty states to `PartnerAvailabilityPage.tsx`
+- [X] T033 [US4] Add no-partner-selected prompt
 
 **Checkpoint**: Availability management fully functional — partner can update any station's availability with one click
 
@@ -123,7 +123,7 @@
 
 **Purpose**: Verify all screens, clean up, and validate against requirements.
 
-- [ ] T034 [P] Run `tsc --noEmit` to check TypeScript compilation across all new files
+- [X] T034 [P] Run `tsc --noEmit` to check TypeScript compilation across all new files — **PASS (0 errors)**
 - [ ] T035 [P] Run `pnpm dev:dashboard` and verify all four partner screens against quickstart.md scenarios
 - [ ] T036 [P] Verify partner data doesn't leak between partner switches — select PRT001, confirm data, switch to PRT002, confirm different data, switch back to PRT001
 - [ ] T037 [P] Verify error recovery — stop json-server, confirm ErrorState with Retry on all screens, restart and click Retry
