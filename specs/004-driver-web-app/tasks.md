@@ -20,16 +20,16 @@
 
 **Purpose**: Initialize the Driver Web App project with Vite + React + TypeScript + Tailwind + Leaflet.
 
-- [ ] T001 Create `source/apps/driver-web/` with Vite + React + TypeScript (same versions as Dashboard — React 19, Vite 8, TypeScript 6.0)
-- [ ] T002 [P] Configure `source/apps/driver-web/vite.config.ts` with `@vitejs/plugin-react` and proxy `/api` → `http://localhost:3001`
-- [ ] T003 [P] Configure `source/apps/driver-web/tailwind.config.js` extending shared tokens from `packages/ui/tailwind.config.base.js`
-- [ ] T004 [P] Install Leaflet and react-leaflet dependencies in `source/apps/driver-web/package.json`
-- [ ] T005 [P] Create `source/apps/driver-web/src/api/client.ts` with `fetchWithError`, `list`, `get` functions matching the Dashboard's API client pattern
-- [ ] T006 [P] Create `source/apps/driver-web/src/main.tsx` — React root with BrowserRouter, import Leaflet CSS
-- [ ] T007 [P] Create `source/apps/driver-web/src/App.tsx` with React Router routes: `/` (MapPage) and `/stations/:id` (StationDetailPage)
-- [ ] T008 [P] Update root `source/packages/ui/tailwind.config.base.js` to ensure brand colors include `brand.glow` (#00E676) if not already present
-- [ ] T009 Update root `package.json` — change `dev:web` script from placeholder to `pnpm --filter @borne-map/driver-web dev`
-- [ ] T010 [P] Add `source/apps/driver-web/index.html` with proper title and viewport meta for mobile
+- [X] T001 Create `source/apps/driver-web/` with Vite + React + TypeScript (same versions as Dashboard — React 19, Vite 8, TypeScript 6.0)
+- [X] T002 [P] Configure `source/apps/driver-web/vite.config.ts` with `@vitejs/plugin-react` and proxy `/api` → `http://localhost:3001`
+- [X] T003 [P] Configure `source/apps/driver-web/tailwind.config.js` extending shared tokens from `packages/ui/tailwind.config.base.js`
+- [X] T004 [P] Install Leaflet and react-leaflet dependencies in `source/apps/driver-web/package.json`
+- [X] T005 [P] Create `source/apps/driver-web/src/api/client.ts` with `fetchWithError`, `list`, `get` functions matching the Dashboard's API client pattern
+- [X] T006 [P] Create `source/apps/driver-web/src/main.tsx` — React root with BrowserRouter, import Leaflet CSS
+- [X] T007 [P] Create `source/apps/driver-web/src/App.tsx` with React Router routes: `/` (MapPage) and `/stations/:id` (StationDetailPage)
+- [X] T008 [P] Update root `source/packages/ui/tailwind.config.base.js` — brand.glow (#00E676) already present, no change needed
+- [X] T009 Update root `package.json` — `dev:web` script now points to `@borne-map/driver-web dev`
+- [X] T010 [P] Add `source/apps/driver-web/index.html` with proper title and viewport meta for mobile
 
 ---
 
@@ -37,10 +37,10 @@
 
 **Purpose**: Create shared components and data types used by both screens.
 
-- [ ] T011 [P] Create `source/apps/driver-web/src/components/StationCard.tsx` — displays station name, address, available/total charger count
-- [ ] T012 [P] Create `source/apps/driver-web/src/components/ChargerRow.tsx` — displays connector type, power kW, status badge for a single charger
-- [ ] T013 [P] Create `source/apps/driver-web/src/components/ZoomControls.tsx` — zoom-in/zoom-out buttons for the map (Leaflet zoom control alternative)
-- [ ] T014 [P] Define shared types in `source/apps/driver-web/src/api/client.ts` or a separate types file: `Partner`, `Station`, `Charger`, `VisibleStation`
+- [X] T011 [P] Create `source/apps/driver-web/src/components/StationCard.tsx` — displays station name, address, available/total charger count
+- [X] T012 [P] Create `source/apps/driver-web/src/components/ChargerRow.tsx` — displays connector type, power kW, status badge for a single charger
+- [X] T013 [P] Create `source/apps/driver-web/src/components/ZoomControls.tsx` — zoom-in/zoom-out buttons for the map (Leaflet zoom control alternative)
+- [X] T014 [P] Define shared types in `source/apps/driver-web/src/api/client.ts`: `Partner`, `Station`, `Charger`, `VisibleStation`
 
 **Checkpoint**: Foundation ready — shared components and types available
 
@@ -54,17 +54,17 @@
 
 ### Implementation for User Story 1
 
-- [ ] T015 [P] [US1] Create `source/apps/driver-web/src/pages/MapPage.tsx` — full-screen Leaflet MapContainer with OpenStreetMap tiles, initial center (33.8869, 9.5375) zoom 7
-- [ ] T016 [P] [US1] Implement data fetching in `MapPage.tsx` — fetch all partners, stations, chargers on mount via `list` from the API client
-- [ ] T017 [US1] Implement partner visibility filter in `MapPage.tsx` — build set of visible partner IDs where `is_verified && is_live && is_active`, filter stations to those IDs
-- [ ] T018 [US1] Compute `availableCount` per station in `MapPage.tsx` — count chargers per station with `status === 'available'`, assign green (`availableCount > 0`) or red (`availableCount === 0`) marker color
-- [ ] T019 [US1] Render CircleMarker per visible station in `MapPage.tsx` — radius 8, white border weight 2, fillColor green (#00E676) or red (#EF4444)
-- [ ] T020 [US1] Implement marker click handler in `MapPage.tsx` — popup showing station name, address, "X/Y available", and "View Details" link navigating to `/stations/:id`
-- [ ] T021 [US1] Add floating top bar in `MapPage.tsx` — "BorneMap" brand name, height 56px, map fills remaining height (`calc(100vh - 56px)`)
-- [ ] T022 [US1] Add loading state — spinner or skeleton while fetching data
-- [ ] T023 [US1] Add error state — error message with Retry button when API unreachable
-- [ ] T024 [US1] Track map position (center, zoom) in component state for restoration on back navigation
-- [ ] T025 [US1] Handle edge case — zero visible stations (all partners filtered out or API returns empty arrays): show map with no markers, no crash
+- [X] T015 [P] [US1] Create `source/apps/driver-web/src/pages/MapPage.tsx` — full-screen Leaflet MapContainer with OpenStreetMap tiles, initial center (33.8869, 9.5375) zoom 7
+- [X] T016 [P] [US1] Implement data fetching in `MapPage.tsx` — fetch all partners, stations, chargers on mount via `list` from the API client
+- [X] T017 [US1] Implement partner visibility filter in `MapPage.tsx` — build set of visible partner IDs where `is_verified && is_live && is_active`, filter stations to those IDs
+- [X] T018 [US1] Compute `availableCount` per station in `MapPage.tsx` — count chargers per station with `status === 'available'`, assign green (`availableCount > 0`) or red (`availableCount === 0`) marker color
+- [X] T019 [US1] Render CircleMarker per visible station in `MapPage.tsx` — radius 8, white border weight 2, fillColor green (#00E676) or red (#EF4444)
+- [X] T020 [US1] Implement marker click handler in `MapPage.tsx` — popup showing station name, address, "X/Y available", and "View Details" link navigating to `/stations/:id`
+- [X] T021 [US1] Add floating top bar in `MapPage.tsx` — "BorneMap" brand name, height 56px, map fills remaining height
+- [X] T022 [US1] Add loading state — "Loading..." indicator in top bar while fetching data
+- [X] T023 [US1] Add error state — error message with Retry button when API unreachable
+- [X] T024 [US1] Track map position (center, zoom) in component state for restoration on back navigation via React Router location.state
+- [X] T025 [US1] Handle edge case — zero visible stations (all partners filtered out or API returns empty arrays): show map with no markers, no crash
 
 **Checkpoint**: Map Discovery fully functional — color-coded markers, popups, error/loading states
 
@@ -78,13 +78,13 @@
 
 ### Implementation for User Story 2
 
-- [ ] T026 [P] [US2] Create `source/apps/driver-web/src/pages/StationDetailPage.tsx` — fetch station by ID via `get<Station>('stations', id)` and chargers via `list<Charger>('chargers', { station_id: id })`
-- [ ] T027 [P] [US2] Implement StationDetailPage header — back button, station name, station address
-- [ ] T028 [US2] Render charger list in StationDetailPage — iterate chargers, render each with `ChargerRow` component showing connector type, power kW, status
-- [ ] T029 [US2] Implement back navigation — returns to map at same position and zoom via React Router's `useNavigate()` and `location.state`
-- [ ] T030 [US2] Add loading state — spinner while fetching station and chargers
-- [ ] T031 [US2] Add error state — error message with Retry on API failure
-- [ ] T032 [US2] Handle edge case — station with no chargers: show "No chargers at this station" message instead of empty list
+- [X] T026 [P] [US2] Create `source/apps/driver-web/src/pages/StationDetailPage.tsx` — fetch station by ID via `get<Station>('stations', id)` and chargers via `list<Charger>('chargers', { station_id: id })`
+- [X] T027 [P] [US2] Implement StationDetailPage header — back button via navigate(-1), station name, station address
+- [X] T028 [US2] Render charger list in StationDetailPage — iterate chargers, render each with `ChargerRow` component showing connector type, power kW, status
+- [X] T029 [US2] Implement back navigation — returns to map at same position and zoom via React Router's `navigate(-1)` restoring Location.state
+- [X] T030 [US2] Add loading state — "Loading station details..." text while fetching
+- [X] T031 [US2] Add error state — error message with Retry on API failure
+- [X] T032 [US2] Handle edge case — station with no chargers: show "No chargers at this station." message
 
 **Checkpoint**: Station Detail fully functional — charger list, back nav, error/loading states
 
@@ -94,7 +94,7 @@
 
 **Purpose**: Verify all screens, typecheck, update workspace config.
 
-- [ ] T033 [P] Run `tsc --noEmit` in `source/apps/driver-web/` to verify TypeScript compilation
+- [X] T033 [P] Run `tsc --noEmit` in `source/apps/driver-web/` — **PASS (0 errors)**
 - [ ] T034 [P] Run `pnpm dev:web` and verify map screen against quickstart.md scenarios
 - [ ] T035 [P] Verify marker colors — check PRT001/PRT002 stations are visible, PRT003 stations are hidden
 - [ ] T036 [P] Verify error recovery — stop json-server, confirm error state on both screens, restart and click Retry
