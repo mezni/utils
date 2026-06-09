@@ -24,8 +24,8 @@ All paths are relative to the repository root. Rust workspace lives at `source/`
 
 **Purpose**: Workspace environment configuration and linting setup
 
-- [ ] T001 Configure clippy deny-warnings in `.cargo/config.toml` at `source/.cargo/config.toml`
-- [ ] T002 [P] Add `.cargo/` and `source/target/` to `.gitignore` at repo root
+- [X] T001 Configure clippy deny-warnings in `.cargo/config.toml` at `source/.cargo/config.toml`
+- [X] T002 [P] Add `.cargo/` and `source/target/` to `.gitignore` at repo root
 
 **Checkpoint**: Rust tooling configuration ready
 
@@ -37,11 +37,11 @@ All paths are relative to the repository root. Rust workspace lives at `source/`
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T003 Create workspace root `Cargo.toml` at `source/Cargo.toml` with members `crates/ev-core`, `crates/ev-db`, resolver 2, edition 2024
-- [ ] T004 [P] Create ev-core crate scaffold at `source/crates/ev-core/` with stub `Cargo.toml` (name, version, edition) and `src/lib.rs`
-- [ ] T005 [P] Create ev-db crate scaffold at `source/crates/ev-db/` with stub `Cargo.toml` (name, version, edition) and `src/lib.rs`
-- [ ] T006 Verify `cargo build --all` compiles both stub crates with zero errors and zero warnings from `source/`
-- [ ] T007 Verify `cargo test --all` passes from `source/`
+- [X] T003 Create workspace root `Cargo.toml` at `source/Cargo.toml` with members `crates/ev-core`, `crates/ev-db`, resolver 2, edition 2024
+- [X] T004 [P] Create ev-core crate scaffold at `source/crates/ev-core/` with stub `Cargo.toml` (name, version, edition) and `src/lib.rs`
+- [X] T005 [P] Create ev-db crate scaffold at `source/crates/ev-db/` with stub `Cargo.toml` (name, version, edition) and `src/lib.rs`
+- [X] T006 Verify `cargo build --all` compiles both stub crates with zero errors and zero warnings from `source/`
+- [X] T007 Verify `cargo test --all` passes from `source/`
 
 **Checkpoint**: Foundation ready — workspace builds, crates are members, tests pass
 
@@ -55,13 +55,13 @@ All paths are relative to the repository root. Rust workspace lives at `source/`
 
 ### Implementation for User Story 1
 
-- [ ] T008 [P] [US1] Add `[workspace.dependencies]` section to `source/Cargo.toml` with shared version management for serde, thiserror, tokio, sqlx
-- [ ] T009 [P] [US1] Add `#![deny(warnings)]` and `#![deny(missing_docs)]` to `source/crates/ev-core/src/lib.rs`
-- [ ] T010 [P] [US1] Add `#![deny(warnings)]` and `#![deny(missing_docs)]` to `source/crates/ev-db/src/lib.rs`
-- [ ] T011 [US1] Verify `cargo build --all` zero warnings from `source/`
-- [ ] T012 [US1] Verify `cargo test --all` passes from `source/`
-- [ ] T013 [US1] Run `cargo clippy --all-targets -- -D warnings` from `source/` — zero warnings
-- [ ] T014 [US1] Commit and tag workspace milestone
+- [X] T008 [P] [US1] Add `[workspace.dependencies]` section to `source/Cargo.toml` with shared version management for serde, thiserror, tokio, sqlx
+- [X] T009 [P] [US1] Add `#![deny(warnings)]` and `#![deny(missing_docs)]` to `source/crates/ev-core/src/lib.rs`
+- [X] T010 [P] [US1] Add `#![deny(warnings)]` and `#![deny(missing_docs)]` to `source/crates/ev-db/src/lib.rs`
+- [X] T011 [US1] Verify `cargo build --all` zero warnings from `source/`
+- [X] T012 [US1] Verify `cargo test --all` passes from `source/`
+- [X] T013 [US1] Run `cargo clippy --all-targets -- -D warnings` from `source/` — zero warnings
+- [X] T014 [US1] Commit and tag workspace milestone
 
 **Checkpoint**: Workspace builds with zero warnings, zero clippy issues, tests pass
 
@@ -75,19 +75,19 @@ All paths are relative to the repository root. Rust workspace lives at `source/`
 
 ### Implementation for User Story 2
 
-- [ ] T015 [P] [US2] Add dependencies to `source/crates/ev-core/Cargo.toml`: `nanoid`, `serde` with `derive` feature, `serde_json` (dev), `thiserror`
-- [ ] T016 [US2] Implement NanoID generation in `source/crates/ev-core/src/id.rs` with `generate_id(prefix, length)` and `generate_id_with_alphabet(prefix, length, alphabet)` functions
-- [ ] T017 [P] [US2] Implement `ConnectorType` enum in `source/crates/ev-core/src/enums.rs` with serde `rename_all = "lowercase"` and variants: Type2, Type3, CCS, CHAdeMO
-- [ ] T018 [P] [US2] Implement `ChargerStatus` enum in `source/crates/ev-core/src/enums.rs` with serde `rename_all = "snake_case"` and variants: Available, InUse, Maintenance, Offline
-- [ ] T019 [P] [US2] Implement `PartnerType` enum in `source/crates/ev-core/src/enums.rs` with serde `rename_all = "lowercase"` and variants: Business, Personal
-- [ ] T020 [P] [US2] Implement `StationStatus` enum in `source/crates/ev-core/src/enums.rs` with serde `rename_all = "lowercase"` and variants: Available, Partial, Unavailable
-- [ ] T021 [US2] Implement `EnumParseError` error type in `source/crates/ev-core/src/enums.rs` with thiserror derive and `UnknownVariant` variant
-- [ ] T022 [P] [US2] Write unit tests for NanoID generation in `source/crates/ev-core/src/id.rs` — unique ID test (1000 IDs), prefix pattern test, empty prefix test, custom alphabet test
-- [ ] T023 [P] [US2] Write unit tests for enum types in `source/crates/ev-core/src/enums.rs` — round-trip serialization test, unknown variant deserialization error test
-- [ ] T024 [US2] Re-export all public API items in `source/crates/ev-core/src/lib.rs` with `pub use` and doc comments
-- [ ] T025 [US2] Verify `cargo build -p ev-core` zero warnings from `source/`
-- [ ] T026 [US2] Verify `cargo test -p ev-core` passes from `source/`
-- [ ] T027 [US2] Run `cargo clippy -p ev-core` from `source/` — zero warnings
+- [X] T015 [P] [US2] Add dependencies to `source/crates/ev-core/Cargo.toml`: `nanoid`, `serde` with `derive` feature, `serde_json` (dev), `thiserror`
+- [X] T016 [US2] Implement NanoID generation in `source/crates/ev-core/src/id.rs` with `generate_id(prefix, length)` and `generate_id_with_alphabet(prefix, length, alphabet)` functions
+- [X] T017 [P] [US2] Implement `ConnectorType` enum in `source/crates/ev-core/src/enums.rs` with serde `rename_all = "lowercase"` and variants: Type2, Type3, CCS, CHAdeMO
+- [X] T018 [P] [US2] Implement `ChargerStatus` enum in `source/crates/ev-core/src/enums.rs` with serde `rename_all = "snake_case"` and variants: Available, InUse, Maintenance, Offline
+- [X] T019 [P] [US2] Implement `PartnerType` enum in `source/crates/ev-core/src/enums.rs` with serde `rename_all = "lowercase"` and variants: Business, Personal
+- [X] T020 [P] [US2] Implement `StationStatus` enum in `source/crates/ev-core/src/enums.rs` with serde `rename_all = "lowercase"` and variants: Available, Partial, Unavailable
+- [X] T021 [US2] Implement `EnumParseError` error type in `source/crates/ev-core/src/enums.rs` with thiserror derive and `UnknownVariant` variant
+- [X] T022 [P] [US2] Write unit tests for NanoID generation in `source/crates/ev-core/src/id.rs` — unique ID test (1000 IDs), prefix pattern test, empty prefix test, custom alphabet test
+- [X] T023 [P] [US2] Write unit tests for enum types in `source/crates/ev-core/src/enums.rs` — round-trip serialization test, unknown variant deserialization error test
+- [X] T024 [US2] Re-export all public API items in `source/crates/ev-core/src/lib.rs` with `pub use` and doc comments
+- [X] T025 [US2] Verify `cargo build -p ev-core` zero warnings from `source/`
+- [X] T026 [US2] Verify `cargo test -p ev-core` passes from `source/`
+- [X] T027 [US2] Run `cargo clippy -p ev-core` from `source/` — zero warnings
 
 **Checkpoint**: ev-core crate fully functional — NanoID generation and shared enums with unit tests all passing
 
@@ -101,16 +101,16 @@ All paths are relative to the repository root. Rust workspace lives at `source/`
 
 ### Implementation for User Story 3
 
-- [ ] T028 [P] [US3] Add dependencies to `source/crates/ev-db/Cargo.toml`: `sqlx` with `postgres`, `runtime-tokio`, `macros` features; `tokio` with `macros`, `rt-multi-thread` features; `thiserror`
-- [ ] T029 [US3] Implement `PoolError` enum and `init_pool()` function in `source/crates/ev-db/src/pool.rs` — connection string validation, PgPool creation, error handling for invalid/missing connection strings
-- [ ] T030 [US3] Implement `PoolConfig` struct (connection_string, max_connections, connection_timeout) with sensible defaults in `source/crates/ev-db/src/pool.rs`
-- [ ] T031 [US3] Implement `Paginated<T>` struct with `new()` constructor in `source/crates/ev-db/src/pagination.rs` — fields: data, total, page, page_size, total_pages — with correct `total_pages` = `total.div_ceil(page_size)` when total > 0, = 0 when total == 0
-- [ ] T032 [US3] Re-export all public API items in `source/crates/ev-db/src/lib.rs` with `pub use` and doc comments
-- [ ] T033 [P] [US3] Write unit tests for `Paginated<T>` in `source/crates/ev-db/src/pagination.rs` — zero items, exact multiple, remainder, page > total_pages
-- [ ] T034 [P] [US3] Write unit tests for pool initialization in `source/crates/ev-db/src/pool.rs` — invalid connection string returns error, valid-ish connection string accepted (no live DB needed)
-- [ ] T035 [US3] Verify `cargo build -p ev-db` zero warnings from `source/`
-- [ ] T036 [US3] Verify `cargo test -p ev-db` passes from `source/`
-- [ ] T037 [US3] Run `cargo clippy -p ev-db` from `source/` — zero warnings
+- [X] T028 [P] [US3] Add dependencies to `source/crates/ev-db/Cargo.toml`: `sqlx` with `postgres`, `runtime-tokio`, `macros` features; `tokio` with `macros`, `rt-multi-thread` features; `thiserror`
+- [X] T029 [US3] Implement `PoolError` enum and `init_pool()` function in `source/crates/ev-db/src/pool.rs` — connection string validation, PgPool creation, error handling for invalid/missing connection strings
+- [X] T030 [US3] Implement `PoolConfig` struct (connection_string, max_connections, connection_timeout) with sensible defaults in `source/crates/ev-db/src/pool.rs`
+- [X] T031 [US3] Implement `Paginated<T>` struct with `new()` constructor in `source/crates/ev-db/src/pagination.rs` — fields: data, total, page, page_size, total_pages — with correct `total_pages` = `total.div_ceil(page_size)` when total > 0, = 0 when total == 0
+- [X] T032 [US3] Re-export all public API items in `source/crates/ev-db/src/lib.rs` with `pub use` and doc comments
+- [X] T033 [P] [US3] Write unit tests for `Paginated<T>` in `source/crates/ev-db/src/pagination.rs` — zero items, exact multiple, remainder, page > total_pages
+- [X] T034 [P] [US3] Write unit tests for pool initialization in `source/crates/ev-db/src/pool.rs` — invalid connection string returns error, valid-ish connection string accepted (no live DB needed)
+- [X] T035 [US3] Verify `cargo build -p ev-db` zero warnings from `source/`
+- [X] T036 [US3] Verify `cargo test -p ev-db` passes from `source/`
+- [X] T037 [US3] Run `cargo clippy -p ev-db` from `source/` — zero warnings
 
 **Checkpoint**: ev-db crate fully functional — PoolConfig, init_pool, Paginated<T> with unit tests all passing
 
@@ -120,10 +120,10 @@ All paths are relative to the repository root. Rust workspace lives at `source/`
 
 **Purpose**: Full workspace verification and documentation
 
-- [ ] T038 [P] Verify `cargo build --all` zero errors and zero warnings from `source/`
-- [ ] T039 [P] Verify `cargo test --all` passes all unit tests from `source/`
-- [ ] T040 [P] Verify `cargo clippy --all-targets -- -D warnings` passes from `source/`
-- [ ] T041 [P] Run quickstart.md validation — follow setup instructions from a clean terminal
+- [X] T038 [P] Verify `cargo build --all` zero errors and zero warnings from `source/`
+- [X] T039 [P] Verify `cargo test --all` passes all unit tests from `source/`
+- [X] T040 [P] Verify `cargo clippy --all-targets -- -D warnings` passes from `source/`
+- [X] T041 [P] Run quickstart.md validation — follow setup instructions from a clean terminal
 
 **Checkpoint**: All 3 user stories complete. Full workspace compiles, tests pass, clippy clean.
 

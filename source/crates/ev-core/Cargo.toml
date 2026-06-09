@@ -2,3 +2,11 @@
 name = "ev-core"
 version.workspace = true
 edition.workspace = true
+
+[dependencies]
+nanoid = "0.4"
+serde.workspace = true
+thiserror.workspace = true
+
+[dev-dependencies]
+serde_json.workspace = true
