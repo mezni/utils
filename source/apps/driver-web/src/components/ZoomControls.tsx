@@ -1,3 +1,5 @@
+import { Button } from '@/components/ui/button';
+
 interface ZoomControlsProps {
   onZoomIn: () => void;
   onZoomOut: () => void;
@@ -6,20 +8,24 @@ interface ZoomControlsProps {
 export function ZoomControls({ onZoomIn, onZoomOut }: ZoomControlsProps) {
   return (
     <div className="flex flex-col gap-1">
-      <button
+      <Button
+        variant="outline"
+        size="icon"
         onClick={onZoomIn}
-        className="flex h-8 w-8 items-center justify-center rounded bg-white text-sm font-bold text-main shadow-card hover:bg-neutral-50"
         aria-label="Zoom in"
+        className="h-8 w-8"
       >
         +
-      </button>
-      <button
+      </Button>
+      <Button
+        variant="outline"
+        size="icon"
         onClick={onZoomOut}
-        className="flex h-8 w-8 items-center justify-center rounded bg-white text-sm font-bold text-main shadow-card hover:bg-neutral-50"
         aria-label="Zoom out"
+        className="h-8 w-8"
       >
         &minus;
-      </button>
+      </Button>
     </div>
   );
 }

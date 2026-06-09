@@ -1,4 +1,6 @@
 graphify-out/
+__pycache__/
+*.pyc
 
 # Node.js / pnpm
 node_modules/

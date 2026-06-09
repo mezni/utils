@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { get, list, type Station, type Charger } from '../api/client';
+import { useNavigate, useParams } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { get, list, type Charger, type Station } from '../api/client';
 import { ChargerRow } from '../components/ChargerRow';
 
 export function StationDetailPage() {
@@ -37,22 +38,17 @@ export function StationDetailPage() {
 
   if (loading) {
     return (
-      <div className="flex h-full items-center justify-center bg-surface-background">
-        <p className="text-sm text-muted">Loading station details...</p>
+      <div className="flex h-full items-center justify-center">
+        <p className="text-sm text-muted-foreground">Loading station details...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex h-full flex-col items-center justify-center gap-3 bg-surface-background p-6">
-        <p className="text-sm text-status-maintenance">{error}</p>
-        <button
-          onClick={fetchData}
-          className="rounded-lg bg-brand-primary px-4 py-2 text-sm font-medium text-white hover:bg-brand-primaryDark"
-        >
-          Retry
-        </button>
+      <div className="flex h-full flex-col items-center justify-center gap-4 p-6">
+        <p className="text-sm text-destructive">{error}</p>
+        <Button variant="destructive" onClick={fetchData}>Retry</Button>
       </div>
     );
   }
@@ -60,24 +56,20 @@ export function StationDetailPage() {
   if (!station) return null;
 
   return (
-    <div className="flex min-h-full flex-col bg-surface-background">
-      <div className="flex items-center gap-3 border-b border-default bg-white px-4 py-3">
-        <button
-          onClick={goBack}
-          className="text-sm font-medium text-muted hover:text-main"
-          aria-label="Back to map"
-        >
+    <div className="flex min-h-full flex-col">
+      <div className="flex items-center gap-3 border-b bg-card px-4 py-3">
+        <Button variant="ghost" onClick={goBack} aria-label="Back to map">
           &larr; Back
-        </button>
+        </Button>
       </div>
 
       <div className="flex-1 p-4">
-        <h1 className="text-lg font-bold text-main">{station.name}</h1>
-        <p className="mt-1 text-sm text-muted">{station.address}</p>
+        <h1 className="text-lg font-bold text-foreground">{station.name}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">{station.address}</p>
 
-        <h2 className="mb-3 mt-6 text-sm font-semibold text-main">Chargers</h2>
+        <h2 className="mb-3 mt-6 text-sm font-semibold text-foreground">Chargers</h2>
         {chargers.length === 0 ? (
-          <p className="text-sm text-muted">No chargers at this station.</p>
+          <p className="text-sm text-muted-foreground">No chargers at this station.</p>
         ) : (
           <div className="space-y-2">
             {chargers.map(ch => (

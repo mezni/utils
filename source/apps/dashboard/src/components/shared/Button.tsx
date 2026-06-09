@@ -1,21 +1,17 @@
 import type { ButtonHTMLAttributes } from 'react';
+import { Button as ShadcnButton } from '@/components/ui/button';
 
-const variants = {
-  primary: 'bg-brand-primary text-white hover:bg-brand-primaryDark',
-  secondary: 'bg-white text-main border border-default hover:bg-neutral-50',
-  danger: 'bg-status-maintenance text-white hover:bg-red-700',
-  ghost: 'text-muted hover:text-main',
+const variantMap: Record<string, 'default' | 'secondary' | 'destructive' | 'ghost' | 'outline' | 'link'> = {
+  primary: 'default',
+  secondary: 'outline',
+  danger: 'destructive',
+  ghost: 'ghost',
 };
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: keyof typeof variants;
+  variant?: keyof typeof variantMap;
 }
 
-export function Button({ variant = 'primary', className = '', ...props }: ButtonProps) {
-  return (
-    <button
-      className={`inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium transition-colors disabled:opacity-50 ${variants[variant]} ${className}`}
-      {...props}
-    />
-  );
+export function Button({ variant = 'primary', className, ...props }: ButtonProps) {
+  return <ShadcnButton variant={variantMap[variant]} className={className} {...props} />;
 }

@@ -1,7 +1,8 @@
-import { useEffect, useState, useCallback } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { MapContainer, TileLayer, CircleMarker, Popup, useMapEvents } from 'react-leaflet';
-import { list, type Partner, type Station, type Charger, type VisibleStation } from '../api/client';
+import { useCallback, useEffect, useState } from 'react';
+import { MapContainer, CircleMarker, Popup, TileLayer, useMapEvents } from 'react-leaflet';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { list, type Charger, type Partner, type Station, type VisibleStation } from '../api/client';
 import { ZoomControls } from '../components/ZoomControls';
 
 interface MapPosition {
@@ -107,23 +108,18 @@ export function MapPage() {
 
   if (error) {
     return (
-      <div className="flex h-full flex-col items-center justify-center gap-3 bg-surface-background p-6">
-        <p className="text-sm text-status-maintenance">{error}</p>
-        <button
-          onClick={fetchData}
-          className="rounded-lg bg-brand-primary px-4 py-2 text-sm font-medium text-white hover:bg-brand-primaryDark"
-        >
-          Retry
-        </button>
+      <div className="flex h-full flex-col items-center justify-center gap-4 p-6">
+        <p className="text-sm text-destructive">{error}</p>
+        <Button variant="destructive" onClick={fetchData}>Retry</Button>
       </div>
     );
   }
 
   return (
     <div className="relative h-full w-full">
-      <div className="fixed left-0 right-0 top-0 z-[2000] flex h-14 items-center bg-white px-4 shadow-sm">
-        <span className="text-lg font-bold text-brand-primary">BorneMap</span>
-        {loading && <span className="ml-3 text-xs text-muted">Loading...</span>}
+      <div className="fixed left-0 right-0 top-0 z-[2000] flex h-14 items-center bg-card px-4 shadow-sm">
+        <span className="text-lg font-bold text-primary">BorneMap</span>
+        {loading && <span className="ml-3 text-xs text-muted-foreground">Loading...</span>}
       </div>
 
       <div className="h-full w-full" style={{ paddingTop: '56px' }}>
@@ -154,15 +150,15 @@ export function MapPage() {
             >
               <Popup>
                 <div className="min-w-[180px]">
-                  <p className="text-sm font-semibold text-main">{station.name}</p>
-                  <p className="mt-0.5 text-xs text-muted">{station.address}</p>
+                  <p className="text-sm font-semibold text-foreground">{station.name}</p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">{station.address}</p>
                   <p className="mt-1 text-xs">
                     <span className="font-medium">{station.availableCount}/{station.totalChargers}</span>{' '}
-                    <span className="text-muted">available</span>
+                    <span className="text-muted-foreground">available</span>
                   </p>
                   <button
                     onClick={() => handleNavigate(station.id)}
-                    className="mt-2 text-xs font-medium text-brand-primary hover:text-brand-primaryDark"
+                    className="mt-2 text-xs font-medium text-primary hover:text-primary/80"
                   >
                     View Details &rarr;
                   </button>

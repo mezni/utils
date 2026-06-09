@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useRole, type Role } from '../../context/RoleContext';
+import { useRole } from '../../context/RoleContext';
 import { NavigationItem } from './NavigationItem';
 import { list } from '../../api/client';
 

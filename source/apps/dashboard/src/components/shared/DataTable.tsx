@@ -1,3 +1,5 @@
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+
 export interface Column<T> {
   key: string;
   label: string;
@@ -14,35 +16,35 @@ interface DataTableProps<T> {
 
 export function DataTable<T>({ columns, data, keyExtractor, actions }: DataTableProps<T>) {
   return (
-    <div className="overflow-x-auto rounded-lg border border-default bg-card">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="border-b border-default bg-neutral-50">
+    <div className="rounded-lg border bg-card">
+      <Table>
+        <TableHeader>
+          <TableRow>
             {columns.map((col) => (
-              <th key={col.key} className={`px-4 py-3 text-left font-medium text-muted ${col.className || ''}`}>
+              <TableHead key={col.key} className={col.className}>
                 {col.label}
-              </th>
+              </TableHead>
             ))}
-            {actions && <th className="px-4 py-3 text-right font-medium text-muted">Actions</th>}
-          </tr>
-        </thead>
-        <tbody>
+            {actions && <TableHead className="text-right">Actions</TableHead>}
+          </TableRow>
+        </TableHeader>
+        <TableBody>
           {data.map((item) => (
-            <tr key={keyExtractor(item)} className="border-b border-subtle last:border-0 hover:bg-neutral-50">
+            <TableRow key={keyExtractor(item)}>
               {columns.map((col) => (
-                <td key={col.key} className={`px-4 py-3 text-main ${col.className || ''}`}>
+                <TableCell key={col.key} className={col.className}>
                   {col.render ? col.render(item) : String((item as Record<string, unknown>)[col.key] ?? '')}
-                </td>
+                </TableCell>
               ))}
               {actions && (
-                <td className="px-4 py-3 text-right">
+                <TableCell className="text-right">
                   {actions(item)}
-                </td>
+                </TableCell>
               )}
-            </tr>
+            </TableRow>
           ))}
-        </tbody>
-      </table>
+        </TableBody>
+      </Table>
     </div>
   );
 }

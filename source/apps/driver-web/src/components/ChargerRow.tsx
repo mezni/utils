@@ -1,30 +1,31 @@
+import { Badge } from '@/components/ui/badge';
 import type { Charger } from '../api/client';
 
 interface ChargerRowProps {
   charger: Charger;
 }
 
-const statusStyles: Record<string, string> = {
-  available: 'text-status-available bg-status-available-bg',
-  in_use: 'text-status-in-use bg-status-in-use-bg',
-  maintenance: 'text-status-maintenance bg-status-maintenance-bg',
-  offline: 'text-neutral-500 bg-neutral-100',
+const variantMap: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
+  available: 'default',
+  in_use: 'secondary',
+  maintenance: 'destructive',
+  offline: 'outline',
 };
 
 export function ChargerRow({ charger }: ChargerRowProps) {
-  const style = statusStyles[charger.status] || 'text-neutral-500 bg-neutral-100';
+  const variant = variantMap[charger.status] || 'outline';
 
   return (
-    <div className="flex items-center justify-between rounded-lg border border-subtle px-4 py-3">
+    <div className="flex items-center justify-between rounded-lg border bg-card px-4 py-3">
       <div className="flex items-center gap-3">
-        <span className="text-sm font-medium capitalize text-main">
+        <span className="text-sm font-medium capitalize text-foreground">
           {charger.connector_type.replace('type', 'Type ')}
         </span>
-        <span className="text-xs text-muted">{charger.power_kw} kW</span>
+        <span className="text-xs text-muted-foreground">{charger.power_kw} kW</span>
       </div>
-      <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${style}`}>
+      <Badge variant={variant} className="capitalize">
         {charger.status.replace(/_/g, ' ')}
-      </span>
+      </Badge>
     </div>
   );
 }

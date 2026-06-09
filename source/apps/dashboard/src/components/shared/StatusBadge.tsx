@@ -1,8 +1,10 @@
-const statusStyles: Record<string, string> = {
-  available: 'bg-status-available-bg text-status-available',
-  in_use: 'bg-status-in-use-bg text-status-in-use',
-  maintenance: 'bg-status-maintenance-bg text-status-maintenance',
-  offline: 'bg-neutral-100 text-neutral-500',
+import { Badge } from '@/components/ui/badge';
+
+const variantMap: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
+  available: 'default',
+  in_use: 'secondary',
+  maintenance: 'destructive',
+  offline: 'outline',
 };
 
 interface StatusBadgeProps {
@@ -10,10 +12,10 @@ interface StatusBadgeProps {
 }
 
 export function StatusBadge({ status }: StatusBadgeProps) {
-  const style = statusStyles[status] || 'bg-neutral-100 text-neutral-500';
+  const variant = variantMap[status] || 'outline';
   return (
-    <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${style}`}>
+    <Badge variant={variant} className="capitalize">
       {status.replace(/_/g, ' ')}
-    </span>
+    </Badge>
   );
 }
