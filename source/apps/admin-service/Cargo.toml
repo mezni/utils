@@ -1,0 +1,18 @@
+[package]
+name = "admin-service"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+actix-web = "4"
+actix-rt = "2"
+serde.workspace = true
+serde_json.workspace = true
+tokio.workspace = true
+sqlx.workspace = true
+thiserror.workspace = true
+ev-core = { path = "../../crates/ev-core" }
+ev-db = { path = "../../crates/ev-db" }
+log = "0.4"
+env_logger = "0.11"
+chrono = { version = "0.4", features = ["serde"] }

@@ -24,8 +24,8 @@ All paths are relative to workspace root `source/`. Admin service lives at `sour
 
 **Purpose**: Add admin-service to workspace and initialize crate
 
-- [ ] T001 Add `"apps/admin-service"` to workspace members in `source/Cargo.toml`
-- [ ] T002 [P] Create `source/apps/admin-service/Cargo.toml` with actix-web 4, sqlx 0.8, serde, thiserror, ev-core, ev-db, log, env_logger dependencies
+- [X] T001 Add `"apps/admin-service"` to workspace members in `source/Cargo.toml`
+- [X] T002 [P] Create `source/apps/admin-service/Cargo.toml` with actix-web 4, sqlx 0.8, serde, thiserror, ev-core, ev-db, log, env_logger, chrono dependencies
 
 ---
 
@@ -35,12 +35,12 @@ All paths are relative to workspace root `source/`. Admin service lives at `sour
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T003 Create `source/apps/admin-service/src/config.rs` with Config struct reading DATABASE_URL, HOST (default `0.0.0.0`), PORT (default `8081`), RUST_LOG (default `info`), plus `bind_address()` method and `x_partner_id()` helper extracting X-Partner-Id header value
-- [ ] T004 Create `source/apps/admin-service/src/error.rs` with AppError enum (NotFound, ValidationError, BadRequest, Conflict, InternalError, DbError) implementing `ResponseError` returning JSON `{"error": {"code": "...", "message": "..."}}`
-- [ ] T005 Create `source/apps/admin-service/src/models/mod.rs` with all request/response structs: CreatePartnerRequest, UpdatePartnerRequest, PartnerResponse, CreateStationRequest, UpdateStationRequest, StationResponse, CreateChargerRequest, UpdateChargerRequest, ChargerResponse, CreateAvailabilityRequest, AvailabilityResponse, HealthResponse, Paginated<T> re-use from ev-db, ErrorBody
-- [ ] T006 Create `source/apps/admin-service/src/db/mod.rs` re-exporting partners, stations, chargers, availability modules
-- [ ] T007 Create `source/apps/admin-service/src/routes/mod.rs` with `configure()` function registering all route handlers, plus `GET /api/health` handler
-- [ ] T008 Create `source/apps/admin-service/src/main.rs` with AppState (PgPool), `#[actix_web::main]` entrypoint loading config, initializing pool, binding HttpServer on `config.bind_address()`, running `sqlx::migrate!`, calling `routes::configure`
+- [X] T003 Create `source/apps/admin-service/src/config.rs` with Config struct reading DATABASE_URL, HOST (default `0.0.0.0`), PORT (default `8081`), RUST_LOG (default `info`), plus `bind_address()` method and `x_partner_id()` helper extracting X-Partner-Id header value
+- [X] T004 Create `source/apps/admin-service/src/error.rs` with AppError enum (NotFound, ValidationError, BadRequest, Conflict, InternalError, DbError) implementing `ResponseError` returning JSON `{"error": {"code": "...", "message": "..."}}`
+- [X] T005 Create `source/apps/admin-service/src/models/mod.rs` with all request/response structs: CreatePartnerRequest, UpdatePartnerRequest, PartnerResponse, CreateStationRequest, UpdateStationRequest, StationResponse, CreateChargerRequest, UpdateChargerRequest, ChargerResponse, CreateAvailabilityRequest, AvailabilityResponse, HealthResponse, PaginationParams
+- [X] T006 Create `source/apps/admin-service/src/db/mod.rs` re-exporting partners, stations, chargers, availability modules
+- [X] T007 Create `source/apps/admin-service/src/routes/mod.rs` with `configure()` function registering all route handlers, plus `GET /api/health` handler
+- [X] T008 Create `source/apps/admin-service/src/main.rs` with AppState (PgPool), `#[actix_web::main]` entrypoint loading config, initializing pool, binding HttpServer on `config.bind_address()`, calling `routes::configure`
 
 **Checkpoint**: Foundation ready — `cargo build --package admin-service` compiles. Server starts and `/api/health` returns 200.
 
@@ -54,9 +54,9 @@ All paths are relative to workspace root `source/`. Admin service lives at `sour
 
 ### Implementation
 
-- [ ] T009 [US1] Create `source/apps/admin-service/src/db/partners.rs` with CRUD queries: `create_partner()` (INSERT with ID generated via ev_core), `get_partner()` (SELECT by id), `list_partners()` (SELECT with pagination), `update_partner()` (partial UPDATE with COALESCE, RETURNING *), `delete_partner()` (soft-delete: UPDATE is_active=false)
-- [ ] T010 [US1] Create `source/apps/admin-service/src/routes/partners.rs` with handlers: `POST /api/partners` (create, 201), `GET /api/partners` (list, paginated, 200), `GET /api/partners/{id}` (get by id, 200/404), `PUT /api/partners/{id}` (partial update, 200/400/404), `DELETE /api/partners/{id}` (soft-delete, 200/404). Extract X-Partner-Id for audit fields.
-- [ ] T011 [US1] Wire partner routes into `source/apps/admin-service/src/routes/mod.rs`
+- [X] T009 [US1] Create `source/apps/admin-service/src/db/partners.rs` with CRUD queries: `create_partner()` (INSERT with ID generated via ev_core), `get_partner()` (SELECT by id), `list_partners()` (SELECT with pagination), `update_partner()` (partial UPDATE with COALESCE, RETURNING *), `delete_partner()` (soft-delete: UPDATE is_active=false)
+- [X] T010 [US1] Create `source/apps/admin-service/src/routes/partners.rs` with handlers: `POST /api/partners` (create, 201), `GET /api/partners` (list, paginated, 200), `GET /api/partners/{id}` (get by id, 200/404), `PUT /api/partners/{id}` (partial update, 200/400/404), `DELETE /api/partners/{id}` (soft-delete, 200/404). Extract X-Partner-Id for audit fields.
+- [X] T011 [US1] Wire partner routes into `source/apps/admin-service/src/routes/mod.rs`
 
 **Checkpoint**: Partner CRUD fully functional. Can create, read, update flags, and soft-delete partners.
 
@@ -70,9 +70,9 @@ All paths are relative to workspace root `source/`. Admin service lives at `sour
 
 ### Implementation
 
-- [ ] T012 [US2] Create `source/apps/admin-service/src/db/stations.rs` with CRUD queries: `create_station()` (INSERT with partner FK check), `get_station()` (SELECT by id), `list_stations()` (SELECT with optional partner_id filter, paginated), `update_station()` (partial UPDATE, RETURNING *), `delete_station()` (hard DELETE, CASCADE)
-- [ ] T013 [US2] Create `source/apps/admin-service/src/routes/stations.rs` with handlers: `POST /api/stations` (create, 201), `GET /api/stations` (list, optional partner_id filter, paginated, 200), `GET /api/stations/{id}` (get by id, 200/404), `PUT /api/stations/{id}` (partial update, 200/400/404), `DELETE /api/stations/{id}` (hard delete, 200/404). Validate lat (-90..90) and lng (-180..180) ranges.
-- [ ] T014 [US2] Wire station routes into `source/apps/admin-service/src/routes/mod.rs`
+- [X] T012 [US2] Create `source/apps/admin-service/src/db/stations.rs` with CRUD queries: `create_station()` (INSERT with partner FK check), `get_station()` (SELECT by id), `list_stations()` (SELECT with optional partner_id filter, paginated), `update_station()` (partial UPDATE, RETURNING *), `delete_station()` (hard DELETE, CASCADE)
+- [X] T013 [US2] Create `source/apps/admin-service/src/routes/stations.rs` with handlers: `POST /api/stations` (create, 201), `GET /api/stations` (list, optional partner_id filter, paginated, 200), `GET /api/stations/{id}` (get by id, 200/404), `PUT /api/stations/{id}` (partial update, 200/400/404), `DELETE /api/stations/{id}` (hard delete, 200/404). Validate lat (-90..90) and lng (-180..180) ranges.
+- [X] T014 [US2] Wire station routes into `source/apps/admin-service/src/routes/mod.rs`
 
 **Checkpoint**: Station CRUD fully functional. Partners can manage their stations.
 
@@ -86,9 +86,9 @@ All paths are relative to workspace root `source/`. Admin service lives at `sour
 
 ### Implementation
 
-- [ ] T015 [US3] Create `source/apps/admin-service/src/db/chargers.rs` with CRUD queries: `create_charger()` (INSERT with station FK check, default status=offline), `get_charger()` (SELECT by id), `list_chargers()` (SELECT with optional station_id filter, paginated), `update_charger()` (partial UPDATE, RETURNING *), `delete_charger()` (hard DELETE)
-- [ ] T016 [US3] Create `source/apps/admin-service/src/routes/chargers.rs` with handlers: `POST /api/chargers` (create, 201), `GET /api/chargers` (list, optional station_id filter, paginated, 200), `GET /api/chargers/{id}` (get by id, 200/404), `PUT /api/chargers/{id}` (partial update, 200/400/404), `DELETE /api/chargers/{id}` (hard delete, 200/404). Validate connector_type enum and power_kw > 0.
-- [ ] T017 [US3] Wire charger routes into `source/apps/admin-service/src/routes/mod.rs`
+- [X] T015 [US3] Create `source/apps/admin-service/src/db/chargers.rs` with CRUD queries: `create_charger()` (INSERT with station FK check, default status=offline), `get_charger()` (SELECT by id), `list_chargers()` (SELECT with optional station_id filter, paginated), `update_charger()` (partial UPDATE, RETURNING *), `delete_charger()` (hard DELETE)
+- [X] T016 [US3] Create `source/apps/admin-service/src/routes/chargers.rs` with handlers: `POST /api/chargers` (create, 201), `GET /api/chargers` (list, optional station_id filter, paginated, 200), `GET /api/chargers/{id}` (get by id, 200/404), `PUT /api/chargers/{id}` (partial update, 200/400/404), `DELETE /api/chargers/{id}` (hard delete, 200/404). Validate connector_type enum and power_kw > 0.
+- [X] T017 [US3] Wire charger routes into `source/apps/admin-service/src/routes/mod.rs`
 
 **Checkpoint**: Charger CRUD fully functional. Stations have chargers with connector types and status.
 
@@ -102,9 +102,9 @@ All paths are relative to workspace root `source/`. Admin service lives at `sour
 
 ### Implementation
 
-- [ ] T018 [US4] Create `source/apps/admin-service/src/db/availability.rs` with `create_availability()` (INSERT into station_availability, RETURNING *)
-- [ ] T019 [US4] Create `source/apps/admin-service/src/routes/availability.rs` with handler: `POST /api/stations/{id}/availability` (create availability record, 201/400/404). Validate status enum.
-- [ ] T020 [US4] Wire availability routes into `source/apps/admin-service/src/routes/mod.rs`
+- [X] T018 [US4] Create `source/apps/admin-service/src/db/availability.rs` with `create_availability()` (INSERT into station_availability, RETURNING *)
+- [X] T019 [US4] Create `source/apps/admin-service/src/routes/availability.rs` with handler: `POST /api/stations/{id}/availability` (create availability record, 201/400/404). Validate status enum.
+- [X] T020 [US4] Wire availability routes into `source/apps/admin-service/src/routes/mod.rs`
 
 **Checkpoint**: Station availability updates work and are append-only. Each POST creates a new record.
 
@@ -114,9 +114,9 @@ All paths are relative to workspace root `source/`. Admin service lives at `sour
 
 **Purpose**: Docker, build verification, documentation alignment
 
-- [ ] T021 [P] Create `source/apps/admin-service/Dockerfile` matching Driver Service multi-stage pattern (rust:1.85-slim-bookworm → debian:bookworm-slim), expose port 8081
-- [ ] T022 Run `cargo build --all` and fix any warnings or errors
-- [ ] T023 [P] Verify against `specs/010-admin-service/quickstart.md` — confirm env vars, endpoints, and Docker instructions work
+- [X] T021 [P] Create `source/apps/admin-service/Dockerfile` matching Driver Service multi-stage pattern (rust:1.85-slim-bookworm → debian:bookworm-slim), expose port 8081
+- [X] T022 Run `cargo build --all` and fix any warnings or errors
+- [X] T023 [P] Verify against `specs/010-admin-service/quickstart.md` — confirm env vars, endpoints, and Docker instructions work
 
 ---
 

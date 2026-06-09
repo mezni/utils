@@ -1,6 +1,6 @@
 /// A generic paginated response containing a slice of data with total count
 /// and page metadata.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize)]
 pub struct Paginated<T> {
     /// The items for the current page.
     pub data: Vec<T>,
