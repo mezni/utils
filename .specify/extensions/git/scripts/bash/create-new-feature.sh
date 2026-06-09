@@ -267,6 +267,14 @@ SPECS_DIR="$REPO_ROOT/specs"
 generate_branch_name() {
     local description="$1"
 
+    # Sprint pattern detection: "Sprint X.X — Sprint Name" or "Sprint X.X - Sprint Name"
+    if echo "$description" | grep -qiE '^sprint[[:space:]]+[0-9]+\.[0-9]+[[:space:]]*[—–-][[:space:]]+'; then
+        local sprint_name=$(echo "$description" | sed -E 's/^[Ss]print[[:space:]]+[0-9]+\.[0-9]+[[:space:]]*[—–-][[:space:]]+//')
+        local cleaned=$(clean_branch_name "$sprint_name")
+        echo "$cleaned"
+        return
+    fi
+
     local stop_words="^(i|a|an|the|to|for|of|in|on|at|by|with|from|is|are|was|were|be|been|being|have|has|had|do|does|did|will|would|should|could|can|may|might|must|shall|this|that|these|those|my|your|our|their|want|need|add|get|set)$"
 
     local clean_name=$(echo "$description" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/ /g')
