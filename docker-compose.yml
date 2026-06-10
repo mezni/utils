@@ -70,10 +70,8 @@ services:
     ports:
       - "5173:5173"
     environment:
-      API_BASE_URL: http://driver-service:8080
+      API_BASE_URL: http://admin-service:8081
     depends_on:
-      driver-service:
-        condition: service_started
       admin-service:
         condition: service_started
     networks:

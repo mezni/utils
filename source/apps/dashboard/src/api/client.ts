@@ -21,9 +21,14 @@ export async function fetchWithError<T>(
   return res.json();
 }
 
-export function list<T>(resource: string, params?: Record<string, string>) {
+export async function list<T>(resource: string, params?: Record<string, string>) {
   const qs = params ? '?' + new URLSearchParams(params).toString() : '';
-  return fetchWithError<T[]>(`/${resource}${qs}`);
+  const res = await fetchWithError<unknown>(`/${resource}${qs}`);
+  if (Array.isArray(res)) return res as T[];
+  if (res && typeof res === 'object' && 'data' in res && Array.isArray((res as Record<string, unknown>).data)) {
+    return (res as { data: T[] }).data;
+  }
+  throw { message: 'Unexpected API response format', status: 200 };
 }
 
 export function get<T>(resource: string, id: string) {
