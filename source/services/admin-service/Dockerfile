@@ -6,8 +6,8 @@ COPY crates/ ./crates/
 COPY services/admin-service/ ./services/admin-service/
 COPY services/driver-service/ ./services/driver-service/
 
-RUN cargo build --package admin-service && \
-    cp target/debug/admin-service /admin-service
+RUN cargo build --release --locked --package admin-service && \
+    cp target/release/admin-service /admin-service
 
 FROM debian:bookworm-slim AS runtime
 

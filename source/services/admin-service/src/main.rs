@@ -1,5 +1,3 @@
-#![allow(dead_code)]
-
 mod config;
 mod db;
 mod error;
@@ -30,6 +28,11 @@ async fn main() -> std::io::Result<()> {
     })
     .await
     .map_err(|e| std::io::Error::other(e.to_string()))?;
+
+    sqlx::migrate!("../../../database/migrations")
+        .run(&pool)
+        .await
+        .map_err(|e| std::io::Error::other(format!("migration failed: {e}")))?;
 
     let bind = config.bind_address();
     HttpServer::new(move || {

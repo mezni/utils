@@ -16,12 +16,15 @@ pub async fn markers(
         return Err(AppError::BadRequest("west must be less than east".to_string()));
     }
 
+    let limit = params.limit.unwrap_or(1000).min(5000);
+
     let stations = crate::db::markers::markers_in_bbox(
         &state.pool,
         params.south,
         params.west,
         params.north,
         params.east,
+        limit,
     )
     .await?;
 
@@ -34,4 +37,5 @@ pub struct MarkersQuery {
     pub west: f64,
     pub north: f64,
     pub east: f64,
+    pub limit: Option<i64>,
 }

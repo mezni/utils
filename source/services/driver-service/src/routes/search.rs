@@ -13,14 +13,14 @@ pub async fn search(
         return Err(AppError::BadRequest("query must be at least 2 characters".to_string()));
     }
 
-    if let Some(ref ct) = params.connector_type {
-        let valid = ["type2", "type3", "ccs", "chademo"];
-        if !valid.contains(&ct.as_str()) {
-            return Err(AppError::BadRequest(format!(
-                "invalid connector_type: {}. Must be one of {:?}",
-                ct, valid
-            )));
-        }
+    if let Some(ref ct) = params.connector_type
+        && !ev_core::ConnectorType::valid_values().contains(&ct.as_str())
+    {
+        return Err(AppError::BadRequest(format!(
+            "invalid connector_type: {}. Must be one of {:?}",
+            ct,
+            ev_core::ConnectorType::valid_values()
+        )));
     }
 
     if params.limit > 100 {

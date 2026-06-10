@@ -11,8 +11,8 @@ pub async fn create_availability(
     let id = ev_core::generate_id("SA", 3);
     let rec = sqlx::query_as::<_, AvailabilityResponse>(
         r#"
-        INSERT INTO "ev-platform".station_availability (id, station_id, status, updated_by)
-        VALUES ($1, $2, $3, $4)
+        INSERT INTO "ev-platform".station_availability (id, station_id, status, updated_by, updated_at)
+        VALUES ($1, $2, $3, $4, NOW())
         RETURNING *
         "#,
     )

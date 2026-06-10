@@ -1,12 +1,11 @@
 use actix_web::{HttpResponse, ResponseError};
+use log::error;
 use std::fmt;
 
 #[derive(Debug)]
 pub enum AppError {
     NotFound(String),
     BadRequest(String),
-    #[allow(dead_code)]
-    InternalError(String),
     DbError(String),
 }
 
@@ -15,7 +14,6 @@ impl fmt::Display for AppError {
         match self {
             AppError::NotFound(msg) => write!(f, "Not found: {}", msg),
             AppError::BadRequest(msg) => write!(f, "Bad request: {}", msg),
-            AppError::InternalError(msg) => write!(f, "Internal error: {}", msg),
             AppError::DbError(msg) => write!(f, "Database error: {}", msg),
         }
     }
@@ -30,11 +28,13 @@ impl ResponseError for AppError {
             AppError::BadRequest(msg) => {
                 (actix_web::http::StatusCode::BAD_REQUEST, "bad_request", msg.clone())
             }
-            AppError::InternalError(msg) => {
-                (actix_web::http::StatusCode::INTERNAL_SERVER_ERROR, "internal_error", msg.clone())
-            }
             AppError::DbError(msg) => {
-                (actix_web::http::StatusCode::INTERNAL_SERVER_ERROR, "db_error", msg.clone())
+                error!("Database error (logged, not returned to client): {msg}");
+                (
+                    actix_web::http::StatusCode::INTERNAL_SERVER_ERROR,
+                    "internal_error",
+                    "An internal error occurred".to_string(),
+                )
             }
         };
 

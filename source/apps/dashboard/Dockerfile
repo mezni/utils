@@ -9,6 +9,7 @@ RUN pnpm install --frozen-lockfile --filter @borne-map/dashboard
 
 FROM base AS build
 COPY --from=deps /app/node_modules ./node_modules
+COPY pnpm-workspace.yaml package.json ./
 COPY source/apps/dashboard/ ./source/apps/dashboard/
 COPY source/packages/ ./source/packages/
 RUN pnpm --filter @borne-map/dashboard build

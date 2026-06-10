@@ -1,13 +1,11 @@
 use actix_web::{HttpResponse, ResponseError};
+use log::error;
 use std::fmt;
 
 #[derive(Debug)]
 pub enum AppError {
     NotFound(String),
     ValidationError(String),
-    BadRequest(String),
-    Conflict(String),
-    InternalError(String),
     DbError(String),
 }
 
@@ -16,9 +14,6 @@ impl fmt::Display for AppError {
         match self {
             AppError::NotFound(msg) => write!(f, "Not found: {}", msg),
             AppError::ValidationError(msg) => write!(f, "Validation error: {}", msg),
-            AppError::BadRequest(msg) => write!(f, "Bad request: {}", msg),
-            AppError::Conflict(msg) => write!(f, "Conflict: {}", msg),
-            AppError::InternalError(msg) => write!(f, "Internal error: {}", msg),
             AppError::DbError(msg) => write!(f, "Database error: {}", msg),
         }
     }
@@ -33,17 +28,13 @@ impl ResponseError for AppError {
             AppError::ValidationError(msg) => {
                 (actix_web::http::StatusCode::BAD_REQUEST, "validation_error", msg.clone())
             }
-            AppError::BadRequest(msg) => {
-                (actix_web::http::StatusCode::BAD_REQUEST, "bad_request", msg.clone())
-            }
-            AppError::Conflict(msg) => {
-                (actix_web::http::StatusCode::CONFLICT, "conflict", msg.clone())
-            }
-            AppError::InternalError(msg) => {
-                (actix_web::http::StatusCode::INTERNAL_SERVER_ERROR, "internal_error", msg.clone())
-            }
             AppError::DbError(msg) => {
-                (actix_web::http::StatusCode::INTERNAL_SERVER_ERROR, "db_error", msg.clone())
+                error!("Database error (logged, not returned to client): {msg}");
+                (
+                    actix_web::http::StatusCode::INTERNAL_SERVER_ERROR,
+                    "internal_error",
+                    "An internal error occurred".to_string(),
+                )
             }
         };
 

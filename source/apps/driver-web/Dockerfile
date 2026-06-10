@@ -9,6 +9,7 @@ RUN pnpm install --frozen-lockfile --filter @borne-map/driver-web
 
 FROM base AS build
 COPY --from=deps /app/node_modules ./node_modules
+COPY pnpm-workspace.yaml package.json ./
 COPY source/apps/driver-web/ ./source/apps/driver-web/
 COPY source/packages/ ./source/packages/
 RUN pnpm --filter @borne-map/driver-web build

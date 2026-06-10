@@ -5,9 +5,6 @@ use crate::models::{ChargerListParams, CreateChargerRequest, UpdateChargerReques
 use crate::AppState;
 use actix_web::{delete, get, post, put, web, HttpRequest, HttpResponse};
 
-const VALID_CONNECTOR_TYPES: &[&str] = &["type2", "type3", "ccs", "chademo"];
-const VALID_CHARGER_STATUSES: &[&str] = &["available", "in_use", "maintenance", "offline"];
-
 #[post("/api/chargers")]
 pub async fn create_charger(
     req: HttpRequest,
@@ -15,10 +12,11 @@ pub async fn create_charger(
     body: web::Json<CreateChargerRequest>,
 ) -> Result<HttpResponse, AppError> {
     let actor = config::x_partner_id(&req);
-    if !VALID_CONNECTOR_TYPES.contains(&body.connector_type.as_str()) {
+    if !ev_core::ConnectorType::valid_values().contains(&body.connector_type.as_str()) {
         return Err(AppError::ValidationError(format!(
             "invalid connector_type '{}', must be one of {:?}",
-            body.connector_type, VALID_CONNECTOR_TYPES
+            body.connector_type,
+            ev_core::ConnectorType::valid_values()
         )));
     }
     if body.power_kw <= 0.0 {
@@ -27,11 +25,12 @@ pub async fn create_charger(
         ));
     }
     if let Some(ref status) = body.status
-        && !VALID_CHARGER_STATUSES.contains(&status.as_str())
+        && !ev_core::ChargerStatus::valid_values().contains(&status.as_str())
     {
         return Err(AppError::ValidationError(format!(
             "invalid status '{}', must be one of {:?}",
-            status, VALID_CHARGER_STATUSES
+            status,
+            ev_core::ChargerStatus::valid_values()
         )));
     }
     let charger = db::chargers::create_charger(&state.pool, body.into_inner(), &actor).await?;
@@ -70,11 +69,12 @@ pub async fn update_charger(
     let actor = config::x_partner_id(&req);
     let id = path.into_inner();
     if let Some(ref ct) = body.connector_type
-        && !VALID_CONNECTOR_TYPES.contains(&ct.as_str())
+        && !ev_core::ConnectorType::valid_values().contains(&ct.as_str())
     {
         return Err(AppError::ValidationError(format!(
             "invalid connector_type '{}', must be one of {:?}",
-            ct, VALID_CONNECTOR_TYPES
+            ct,
+            ev_core::ConnectorType::valid_values()
         )));
     }
     if let Some(pk) = body.power_kw
@@ -85,11 +85,12 @@ pub async fn update_charger(
         ));
     }
     if let Some(ref status) = body.status
-        && !VALID_CHARGER_STATUSES.contains(&status.as_str())
+        && !ev_core::ChargerStatus::valid_values().contains(&status.as_str())
     {
         return Err(AppError::ValidationError(format!(
             "invalid status '{}', must be one of {:?}",
-            status, VALID_CHARGER_STATUSES
+            status,
+            ev_core::ChargerStatus::valid_values()
         )));
     }
     let charger = db::chargers::update_charger(&state.pool, &id, body.into_inner(), &actor).await?;

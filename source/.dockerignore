@@ -1,0 +1,15 @@
+target/
+node_modules/
+.git/
+*.log*
+.env*
+coverage/
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.idea/
+.vscode/
+__pycache__/
+*.pyc
+**/*.rs.bk

@@ -1,18 +1,5 @@
 use serde::{Deserialize, Serialize};
 
-/// Error type for enum parsing failures.
-#[derive(Debug, Clone, PartialEq, thiserror::Error)]
-pub enum EnumParseError {
-    /// An unknown variant string was encountered during deserialization.
-    #[error("unknown {enum_name} variant: {value}")]
-    UnknownVariant {
-        /// The name of the enum type being parsed.
-        enum_name: &'static str,
-        /// The unrecognized string value.
-        value: String,
-    },
-}
-
 /// Type of EV connector.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -27,6 +14,13 @@ pub enum ConnectorType {
     CHAdeMO,
 }
 
+impl ConnectorType {
+    /// All valid connector type strings, for use in validation.
+    pub fn valid_values() -> &'static [&'static str] {
+        &["type2", "type3", "ccs", "chademo"]
+    }
+}
+
 /// Operational status of a charger.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -39,6 +33,13 @@ pub enum ChargerStatus {
     Maintenance,
     /// Charger is offline or unreachable.
     Offline,
+}
+
+impl ChargerStatus {
+    /// All valid charger status strings, for use in validation.
+    pub fn valid_values() -> &'static [&'static str] {
+        &["available", "in_use", "maintenance", "offline"]
+    }
 }
 
 /// Type of partner entity.
