@@ -5,7 +5,7 @@ COPY source/Cargo.toml source/Cargo.lock ./
 COPY source/crates/ ./crates/
 COPY source/services/admin-service/ ./services/admin-service/
 COPY source/services/driver-service/ ./services/driver-service/
-COPY database/ ./database/
+COPY database/ /database/
 
 RUN cargo build --release --locked --package admin-service && \
     cp target/release/admin-service /admin-service
