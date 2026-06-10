@@ -1,0 +1,114 @@
+services:
+  postgres:
+    image: postgis/postgis:17-3.5
+    container_name: borne-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: borne_map
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+    networks:
+      - borne-network
+
+  driver-service:
+    build:
+      context: source/
+      dockerfile: services/driver-service/Dockerfile
+    container_name: borne-driver-service
+    ports:
+      - "8080:8080"
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/borne_map
+      PORT: "8080"
+      RUST_LOG: info
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/api/health || exit 1"]
+      interval: 15s
+      retries: 3
+      start_period: 30s
+    networks:
+      - borne-network
+
+  admin-service:
+    build:
+      context: source/
+      dockerfile: services/admin-service/Dockerfile
+    container_name: borne-admin-service
+    ports:
+      - "8081:8081"
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/borne_map
+      PORT: "8081"
+      RUST_LOG: info
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8081/api/health || exit 1"]
+      interval: 15s
+      retries: 3
+      start_period: 30s
+    networks:
+      - borne-network
+
+  dashboard:
+    build:
+      context: source/apps/dashboard/
+    container_name: borne-dashboard
+    ports:
+      - "5173:5173"
+    environment:
+      API_BASE_URL: http://driver-service:8080
+    depends_on:
+      driver-service:
+        condition: service_started
+      admin-service:
+        condition: service_started
+    networks:
+      - borne-network
+
+  driver-web:
+    build:
+      context: source/apps/driver-web/
+    container_name: borne-driver-web
+    ports:
+      - "5174:5174"
+    environment:
+      API_BASE_URL: http://driver-service:8080
+    depends_on:
+      driver-service:
+        condition: service_started
+    networks:
+      - borne-network
+
+  driver-mobile:
+    build:
+      context: source/apps/driver-mobile/
+    container_name: borne-driver-mobile
+    ports:
+      - "8081:8081"
+    environment:
+      API_BASE_URL: http://driver-service:8080
+    depends_on:
+      driver-service:
+        condition: service_started
+    networks:
+      - borne-network
+
+networks:
+  borne-network:
+    driver: bridge
+
+volumes:
+  pgdata:

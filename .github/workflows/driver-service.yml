@@ -1,0 +1,61 @@
+name: Driver Service CI
+
+on:
+  push:
+    branches:
+      - "**"
+    paths:
+      - "source/services/driver-service/**"
+      - "source/crates/**"
+  pull_request:
+    branches:
+      - "**"
+    paths:
+      - "source/services/driver-service/**"
+      - "source/crates/**"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build-test-lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: source/
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+
+      - name: Cache Cargo registry and target
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry/
+            ~/.cargo/git/
+            source/target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('source/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: Build
+        run: cargo build --package driver-service --locked
+
+      - name: Test
+        run: cargo test --package driver-service --locked
+
+      - name: Lint
+        run: cargo clippy --package driver-service --locked -- -D warnings
+
+      - name: Build Docker image
+        run: docker build -f services/driver-service/Dockerfile -t borne-driver-service .

@@ -1,0 +1,16 @@
+node_modules/
+.git/
+target/
+*.log*
+.env*
+coverage/
+.gitignore
+.dockerignore
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.idea/
+.vscode/
+__pycache__/
+*.pyc

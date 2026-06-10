@@ -12,7 +12,7 @@ RUN cargo build --package admin-service --release && \
 FROM debian:bookworm-slim AS runtime
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    ca-certificates libssl3 libpq5 && \
+    ca-certificates libssl3 libpq5 curl && \
     rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /admin-service /admin-service

@@ -6,6 +6,7 @@
 
 - Docker Engine 24+ with `docker compose` plugin
 - No local PostgreSQL needed (Docker Compose manages it)
+- `.dockerignore` at repo root excludes unnecessary build context files
 
 ## Running All Services
 

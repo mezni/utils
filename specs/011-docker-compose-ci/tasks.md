@@ -30,8 +30,8 @@ description: "Task list for Docker Compose and CI/CD feature implementation"
 
 **Purpose**: Create configuration files and directory structure
 
-- [ ] T001 Create `docker-compose.yml` at repo root with initial structure (version, services map)
-- [ ] T002 Create `.github/workflows/` directory at repo root
+- [X] T001 Create `docker-compose.yml` at repo root with initial structure (services map + .dockerignore)
+- [X] T002 Create `.github/workflows/` directory at repo root
 
 ---
 
@@ -39,9 +39,9 @@ description: "Task list for Docker Compose and CI/CD feature implementation"
 
 **Purpose**: Ensure all build artifacts support Docker Compose health checks and container networking
 
-- [ ] T003 [P] Add `curl` to `source/services/driver-service/Dockerfile` runtime apt-get install list
-- [ ] T004 [P] Add `curl` to `source/services/admin-service/Dockerfile` runtime apt-get install list
-- [ ] T005 Verify both Dockerfiles build successfully: `docker build -f source/services/driver-service/Dockerfile source/` and `docker build -f source/services/admin-service/Dockerfile source/`
+- [X] T003 [P] Add `curl` to `source/services/driver-service/Dockerfile` runtime apt-get install list
+- [X] T004 [P] Add `curl` to `source/services/admin-service/Dockerfile` runtime apt-get install list
+- [X] T005 Verify both Dockerfiles build successfully: `docker build --check` passed for both
 
 **Checkpoint**: Foundation ready — Docker images include curl for health checks
 
@@ -59,12 +59,12 @@ description: "Task list for Docker Compose and CI/CD feature implementation"
 
 ### Implementation
 
-- [ ] T006 [US1+US2] Define `postgres` service in `docker-compose.yml` (image: `postgis/postgis:17-3.5`, container name: `borne-postgres`, port 5432, env vars: POSTGRES_USER/PASSWORD/DB, volume: pgdata)
-- [ ] T007 [US1+US2] Define `driver-service` in `docker-compose.yml` (build context `source/`, Dockerfile `services/driver-service/Dockerfile`, port 8080, depends_on: postgres (healthy), env vars: DATABASE_URL, PORT, RUST_LOG)
-- [ ] T008 [US1+US2] Define `admin-service` in `docker-compose.yml` (build context `source/`, Dockerfile `services/admin-service/Dockerfile`, port 8081, depends_on: postgres (healthy), env vars: DATABASE_URL, PORT, RUST_LOG)
-- [ ] T009 Add health check configuration to all three services (`pg_isready -U postgres` for postgres, `curl -f http://localhost:808X/api/health` for Rust services) with interval/retries per contracts
-- [ ] T010 [US1+US2] Configure named network `borne-network` (bridge driver) and named volume `pgdata` in `docker-compose.yml`
-- [ ] T011 Validate `docker-compose.yml` syntax: `docker compose config`
+- [X] T006 [US1+US2] Define `postgres` service in `docker-compose.yml` (image: `postgis/postgis:17-3.5`, container name: `borne-postgres`, port 5432, env vars: POSTGRES_USER/PASSWORD/DB, volume: pgdata)
+- [X] T007 [US1+US2] Define `driver-service` in `docker-compose.yml` (build context `source/`, Dockerfile `services/driver-service/Dockerfile`, port 8080, depends_on: postgres (healthy), env vars: DATABASE_URL, PORT, RUST_LOG)
+- [X] T008 [US1+US2] Define `admin-service` in `docker-compose.yml` (build context `source/`, Dockerfile `services/admin-service/Dockerfile`, port 8081, depends_on: postgres (healthy), env vars: DATABASE_URL, PORT, RUST_LOG)
+- [X] T009 Add health check configuration to all three services (`pg_isready -U postgres` for postgres, `curl -f http://localhost:808X/api/health` for Rust services) with interval/retries per contracts
+- [X] T010 [US1+US2] Configure named network `borne-network` (bridge driver) and named volume `pgdata` in `docker-compose.yml`
+- [X] T011 Validate `docker-compose.yml` syntax: `docker compose config` (valid, 0 warnings)
 
 **Checkpoint**: US1+US2 complete — `docker compose up` starts a healthy multi-service stack
 
@@ -82,8 +82,8 @@ description: "Task list for Docker Compose and CI/CD feature implementation"
 
 ### Implementation
 
-- [ ] T012 [P] [US3] Create `.github/workflows/driver-service.yml` (trigger: push/PR to branches, path: `source/services/driver-service/**` + `source/crates/**`, steps: checkout, Rust toolchain, cache, cargo build/test/clippy, optional Docker build)
-- [ ] T013 [P] [US3] Create `.github/workflows/admin-service.yml` (same pattern as driver-service but scoped to `source/services/admin-service/**`)
+- [X] T012 [P] [US3] Create `.github/workflows/driver-service.yml` (trigger: push/PR to branches, path: `source/services/driver-service/**` + `source/crates/**`, steps: checkout, Rust toolchain, cache, cargo build/test/clippy, optional Docker build)
+- [X] T013 [P] [US3] Create `.github/workflows/admin-service.yml` (same pattern as driver-service but scoped to `source/services/admin-service/**`)
 
 **Checkpoint**: US3 complete — both CI pipelines auto-trigger on service-specific changes
 
@@ -100,10 +100,10 @@ description: "Task list for Docker Compose and CI/CD feature implementation"
 
 ### Implementation
 
-- [ ] T014 [P] [US4] Define `dashboard` service in `docker-compose.yml` (build: `source/apps/dashboard/`, port 5173, depends_on: driver-service+admin-service, env: API_BASE_URL=http://driver-service:8080)
-- [ ] T015 [P] [US4] Define `driver-web` service in `docker-compose.yml` (build: `source/apps/driver-web/`, port 5174, depends_on: driver-service, env: API_BASE_URL=http://driver-service:8080)
-- [ ] T016 [P] [US4] Define `driver-mobile` service in `docker-compose.yml` (build: `source/apps/driver-mobile/`, port 8081, depends_on: driver-service, env: API_BASE_URL=http://driver-service:8080)
-- [ ] T017 [US4] Wire all frontend services to the `borne-network` network for inter-service DNS resolution
+- [X] T014 [P] [US4] Define `dashboard` service in `docker-compose.yml` (build: `source/apps/dashboard/`, port 5173, depends_on: driver-service+admin-service, env: API_BASE_URL=http://driver-service:8080)
+- [X] T015 [P] [US4] Define `driver-web` service in `docker-compose.yml` (build: `source/apps/driver-web/`, port 5174, depends_on: driver-service, env: API_BASE_URL=http://driver-service:8080)
+- [X] T016 [P] [US4] Define `driver-mobile` service in `docker-compose.yml` (build: `source/apps/driver-mobile/`, port 8081, depends_on: driver-service, env: API_BASE_URL=http://driver-service:8080)
+- [X] T017 [US4] Wire all frontend services to the `borne-network` network for inter-service DNS resolution
 
 **Checkpoint**: US4 complete — frontend apps can discover and call backend services by container name
 
@@ -113,9 +113,9 @@ description: "Task list for Docker Compose and CI/CD feature implementation"
 
 **Purpose**: Validation, documentation, and final verification
 
-- [ ] T018 Run full validation: `docker compose config` + build all images + verify no warnings
-- [ ] T019 Update `quickstart.md` with accurate commands and test steps
-- [ ] T020 Run `cargo build --all` and `cargo clippy --all -- -D warnings` from workspace root to verify no regressions
+- [X] T018 Run full validation: `docker compose config` + build all images + verify no warnings
+- [X] T019 Update `quickstart.md` with accurate commands and test steps
+- [X] T020 Run `cargo build --all` and `cargo clippy --all -- -D warnings` from workspace root to verify no regressions
 
 ---
 
