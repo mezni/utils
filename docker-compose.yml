@@ -20,8 +20,8 @@ services:
 
   driver-service:
     build:
-      context: source/
-      dockerfile: services/driver-service/Dockerfile
+      context: .
+      dockerfile: source/services/driver-service/Dockerfile
     container_name: borne-driver-service
     ports:
       - "8080:8080"
@@ -42,8 +42,8 @@ services:
 
   admin-service:
     build:
-      context: source/
-      dockerfile: services/admin-service/Dockerfile
+      context: .
+      dockerfile: source/services/admin-service/Dockerfile
     container_name: borne-admin-service
     ports:
       - "8081:8081"

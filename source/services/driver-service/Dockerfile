@@ -1,10 +1,11 @@
 FROM rust:1.95-slim-bookworm AS builder
 
 WORKDIR /app
-COPY Cargo.toml Cargo.lock ./
-COPY crates/ ./crates/
-COPY services/driver-service/ ./services/driver-service/
-COPY services/admin-service/ ./services/admin-service/
+COPY source/Cargo.toml source/Cargo.lock ./
+COPY source/crates/ ./crates/
+COPY source/services/driver-service/ ./services/driver-service/
+COPY source/services/admin-service/ ./services/admin-service/
+COPY database/ ./database/
 
 RUN cargo build --release --locked --package driver-service && \
     cp target/release/driver-service /driver-service
