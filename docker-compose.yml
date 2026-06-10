@@ -64,7 +64,8 @@ services:
 
   dashboard:
     build:
-      context: source/apps/dashboard/
+      context: .
+      dockerfile: source/apps/dashboard/Dockerfile
     container_name: borne-dashboard
     ports:
       - "5173:5173"
@@ -80,7 +81,8 @@ services:
 
   driver-web:
     build:
-      context: source/apps/driver-web/
+      context: .
+      dockerfile: source/apps/driver-web/Dockerfile
     container_name: borne-driver-web
     ports:
       - "5174:5174"
@@ -94,10 +96,11 @@ services:
 
   driver-mobile:
     build:
-      context: source/apps/driver-mobile/
+      context: .
+      dockerfile: source/apps/driver-mobile/Dockerfile
     container_name: borne-driver-mobile
     ports:
-      - "8081:8081"
+      - "8082:8081"
     environment:
       API_BASE_URL: http://driver-service:8080
     depends_on:
