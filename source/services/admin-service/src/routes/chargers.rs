@@ -26,13 +26,13 @@ pub async fn create_charger(
             "power_kw must be greater than 0".to_string(),
         ));
     }
-    if let Some(ref status) = body.status {
-        if !VALID_CHARGER_STATUSES.contains(&status.as_str()) {
-            return Err(AppError::ValidationError(format!(
-                "invalid status '{}', must be one of {:?}",
-                status, VALID_CHARGER_STATUSES
-            )));
-        }
+    if let Some(ref status) = body.status
+        && !VALID_CHARGER_STATUSES.contains(&status.as_str())
+    {
+        return Err(AppError::ValidationError(format!(
+            "invalid status '{}', must be one of {:?}",
+            status, VALID_CHARGER_STATUSES
+        )));
     }
     let charger = db::chargers::create_charger(&state.pool, body.into_inner(), &actor).await?;
     Ok(HttpResponse::Created().json(charger))
@@ -44,7 +44,7 @@ pub async fn list_chargers(
     query: web::Query<ChargerListParams>,
 ) -> Result<HttpResponse, AppError> {
     let page = query.page.unwrap_or(1).max(1);
-    let page_size = query.page_size.unwrap_or(20).min(100).max(1);
+    let page_size = query.page_size.unwrap_or(20).clamp(1, 100);
     let station_id = query.station_id.as_deref();
     let result = db::chargers::list_chargers(&state.pool, station_id, page, page_size).await?;
     Ok(HttpResponse::Ok().json(result))
@@ -69,28 +69,28 @@ pub async fn update_charger(
 ) -> Result<HttpResponse, AppError> {
     let actor = config::x_partner_id(&req);
     let id = path.into_inner();
-    if let Some(ref ct) = body.connector_type {
-        if !VALID_CONNECTOR_TYPES.contains(&ct.as_str()) {
-            return Err(AppError::ValidationError(format!(
-                "invalid connector_type '{}', must be one of {:?}",
-                ct, VALID_CONNECTOR_TYPES
-            )));
-        }
+    if let Some(ref ct) = body.connector_type
+        && !VALID_CONNECTOR_TYPES.contains(&ct.as_str())
+    {
+        return Err(AppError::ValidationError(format!(
+            "invalid connector_type '{}', must be one of {:?}",
+            ct, VALID_CONNECTOR_TYPES
+        )));
     }
-    if let Some(pk) = body.power_kw {
-        if pk <= 0.0 {
-            return Err(AppError::ValidationError(
-                "power_kw must be greater than 0".to_string(),
-            ));
-        }
+    if let Some(pk) = body.power_kw
+        && pk <= 0.0
+    {
+        return Err(AppError::ValidationError(
+            "power_kw must be greater than 0".to_string(),
+        ));
     }
-    if let Some(ref status) = body.status {
-        if !VALID_CHARGER_STATUSES.contains(&status.as_str()) {
-            return Err(AppError::ValidationError(format!(
-                "invalid status '{}', must be one of {:?}",
-                status, VALID_CHARGER_STATUSES
-            )));
-        }
+    if let Some(ref status) = body.status
+        && !VALID_CHARGER_STATUSES.contains(&status.as_str())
+    {
+        return Err(AppError::ValidationError(format!(
+            "invalid status '{}', must be one of {:?}",
+            status, VALID_CHARGER_STATUSES
+        )));
     }
     let charger = db::chargers::update_charger(&state.pool, &id, body.into_inner(), &actor).await?;
     Ok(HttpResponse::Ok().json(charger))

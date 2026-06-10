@@ -37,7 +37,7 @@ pub async fn list_stations(
     query: web::Query<StationListParams>,
 ) -> Result<HttpResponse, AppError> {
     let page = query.page.unwrap_or(1).max(1);
-    let page_size = query.page_size.unwrap_or(20).min(100).max(1);
+    let page_size = query.page_size.unwrap_or(20).clamp(1, 100);
     let partner_id = query.partner_id.as_deref();
     let result = db::stations::list_stations(&state.pool, partner_id, page, page_size).await?;
     Ok(HttpResponse::Ok().json(result))
@@ -62,26 +62,26 @@ pub async fn update_station(
 ) -> Result<HttpResponse, AppError> {
     let actor = config::x_partner_id(&req);
     let id = path.into_inner();
-    if let Some(ref name) = body.name {
-        if name.trim().is_empty() || name.len() > 255 {
-            return Err(AppError::ValidationError(
-                "name must be 1-255 characters".to_string(),
-            ));
-        }
+    if let Some(ref name) = body.name
+        && (name.trim().is_empty() || name.len() > 255)
+    {
+        return Err(AppError::ValidationError(
+            "name must be 1-255 characters".to_string(),
+        ));
     }
-    if let Some(lat) = body.latitude {
-        if !(-90.0..=90.0).contains(&lat) {
-            return Err(AppError::ValidationError(
-                "latitude must be between -90 and 90".to_string(),
-            ));
-        }
+    if let Some(lat) = body.latitude
+        && !(-90.0..=90.0).contains(&lat)
+    {
+        return Err(AppError::ValidationError(
+            "latitude must be between -90 and 90".to_string(),
+        ));
     }
-    if let Some(lng) = body.longitude {
-        if !(-180.0..=180.0).contains(&lng) {
-            return Err(AppError::ValidationError(
-                "longitude must be between -180 and 180".to_string(),
-            ));
-        }
+    if let Some(lng) = body.longitude
+        && !(-180.0..=180.0).contains(&lng)
+    {
+        return Err(AppError::ValidationError(
+            "longitude must be between -180 and 180".to_string(),
+        ));
     }
     let station = db::stations::update_station(&state.pool, &id, body.into_inner(), &actor).await?;
     Ok(HttpResponse::Ok().json(station))

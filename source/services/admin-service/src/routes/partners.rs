@@ -28,7 +28,7 @@ pub async fn list_partners(
     query: web::Query<PaginationParams>,
 ) -> Result<HttpResponse, AppError> {
     let page = query.page.unwrap_or(1).max(1);
-    let page_size = query.page_size.unwrap_or(20).min(100).max(1);
+    let page_size = query.page_size.unwrap_or(20).clamp(1, 100);
     let result = db::partners::list_partners(&state.pool, page, page_size).await?;
     Ok(HttpResponse::Ok().json(result))
 }
@@ -52,12 +52,12 @@ pub async fn update_partner(
 ) -> Result<HttpResponse, AppError> {
     let actor = config::x_partner_id(&req);
     let id = path.into_inner();
-    if let Some(ref name) = body.name {
-        if name.trim().is_empty() || name.len() > 255 {
-            return Err(AppError::ValidationError(
-                "name must be 1-255 characters".to_string(),
-            ));
-        }
+    if let Some(ref name) = body.name
+        && (name.trim().is_empty() || name.len() > 255)
+    {
+        return Err(AppError::ValidationError(
+            "name must be 1-255 characters".to_string(),
+        ));
     }
     if let Some(ref t) = body.partner_type {
         validate_partner_type(t)?;

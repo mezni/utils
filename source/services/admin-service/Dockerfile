@@ -1,13 +1,14 @@
 # syntax=docker/dockerfile:1
-FROM rust:1.85-slim-bookworm AS builder
+FROM rust:1.95-slim-bookworm AS builder
 
 WORKDIR /app
 COPY Cargo.toml Cargo.lock ./
 COPY crates/ ./crates/
 COPY services/admin-service/ ./services/admin-service/
+COPY services/driver-service/ ./services/driver-service/
 
-RUN cargo build --package admin-service --release && \
-    cp target/release/admin-service /admin-service
+RUN cargo build --package admin-service && \
+    cp target/debug/admin-service /admin-service
 
 FROM debian:bookworm-slim AS runtime
 

@@ -29,7 +29,7 @@ async fn main() -> std::io::Result<()> {
         connection_timeout: Duration::from_secs(30),
     })
     .await
-    .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e.to_string()))?;
+    .map_err(|e| std::io::Error::other(e.to_string()))?;
 
     let bind = config.bind_address();
     HttpServer::new(move || {

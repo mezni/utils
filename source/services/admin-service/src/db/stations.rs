@@ -26,12 +26,11 @@ pub async fn create_station(
     .fetch_one(pool)
     .await
     .map_err(|e| {
-        if let sqlx::Error::Database(ref db_err) = e {
-            if let Some(code) = db_err.code() {
-                if code.as_ref() == "23503" {
-                    return AppError::NotFound(format!("Partner {} not found", req.partner_id));
-                }
-            }
+        if let sqlx::Error::Database(ref db_err) = e
+            && let Some(code) = db_err.code()
+            && code.as_ref() == "23503"
+        {
+            return AppError::NotFound(format!("Partner {} not found", req.partner_id));
         }
         AppError::from(e)
     })?;
