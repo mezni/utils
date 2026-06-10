@@ -96,6 +96,48 @@ This file tracks all known bugs classified by severity (Class A / B / C).
 
 **Fix:** Align — either rename the database in docker-compose to `ev_platform`, or update the Constitution.
 
+## Sprint 3.1 — Keycloak Setup
+
+### K-001: Keycloak 24.0 image lacks curl — health check must use bash TCP
+
+**File:** `docker-compose.yml:42`
+
+**Description:** The `quay.io/keycloak/keycloak:24.0` image does not include `curl`. Docker Compose health checks that use `curl -f` will fail with `/bin/sh: curl: command not found`. The service still runs correctly but `docker compose ps` shows `unhealthy`.
+
+**Fix:** Use `["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/localhost:8180' || exit 1"]` for health checks. Applied in Sprint 3.1.
+
+### K-002: `--import-realm` crashes on empty/placeholder JSON
+
+**File:** `infra/keycloak/realm-export.json`, `docker-compose.yml`
+
+**Description:** When `--import-realm` is used and the import file is `{}` (empty placeholder), Keycloak fails at startup with `ERROR: Realm name cannot be empty`. This happens on first run before the realm has been configured and exported.
+
+**Fix:** Omit `--import-realm` and the volume mount on first run. Add them back only after a real realm export exists at `infra/keycloak/realm-export.json`. Applied in Sprint 3.1 via conditional setup instructions.
+
+### K-003: Keycloak schema may be created in wrong database
+
+**File:** `database/migrations/0007_keycloak_schema.sql`
+
+**Description:** The `CREATE SCHEMA IF NOT EXISTS keycloak` migration targets the default database when run manually via `psql -U postgres -c "CREATE SCHEMA..."` — it connects to the `postgres` maintenance database, not `borne_map`. The schema must be created in `borne_map` where Keycloak's `KC_DB_URL` points.
+
+**Fix:** Always specify the database: `psql -U postgres -d borne_map -c "CREATE SCHEMA IF NOT EXISTS keycloak;"`. Migration 0007 runs as part of the sqlx pipeline which correctly targets `borne_map`.
+
+### K-004: Admin console defaults to master realm — users created in wrong realm
+
+**File:** N/A (UI behavior)
+
+**Description:** When creating users via the Keycloak admin console, the UI defaults to the `master` realm (current admin realm). Users created this way end up in `master` instead of the `ev-platform` realm. This is easy to miss because the admin console shows the realm selector as a small dropdown at top-left.
+
+**Fix:** Manually switch to `ev-platform` in the realm selector before creating users. Document in quickstart.md.
+
+### K-005: User Profile feature blocks custom attributes in Keycloak 24
+
+**File:** N/A (API behavior)
+
+**Description:** Keycloak 24 introduced a User Profile configuration that restricts which attributes can be set on users. Custom attributes like `partner_id` are silently dropped from API calls (PUT `/users/{id}` returns 204 but attributes are not stored) unless they are first added to the realm's User Profile specification. The User Profile must define the attribute name, validations, and permissions before any user can be assigned the attribute.
+
+**Fix:** Add the custom attribute to the realm's User Profile via PUT `/admin/realms/{realm}/users/profile` before setting it on individual users. Applied in Sprint 3.1 for `partner_id`.
+
 ## Class C
 
 ### C-001: Unpinned runtime base image digest
