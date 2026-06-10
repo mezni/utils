@@ -2,7 +2,7 @@
 
 **Version:** 1.0
 **Status:** Approved
-**Last updated:** 2026-06-09
+**Last updated:** 2026-06-10
 
 ---
 
@@ -501,7 +501,7 @@ PostgreSQL is the single database across all MVPs. Database name: `ev_platform`.
 
 - **MVP-1:** `source/mock/db.json` (json-server, no real database)
 - **MVP-2:** `inventory` schema, `gis` schema (empty)
-- **MVP-3:** `users` schema, `keycloak` schema
+- **MVP-3:** `users` schema
 - **MVP-4:** `gis` schema populated
 - **MVP-5:** `analytics` schema
 
@@ -668,22 +668,21 @@ Any access not in this table is a constitution violation.
 4. `0004_inventory_indexes.sql`
 
 **MVP-3:**
-5. `0005_keycloak_schema.sql`
-6. `0006_users_schema.sql`
-7. `0007_users_tables.sql`
-8. `0008_users_indexes.sql`
+5. `0005_users_schema.sql`
+6. `0006_users_tables.sql`
+7. `0007_users_indexes.sql`
 
 **MVP-4:**
-9. `0009_gis_tables.sql`
-10. `0010_gis_indexes.sql`
-11. `0011_gis_sync_function.sql`
-12. `0012_gis_sync_trigger.sql`
-13. `0013_gis_resync.sql`
+8. `0008_gis_tables.sql`
+9. `0009_gis_indexes.sql`
+10. `0010_gis_sync_function.sql`
+11. `0011_gis_sync_trigger.sql`
+12. `0012_gis_resync.sql`
 
 **MVP-5:**
-14. `0014_analytics_schema.sql`
-15. `0015_analytics_tables.sql`
-16. `0016_analytics_indexes.sql`
+13. `0013_analytics_schema.sql`
+14. `0014_analytics_tables.sql`
+15. `0015_analytics_indexes.sql`
 
 Migrations are never edited after commit. Corrective changes are new migration files.
 
@@ -747,7 +746,9 @@ Docker Compose introduced:
 
 ### MVP-3 adds
 
-- `quay.io/keycloak/keycloak:24.0` — port 8180 internal
+- `postgres-app` — renamed from `postgres`, `postgis/postgis:16-3.4`, database `ev_platform`
+- `postgres-keycloak` — `postgres:16`, database `keycloak_db`
+- `quay.io/keycloak/keycloak:24.0` — port 8180 internal, backed by `postgres-keycloak`
 
 Keycloak auto-imports realm from `infra/keycloak/realm-export.json` on first start.
 

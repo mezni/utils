@@ -31,3 +31,17 @@
 **Decision**: Add a dev-only role switcher at the bottom of the sidebar. It toggles between Admin View and Partner View. When Partner View is active, a partner selector dropdown appears. Labeled "Dev Only — removed in MVP-3".
 **Rationale**: Enables testing of both admin and partner workflows without authentication. The explicit labeling and planned removal prevent it from becoming a permanent feature.
 **Alternatives considered**: URL-based switching (less discoverable), localStorage flag (persists unexpectedly).
+
+## DEC-002 — Dedicated PostgreSQL Instance for Keycloak
+
+**Date**: 2026-06-09
+**Context**: Original design used a `keycloak` schema inside the `ev_platform` database. This couples Keycloak's internal migrations, connection usage, and backup lifecycle with the application database.
+**Decision**: Keycloak runs against a dedicated PostgreSQL container (`postgres-keycloak`) with its own database named `keycloak_db`. The application database (`ev_platform`) runs in a separate container (`postgres-app`). The two instances never share connections, schemas, or backup procedures.
+**Alternatives considered**: Shared PostgreSQL instance with `keycloak` schema (removed), managed cloud database for Keycloak (rejected — bare metal strategy).
+**Consequences**:
+- Migration `0005_keycloak_schema.sql` is removed entirely
+- Docker Compose gains a second PostgreSQL container
+- Two separate backup procedures — one per database
+- Keycloak environment variables point to `postgres-keycloak`
+- Application services point to `postgres-app`
+- Two pgAdmin connections needed in development
