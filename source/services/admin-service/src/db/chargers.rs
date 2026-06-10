@@ -11,8 +11,8 @@ pub async fn create_charger(
     let status = req.status.as_deref().unwrap_or("offline");
     let rec = sqlx::query_as::<_, ChargerResponse>(
         r#"
-        INSERT INTO "ev-platform".charger (id, station_id, connector_type, power_kw, status, created_by, updated_by)
-        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        INSERT INTO "ev-platform".charger (id, station_id, connector_type, power_kw, status, created_by, updated_by, created_at, updated_at)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), NOW())
         RETURNING *
         "#,
     )

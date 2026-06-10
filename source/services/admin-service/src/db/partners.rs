@@ -10,8 +10,8 @@ pub async fn create_partner(
     let id = ev_core::generate_id("PRT", 3);
     let rec = sqlx::query_as::<_, PartnerResponse>(
         r#"
-        INSERT INTO "ev-platform".partner (id, name, type, is_verified, is_live, is_active, created_by, updated_by)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        INSERT INTO "ev-platform".partner (id, name, type, is_verified, is_live, is_active, created_by, updated_by, created_at, updated_at)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW())
         RETURNING *
         "#,
     )

@@ -10,8 +10,8 @@ pub async fn create_station(
     let id = ev_core::generate_id("STN", 3);
     let rec = sqlx::query_as::<_, StationResponse>(
         r#"
-        INSERT INTO "ev-platform".station (id, partner_id, name, address, latitude, longitude, created_by, updated_by)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        INSERT INTO "ev-platform".station (id, partner_id, name, address, latitude, longitude, created_by, updated_by, created_at, updated_at)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW())
         RETURNING *
         "#,
     )
