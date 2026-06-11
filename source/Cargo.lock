@@ -810,6 +810,37 @@ dependencies = [
 ]
 
 [[package]]
+name = "ev-auth"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "ev-core",
+ "serde",
+ "thiserror 1.0.69",
+ "tracing",
+]
+
+[[package]]
+name = "ev-core"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "serde",
+ "thiserror 1.0.69",
+]
+
+[[package]]
+name = "ev-db"
+version = "0.1.0"
+dependencies = [
+ "ev-core",
+ "sqlx",
+ "thiserror 1.0.69",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
 name = "event-listener"
 version = "5.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
