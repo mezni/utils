@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["libs/borne-data"]
+members = ["libs/borne-data", "driver-service"]
 
 [workspace.lints.clippy]
 style = "warn"
