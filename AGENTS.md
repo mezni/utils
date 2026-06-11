@@ -1,6 +1,6 @@
 <!-- SPECKIT START -->
-Current plan: specs/002-data-layer/plan.md
+Current plan: specs/003-driver-service/plan.md
 <!-- SPECKIT END -->
 
-This sprint implements the shared data layer library (`borne-data`) for platform_db access.
-See the plan at `specs/002-data-layer/plan.md` for structure and contracts at `specs/002-data-layer/contracts/` for API surface.
+This sprint implements the Driver Service — an Actix-web REST API exposing station discovery endpoints (list, nearby, detail) backed by `borne-data` and PostGIS.
+See the plan at `specs/003-driver-service/plan.md` for structure and contracts at `specs/003-driver-service/contracts/` for API surface.
