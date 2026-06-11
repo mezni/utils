@@ -16,11 +16,11 @@ A driver opens the Borne mobile app and sees a full-screen map centered on their
 
 **Why this priority**: The map is the primary screen of the entire MVP. Without it, the driver has no discovery mechanism. All downstream interactions (station details, navigation) depend on the map being functional.
 
-**Independent Test**: Open the app in a simulator with a known location (Tunis). Verify the map renders full-screen with station markers at expected coordinates. Pan to a new area and verify markers update within 5 seconds.
+**Independent Test**: Open the app in a simulator with a known location (Tunis). Verify the map renders full-screen with station markers at expected coordinates. Pan to a new area and verify markers update within 3 seconds.
 
 **Acceptance Scenarios**:
 
-1. **Given** the app is launched, **When** the map screen loads, **Then** a full-screen map is displayed centered on the user's approximate location
+1. **Given** the app is launched, **When** the map screen loads, **Then** a full-screen map is displayed centered on the user's GPS location (or Tunis city center fallback)
 2. **Given** the map is visible, **When** the nearby search completes, **Then** station markers appear on the map at the correct coordinates
 3. **Given** station markers are displayed, **When** the user pans to a new area, **Then** new markers load for the visible region
 4. **Given** no stations are found nearby, **When** the search completes, **Then** an empty state message is shown on the map ("No stations nearby")
@@ -92,7 +92,7 @@ As the driver uses the app — opening the map, searching for nearby stations, t
 
 ### Functional Requirements
 
-- **FR-001**: System MUST render a full-screen interactive map centered on the user's approximate location on app launch
+- **FR-001**: System MUST render a full-screen interactive map centered on the user's GPS location (or Tunis city center fallback) on app launch
 - **FR-002**: System MUST fetch nearby stations from the Driver Service (`GET /api/v1/stations/nearby`) and display them as markers on the map
 - **FR-003**: System MUST re-fetch nearby stations when the user pans or zooms to a new map region
 - **FR-004**: System MUST display a station detail bottom sheet when a marker is tapped, showing station name, distance, charger list with connector type and status
