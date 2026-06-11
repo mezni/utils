@@ -250,7 +250,7 @@ No MVP-2 starts until this clears.
 
 ## Sprint Breakdown
 
-### Sprint 0 — Infrastructure Bootstrap (Blocking)
+### Sprint 0 — Infrastructure Bootstrap (Global)
 
 | ID | Task | Exit Criteria |
 |---|---|---|
@@ -259,7 +259,7 @@ No MVP-2 starts until this clears.
 | INF-3 | PostGIS enablement + verify ST_DWithin | Spatial query works |
 | INF-4 | Healthcheck endpoints (/health) | Services respond |
 
-### Sprint 1 — Data Layer (platform_db)
+### Sprint 1.1 — Data Layer (platform_db)
 
 | ID | Task | Exit Criteria |
 |---|---|---|
@@ -268,7 +268,7 @@ No MVP-2 starts until this clears.
 | DB-3 | PostGIS integration (geometry column, radius queries) | Spatial queries work |
 | DB-4 | Seed dataset (10 stations, 3 partners, 30 chargers, Tunisia) | Data queryable |
 
-### Sprint 2 — Driver Service (Core Backend)
+### Sprint 1.2 — Driver Service (Core Backend)
 
 | ID | Task | Exit Criteria |
 |---|---|---|
@@ -278,7 +278,7 @@ No MVP-2 starts until this clears.
 | API-4 | `GET /api/v1/stations/nearby` (PostGIS ST_DWithin) | Correct results, < 200ms |
 | API-5 | Response normalization layer (DTO mapping, consistent JSON) | No DB leakage |
 
-### Sprint 3 — Clickstream Service
+### Sprint 1.3 — Clickstream Service
 
 | ID | Task | Exit Criteria |
 |---|---|---|
@@ -287,7 +287,7 @@ No MVP-2 starts until this clears.
 | EVT-3 | Event taxonomy enforcement (MVP-1 events only) | Invalid events rejected |
 | EVT-4 | Async ingestion (fire-and-forget, non-blocking) | No UX latency impact |
 
-### Sprint 4 — Design System (Critical Path Blocker)
+### Sprint 1.4 — Design System (Critical Path Blocker)
 
 | ID | Task | Exit Criteria |
 |---|---|---|
@@ -298,7 +298,7 @@ No MVP-2 starts until this clears.
 | DS-5 | Button system (primary CTA, haptics integration) | Button fires haptics |
 | DS-6 | Bottom sheet base (Reanimated v3, reusable) | Sheet animates |
 
-### Sprint 5 — Mobile Driver App (Core UX)
+### Sprint 1.5 — Mobile Driver App (Core UX)
 
 | ID | Task | Exit Criteria |
 |---|---|---|
@@ -309,7 +309,7 @@ No MVP-2 starts until this clears.
 | APP-5 | Skeleton loading states (map skeleton, sheet skeleton) | Skeletons shown |
 | APP-6 | Event tracking (map_open, station_click, station_view, map_pan, map_zoom) | Events sent |
 
-### Sprint 6 — Integration (System Binding)
+### Sprint 1.6 — Integration (System Binding)
 
 | ID | Task | Exit Criteria |
 |---|---|---|
@@ -318,7 +318,7 @@ No MVP-2 starts until this clears.
 | INT-3 | End-to-end UX flow (open → map → stations → tap → details → event) | Full journey works |
 | INT-4 | Payload optimization (reduce size, remove redundant fields) | Payloads minimal |
 
-### Sprint 7 — Stabilization (Mandatory Final Gate)
+### Sprint 1.7 — Stabilization (Mandatory Final Gate)
 
 | ID | Task | Exit Criteria |
 |---|---|---|

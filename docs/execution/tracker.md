@@ -19,7 +19,7 @@
 
 ## MVP-1: Discovery Core
 
-### Sprint 0 — Infrastructure Bootstrap
+### Sprint 0 — Infrastructure Bootstrap (Global)
 
 | ID | Task | Status | Notes |
 |---|---|---|---|
@@ -28,7 +28,7 @@
 | INF-3 | PostGIS enablement + verify ST_DWithin | 🔴 | |
 | INF-4 | Healthcheck endpoints (/health) | 🔴 | |
 
-### Sprint 1 — Data Layer
+### Sprint 1.1 — Data Layer
 
 | ID | Task | Status | Notes |
 |---|---|---|---|
@@ -37,7 +37,7 @@
 | DB-3 | PostGIS integration (geometry, radius queries) | 🔴 | |
 | DB-4 | Seed dataset (10 stations, 3 partners, 30 chargers) | 🔴 | |
 
-### Sprint 2 — Driver Service
+### Sprint 1.2 — Driver Service
 
 | ID | Task | Status | Notes |
 |---|---|---|---|
@@ -47,7 +47,7 @@
 | API-4 | GET /api/v1/stations/nearby (ST_DWithin) | 🔴 | |
 | API-5 | Response normalization (DTO layer) | 🔴 | |
 
-### Sprint 3 — Clickstream Service
+### Sprint 1.3 — Clickstream Service
 
 | ID | Task | Status | Notes |
 |---|---|---|---|
@@ -56,7 +56,7 @@
 | EVT-3 | Event taxonomy enforcement (MVP-1 only) | 🔴 | |
 | EVT-4 | Async ingestion (fire-and-forget) | 🔴 | |
 
-### Sprint 4 — Design System (Critical Path)
+### Sprint 1.4 — Design System (Critical Path)
 
 | ID | Task | Status | Notes |
 |---|---|---|---|
@@ -67,7 +67,7 @@
 | DS-5 | Button system (CTA + haptics) | 🔴 | |
 | DS-6 | Bottom sheet base (Reanimated v3) | 🔴 | |
 
-### Sprint 5 — Mobile Driver App
+### Sprint 1.5 — Mobile Driver App
 
 | ID | Task | Status | Notes |
 |---|---|---|---|
@@ -78,7 +78,7 @@
 | APP-5 | Skeleton loading states | 🔴 | |
 | APP-6 | Event tracking integration | 🔴 | |
 
-### Sprint 6 — Integration
+### Sprint 1.6 — Integration
 
 | ID | Task | Status | Notes |
 |---|---|---|---|
@@ -87,7 +87,7 @@
 | INT-3 | End-to-end UX flow | 🔴 | |
 | INT-4 | Payload optimization | 🔴 | |
 
-### Sprint 7 — Stabilization
+### Sprint 1.7 — Stabilization
 
 | ID | Task | Status | Notes |
 |---|---|---|---|
