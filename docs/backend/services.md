@@ -15,6 +15,45 @@
 
 ---
 
+## Shared Crates
+
+Shared Rust crates live under `source/crates/`, used by all backend services.
+
+| Crate | Path | Description |
+|---|---|---|
+| ev-core | `source/crates/ev-core/` | Core EV domain types (Station, Charger, Partner, enums, validation) |
+| ev-db | `source/crates/ev-db/` | PostgreSQL connectivity, pool config, migration runner |
+| ev-auth | `source/crates/ev-auth/` | JWT validation, API key auth, RBAC types |
+
+```
+source/
+├── crates/
+│   ├── ev-core/
+│   │   ├── Cargo.toml
+│   │   └── src/
+│   │       ├── lib.rs          ← CoreError, ConnectorType, StationStatus, PartnerType
+│   │       ├── models/         ← Station, Charger, Partner
+│   │       └── types/          ← GeoPoint, value objects
+│   ├── ev-db/
+│   │   ├── Cargo.toml
+│   │   └── src/
+│   │       ├── lib.rs          ← DbError, create_pool
+│   │       ├── error.rs        ← DbError enum, From<sqlx::Error>
+│   │       └── pool.rs         ← PgPool setup, DbConfig
+│   └── ev-auth/
+│       ├── Cargo.toml
+│       └── src/
+│           ├── lib.rs          ← AuthError
+│           ├── error.rs        ← AuthError enum
+│           ├── jwt.rs          ← JwtClaims, validate_claims
+│           └── api_key.rs      ← ApiKey parsing
+└── services/
+    └── libs/
+        └── borne-data/         ← legacy data layer (migrating to ev-core + ev-db)
+```
+
+---
+
 ## Driver Service (8080)
 
 ### Component Structure
@@ -23,42 +62,29 @@
 source/services/driver-service/
 ├── src/
 │   ├── main.rs
+│   ├── lib.rs
 │   ├── api/
 │   │   └── v1/
 │   │       ├── mod.rs
 │   │       ├── stations.rs
-│   │       └── nearby.rs
+│   │       └── health.rs
 │   ├── handlers/
 │   │   ├── station_handler.rs
-│   │   └── nearby_handler.rs
-│   ├── services/
-│   │   ├── geo_search_service.rs
-│   │   └── station_query_service.rs
-│   ├── repositories/
-│   │   ├── station_repository.rs
-│   │   └── gis_repository.rs
-│   ├── models/
-│   │   ├── station.rs
-│   │   └── charger.rs
+│   │   ├── nearby_handler.rs
+│   │   └── health_handler.rs
 │   ├── dto/
 │   │   ├── station_response.rs
-│   │   └── nearby_query.rs
-│   ├── db/
-│   │   └── pool.rs
-│   ├── middleware/
-│   │   └── logging.rs
+│   │   ├── station_detail_response.rs
+│   │   ├── nearby_query.rs
+│   │   └── error_response.rs
 │   ├── config/
 │   │   └── settings.rs
 │   ├── errors/
 │   │   └── app_error.rs
 │   └── telemetry/
-│       └── metrics.rs
+│       └── middleware.rs
 ├── tests/
-│   ├── integration/
-│   │   ├── station_tests.rs
-│   │   └── nearby_tests.rs
-│   └── fixtures/
-│       └── seed.rs
+│   └── api_test.rs
 ├── Cargo.toml
 └── Dockerfile
 ```
@@ -90,16 +116,10 @@ source/services/admin-service/
 │   ├── repositories/
 │   │   ├── partner_repository.rs
 │   │   └── station_repository.rs
-│   ├── models/
-│   │   ├── partner.rs
-│   │   ├── station.rs
-│   │   └── charger.rs
 │   ├── dto/
 │   │   ├── partner_request.rs
 │   │   ├── station_request.rs
 │   │   └── charger_request.rs
-│   ├── db/
-│   │   └── pool.rs
 │   ├── middleware/
 │   │   └── auth.rs
 │   ├── config/
@@ -136,12 +156,8 @@ source/services/clickstream-service/
 │   │   └── event_validation_service.rs
 │   ├── repositories/
 │   │   └── event_store.rs
-│   ├── models/
-│   │   └── raw_event.rs
 │   ├── dto/
 │   │   └── event_payload.rs
-│   ├── db/
-│   │   └── pool.rs
 │   ├── config/
 │   │   └── settings.rs
 │   ├── errors/
@@ -161,6 +177,6 @@ source/services/clickstream-service/
 
 - **No cross-service calls** — services never call each other directly
 - **No cross-service DB access** — database credentials scoped per service
-- **JWT validation** — every request validated before processing
+- **JWT validation** — every request validated before processing (via `ev-auth`)
 - **Partner scoping** — `WHERE partner_id = JWT.partner_id` enforced server-side
 - **API prefix** — all endpoints under `/api/v1/`
