@@ -27,11 +27,11 @@
 
 **Purpose**: Initialize the design-system package — directory structure, config files, and dependencies
 
-- [ ] T001 Create design-system package directory structure at `source/front/packages/design-system/`
-- [ ] T002 [P] Initialize package.json with name `@borne/design-system`, scripts (test, storybook), and dependencies (react-native, react-native-reanimated, expo-haptics) in `source/front/packages/design-system/package.json`
-- [ ] T003 [P] Create tsconfig.json with React Native + Reanimated configuration at `source/front/packages/design-system/tsconfig.json`
-- [ ] T004 [P] Create Jest config with React Native Testing Library preset at `source/front/packages/design-system/jest.config.js`
-- [ ] T005 Install all project dependencies for design-system package
+- [X] T001 Create design-system package directory structure at `source/front/packages/design-system/`
+- [X] T002 [P] Initialize package.json with name `@borne/design-system`, scripts (test, storybook), and dependencies (react-native, react-native-reanimated, expo-haptics) in `source/front/packages/design-system/package.json`
+- [X] T003 [P] Create tsconfig.json with React Native + Reanimated configuration at `source/front/packages/design-system/tsconfig.json`
+- [X] T004 [P] Create Jest config with React Native Testing Library preset at `source/front/packages/design-system/jest.config.js`
+- [X] T005 Install all project dependencies for design-system package
 
 ---
 
@@ -43,13 +43,13 @@
 
 ### Implementation for User Story 1
 
-- [ ] T006 [P] [US1] Create light and dark color palettes (primary, secondary, background, surface, text, error, success, border, skeleton) in `src/tokens/colors.ts`
-- [ ] T007 [P] [US1] Create spacing scale (4px base: 4, 8, 12, 16, 20, 24, 32, 48, 64) in `src/tokens/spacing.ts`
-- [ ] T008 [P] [US1] Create typography scale (fontFamily, fontSize, fontWeight, lineHeight) in `src/tokens/typography.ts`
-- [ ] T009 [P] [US1] Create radii scale (none, sm, md, lg, full) in `src/tokens/radii.ts`
-- [ ] T010 [P] [US1] Create shadow presets (sm, md, lg, xl) in `src/tokens/shadows.ts`
-- [ ] T011 [US1] Create ThemeContext with ThemeProvider (reads useColorScheme + Appearance API) and useTheme hook in `src/tokens/ThemeContext.tsx`
-- [ ] T012 [US1] Create tokens barrel export in `src/tokens/index.ts`
+- [X] T006 [P] [US1] Create light and dark color palettes (primary, secondary, background, surface, text, error, success, border, skeleton) in `src/tokens/colors.ts`
+- [X] T007 [P] [US1] Create spacing scale (4px base: 4, 8, 12, 16, 20, 24, 32, 48, 64) in `src/tokens/spacing.ts`
+- [X] T008 [P] [US1] Create typography scale (fontFamily, fontSize, fontWeight, lineHeight) in `src/tokens/typography.ts`
+- [X] T009 [P] [US1] Create radii scale (none, sm, md, lg, full) in `src/tokens/radii.ts`
+- [X] T010 [P] [US1] Create shadow presets (sm, md, lg, xl) in `src/tokens/shadows.ts`
+- [X] T011 [US1] Create ThemeContext with ThemeProvider (reads useColorScheme + Appearance API) and useTheme hook in `src/tokens/ThemeContext.tsx`
+- [X] T012 [US1] Create tokens barrel export in `src/tokens/index.ts`
 
 **Checkpoint**: Design tokens are importable, typed, and theme-aware. Dark mode switching works via system toggle.
 
@@ -63,13 +63,13 @@
 
 ### Tests for User Story 2
 
-- [ ] T013 [US2] Write Button tests covering all variants, disabled state, loading state, and onPress callback in `tests/components/Button.test.tsx`
+- [X] T013 [US2] Write Button tests covering all variants, disabled state, loading state, and onPress callback in `tests/components/Button.test.tsx`
 
 ### Implementation for User Story 2
 
-- [ ] T014 [US2] Implement Button component with Reanimated v3 scale animation and expo-haptics in `src/components/Button/Button.tsx`
-- [ ] T015 [P] [US2] Create Button Storybook stories for each variant/state in `src/components/Button/Button.stories.tsx`
-- [ ] T016 [P] [US2] Create Button barrel export in `src/components/Button/index.ts`
+- [X] T014 [US2] Implement Button component with Reanimated v3 scale animation and expo-haptics in `src/components/Button/Button.tsx`
+- [X] T015 [P] [US2] Create Button Storybook stories for each variant/state in `src/components/Button/Button.stories.tsx`
+- [X] T016 [P] [US2] Create Button barrel export in `src/components/Button/index.ts`
 
 **Checkpoint**: Button renders all variants, responds to taps with haptic + animation, and rejects taps when disabled/loading.
 
@@ -83,13 +83,13 @@
 
 ### Tests for User Story 3
 
-- [ ] T017 [US3] Write Skeleton tests covering map layout, list layout with custom rows, and shimmer animation presence in `tests/components/Skeleton.test.tsx`
+- [X] T017 [US3] Write Skeleton tests covering map layout, list layout with custom rows, and shimmer animation presence in `tests/components/Skeleton.test.tsx`
 
 ### Implementation for User Story 3
 
-- [ ] T018 [US3] Implement Skeleton component with Reanimated v3 shimmer animation and map/list variants in `src/components/Skeleton/Skeleton.tsx`
-- [ ] T019 [P] [US3] Create Skeleton Storybook stories for map and list layouts in `src/components/Skeleton/Skeleton.stories.tsx`
-- [ ] T020 [P] [US3] Create Skeleton barrel export in `src/components/Skeleton/index.ts`
+- [X] T018 [US3] Implement Skeleton component with Reanimated v3 shimmer animation and map/list variants in `src/components/Skeleton/Skeleton.tsx`
+- [X] T019 [P] [US3] Create Skeleton Storybook stories for map and list layouts in `src/components/Skeleton/Skeleton.stories.tsx`
+- [X] T020 [P] [US3] Create Skeleton barrel export in `src/components/Skeleton/index.ts`
 
 **Checkpoint**: Skeleton renders and animates for both map and list layouts. Shimmer loops without jank.
 
@@ -103,13 +103,13 @@
 
 ### Tests for User Story 4
 
-- [ ] T021 [US4] Write EmptyState tests covering title rendering, description, CTA button, and onCtaPress callback in `tests/components/EmptyState.test.tsx`
+- [X] T021 [US4] Write EmptyState tests covering title rendering, description, CTA button, and onCtaPress callback in `tests/components/EmptyState.test.tsx`
 
 ### Implementation for User Story 4
 
-- [ ] T022 [US4] Implement EmptyState component with optional illustration slot and Button-based CTA in `src/components/EmptyState/EmptyState.tsx`
-- [ ] T023 [P] [US4] Create EmptyState Storybook stories with/without CTA in `src/components/EmptyState/EmptyState.stories.tsx`
-- [ ] T024 [P] [US4] Create EmptyState barrel export in `src/components/EmptyState/index.ts`
+- [X] T022 [US4] Implement EmptyState component with optional illustration slot and Button-based CTA in `src/components/EmptyState/EmptyState.tsx`
+- [X] T023 [P] [US4] Create EmptyState Storybook stories with/without CTA in `src/components/EmptyState/EmptyState.stories.tsx`
+- [X] T024 [P] [US4] Create EmptyState barrel export in `src/components/EmptyState/index.ts`
 
 **Checkpoint**: EmptyState renders all elements correctly. CTA invokes callback. Composes with parent loading/error logic.
 
@@ -123,13 +123,13 @@
 
 ### Tests for User Story 5
 
-- [ ] T025 [US5] Write ErrorState tests covering message rendering, retry button visibility, and onRetry callback in `tests/components/ErrorState.test.tsx`
+- [X] T025 [US5] Write ErrorState tests covering message rendering, retry button visibility, and onRetry callback in `tests/components/ErrorState.test.tsx`
 
 ### Implementation for User Story 5
 
-- [ ] T026 [US5] Implement ErrorState component with error icon, message, and Button-based retry CTA in `src/components/ErrorState/ErrorState.tsx`
-- [ ] T027 [P] [US5] Create ErrorState Storybook stories with sample error messages in `src/components/ErrorState/ErrorState.stories.tsx`
-- [ ] T028 [P] [US5] Create ErrorState barrel export in `src/components/ErrorState/index.ts`
+- [X] T026 [US5] Implement ErrorState component with error icon, message, and Button-based retry CTA in `src/components/ErrorState/ErrorState.tsx`
+- [X] T027 [P] [US5] Create ErrorState Storybook stories with sample error messages in `src/components/ErrorState/ErrorState.stories.tsx`
+- [X] T028 [P] [US5] Create ErrorState barrel export in `src/components/ErrorState/index.ts`
 
 **Checkpoint**: ErrorState renders message + retry button. Tap retry calls onRetry. Works alongside loading/empty state flow.
 
@@ -143,13 +143,13 @@
 
 ### Tests for User Story 7
 
-- [ ] T029 [US6] Write BottomSheet tests covering children rendering, open/close animation state, and gesture dismiss in `tests/components/BottomSheet.test.tsx`
+- [X] T029 [US6] Write BottomSheet tests covering children rendering, open/close animation state, and gesture dismiss in `tests/components/BottomSheet.test.tsx`
 
 ### Implementation for User Story 7
 
-- [ ] T030 [US6] Implement BottomSheet component with Reanimated v3 spring animation, Pan gesture, configurable snap points, and scrollable content container in `src/components/BottomSheet/BottomSheet.tsx`
-- [ ] T031 [P] [US6] Create BottomSheet Storybook stories with sample content and configurable snap points in `src/components/BottomSheet/BottomSheet.stories.tsx`
-- [ ] T032 [P] [US6] Create BottomSheet barrel export in `src/components/BottomSheet/index.ts`
+- [X] T030 [US6] Implement BottomSheet component with Reanimated v3 spring animation, Pan gesture, configurable snap points, and scrollable content container in `src/components/BottomSheet/BottomSheet.tsx`
+- [X] T031 [P] [US6] Create BottomSheet Storybook stories with sample content and configurable snap points in `src/components/BottomSheet/BottomSheet.stories.tsx`
+- [X] T032 [P] [US6] Create BottomSheet barrel export in `src/components/BottomSheet/index.ts`
 
 **Checkpoint**: BottomSheet animates open/closed with Reanimated v3 spring. Swipe-to-dismiss works. Scrollable content does not conflict with drag gesture.
 
@@ -159,8 +159,8 @@
 
 **Purpose**: Final integration, barrel exports, and verification
 
-- [ ] T033 Create root package barrel export in `src/index.ts` (re-exports all components and tokens)
-- [ ] T034 Run quickstart.md verification checklist — all 7 checks pass
+- [X] T033 Create root package barrel export in `src/index.ts` (re-exports all components and tokens)
+- [X] T034 Run quickstart.md verification checklist — all 7 checks pass
 
 ---
 
