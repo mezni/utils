@@ -29,9 +29,9 @@
 
 **Purpose**: Initialize the Expo SDK 54 project — directory structure, package.json, app.json, tsconfig
 
-- [ ] T001 Create mobile app directory structure at `source/front/` (app/, src/components/, src/hooks/, src/services/, src/types/)
-- [ ] T002 [P] Initialize package.json with Expo SDK 54 dependencies (expo, react-native, react-native-maps, expo-router, expo-location, react-native-reanimated, react-native-gesture-handler, react-native-safe-area-context, @borne/design-system) and app.json with Expo Router scheme/plugins at `source/front/package.json` and `source/front/app.json`
-- [ ] T003 [P] Create tsconfig.json extending expo/tsconfig.base at `source/front/tsconfig.json`
+- [X] T001 Create mobile app directory structure at `source/front/` (app/, src/components/, src/hooks/, src/services/, src/types/)
+- [X] T002 [P] Initialize package.json with Expo SDK 54 dependencies (expo, react-native, react-native-maps, expo-router, expo-location, react-native-reanimated, react-native-gesture-handler, react-native-safe-area-context, @borne/design-system) and app.json with Expo Router scheme/plugins at `source/front/package.json` and `source/front/app.json`
+- [X] T003 [P] Create tsconfig.json extending expo/tsconfig.base at `source/front/tsconfig.json`
 
 ---
 
@@ -39,9 +39,9 @@
 
 **Purpose**: Shared infrastructure that MUST be complete before any user story — API client, type definitions, and app root layout
 
-- [ ] T004 Create service layer: shared HTTP client in `src/services/api.ts` and environment config with service URLs in `src/services/config.ts`
-- [ ] T005 [P] Create TypeScript type definitions for Station, Charger, MapRegion in `src/types/station.ts` and ClickstreamEvent in `src/types/events.ts`
-- [ ] T006 Create Expo Router root layout at `app/_layout.tsx` with ThemeProvider (from @borne/design-system) and GestureHandlerRootView
+- [X] T004 Create service layer: shared HTTP client in `src/services/api.ts` and environment config with service URLs in `src/services/config.ts`
+- [X] T005 [P] Create TypeScript type definitions for Station, Charger, MapRegion in `src/types/station.ts` and ClickstreamEvent in `src/types/events.ts`
+- [X] T006 Create Expo Router root layout at `app/_layout.tsx` with ThemeProvider (from @borne/design-system) and GestureHandlerRootView
 
 **Checkpoint**: Foundation ready — types, services, and root layout exist. User story implementation can start.
 
@@ -57,12 +57,12 @@
 
 ### Implementation for User Story 1
 
-- [ ] T007 [P] [US1] Create useLocation hook (GPS permission, current location, fallback to Tunis center) in `src/hooks/useLocation.ts`
-- [ ] T008 [P] [US1] Create useNearbyStations hook (calls GET /api/v1/stations/nearby with lat/lng/radius_m, re-fetches on region change, 10s timeout) in `src/hooks/useNearbyStations.ts`
-- [ ] T009 [P] [US1] Create StationMarker component (react-native-maps Marker with station pin) in `src/components/StationMarker.tsx`
-- [ ] T010 [P] [US1] Create MapErrorState component (renders ErrorState or EmptyState from design system based on error/empty condition) in `src/components/MapErrorState.tsx`
-- [ ] T011 [US1] Create MapScreen component (react-native-maps MapView, markers from useNearbyStations, loading skeleton via Skeleton variant="map", error/empty via MapErrorState) in `src/components/MapScreen.tsx`
-- [ ] T012 [US1] Create Expo Router index screen at `app/index.tsx` using MapScreen as the default route
+- [X] T007 [P] [US1] Create useLocation hook (GPS permission, current location, fallback to Tunis center) in `src/hooks/useLocation.ts`
+- [X] T008 [P] [US1] Create useNearbyStations hook (calls GET /api/v1/stations/nearby with lat/lng/radius_m, re-fetches on region change, 10s timeout) in `src/hooks/useNearbyStations.ts`
+- [X] T009 [P] [US1] Create StationMarker component (react-native-maps Marker with station pin) in `src/components/StationMarker.tsx`
+- [X] T010 [P] [US1] Create MapErrorState component (renders ErrorState or EmptyState from design system based on error/empty condition) in `src/components/MapErrorState.tsx`
+- [X] T011 [US1] Create MapScreen component (react-native-maps MapView, markers from useNearbyStations, loading skeleton via Skeleton variant="map", error/empty via MapErrorState) in `src/components/MapScreen.tsx`
+- [X] T012 [US1] Create Expo Router index screen at `app/index.tsx` using MapScreen as the default route
 
 **Checkpoint**: Map renders full-screen with station markers. Panning triggers re-fetch. Skeleton shows during load. Empty state when no stations.
 
@@ -76,10 +76,10 @@
 
 ### Implementation for User Story 2
 
-- [ ] T013 [P] [US2] Create useStationDetail hook (calls GET /api/v1/stations/{id}, returns station with chargers, 10s timeout) in `src/hooks/useStationDetail.ts`
-- [ ] T014 [P] [US2] Create ChargerList component (renders charger rows with connector type, power_kw, status badge) in `src/components/ChargerList.tsx`
-- [ ] T015 [US2] Create StationBottomSheet component (BottomSheet from design system, uses useStationDetail and ChargerList, skeleton via Skeleton variant="list" while loading) in `src/components/StationBottomSheet.tsx`
-- [ ] T016 [US2] Integrate StationBottomSheet into MapScreen — open on marker tap, update on different marker, close on swipe-down in `src/components/MapScreen.tsx`
+- [X] T013 [P] [US2] Create useStationDetail hook (calls GET /api/v1/stations/{id}, returns station with chargers, 10s timeout) in `src/hooks/useStationDetail.ts`
+- [X] T014 [P] [US2] Create ChargerList component (renders charger rows with connector type, power_kw, status badge) in `src/components/ChargerList.tsx`
+- [X] T015 [US2] Create StationBottomSheet component (BottomSheet from design system, uses useStationDetail and ChargerList, skeleton via Skeleton variant="list" while loading) in `src/components/StationBottomSheet.tsx`
+- [X] T016 [US2] Integrate StationBottomSheet into MapScreen — open on marker tap, update on different marker, close on swipe-down in `src/components/MapScreen.tsx`
 
 **Checkpoint**: Marker tap opens sheet with station details. Sheet skeleton shows during fetch. Swipe-down dismisses. Different marker updates content.
 
@@ -93,8 +93,8 @@
 
 ### Implementation for User Story 4
 
-- [ ] T017 [P] [US4] Create useClickstream hook (fire-and-forget POST /api/v1/events with silent error handling) in `src/hooks/useClickstream.ts`
-- [ ] T018 [US4] Integrate clickstream event tracking into MapScreen (map_open, map_pan, map_zoom, nearby_search) and StationBottomSheet (station_click, station_view) in `src/components/MapScreen.tsx` and `src/components/StationBottomSheet.tsx`
+- [X] T017 [P] [US4] Create useClickstream hook (fire-and-forget POST /api/v1/events with silent error handling) in `src/hooks/useClickstream.ts`
+- [X] T018 [US4] Integrate clickstream event tracking into MapScreen (map_open, map_pan, map_zoom, nearby_search) and StationBottomSheet (station_click, station_view) in `src/components/MapScreen.tsx` and `src/components/StationBottomSheet.tsx`
 
 **Checkpoint**: All interaction events fire and reach the Clickstream Service. No UX impact when service is unreachable.
 
@@ -104,7 +104,7 @@
 
 **Purpose**: Final verification and cleanup
 
-- [ ] T019 Run quickstart.md verification checklist — all 10 checks pass
+- [X] T019 Run quickstart.md verification checklist — all 10 checks pass
 
 ---
 

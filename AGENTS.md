@@ -1,6 +1,6 @@
 <!-- SPECKIT START -->
-Current plan: specs/005-design-system/plan.md
+Current plan: specs/006-mobile-driver-app/plan.md
 <!-- SPECKIT END -->
 
-This sprint implements the Design System — design tokens, UI primitives (Button, Skeleton, EmptyState, ErrorState, BottomSheet), and dark mode theming for the Borne mobile app.
-See the spec at `specs/005-design-system/spec.md` for details.
+This sprint builds the primary Borne mobile driver app — a full-screen map with station markers, station detail bottom sheet, skeleton-first loading, and clickstream event tracking.
+See the spec at `specs/006-mobile-driver-app/spec.md` for details.

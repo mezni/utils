@@ -1,0 +1,23 @@
+{
+  "expo": {
+    "name": "Borne Driver",
+    "slug": "borne-driver",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "borne",
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.borne.driver"
+    },
+    "android": {
+      "package": "com.borne.driver",
+      "adaptiveIcon": {
+        "backgroundColor": "#111827"
+      }
+    },
+    "plugins": [
+      "expo-router",
+      "expo-location"
+    ]
+  }
+}
