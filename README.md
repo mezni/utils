@@ -6,8 +6,9 @@ EV charging platform — Tunis, Tunisia.
 
 ```
 source/           ← All runtime code
-├── services/     ← Backend microservices
-└── front/        ← Frontend applications
+├── services/     ← Backend microservices + shared libs
+├── frontend/     ← Frontend applications
+└── packages/     ← Shared workspace packages
 infra/            ← Docker Compose, configuration
 docs/             ← Architecture, ADRs, specs
 scripts/          ← Dev tooling

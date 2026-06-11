@@ -24,10 +24,10 @@
 
 **Purpose**: Project initialization and Rust workspace structure
 
-- [ ] T001 Create Rust workspace at `source/services/Cargo.workspace.toml` with members `libs/borne-data`
-- [ ] T002 [P] Initialize `borne-data` crate at `source/services/libs/borne-data/Cargo.toml` with `sqlx`, `tokio`, `serde`, `chrono`, `testcontainers` dependencies
-- [ ] T003 [P] Create library module structure at `source/services/libs/borne-data/src/` with `lib.rs`, `pool.rs`, `error.rs`, `models/mod.rs`, `queries/mod.rs`, `migration/mod.rs`
-- [ ] T004 [P] Configure Rust toolchain at `source/services/rust-toolchain.toml` (edition 2021, version 1.80+)
+- [x] T001 Create Rust workspace at `source/services/Cargo.toml` with members `libs/borne-data`
+- [x] T002 [P] Initialize `borne-data` crate at `source/services/libs/borne-data/Cargo.toml` with `sqlx`, `tokio`, `serde`, `chrono`, `testcontainers` dependencies
+- [x] T003 [P] Create library module structure at `source/services/libs/borne-data/src/` with `lib.rs`, `pool.rs`, `error.rs`, `models/mod.rs`, `queries/mod.rs`, `migration/mod.rs`
+- [x] T004 [P] Configure Rust toolchain at `source/services/rust-toolchain.toml` (edition 2021, version 1.80+)
 
 ---
 
@@ -35,10 +35,10 @@
 
 **Purpose**: Core infrastructure that MUST be complete before ANY user story can be implemented
 
-- [ ] T005 Implement `DataLayerError` enum in `source/services/libs/borne-data/src/error.rs` with variants: Connection, Query, NotFound, Migration, PoolExhausted, plus `std::error::Error` and `Display` trait implementations
-- [ ] T006 [P] Implement `DbConfig` struct and `create_pool`/`create_pool_with_config` functions in `source/services/libs/borne-data/src/pool.rs` with environment variable reading (FR-009)
-- [ ] T007 [P] Implement connection retry with exponential backoff (3 retries: 1s, 2s, 4s) in `source/services/libs/borne-data/src/pool.rs` (FR-011)
-- [ ] T008 [P] Implement logging configuration in `source/services/libs/borne-data/src/lib.rs` using `tracing` crate (or equivalent) for connection events and query timing (FR-010)
+- [x] T005 Implement `DataLayerError` enum in `source/services/libs/borne-data/src/error.rs` with variants: Connection, Query, NotFound, Migration, PoolExhausted, plus `std::error::Error` and `Display` trait implementations
+- [x] T006 [P] Implement `DbConfig` struct and `create_pool`/`create_pool_with_config` functions in `source/services/libs/borne-data/src/pool.rs` with environment variable reading (FR-009)
+- [x] T007 [P] Implement connection retry with exponential backoff (3 retries: 1s, 2s, 4s) in `source/services/libs/borne-data/src/pool.rs` (FR-011)
+- [x] T008 [P] Implement logging configuration in `source/services/libs/borne-data/src/lib.rs` using `tracing` crate (or equivalent) for connection events and query timing (FR-010)
 
 **Checkpoint**: Foundation ready — connection management, error types, and config work. US1 and US2 can begin independently.
 
@@ -52,14 +52,14 @@
 
 ### Implementation for User Story 1
 
-- [ ] T009 [P] [US1] Create `Partner` model struct with `PartnerType` enum in `source/services/libs/borne-data/src/models/partner.rs` (FR-003)
-- [ ] T010 [P] [US1] Create `Station` model struct in `source/services/libs/borne-data/src/models/station.rs` (FR-003)
-- [ ] T011 [P] [US1] Create `Charger` model struct in `source/services/libs/borne-data/src/models/charger.rs` (FR-003)
-- [ ] T012 [US1] Implement `stations::list_all` query function in `source/services/libs/borne-data/src/queries/stations.rs` to fetch all stations
-- [ ] T013 [US1] Implement `stations::find_nearby` with PostGIS `ST_DWithin` in `source/services/libs/borne-data/src/queries/stations.rs` — accepts lat, lng, radius_m, returns stations ordered by distance (FR-004)
-- [ ] T014 [US1] Implement `stations::find_by_id` in `source/services/libs/borne-data/src/queries/stations.rs` — JOIN across station, charger, partner tables, returns `StationDetail` (FR-005)
-- [ ] T015 [US1] Create `StationDetail` struct (station + chargers + partner) in `source/services/libs/borne-data/src/queries/stations.rs`
-- [ ] T016 [US1] Wire up re-exports in `source/services/libs/borne-data/src/lib.rs` so all public types are accessible from `borne_data::*`
+- [x] T009 [P] [US1] Create `Partner` model struct in `source/services/libs/borne-data/src/models/partner.rs` (FR-003)
+- [x] T010 [P] [US1] Create `Station` model struct in `source/services/libs/borne-data/src/models/station.rs` (FR-003)
+- [x] T011 [P] [US1] Create `Charger` model struct in `source/services/libs/borne-data/src/models/charger.rs` (FR-003)
+- [x] T012 [US1] Implement `stations::list_all` query function in `source/services/libs/borne-data/src/queries/stations.rs` to fetch all stations
+- [x] T013 [US1] Implement `stations::find_nearby` with PostGIS `ST_DWithin` in `source/services/libs/borne-data/src/queries/stations.rs` — accepts lat, lng, radius_m, returns stations ordered by distance (FR-004)
+- [x] T014 [US1] Implement `stations::find_by_id` in `source/services/libs/borne-data/src/queries/stations.rs` — JOIN across station, charger, partner tables, returns `StationDetail` (FR-005)
+- [x] T015 [US1] Create `StationDetail` struct (station + chargers + partner) in `source/services/libs/borne-data/src/queries/stations.rs`
+- [x] T016 [US1] Wire up re-exports in `source/services/libs/borne-data/src/lib.rs` so all public types are accessible from `borne_data::*`
 
 **Checkpoint**: US1 fully functional — spatial queries work against platform_db.
 
@@ -73,9 +73,9 @@
 
 ### Implementation for User Story 2
 
-- [ ] T017 [P] [US2] Create initial migration file at `source/services/libs/borne-data/migrations/20260610000001_initial.sql` with a no-op (confirms the migration system works)
-- [ ] T018 [US2] Implement migration runner in `source/services/libs/borne-data/src/migration/runner.rs` using SQLx `migrate!` macro — applies pending migrations and logs results (FR-006)
-- [ ] T019 [US2] Wire up migration runner in `source/services/libs/borne-data/src/lib.rs` as `borne_data::run_migrations(pool)`
+- [x] T017 [P] [US2] Create initial migration file at `source/services/libs/borne-data/migrations/20260610000001_initial.sql` with a no-op (confirms the migration system works)
+- [x] T018 [US2] Implement migration runner in `source/services/libs/borne-data/src/migration/runner.rs` using SQLx `migrate!` macro — applies pending migrations and logs results (FR-006)
+- [x] T019 [US2] Wire up migration runner in `source/services/libs/borne-data/src/lib.rs` as `borne_data::run_migrations(pool)`
 
 **Checkpoint**: US2 fully functional — migrations apply idempotently.
 
@@ -89,16 +89,16 @@
 
 ### Implementation for User Story 3
 
-- [ ] T020 [P] [US3] Create test helper module at `source/services/libs/borne-data/tests/common/mod.rs` — starts `postgis/postgis:16-3.4` via testcontainers, creates connection pool, provides setup/teardown
-- [ ] T021 [US3] Write `test_stations_list_all` in `source/services/libs/borne-data/tests/queries_test.rs` — calls `list_all` and asserts seed data count matches (10 stations expected)
-- [ ] T022 [US3] Write `test_find_nearby_returns_results` in `source/services/libs/borne-data/tests/queries_test.rs` — calls `find_nearby` at Tunis center with 50km radius, asserts results are ordered by distance
-- [ ] T023 [US3] Write `test_find_nearby_empty_radius` in `source/services/libs/borne-data/tests/queries_test.rs` — calls `find_nearby` with 1m radius, asserts empty result set
-- [ ] T024 [US3] Write `test_find_by_id_with_chargers` in `source/services/libs/borne-data/tests/queries_test.rs` — calls `find_by_id` on an existing station, asserts chargers and partner are returned
-- [ ] T025 [US3] Write `test_find_by_id_not_found` in `source/services/libs/borne-data/tests/queries_test.rs` — calls `find_by_id` on a non-existent ID, asserts `DataLayerError::NotFound`
-- [ ] T026 [US3] Write `test_migration_applies_fresh` in `source/services/libs/borne-data/tests/migration_test.rs` — runs migrations on fresh DB, asserts tracking table created with one record
-- [ ] T027 [US3] Write `test_migration_idempotent` in `source/services/libs/borne-data/tests/migration_test.rs` — runs migrations twice, asserts no re-execution
-- [ ] T028 [US3] Write `test_connection_failure_returns_error` in `source/services/libs/borne-data/tests/queries_test.rs` — creates pool with bad credentials, asserts `DataLayerError::Connection`
-- [ ] T029 [US3] Write `test_pool_exhaustion` in `source/services/libs/borne-data/tests/queries_test.rs` — acquires max connections, asserts next acquire returns `PoolExhausted` (or blocks gracefully)
+- [x] T020 [P] [US3] Create test helper module at `source/services/libs/borne-data/tests/common/mod.rs` — starts `postgis/postgis:16-3.4` via testcontainers, creates connection pool, provides setup/teardown
+- [x] T021 [US3] Write `test_stations_list_all` in `source/services/libs/borne-data/tests/queries_test.rs` — calls `list_all` and asserts seed data count matches (10 stations expected)
+- [x] T022 [US3] Write `test_find_nearby_returns_results` in `source/services/libs/borne-data/tests/queries_test.rs` — calls `find_nearby` at Tunis center with 50km radius, asserts results are ordered by distance
+- [x] T023 [US3] Write `test_find_nearby_empty_radius` in `source/services/libs/borne-data/tests/queries_test.rs` — calls `find_nearby` with 1m radius, asserts empty result set
+- [x] T024 [US3] Write `test_find_by_id_with_chargers` in `source/services/libs/borne-data/tests/queries_test.rs` — calls `find_by_id` on an existing station, asserts chargers and partner are returned
+- [x] T025 [US3] Write `test_find_by_id_not_found` in `source/services/libs/borne-data/tests/queries_test.rs` — calls `find_by_id` on a non-existent ID, asserts `DataLayerError::NotFound`
+- [x] T026 [US3] Write `test_migration_applies_fresh` in `source/services/libs/borne-data/tests/migration_test.rs` — runs migrations on fresh DB, asserts tracking table created with one record
+- [x] T027 [US3] Write `test_migration_idempotent` in `source/services/libs/borne-data/tests/migration_test.rs` — runs migrations twice, asserts no re-execution
+- [x] T028 [US3] Write `test_connection_failure_returns_error` in `source/services/libs/borne-data/tests/queries_test.rs` — creates pool with bad credentials, asserts `DataLayerError::Connection`
+- [x] T029 [US3] Write `test_pool_exhaustion` in `source/services/libs/borne-data/tests/queries_test.rs` — acquires max connections, asserts next acquire returns `PoolExhausted` (or blocks gracefully)
 
 **Checkpoint**: All queries and migrations verified against real PostGIS. Test suite runs single-command.
 
@@ -108,8 +108,8 @@
 
 **Purpose**: Documentation, linting, and validation
 
-- [ ] T030 [P] Add `cargo clippy` and `cargo fmt` linting configuration to workspace
-- [ ] T031 Add Rust documentation comments to all public functions and types in `source/services/libs/borne-data/src/`
+- [x] T030 [P] Add `cargo clippy` and `cargo fmt` linting configuration to workspace
+- [x] T031 Add Rust documentation comments to all public functions and types in `source/services/libs/borne-data/src/`
 - [ ] T032 Create `source/services/libs/borne-data/README.md` with crate documentation and usage examples
 - [ ] T033 Update `AGENTS.md` to reference current plan at `specs/002-data-layer/plan.md`
 - [ ] T034 Run quickstart validation — clean test run from repo root

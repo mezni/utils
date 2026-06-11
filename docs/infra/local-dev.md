@@ -51,7 +51,7 @@ cd source/services/admin-service && cargo run
 cd source/services/clickstream-service && cargo run
 
 # Run mobile app
-cd source/front/mobile-driver && npx expo start
+cd source/frontend/mobile-driver && npx expo start
 ```
 
 ---

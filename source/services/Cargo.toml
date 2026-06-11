@@ -1,0 +1,13 @@
+[workspace]
+resolver = "2"
+members = ["libs/borne-data"]
+
+[workspace.lints.clippy]
+style = "warn"
+correctness = "warn"
+complexity = "warn"
+perf = "warn"
+
+[workspace.lints.rust]
+unused = "warn"
+dead_code = "warn"

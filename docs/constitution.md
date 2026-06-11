@@ -58,14 +58,24 @@ No tool has authority over architecture.
 bornemap/
 ├── source/                  ← ALL RUNTIME CODE
 │   ├── services/            ← Backend microservices
+│   │   ├── libs/            ← Shared libraries
 │   │   ├── driver-service/  ← Discovery API (8080)
 │   │   ├── admin-service/   ← Management API (8081)
-│   │   ├── clickstream-service/ ← Events API (8082)
-│   │   └── auth-gateway/    ← Identity abstraction (MVP-3)
-│   └── front/               ← Frontend applications
-│       ├── mobile-driver/   ← Expo app (primary UX)
-│       ├── web-driver/      ← React web app
-│       └── dashboard/       ← Admin UI
+│   │   └── clickstream-service/ ← Events API (8082)
+│   │
+│   ├── frontend/            ← Frontend applications
+│   │   ├── mobile-driver/   ← Expo app (primary UX)
+│   │   ├── web-driver/      ← React web app
+│   │   └── dashboard/       ← Admin UI
+│   │
+│   └── packages/            ← Shared workspace packages
+│       ├── ui/              ← UI primitives
+│       ├── design-tokens/   ← Colors, spacing, typography
+│       ├── api-contracts/   ← API endpoint contracts
+│       ├── types/           ← Shared TypeScript types
+│       ├── event-taxonomy/  ← Clickstream event definitions
+│       ├── config/          ← Shared env/API config
+│       └── utils/           ← Geo, validation, formatting
 │
 ├── docs/                    ← Architecture, ADRs, specs
 ├── infra/                   ← Docker, Traefik, deployment
@@ -147,8 +157,9 @@ All runtime code under `/source`:
 
 ```
 source/
-├── services/     ← backend microservices
-└── front/        ← frontend applications
+├── services/    ← backend microservices + shared libs
+├── frontend/    ← frontend applications
+└── packages/    ← shared workspace packages
 ```
 
 ---
