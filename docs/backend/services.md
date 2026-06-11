@@ -23,18 +23,44 @@
 source/services/driver-service/
 ├── src/
 │   ├── main.rs
-│   ├── controllers/
-│   │   ├── station_controller.rs
-│   │   └── nearby_controller.rs
+│   ├── api/
+│   │   └── v1/
+│   │       ├── mod.rs
+│   │       ├── stations.rs
+│   │       └── nearby.rs
+│   ├── handlers/
+│   │   ├── station_handler.rs
+│   │   └── nearby_handler.rs
 │   ├── services/
 │   │   ├── geo_search_service.rs
 │   │   └── station_query_service.rs
 │   ├── repositories/
 │   │   ├── station_repository.rs
 │   │   └── gis_repository.rs
-│   └── domain/
-│       ├── station.rs
-│       └── charger.rs
+│   ├── models/
+│   │   ├── station.rs
+│   │   └── charger.rs
+│   ├── dto/
+│   │   ├── station_response.rs
+│   │   └── nearby_query.rs
+│   ├── db/
+│   │   └── pool.rs
+│   ├── middleware/
+│   │   └── logging.rs
+│   ├── config/
+│   │   └── settings.rs
+│   ├── errors/
+│   │   └── app_error.rs
+│   └── telemetry/
+│       └── metrics.rs
+├── tests/
+│   ├── integration/
+│   │   ├── station_tests.rs
+│   │   └── nearby_tests.rs
+│   └── fixtures/
+│       └── seed.rs
+├── Cargo.toml
+└── Dockerfile
 ```
 
 ---
@@ -47,9 +73,16 @@ source/services/driver-service/
 source/services/admin-service/
 ├── src/
 │   ├── main.rs
-│   ├── controllers/
-│   │   ├── station_admin_controller.rs
-│   │   └── partner_controller.rs
+│   ├── api/
+│   │   └── v1/
+│   │       ├── mod.rs
+│   │       ├── partners.rs
+│   │       ├── stations.rs
+│   │       └── chargers.rs
+│   ├── handlers/
+│   │   ├── partner_handler.rs
+│   │   ├── station_handler.rs
+│   │   └── charger_handler.rs
 │   ├── services/
 │   │   ├── partner_service.rs
 │   │   ├── station_admin_service.rs
@@ -57,10 +90,29 @@ source/services/admin-service/
 │   ├── repositories/
 │   │   ├── partner_repository.rs
 │   │   └── station_repository.rs
-│   └── domain/
-│       ├── partner.rs
-│       ├── station.rs
-│       └── charger.rs
+│   ├── models/
+│   │   ├── partner.rs
+│   │   ├── station.rs
+│   │   └── charger.rs
+│   ├── dto/
+│   │   ├── partner_request.rs
+│   │   ├── station_request.rs
+│   │   └── charger_request.rs
+│   ├── db/
+│   │   └── pool.rs
+│   ├── middleware/
+│   │   └── auth.rs
+│   ├── config/
+│   │   └── settings.rs
+│   ├── errors/
+│   │   └── app_error.rs
+│   └── telemetry/
+│       └── metrics.rs
+├── tests/
+│   ├── integration/
+│   └── fixtures/
+├── Cargo.toml
+└── Dockerfile
 ```
 
 ---
@@ -73,15 +125,34 @@ source/services/admin-service/
 source/services/clickstream-service/
 ├── src/
 │   ├── main.rs
-│   ├── controllers/
-│   │   └── event_controller.rs
+│   ├── api/
+│   │   └── v1/
+│   │       ├── mod.rs
+│   │       └── events.rs
+│   ├── handlers/
+│   │   └── event_handler.rs
 │   ├── services/
 │   │   ├── event_ingestion_service.rs
 │   │   └── event_validation_service.rs
 │   ├── repositories/
 │   │   └── event_store.rs
-│   └── domain/
-│       └── raw_event.rs
+│   ├── models/
+│   │   └── raw_event.rs
+│   ├── dto/
+│   │   └── event_payload.rs
+│   ├── db/
+│   │   └── pool.rs
+│   ├── config/
+│   │   └── settings.rs
+│   ├── errors/
+│   │   └── app_error.rs
+│   └── telemetry/
+│       └── metrics.rs
+├── tests/
+│   ├── integration/
+│   └── fixtures/
+├── Cargo.toml
+└── Dockerfile
 ```
 
 ---
