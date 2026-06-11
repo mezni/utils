@@ -11,3 +11,4 @@ pub use queries::stations::{find_by_id, find_nearby, list_all, StationDetail};
 pub use models::charger::Charger;
 pub use models::partner::Partner;
 pub use models::station::Station;
+pub use chrono;

@@ -3,12 +3,7 @@ use tokio::signal;
 use tracing::info;
 use tracing_subscriber::EnvFilter;
 
-mod api;
-mod config;
-mod dto;
-mod errors;
-mod handlers;
-mod telemetry;
+use driver_service::{api, config, telemetry};
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {

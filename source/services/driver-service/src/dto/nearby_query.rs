@@ -36,3 +36,116 @@ impl NearbyQuery {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn valid_query() {
+        let q = NearbyQuery {
+            lat: 36.8065,
+            lng: 10.1815,
+            radius_m: 50000.0,
+        };
+        assert!(q.validate().is_ok());
+    }
+
+    #[test]
+    fn lat_below_range() {
+        let q = NearbyQuery {
+            lat: -91.0,
+            lng: 0.0,
+            radius_m: 1000.0,
+        };
+        let err = q.validate().unwrap_err();
+        assert!(err.to_string().contains("lat must be between"));
+        assert!(matches!(err, AppError::ValidationError(_)));
+    }
+
+    #[test]
+    fn lat_above_range() {
+        let q = NearbyQuery {
+            lat: 91.0,
+            lng: 0.0,
+            radius_m: 1000.0,
+        };
+        let err = q.validate().unwrap_err();
+        assert!(err.to_string().contains("lat must be between"));
+    }
+
+    #[test]
+    fn lng_below_range() {
+        let q = NearbyQuery {
+            lat: 0.0,
+            lng: -181.0,
+            radius_m: 1000.0,
+        };
+        let err = q.validate().unwrap_err();
+        assert!(err.to_string().contains("lng must be between"));
+    }
+
+    #[test]
+    fn lng_above_range() {
+        let q = NearbyQuery {
+            lat: 0.0,
+            lng: 181.0,
+            radius_m: 1000.0,
+        };
+        let err = q.validate().unwrap_err();
+        assert!(err.to_string().contains("lng must be between"));
+    }
+
+    #[test]
+    fn radius_must_be_positive() {
+        let q = NearbyQuery {
+            lat: 0.0,
+            lng: 0.0,
+            radius_m: 0.0,
+        };
+        let err = q.validate().unwrap_err();
+        assert!(err.to_string().contains("radius_m must be greater than 0"));
+    }
+
+    #[test]
+    fn radius_must_be_positive_negative() {
+        let q = NearbyQuery {
+            lat: 0.0,
+            lng: 0.0,
+            radius_m: -1.0,
+        };
+        let err = q.validate().unwrap_err();
+        assert!(err.to_string().contains("radius_m must be greater than 0"));
+    }
+
+    #[test]
+    fn multiple_errors_collected() {
+        let q = NearbyQuery {
+            lat: 100.0,
+            lng: 200.0,
+            radius_m: 0.0,
+        };
+        let err = q.validate().unwrap_err();
+        let msg = err.to_string();
+        assert!(msg.contains("lat must be between"));
+        assert!(msg.contains("lng must be between"));
+        assert!(msg.contains("radius_m must be greater than 0"));
+    }
+
+    #[test]
+    fn boundary_values_valid() {
+        let q = NearbyQuery {
+            lat: 90.0,
+            lng: 180.0,
+            radius_m: 1.0,
+        };
+        assert!(q.validate().is_ok());
+
+        let q = NearbyQuery {
+            lat: -90.0,
+            lng: -180.0,
+            radius_m: 999999.0,
+        };
+        assert!(q.validate().is_ok());
+    }
+}
