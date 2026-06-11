@@ -17,12 +17,15 @@ BorneMap includes frontend apps, backend services, infrastructure config, and do
 ```
 / (repo root)
 ├── source/          ← ALL runtime code
-│   ├── mobile-driver/
-│   ├── web-driver/
-│   ├── dashboard/
-│   ├── driver-service/
-│   ├── admin-service/
-│   └── clickstream-service/
+│   ├── services/    ← Backend microservices
+│   │   ├── driver-service/
+│   │   ├── admin-service/
+│   │   ├── clickstream-service/
+│   │   └── auth-gateway/
+│   └── front/       ← Frontend applications
+│       ├── mobile-driver/
+│       ├── web-driver/
+│       └── dashboard/
 ├── docs/            ← architecture, ADRs, specs
 ├── infra/           ← Docker, Traefik, deployment
 └── scripts/         ← dev tooling

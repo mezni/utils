@@ -57,13 +57,15 @@ No tool has authority over architecture.
 ```
 bornemap/
 ├── source/                  ← ALL RUNTIME CODE
-│   ├── mobile-driver/       ← Expo app (primary UX)
-│   ├── web-driver/          ← React web app
-│   ├── dashboard/           ← Admin UI
-│   ├── driver-service/      ← Discovery API (8080)
-│   ├── admin-service/       ← Management API (8081)
-│   ├── clickstream-service/ ← Events API (8082)
-│   └── auth-gateway/        ← Identity abstraction (MVP-3)
+│   ├── services/            ← Backend microservices
+│   │   ├── driver-service/  ← Discovery API (8080)
+│   │   ├── admin-service/   ← Management API (8081)
+│   │   ├── clickstream-service/ ← Events API (8082)
+│   │   └── auth-gateway/    ← Identity abstraction (MVP-3)
+│   └── front/               ← Frontend applications
+│       ├── mobile-driver/   ← Expo app (primary UX)
+│       ├── web-driver/      ← React web app
+│       └── dashboard/       ← Admin UI
 │
 ├── docs/                    ← Architecture, ADRs, specs
 ├── infra/                   ← Docker, Traefik, deployment
@@ -138,6 +140,16 @@ No exceptions.
 - **Serialization:** serde
 - **IDs:** nanoid prefix format (e.g. `STA-a1b2c3d4e5`)
 - **Logging:** tracing (structured JSON)
+
+### 5.5 Repository Layout
+
+All runtime code under `/source`:
+
+```
+source/
+├── services/     ← backend microservices
+└── front/        ← frontend applications
+```
 
 ---
 

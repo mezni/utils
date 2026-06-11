@@ -22,7 +22,7 @@ services:
 
   keycloak:
     image: quay.io/keycloak/keycloak:24.0
-    ports: ["8080:8080"]
+    ports: ["8083:8080"]
     environment:
       KC_DB: postgres
       KC_DB_URL: jdbc:postgresql://keycloak-db:5432/keycloak_db
@@ -42,16 +42,16 @@ services:
 docker compose up -d platform-db analytics-db keycloak
 
 # Run driver service
-cd source/driver-service && cargo run
+cd source/services/driver-service && cargo run
 
 # Run admin service
-cd source/admin-service && cargo run
+cd source/services/admin-service && cargo run
 
 # Run clickstream service
-cd source/clickstream-service && cargo run
+cd source/services/clickstream-service && cargo run
 
 # Run mobile app
-cd source/mobile-driver && npx expo start
+cd source/front/mobile-driver && npx expo start
 ```
 
 ---
@@ -61,10 +61,12 @@ cd source/mobile-driver && npx expo start
 ```
 localhost:5432  → platform_db
 localhost:5433  → analytics_db
-localhost:8080  → keycloak (internal)
-localhost:8081  → driver-service (direct)
-localhost:8082  → admin-service (direct)
-localhost:8083  → clickstream-service (direct)
+localhost:5432  → platform_db
+localhost:5433  → analytics_db
+localhost:8083  → keycloak (internal)
+localhost:8080  → driver-service (direct)
+localhost:8081  → admin-service (direct)
+localhost:8082  → clickstream-service (direct)
 ```
 
 ---

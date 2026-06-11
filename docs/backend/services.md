@@ -20,7 +20,7 @@
 ### Component Structure
 
 ```
-driver-service/
+source/services/driver-service/
 ├── src/
 │   ├── main.rs
 │   ├── controllers/
@@ -44,7 +44,7 @@ driver-service/
 ### Component Structure
 
 ```
-admin-service/
+source/services/admin-service/
 ├── src/
 │   ├── main.rs
 │   ├── controllers/
@@ -70,7 +70,7 @@ admin-service/
 ### Component Structure
 
 ```
-clickstream-service/
+source/services/clickstream-service/
 ├── src/
 │   ├── main.rs
 │   ├── controllers/
