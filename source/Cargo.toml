@@ -3,6 +3,7 @@ resolver = "2"
 members = [
     "services/libs/borne-data",
     "services/driver-service",
+    "services/clickstream-service",
     "crates/ev-core",
     "crates/ev-db",
     "crates/ev-auth",

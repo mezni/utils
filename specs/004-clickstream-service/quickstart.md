@@ -25,7 +25,7 @@ docker run -d \
 ### 2. Set environment variables
 
 ```bash
-export DATABASE_URL_ANALYTICS="postgres://borne:borne@localhost:5433/analytics"
+export DATABASE_URL_ANALYTICS="postgres://postgres:postgres@localhost:5433/analytics_db"
 export RUST_LOG="info,clickstream_service=debug"
 export CLICKSTREAM_BIND_ADDR="0.0.0.0:8082"
 export RATE_LIMIT_BURST_SIZE=100
