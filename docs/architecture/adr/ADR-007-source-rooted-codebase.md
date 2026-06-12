@@ -28,7 +28,8 @@ bornemaps/
 │   ├── services/                  ← Rust microservices
 │   │   ├── driver-service/        ← Rust API :8080
 │   │   └── admin-service/         ← Rust API :8081
-│   └── front/                     ← Mobile and web apps
+│       └── front/                     ← Mobile and web apps
+│       ├── packages/              ← Shared design system, UI kit
 │       ├── mobile-driver/         ← Expo app
 │       ├── web-driver/            ← React web app
 │       └── dashboard/             ← Admin dashboard

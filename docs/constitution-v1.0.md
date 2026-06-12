@@ -120,7 +120,8 @@ bornemaps/
 │   ├── services/                  ← Rust microservices
 │   │   ├── driver-service/        ← Rust / Actix-web :8080
 │   │   └── admin-service/         ← Rust / Actix-web :8081
-│   └── front/                     ← Mobile and web apps
+│       └── front/                     ← Mobile and web apps
+│       ├── packages/              ← Shared design system, UI kit
 │       ├── mobile-driver/         ← Expo SDK 54 app
 │       ├── web-driver/            ← React + Leaflet
 │       └── dashboard/             ← React + shadcn/ui
