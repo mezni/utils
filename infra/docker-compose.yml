@@ -40,7 +40,7 @@ services:
     environment:
       POSTGRES_DB: analytics_db
       POSTGRES_USER: borneadmin
-      POSTGRES_PASSWORD: ${      ANALYTICS_DB_PASSWORD:-borne_dev_2026}
+      POSTGRES_PASSWORD: ${ANALYTICS_DB_PASSWORD:-borne_dev_2026}
     volumes:
       - analytics_db_data:/var/lib/postgresql/data
     healthcheck:
@@ -55,7 +55,7 @@ services:
 
   driver-service:
     build:
-      context: .
+      context: ..
       dockerfile: infra/docker/driver-service.Dockerfile
       args:
         SERVICE_NAME: driver-service
@@ -79,7 +79,7 @@ services:
 
   admin-service:
     build:
-      context: .
+      context: ..
       dockerfile: infra/docker/admin-service.Dockerfile
       args:
         SERVICE_NAME: admin-service

@@ -6,7 +6,8 @@ docs/
 specs/
 scripts/
 source/front/
-target/
+source/services/**/target/
+**/*.rs.bk
 .DS_Store
 Thumbs.db
 *.md

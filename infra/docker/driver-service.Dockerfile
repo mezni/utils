@@ -1,28 +1,17 @@
-FROM rust:1.80-alpine3.20 AS chef
-RUN apk add --no-cache musl-dev pkg-config openssl-dev protoc clang lld
-ENV RUSTFLAGS="-C link-arg=-fuse-ld=lld"
-RUN cargo install cargo-chef
+FROM rust:1.88-alpine3.21 AS builder
+RUN apk add --no-cache musl-dev pkgconfig openssl-dev protobuf-dev clang lld
+ENV RUSTFLAGS="-C link-arg=-fuse-ld=lld" SQLX_OFFLINE=true CARGO_NET_RETRY=3
 WORKDIR /app
 
-FROM chef AS planner
-COPY . .
-RUN cargo chef prepare --recipe-path recipe.json
+COPY source/services/ .
+RUN cargo build --release --bin driver-service
 
-FROM chef AS builder
-ARG SERVICE_NAME=driver-service
-ENV SQLX_OFFLINE=true
-COPY --from=planner /app/recipe.json recipe.json
-RUN cargo chef cook --release --recipe-path recipe.json --bin ${SERVICE_NAME}
-COPY . .
-RUN cargo build --release --bin ${SERVICE_NAME}
-
-FROM alpine:3.20 AS runtime
+FROM alpine:3.21 AS runtime
 RUN apk add --no-cache ca-certificates tzdata libgcc
 RUN addgroup -S app && adduser -S app -G app
-ARG SERVICE_NAME=driver-service
 ARG APP_PORT=8080
 EXPOSE ${APP_PORT}
-COPY --from=builder /app/target/release/${SERVICE_NAME} /usr/local/bin/service
+COPY --from=builder /app/target/release/driver-service /usr/local/bin/service
 USER app
 HEALTHCHECK --interval=10s --timeout=3s --retries=3 \
   CMD wget --no-verbose --tries=1 --spider http://localhost:${APP_PORT}/health || exit 1
