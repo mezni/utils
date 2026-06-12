@@ -21,5 +21,12 @@ Thumbs.db
 # Rust build artifacts
 target/
 
+# Frontend build artifacts
+node_modules/
+dist/
+coverage/
+.next/
+storybook-static/
+
 # Logs
 *.log

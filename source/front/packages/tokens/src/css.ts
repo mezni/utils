@@ -1,0 +1,92 @@
+import { colors } from './colors';
+import { spacing } from './spacing';
+import { typography } from './typography';
+import { shadows } from './shadows';
+import { radii } from './border-radius';
+import { breakpoints } from './breakpoints';
+import { opacity } from './opacity';
+
+export interface CSSVariables {
+  [key: string]: string;
+}
+
+export const cssVariables: CSSVariables = {
+  '--color-primary': colors.light.primary,
+  '--color-on-primary': colors.light.onPrimary,
+  '--color-secondary': colors.light.secondary,
+  '--color-on-secondary': colors.light.onSecondary,
+  '--color-accent': colors.light.accent,
+  '--color-on-accent': colors.light.onAccent,
+  '--color-background': colors.light.background,
+  '--color-foreground': colors.light.foreground,
+  '--color-card': colors.light.card,
+  '--color-card-foreground': colors.light.cardForeground,
+  '--color-muted': colors.light.muted,
+  '--color-muted-foreground': colors.light.mutedForeground,
+  '--color-border': colors.light.border,
+  '--color-destructive': colors.light.destructive,
+  '--color-on-destructive': colors.light.onDestructive,
+  '--color-success': colors.light.success,
+  '--color-warning': colors.light.warning,
+  '--color-info': colors.light.info,
+  '--color-ring': colors.light.ring,
+  '--spacing-0': `${spacing[0]}px`,
+  '--spacing-1': `${spacing[1]}px`,
+  '--spacing-2': `${spacing[2]}px`,
+  '--spacing-3': `${spacing[3]}px`,
+  '--spacing-4': `${spacing[4]}px`,
+  '--spacing-5': `${spacing[5]}px`,
+  '--spacing-6': `${spacing[6]}px`,
+  '--spacing-8': `${spacing[8]}px`,
+  '--spacing-10': `${spacing[10]}px`,
+  '--spacing-12': `${spacing[12]}px`,
+  '--spacing-16': `${spacing[16]}px`,
+  '--font-family-sans': typography.font.family.sans,
+  '--font-family-mono': typography.font.family.mono,
+  '--font-size-xs': `${typography.font.size.xs}px`,
+  '--font-size-sm': `${typography.font.size.sm}px`,
+  '--font-size-base': `${typography.font.size.base}px`,
+  '--font-size-lg': `${typography.font.size.lg}px`,
+  '--font-size-xl': `${typography.font.size.xl}px`,
+  '--font-size-2xl': `${typography.font.size['2xl']}px`,
+  '--font-size-3xl': `${typography.font.size['3xl']}px`,
+  '--font-size-4xl': `${typography.font.size['4xl']}px`,
+  '--shadow-sm': shadows.sm,
+  '--shadow-md': shadows.md,
+  '--shadow-lg': shadows.lg,
+  '--shadow-xl': shadows.xl,
+  '--radius-none': `${radii.none}px`,
+  '--radius-sm': `${radii.sm}px`,
+  '--radius-md': `${radii.md}px`,
+  '--radius-lg': `${radii.lg}px`,
+  '--radius-full': `${radii.full}px`,
+  '--breakpoint-mobile': `${breakpoints.mobile}px`,
+  '--breakpoint-tablet': `${breakpoints.tablet}px`,
+  '--breakpoint-desktop': `${breakpoints.desktop}px`,
+  '--breakpoint-wide': `${breakpoints.wide}px`,
+  '--opacity-disabled': `${opacity.disabled}`,
+  '--opacity-overlay': `${opacity.overlay}`,
+  '--opacity-subtle': `${opacity.subtle}`,
+};
+
+export const darkCssVariables: CSSVariables = {
+  '--color-primary': colors.dark.primary,
+  '--color-on-primary': colors.dark.onPrimary,
+  '--color-secondary': colors.dark.secondary,
+  '--color-on-secondary': colors.dark.onSecondary,
+  '--color-accent': colors.dark.accent,
+  '--color-on-accent': colors.dark.onAccent,
+  '--color-background': colors.dark.background,
+  '--color-foreground': colors.dark.foreground,
+  '--color-card': colors.dark.card,
+  '--color-card-foreground': colors.dark.cardForeground,
+  '--color-muted': colors.dark.muted,
+  '--color-muted-foreground': colors.dark.mutedForeground,
+  '--color-border': colors.dark.border,
+  '--color-destructive': colors.dark.destructive,
+  '--color-on-destructive': colors.dark.onDestructive,
+  '--color-success': colors.dark.success,
+  '--color-warning': colors.dark.warning,
+  '--color-info': colors.dark.info,
+  '--color-ring': colors.dark.ring,
+};
