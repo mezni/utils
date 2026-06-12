@@ -67,7 +67,7 @@
 |-----------|---------|--------|
 | Docker Compose | 3.9 | Industry standard |
 | PostgreSQL | 16 | Constitution mandate |
-| PostGIS | 3.3 | Matches postgis/postgis:16-3.3 image |
+| PostGIS | 3.4 | Matches postgis/postgis:16-3.4 image |
 
 ## Open Questions (Deferred)
 

@@ -1,0 +1,52 @@
+networks:
+  bornemap:
+    driver: bridge
+
+volumes:
+  platform_db_data:
+    name: bornemap_platform_db_data
+  analytics_db_data:
+    name: bornemap_analytics_db_data
+
+services:
+  platform-db:
+    image: postgis/postgis:16-3.4
+    container_name: bornemap-platform-db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: platform_db
+      POSTGRES_USER: borneadmin
+      POSTGRES_PASSWORD: ${PLATFORM_DB_PASSWORD:-borne_dev_2026}
+    volumes:
+      - platform_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U borneadmin -d platform_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - bornemap
+    restart: unless-stopped
+
+  analytics-db:
+    image: postgres:16
+    container_name: bornemap-analytics-db
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: analytics_db
+      POSTGRES_USER: borneadmin
+      POSTGRES_PASSWORD: ${ANALYTICS_DB_PASSWORD:-borne_dev_2026}
+    volumes:
+      - analytics_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U borneadmin -d analytics_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks:
+      - bornemap
+    restart: unless-stopped

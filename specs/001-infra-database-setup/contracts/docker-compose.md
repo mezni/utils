@@ -6,7 +6,7 @@
 
 | Property | Value |
 |----------|-------|
-| Image | postgis/postgis:16-3.3 |
+| Image | postgis/postgis:16-3.4 |
 | Port | 5432:5432 |
 | Environment | POSTGRES_DB=platform_db, POSTGRES_USER=borneadmin, POSTGRES_PASSWORD |
 | Volumes | platform_db_data:/var/lib/postgresql/data |

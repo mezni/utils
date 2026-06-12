@@ -18,7 +18,7 @@ connectivity verification.
 
 **Language/Version**: Docker Compose v3.9, SQL (PostgreSQL 16 + PostGIS 3.3)
 
-**Primary Dependencies**: Docker Compose, postgis/postgis:16-3.3 image,
+**Primary Dependencies**: Docker Compose, postgis/postgis:16-3.4 image,
 postgres:16 image
 
 **Storage**: Two PostgreSQL 16 instances — platform_db (with PostGIS extension for
@@ -41,7 +41,7 @@ up`, nearby spatial query under 100ms p95 with up to 1000 stations
 migrations idempotent; soft-delete on infrastructure entities; append-only
 constraints on analytics_db; no runtime code in infra/ directory
 
-**Scale/Scope**: 2 database instances, 3 schemas (inventory, gis, users), 4 core
+**Scale/Scope**: 2 database instances, 2 schemas (inventory, gis), 4 core
 tables (partner, station, charger, raw_events), seed data with 2+ partners, 3+
 stations, 5+ chargers
 

@@ -4,8 +4,8 @@
 
 | Variable | Default | Required | Description |
 |----------|---------|----------|-------------|
-| PLATFORM_DB_URL | postgresql://borneadmin:password@localhost:5432/platform_db | Yes | platform_db connection string |
-| ANALYTICS_DB_URL | postgresql://borneadmin:password@localhost:5433/analytics_db | Yes | analytics_db connection string |
+| PLATFORM_DB_URL | postgresql://borneadmin:borne_dev_2026@localhost:5432/platform_db | Yes | platform_db connection string |
+| ANALYTICS_DB_URL | postgresql://borneadmin:borne_dev_2026@localhost:5433/analytics_db | Yes | analytics_db connection string |
 
 ## Database Credentials
 

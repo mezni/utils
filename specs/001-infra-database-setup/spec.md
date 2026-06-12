@@ -155,7 +155,7 @@ stations with correct coordinates, distances, and charger details.
   deletes have no effect
 - **SC-004**: Seed data includes at least 2 partners, 3 stations, and 5 chargers
   across different types
-- **SC-005**: Nearby search query on platform_db returns results in under 100ms for
+- **SC-005**: Nearby search query (10km radius) on platform_db returns results in under 100ms for
   up to 1000 stations
 - **SC-006**: Database survives a restart with all data intact (no data loss)
 - **SC-007**: Environment variable documentation is complete — all deployment
