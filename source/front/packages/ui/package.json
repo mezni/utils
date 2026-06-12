@@ -19,7 +19,9 @@
     "dev": "tsup src/index.ts --format esm --dts --sourcemap --watch --external react --external react-native",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src/ --ext .ts,.tsx",
-    "test": "jest --passWithNoTests"
+    "test": "jest --passWithNoTests",
+    "analyze-bundle": "tsx scripts/analyze-bundle.ts",
+    "validate-contrast": "tsx scripts/validate-contrast.ts"
   },
   "dependencies": {
     "@bornemap/tokens": "workspace:*"

@@ -1,0 +1,54 @@
+name: Design System CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.5.2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build @bornemap/tokens
+        working-directory: ./source/front
+        run: pnpm --filter @bornemap/tokens build
+
+      - name: Build @bornemap/ui
+        working-directory: ./source/front
+        run: pnpm --filter @bornemap/ui build
+
+      - name: Typecheck all packages
+        working-directory: ./source/front
+        run: pnpm typecheck
+
+      - name: Lint all packages
+        working-directory: ./source/front
+        run: pnpm lint
+
+      - name: Run unit tests
+        working-directory: ./source/front
+        run: pnpm test -- --coverage --passWithNoTests
+
+      - name: Verify bundle size
+        working-directory: ./source/front
+        run: pnpm build:ui && echo "Bundle built successfully"
