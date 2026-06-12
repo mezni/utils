@@ -73,4 +73,44 @@ pnpm --filter @bornemap/ui analyze-bundle
 - Data model: `specs/003-design-system-components/data-model.md`
 - Contracts: `specs/003-design-system-components/contracts/package-apis.md`
 - Quickstart: `specs/003-design-system-components/quickstart.md`
+
+## Phase 4 Driver Apps Status
+
+- **Feature Branch**: `004-driver-apps` (created)
+- **Specification**: Complete with 7 user stories (3 P1, 3 P2, 1 P3), 39 functional requirements, 10 success criteria, 13 edge cases
+- **Clarifications**: 2 critical clarifications (observability strategy, OSM rate limit handling)
+- **Plan**: Complete (23 days, 10 phases, detailed implementation roadmap)
+- **Research**: Complete (10 technical decisions documented)
+- **Data Model**: Complete (Station, Charger, StationImage entities defined)
+- **API Contracts**: Complete (4 API endpoints + OSM Nominatim contract)
+- **Quickstart**: Complete (setup, build, testing instructions)
+- **Next**: Proceed to `/speckit.tasks` for task breakdown
+
+## Phase 4 Artifacts
+
+### Design Artifacts
+- **Plan**: `specs/004-driver-apps/plan.md` - Implementation roadmap, architecture, tech stack
+- **Research**: `specs/004-driver-apps/research.md` - 10 technical decisions and best practices
+- **Data Model**: `specs/004-driver-apps/data-model.md` - Entity schemas, relationships, validation
+- **API Contracts**: `specs/004-driver-apps/contracts/api.md` - REST endpoints and OSM Nominatim
+- **Quickstart**: `specs/004-driver-apps/quickstart.md` - Setup, build, testing instructions
+
+### Clarification Resolutions
+
+**Critical Clarifications**:
+1. Observability Strategy: JSON structured logging with fetch times and success rates
+2. OSM Nominatim Rate Limits: Exponential backoff retry (10s, 30s, 60s) with user-friendly error messages
+
+**Previous Clarifications** (Phase 4 specification):
+3. Geocoding API: 10s timeout, 2 retries with linear backoff
+4. Image loading: Lazy load when station detail is visible
+5. Error recovery: Show error message with copy-to-clipboard button
+6. Theme persistence: AsyncStorage (RN) + localStorage (Web)
+7. Marker clustering: Cluster badges with counts at 50m radius
+8. Refresh frequency: Manual refresh only (no auto-refresh)
+9. Offline caching: Cache last 50 stations + station details
+10. Web app auth: Public access only (no login)
+11. Loading granularity: Per-screen skeletons + minimal global spinner
+12. Map provider: react-native-maps (open-source, no API key)
+
 <!-- SPECKIT END -->
