@@ -137,4 +137,4 @@ export const toggleTheme = () => {
 
 - **Constitution:** Section 7.7 — Dark Mode on Every Screen
 - **Design System:** UI Pro Max Skill
-- **Tokens:** `source/mobile-driver/design/tokens.ts`
+- **Tokens:** `source/front/mobile-driver/design/tokens.ts`

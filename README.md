@@ -237,10 +237,10 @@ psql -U borneuser -d platform_db  # Verify connection
 
 ### Phase 2: Backend Services (Weeks 2-3)
 ```bash
-cd source/driver-service
+cd source/services/driver-service
 cargo run
 
-cd source/admin-service
+cd source/services/admin-service
 cargo run
 
 # Verify: curl http://localhost:8080/api/v1/stations
@@ -248,11 +248,11 @@ cargo run
 
 ### Phase 3: Frontend & Mobile (Weeks 3-4)
 ```bash
-cd source/mobile-driver
+cd source/front/mobile-driver
 pnpm install
 pnpm run ios        # or android
 
-cd source/dashboard
+cd source/front/dashboard
 pnpm install
 pnpm run dev
 ```

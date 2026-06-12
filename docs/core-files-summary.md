@@ -82,7 +82,7 @@ This is a summary of the 10 critical files that must exist to prevent the LLM fr
 
 ### 3. Design System Files
 
-#### `source/mobile-driver/design/tokens.ts`
+#### `source/front/mobile-driver/design/tokens.ts`
 **What it contains:**
 - Colors (light and dark variants)
 - Spacing scale
@@ -97,7 +97,7 @@ This is a summary of the 10 critical files that must exist to prevent the LLM fr
 
 ---
 
-#### `source/mobile-driver/design/theme.ts`
+#### `source/front/mobile-driver/design/theme.ts`
 **What it contains:**
 - Light theme object
 - Dark theme object
@@ -181,8 +181,8 @@ Phase 1: Foundation (Days 1-2)
 └── 4. .env.example (env var registry)
 
 Phase 2: Design System (Days 3-4)
-├── 5. source/mobile-driver/design/tokens.ts
-├── 6. source/mobile-driver/design/theme.ts
+├── 5. source/front/mobile-driver/design/tokens.ts
+├── 6. source/front/mobile-driver/design/theme.ts
 ├── 7. 004_seed_stations.sql (Tunisia seed data)
 └── 8. docs/mvp/mvp-1-discovery-core.md (task list)
 

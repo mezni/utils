@@ -218,7 +218,7 @@ This skill defines the highest achievable UX quality for the BorneMap mobile dri
 ## Design Token Discipline
 
 ### Rule 11: No Hardcoded Tokens
-- **Rule:** All design tokens must be defined in `source/mobile-driver/design/tokens.ts`
+- **Rule:** All design tokens must be defined in `source/front/mobile-driver/design/tokens.ts`
 - **Enforcement:** LLM must reference tokens file before inventing values
 - **Examples:**
   ```typescript
@@ -350,7 +350,7 @@ export const tokens = {
 ## Implementation Rules
 
 1. **First:** Read this skill and the constitution
-2. **Second:** Check existing components in `source/mobile-driver/`
+2. **Second:** Check existing components in `source/front/mobile-driver/`
 3. **Third:** Define new tokens in `tokens.ts` if needed
 4. **Fourth:** Build component using tokens and reanimated
 5. **Fifth:** Add haptics to primary actions
@@ -363,9 +363,9 @@ export const tokens = {
 ## Related Files
 
 - **Constitution:** `docs/constitution-v1.0.md` — Section 7
-- **Design Tokens:** `source/mobile-driver/design/tokens.ts`
-- **Theme Provider:** `source/mobile-driver/design/theme.ts`
-- **Existing Components:** `source/mobile-driver/components/`
+- **Design Tokens:** `source/front/mobile-driver/design/tokens.ts`
+- **Theme Provider:** `source/front/mobile-driver/design/theme.ts`
+- **Existing Components:** `source/front/mobile-driver/components/`
 - **API Contract:** `docs/api-contract.md`
 
 ---

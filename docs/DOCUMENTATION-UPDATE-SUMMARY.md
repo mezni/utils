@@ -96,8 +96,8 @@ Successfully updated the `docs/` directory with comprehensive documentation that
 - Ensures consistent configuration across environments
 
 ### 3. Design System Files (2 files)
-- `source/mobile-driver/design/tokens.ts` — Design system foundation
-- `source/mobile-driver/design/theme.ts` — Dark/light theme object
+- `source/front/mobile-driver/design/tokens.ts` — Design system foundation
+- `source/front/mobile-driver/design/theme.ts` — Dark/light theme object
 
 **Why Critical:**
 - LLM will hardcode values the moment this file doesn't exist

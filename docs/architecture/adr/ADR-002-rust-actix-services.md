@@ -79,15 +79,15 @@ Rust has a learning curve, but the constitution mandates a single implementation
 
 1. **Project structure:**
    ```
-   source/driver-service/
-   ├── Cargo.toml
-   ├── src/
-   │   ├── main.rs
-   │   ├── handlers/
-   │   ├── models/
-   │   ├── db/
-   │   └── error.rs
-   source/admin-service/
+   source/services/driver-service/
+├── Cargo.toml
+├── src/
+│   ├── main.rs
+│   ├── handlers/
+│   ├── models/
+│   ├── db/
+│   └── error.rs
+   source/services/admin-service/
    ├── Cargo.toml
    ├── src/ (same structure)
    ```

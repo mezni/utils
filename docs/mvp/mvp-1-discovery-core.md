@@ -16,8 +16,8 @@
 | `infra/migrations/003_analytics_db_init.sql` | Raw_events table with append-only constraints | Prevents event modification errors |
 | `infra/docker-compose.yml` | Local infra contract (ports, volumes, services) | Without this, LLM invents config values |
 | `infra/.env.example` | Environment variable registry | LLM won't know what to inject |
-| `source/mobile-driver/design/tokens.ts` | Design system foundation | LLM hardcodes values without this |
-| `source/mobile-driver/design/theme.ts` | Dark/light theme object | Prevents per-component theming |
+| `source/front/mobile-driver/design/tokens.ts` | Design system foundation | LLM hardcodes values without this |
+| `source/front/mobile-driver/design/theme.ts` | Dark/light theme object | Prevents per-component theming |
 | `infra/migrations/004_seed_stations.sql` | Tunisia seed data with real coordinates | Map screen can't be tested otherwise |
 | `docs/architecture/adr/` (×4) | Decision records | Prevents LLM second-guessing decisions |
 | `docs/database/platform-db-schema.md` | Human-readable schema reference | LLM needs to know column names/types |

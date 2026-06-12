@@ -43,7 +43,7 @@ MVP-2 adds operational management capabilities:
 
 ### Phase 1: Dashboard Setup (Week 1)
 
-- React app scaffold (source/dashboard/)
+- React app scaffold (source/front/dashboard/)
 - shadcn/ui component library
 - Authentication placeholder (MVP-3 integration)
 - Routing setup (React Router)

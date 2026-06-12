@@ -45,8 +45,8 @@ This index provides quick access to all core files that prevent LLM from making 
 
 | File | Priority | Location | Description |
 |------|----------|----------|-------------|
-| `design/tokens.ts` | 🟢 Critical | `source/mobile-driver/design/` | Design tokens (colors, spacing, typography) |
-| `design/theme.ts` | 🟢 Critical | `source/mobile-driver/design/` | Dark/light theme objects and switching logic |
+| `design/tokens.ts` | 🟢 Critical | `source/front/mobile-driver/design/` | Design tokens (colors, spacing, typography) |
+| `design/theme.ts` | 🟢 Critical | `source/front/mobile-driver/design/` | Dark/light theme objects and switching logic |
 
 **Why Critical:** These enforce Rule 11 (no hardcoded values). Without them, the LLM hardcodes colors, spacing, and typography across components.
 
@@ -163,8 +163,8 @@ Phase 3: Documentation (Days 5-6)
 - [ ] `infra/migrations/004_seed_stations.sql` exists
 - [ ] `infra/docker-compose.yml` exists
 - [ ] `infra/.env.example` exists
-- [ ] `source/mobile-driver/design/tokens.ts` exists
-- [ ] `source/mobile-driver/design/theme.ts` exists
+- [ ] `source/front/mobile-driver/design/tokens.ts` exists
+- [ ] `source/front/mobile-driver/design/theme.ts` exists
 - [ ] `docs/architecture/adr/ADR-007-source-rooted-codebase.md` exists
 - [ ] `docs/architecture/adr/ADR-008-no-ngrok.md` exists
 - [ ] `docs/architecture/adr/ADR-009-dark-mode-from-day-one.md` exists

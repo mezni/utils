@@ -159,7 +159,7 @@ version: '3.9'
 
 services:
   driver-service:
-    build: ./source/driver-service
+    build: ./source/services/driver-service
     ports:
       - "8080:8080"
     environment:
@@ -171,7 +171,7 @@ services:
       - bornemap
 
   admin-service:
-    build: ./source/admin-service
+    build: ./source/services/admin-service
     ports:
       - "8081:8081"
     environment:
@@ -250,7 +250,7 @@ CORS_ALLOWED_ORIGINS=http://localhost:8080
 
 ## 3. Design System Files
 
-### `source/mobile-driver/design/tokens.ts`
+### `source/front/mobile-driver/design/tokens.ts`
 
 **Purpose:** Single enforcement point for Rule 11 (no hardcoded design values).
 
@@ -331,7 +331,7 @@ export const tokens = {
 
 ---
 
-### `source/mobile-driver/design/theme.ts`
+### `source/front/mobile-driver/design/theme.ts`
 
 **Purpose:** Dark/light theme object that consumes tokens.
 
@@ -520,8 +520,8 @@ export const useTheme = () => {
 2. `infra/migrations/003_analytics_db_init.sql` ← raw_events DDL
 3. `infra/docker-compose.yml` ← local infra contract
 4. `infra/.env.example` ← env var registry
-5. `source/mobile-driver/design/tokens.ts` ← design system foundation
-6. `source/mobile-driver/design/theme.ts` ← dark/light theme
+5. `source/front/mobile-driver/design/tokens.ts` ← design system foundation
+6. `source/front/mobile-driver/design/theme.ts` ← dark/light theme
 7. `infra/migrations/004_seed_stations.sql` ← Tunisia seed data
 8. `docs/mvp/mvp-1-discovery-core.md` ← scoped task list
 9. `docs/architecture/adr/` (×4) ← decision records
