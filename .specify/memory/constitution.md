@@ -84,11 +84,8 @@ is non-runtime. Never mix runtime and non-runtime in the same directory.
 
 ```
 source/           ← ALL runtime code
-├── shared/        ← Shared Rust crates
-│   ├── ev-core/   ← Core domain types, traits
-│   ├── ev-auth/   ← Authentication helpers
-│   └── ev-db/     ← Database access layer
 ├── services/      ← Rust microservices
+│   ├── shared/    ← Shared Rust crates (ev-core, ev-auth, ev-db)
 │   ├── driver-service/ ← Rust/Actix :8080
 │   └── admin-service/  ← Rust/Actix :8081
 ├── front/         ← Mobile and web apps

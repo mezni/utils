@@ -113,11 +113,8 @@ Clients → Traefik → Services → Databases
 bornemaps/
 ├── AGENTS.md                      ← Coding agent context
 ├── source/                        ← ALL runtime code lives here. No exceptions.
-│   ├── shared/                    ← Shared Rust crates
-│   │   ├── ev-core/               ← Core domain types, traits
-│   │   ├── ev-auth/               ← Authentication helpers
-│   │   └── ev-db/                 ← Database access layer
 │   ├── services/                  ← Rust microservices
+│   │   ├── shared/                ← Shared Rust crates (ev-core, ev-auth, ev-db)
 │   │   ├── driver-service/        ← Rust / Actix-web :8080
 │   │   └── admin-service/         ← Rust / Actix-web :8081
 │       └── front/                     ← Mobile and web apps
