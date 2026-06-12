@@ -84,11 +84,17 @@ is non-runtime. Never mix runtime and non-runtime in the same directory.
 
 ```
 source/           ← ALL runtime code
-├── mobile-driver/ ← Expo SDK 54 app
-├── web-driver/    ← React + Leaflet
-├── dashboard/     ← React + shadcn/ui
-├── driver-service/ ← Rust/Actix :8080
-└── admin-service/  ← Rust/Actix :8081
+├── shared/        ← Shared Rust crates
+│   ├── ev-core/   ← Core domain types, traits
+│   ├── ev-auth/   ← Authentication helpers
+│   └── ev-db/     ← Database access layer
+├── services/      ← Rust microservices
+│   ├── driver-service/ ← Rust/Actix :8080
+│   └── admin-service/  ← Rust/Actix :8081
+├── front/         ← Mobile and web apps
+│   ├── mobile-driver/ ← Expo SDK 54 app
+│   ├── web-driver/    ← React + Leaflet
+│   └── dashboard/     ← React + shadcn/ui
 
 docs/  ← Documentation only
 infra/ ← Docker, migrations, configs
@@ -156,4 +162,4 @@ MVP-1 (Discovery UX) → MVP-2 (Operational Control) → MVP-3 (Identity & RBAC)
 Use AGENTS.md for runtime development guidance and EXECUTION-LOG.md for
 session tracking.
 
-**Version**: 1.0.0 | **Ratified**: 2026-06-10 | **Last Amended**: 2026-06-11
+**Version**: 1.0.1 | **Ratified**: 2026-06-10 | **Last Amended**: 2026-06-11

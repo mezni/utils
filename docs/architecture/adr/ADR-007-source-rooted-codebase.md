@@ -21,11 +21,17 @@ We need a clear distinction between runtime code (executable) and non-runtime ar
 ```
 bornemaps/
 ├── source/                        ← ALL runtime code
-│   ├── mobile-driver/             ← Expo app
-│   ├── web-driver/                ← React web app
-│   ├── dashboard/                 ← Admin dashboard
-│   ├── driver-service/            ← Rust API :8080
-│   └── admin-service/             ← Rust API :8081
+│   ├── shared/                    ← Shared Rust crates
+│   │   ├── ev-core/               ← Core domain types, traits
+│   │   ├── ev-auth/               ← Authentication helpers
+│   │   └── ev-db/                 ← Database access layer
+│   ├── services/                  ← Rust microservices
+│   │   ├── driver-service/        ← Rust API :8080
+│   │   └── admin-service/         ← Rust API :8081
+│   └── front/                     ← Mobile and web apps
+│       ├── mobile-driver/         ← Expo app
+│       ├── web-driver/            ← React web app
+│       └── dashboard/             ← Admin dashboard
 ├── docs/                          ← Documentation only
 ├── infra/                         ← Docker, migrations, configs
 └── scripts/                       ← Build tools, seed scripts

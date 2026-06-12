@@ -111,13 +111,19 @@ Clients → Traefik → Services → Databases
 
 ```
 bornemaps/
-├── CLAUDE.md                      ← Claude Code session contract
+├── AGENTS.md                      ← Coding agent context
 ├── source/                        ← ALL runtime code lives here. No exceptions.
-│   ├── mobile-driver/             ← Expo SDK 54 app
-│   ├── web-driver/                ← React + Leaflet
-│   ├── dashboard/                 ← React + shadcn/ui
-│   ├── driver-service/            ← Rust / Actix-web :8080
-│   └── admin-service/             ← Rust / Actix-web :8081
+│   ├── shared/                    ← Shared Rust crates
+│   │   ├── ev-core/               ← Core domain types, traits
+│   │   ├── ev-auth/               ← Authentication helpers
+│   │   └── ev-db/                 ← Database access layer
+│   ├── services/                  ← Rust microservices
+│   │   ├── driver-service/        ← Rust / Actix-web :8080
+│   │   └── admin-service/         ← Rust / Actix-web :8081
+│   └── front/                     ← Mobile and web apps
+│       ├── mobile-driver/         ← Expo SDK 54 app
+│       ├── web-driver/            ← React + Leaflet
+│       └── dashboard/             ← React + shadcn/ui
 ├── docs/
 │   ├── constitution-v1.0.md       ← This file
 │   ├── api-contract.md
