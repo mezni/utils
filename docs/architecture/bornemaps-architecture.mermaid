@@ -1,0 +1,108 @@
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#1D9E75', 'primaryTextColor': '#fff', 'primaryBorderColor': '#17825f', 'lineColor': '#888780', 'secondaryColor': '#378ADD', 'tertiaryColor': '#f5f4f0', 'fontSize': '14px'}}}%%
+
+flowchart TB
+  subgraph ACTORS["👤 Actors"]
+    direction LR
+    PD(["Public driver"])
+    RD(["Registered driver"])
+    PT(["Partner"])
+    AD(["Admin"])
+  end
+
+  subgraph EDGE["🌐 Edge Zone"]
+    TR["Traefik API Gateway<br/>TLS termination · routing · auth"]
+  end
+
+  subgraph CLIENTS["📱 Clients · source/"]
+    direction LR
+    MOB["📱 Driver Mobile<br/>Expo SDK 54<br/>react-native-maps"]
+    WEB["🌐 Driver Web<br/>React + Leaflet"]
+    DASH["📊 Dashboard<br/>React + shadcn/ui"]
+  end
+
+  subgraph APPZONE["⚙️ Application Zone · source/"]
+    direction LR
+    DS["Driver Service<br/>:8080<br/>Rust / Actix-web<br/>Station discovery"]
+    AS["Admin Service<br/>:8081<br/>Rust / Actix-web<br/>Management + events"]
+    AG["Auth Gateway<br/>JWT validation"]
+  end
+
+  subgraph DATAZONE["🗄️ Data Zone"]
+    direction TB
+    subgraph PDB["platform_db · PostgreSQL 16 + PostGIS"]
+      INV["📦 inventory schema<br/>admin-service: WRITE<br/>partner → station → charger"]
+      GIS["🗺️ gis schema<br/>driver-service: READ-ONLY<br/>OSM-derived spatial data"]
+      USR["👤 users schema<br/>Keycloak auth scope"]
+    end
+    subgraph ADB["analytics_db · PostgreSQL 16"]
+      RAW["📊 raw_events<br/>APPEND-ONLY · immutable<br/>no UPDATE/DELETE"]
+    end
+  end
+
+  subgraph IDZONE["🔐 Identity Zone · internal only"]
+    KC["Keycloak<br/>User authentication"]
+    KDB["🔑 keycloak_db<br/>never accessed by services"]
+    subgraph REALMS["Realms"]
+      R1["bm-drivers<br/>public + registered drivers"]
+      R2["bm-control<br/>partners + admins"]
+    end
+  end
+
+  subgraph EXT["🌍 External"]
+    OSM["OpenStreetMap<br/>GIS source"]
+    TILES["Map Tiles<br/>OSM / Mapbox"]
+  end
+
+  %% Actors to Clients
+  PD -.-> MOB
+  RD -.-> MOB
+  PD -.-> WEB
+  RD -.-> WEB
+  PT -.-> DASH
+  AD -.-> DASH
+
+  %% Clients to Traefik
+  MOB -->|HTTP/HTTPS| TR
+  WEB -->|HTTP/HTTPS| TR
+  DASH -->|HTTP/HTTPS| TR
+
+  %% Traefik routing
+  TR -->|Route /api/v1/stations*| DS
+  TR -->|Route /api/v1/*| AS
+  TR -.->|Validate JWT| AG
+
+  %% Auth gateway to Keycloak
+  AG -.->|Check token| KC
+
+  %% Services to Databases
+  DS -->|SELECT| INV
+  DS -->|SELECT| GIS
+  AS -->|INSERT/UPDATE| INV
+  AS -->|INSERT| RAW
+
+  %% Identity internal
+  KC -->|Manage| KDB
+  KC --- R1
+  KC --- R2
+
+  %% External data sources
+  OSM -.->|Migration script| GIS
+  TILES -.->|Map rendering| MOB
+  TILES -.->|Map rendering| WEB
+
+  %% Styling
+  classDef actor fill:#f5f4f0,stroke:#999,color:#333,stroke-width:2px
+  classDef client fill:#378ADD,stroke:#2a6db5,color:#fff,stroke-width:2px
+  classDef service fill:#1D9E75,stroke:#17825f,color:#fff,stroke-width:2px
+  classDef database fill:#7F77DD,stroke:#6a62c4,color:#fff,stroke-width:2px
+  classDef identity fill:#D4537E,stroke:#b8436a,color:#fff,stroke-width:2px
+  classDef edge fill:#EF9F27,stroke:#cc8820,color:#333,stroke-width:2px
+  classDef external fill:#f5f4f0,stroke:#bbb,color:#555,stroke-width:1.5px,stroke-dasharray:4 3
+
+  class PD,RD,PT,AD actor
+  class MOB,WEB,DASH client
+  class DS,AS,AG service
+  class INV,GIS,USR,RAW,KDB database
+  class KC,R1,R2 identity
+  class TR edge
+  class OSM,TILES external
