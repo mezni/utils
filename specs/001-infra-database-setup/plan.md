@@ -16,7 +16,7 @@ connectivity verification.
 
 ## Technical Context
 
-**Language/Version**: Docker Compose v3.9, SQL (PostgreSQL 16 + PostGIS 3.3)
+**Language/Version**: Docker Compose (latest), SQL (PostgreSQL 16 + PostGIS 3.4)
 
 **Primary Dependencies**: Docker Compose, postgis/postgis:16-3.4 image,
 postgres:16 image

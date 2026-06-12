@@ -4,58 +4,62 @@
 
 - Docker Engine 24+ with Compose plugin
 - Git
-- psql (PostgreSQL client) for optional manual verification
 
-## Setup
+## Setup (Single Command)
 
 ```bash
-# 1. Start the database instances
-cd /home/dali/WORK/BorneMap
-docker compose -f infra/docker-compose.yml up -d
-
-# 2. Wait for health checks to pass
-docker compose -f infra/docker-compose.yml ps
-
-# 3. Run platform_db migrations
-psql "$PLATFORM_DB_URL" -f infra/migrations/001-platform-db-init.sql
-psql "$PLATFORM_DB_URL" -f infra/migrations/002-inventory-schema.sql
-psql "$PLATFORM_DB_URL" -f infra/migrations/003-gis-schema.sql
-
-# 4. Run analytics_db migration
-psql "$ANALYTICS_DB_URL" -f infra/migrations/004-analytics-db-init.sql
-
-# 5. Load seed data
-psql "$PLATFORM_DB_URL" -f infra/migrations/005-seed-data.sql
+# From the repository root
+cp infra/.env.example .env          # Review and adjust if needed
+scripts/dev.sh                       # Starts everything automatically
 ```
+
+`dev.sh` handles: env setup, `docker compose up`, health check polling (both DBs), all 5 migrations (001–005), and schema validation.
 
 ## Verification
 
+Using `docker compose exec` (no local psql needed):
+
 ```bash
 # Verify platform_db schema
-psql "$PLATFORM_DB_URL" -c "\dt inventory.*"
+docker compose -f infra/docker-compose.yml exec platform-db \
+  psql -U borneadmin -d platform_db -c "\dt inventory.*"
 
 # Verify analytics_db schema
-psql "$ANALYTICS_DB_URL" -c "\d raw_events"
+docker compose -f infra/docker-compose.yml exec analytics-db \
+  psql -U borneadmin -d analytics_db -c "\d raw_events"
 
 # Verify seed data
-psql "$PLATFORM_DB_URL" -c "SELECT id, name, status FROM inventory.station;"
+docker compose -f infra/docker-compose.yml exec platform-db \
+  psql -U borneadmin -d platform_db -c "SELECT id, name, status FROM inventory.station;"
 
 # Verify spatial index
-psql "$PLATFORM_DB_URL" -c "\di inventory.idx_station_location_gist"
+docker compose -f infra/docker-compose.yml exec platform-db \
+  psql -U borneadmin -d platform_db -c "\di inventory.idx_station_location_gist"
 ```
 
 ## Quick Test
 
 ```bash
-# Nearby search (Tunis city center, 5km radius)
-psql "$PLATFORM_DB_URL" <<SQL
+# Nearby search (Tunis city center, 50km radius shows all stations)
+docker compose -f infra/docker-compose.yml exec platform-db \
+  psql -U borneadmin -d platform_db -c "
 SELECT id, name, lat, lng, status,
        ST_Distance(location, ST_SetSRID(ST_Point(10.1815, 36.8065), 4326)) as dist_m
 FROM inventory.station
 WHERE deleted_at IS NULL
-  AND ST_DWithin(location, ST_SetSRID(ST_Point(10.1815, 36.8065), 4326), 5000)
+  AND ST_DWithin(location, ST_SetSRID(ST_Point(10.1815, 36.8065), 4326), 50000)
 ORDER BY dist_m;
-SQL
+"
+```
+
+## Manual Setup (without dev.sh)
+
+```bash
+# Start containers
+docker compose -f infra/docker-compose.yml up -d
+
+# Run all migrations
+bash scripts/init-dbs.sh
 ```
 
 ## Troubleshooting
@@ -69,4 +73,4 @@ SQL
 
 ## Environment
 
-Copy `infra/.env.example` to `.env` and adjust values as needed before starting.
+Copy `infra/.env.example` to `.env` and review before starting. The defaults use `borne_dev_2026` for all database passwords.
