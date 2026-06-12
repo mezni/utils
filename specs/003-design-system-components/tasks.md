@@ -67,6 +67,7 @@
 - [ ] T023 [P] [US1] Create `source/front/packages/tokens/src/border-radius.ts` exporting radius tokens (none, sm, md, lg, full)
 - [ ] T024 [P] [US1] Create `source/front/packages/tokens/src/opacity.ts` exporting opacity tokens
 - [ ] T025 [P] [US1] Create `source/front/packages/tokens/src/icon-size.ts` exporting icon dimension tokens
+- [ ] T025b [P] [US1] Create `source/front/packages/tokens/src/css.ts` generating CSS custom property definitions (`--color-primary`, `--spacing-4`, etc.) for web consumption via `react-native-web` style injection
 - [ ] T026 [US1] Write token generation script at `source/front/packages/tokens/scripts/generate-from-mastermd.ts` that parses `design-system/bornemap/MASTER.md` tables and regenerates `src/*.ts` files
 - [ ] T027 [US1] Build and verify `@bornemap/tokens` package compiles with zero type errors and all exports are accessible
 
@@ -77,15 +78,18 @@
 - [ ] T030 [P] [US1] Create `Button` component at `source/front/packages/ui/src/Button/Button.tsx` supporting 5 variants, 3 sizes, loading, disabled, and full-width states — consuming `@bornemap/tokens`
 - [ ] T031 [P] [US1] Create `Button.web.tsx` and `Button.native.tsx` platform variants if needed for pressable behavior differences
 - [ ] T032 [P] [US1] Create `Card` component at `source/front/packages/ui/src/Card/Card.tsx` with 3 variants (default, elevated, interactive), header/content/footer slots
-- [ ] T033 [P] [US1] Create `Skeleton` component at `source/front/packages/ui/src/Skeleton/Skeleton.tsx` with rectangular, circular, and text line shapes + animated pulse
+- [ ] T033 [P] [US1] Create `Skeleton` component at `source/front/packages/ui/src/Skeleton/Skeleton.tsx` with rectangular, circular, and text line shapes + animated pulse via `react-native-reanimated` (web: CSS animation fallback)
 - [ ] T034 [P] [US1] Create `EmptyState` component at `source/front/packages/ui/src/EmptyState/EmptyState.tsx` with icon slot, title, description, and action button
 - [ ] T035 [P] [US1] Create `ErrorBoundary` component at `source/front/packages/ui/src/ErrorBoundary/ErrorBoundary.tsx` with fallback UI and retry action
 - [ ] T036 [P] [US1] Create `LoadingOverlay` component at `source/front/packages/ui/src/LoadingOverlay/LoadingOverlay.tsx` with configurable message and cancel action
 - [ ] T037 [P] [US1] Create `Badge` component at `source/front/packages/ui/src/Badge/Badge.tsx` with 5 variants and 3 sizes
+- [ ] T037b [P] [US1] Create `Button.test.tsx`, `Card.test.tsx`, `Skeleton.test.tsx`, `EmptyState.test.tsx`, `ErrorBoundary.test.tsx`, `ThemeProvider.test.tsx`, `LoadingOverlay.test.tsx`, `Badge.test.tsx` — unit tests covering all variants, states, and edge cases
 - [ ] T038 [P] [US1] Create `source/front/packages/ui/src/shared/platform.ts` with platform abstraction helpers for cross-platform compatibility
 - [ ] T039 [US1] Build and verify `@bornemap/ui` package compiles with zero type errors, all components render in both environments
 - [ ] T040 [US1] Write Storybook stories for all 8 components covering every variant and state at `source/front/packages/ui/src/**/*.stories.tsx`
 - [ ] T041 [US1] Add WCAG AA contrast validation script at `source/front/packages/ui/scripts/validate-contrast.ts` checking all color foreground/background pairs
+- [ ] T041b [US1] Add bundle-size analysis step to tsup config and CI — measure gzipped size of full `@bornemap/ui` import, fail if >50KB
+- [ ] T041c [US1] Add ThemeProvider render-cycle test — verify mode change completes in a single render cycle with no visual flash
 
 **Checkpoint**: Design system complete — both packages build, all 8 components render cross-platform, Storybook documented, contrast validated
 
