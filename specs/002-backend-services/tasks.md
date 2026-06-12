@@ -119,7 +119,7 @@
 - [ ] T047 Add unit tests across shared crates and services to meet 80%+ coverage target — `cargo tarpaulin --workspace`
 - [ ] T048 Write integration test in `source/services/driver-service/tests/e2e_contract_driver.rs` and `source/services/admin-service/tests/e2e_contract_admin.rs` (reqwest, #[ignore] by default) verifying cross-service contract: admin creates station → driver discovers it
 - [ ] T049 Update `AGENTS.md` — add tasks.md reference and any new conventions
-- [ ] T050 Performance validation: run quickstart.md end-to-end, verify SC-001 (100ms p95), SC-002 (200ms create), SC-004 (500ms batch)
+- [ ] T050 Performance validation: install `oha` or `wrk` benchmarking tool; run benchmark script with 1000 stations seeded; verify SC-001 (discovery <100ms p95), SC-002 (create 5 chargers <200ms), SC-004 (batch 100 events <500ms); document results in docs/benchmarks.md
 - [ ] T051 Run `cargo clippy --workspace` and fix all warnings
 
 ---

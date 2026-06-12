@@ -130,7 +130,6 @@ As a product analyst, I want user interactions captured reliably so I can unders
 - API responses use JSON format with standard HTTP status codes
 - Services are started locally on :8080 (driver-service) and :8081 (admin-service)
 - Rate limiting and API key validation are out of scope for Phase 2
-- Event payload schema validation is minimal (accept arbitrary JSON, validate only event_type presence)
 - Services use the database credentials from the existing .env file
 - The consistent error response shape follows: `{ "error": { "code": "ERROR_CODE", "message": "Human-readable description" } }` with optional `details` array for field-level validation errors
 - Station IDs are server-generated nanoids with STA- prefix per constitution
