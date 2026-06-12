@@ -7,6 +7,8 @@ volumes:
     name: bornemap_platform_db_data
   analytics_db_data:
     name: bornemap_analytics_db_data
+  cargo-registry:
+  cargo-git:
 
 services:
   platform-db:
@@ -38,7 +40,7 @@ services:
     environment:
       POSTGRES_DB: analytics_db
       POSTGRES_USER: borneadmin
-      POSTGRES_PASSWORD: ${ANALYTICS_DB_PASSWORD:-borne_dev_2026}
+      POSTGRES_PASSWORD: ${      ANALYTICS_DB_PASSWORD:-borne_dev_2026}
     volumes:
       - analytics_db_data:/var/lib/postgresql/data
     healthcheck:
@@ -47,6 +49,57 @@ services:
       timeout: 5s
       retries: 10
       start_period: 30s
+    networks:
+      - bornemap
+    restart: unless-stopped
+
+  driver-service:
+    build:
+      context: .
+      dockerfile: infra/docker/driver-service.Dockerfile
+      args:
+        SERVICE_NAME: driver-service
+        APP_PORT: 8080
+    container_name: bornemap-driver
+    ports:
+      - "8080:8080"
+    environment:
+      RUST_LOG: ${RUST_LOG:-info}
+      PLATFORM_DB_URL: postgresql://borneadmin:${PLATFORM_DB_PASSWORD:-borne_dev_2026}@platform-db:5432/platform_db
+      PORT: 8080
+    depends_on:
+      platform-db:
+        condition: service_healthy
+    volumes:
+      - cargo-registry:/usr/local/cargo/registry
+      - cargo-git:/usr/local/cargo/git
+    networks:
+      - bornemap
+    restart: unless-stopped
+
+  admin-service:
+    build:
+      context: .
+      dockerfile: infra/docker/admin-service.Dockerfile
+      args:
+        SERVICE_NAME: admin-service
+        APP_PORT: 8081
+    container_name: bornemap-admin
+    ports:
+      - "8081:8081"
+    environment:
+      RUST_LOG: ${RUST_LOG:-info}
+      PLATFORM_DB_URL: postgresql://borneadmin:${PLATFORM_DB_PASSWORD:-borne_dev_2026}@platform-db:5432/platform_db
+      ANALYTICS_DB_URL: postgresql://borneadmin:${ANALYTICS_DB_PASSWORD:-borne_dev_2026}@analytics-db:5432/analytics_db
+      PORT: 8081
+    depends_on:
+      platform-db:
+        condition: service_healthy
+      analytics-db:
+        condition: service_healthy
+    volumes:
+      - cargo-registry:/usr/local/cargo/registry
+      - cargo-git:/usr/local/cargo/git
     networks:
       - bornemap
     restart: unless-stopped

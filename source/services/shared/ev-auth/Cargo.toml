@@ -1,0 +1,10 @@
+[package]
+name = "ev-auth"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+ev-core = { path = "../ev-core" }
+thiserror.workspace = true

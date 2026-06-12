@@ -8,13 +8,13 @@
 
 **Purpose**: Cargo workspace and project initialization
 
-- [ ] T001 Create Cargo workspace at `source/services/Cargo.toml` with resolver = "2" and members [shared/ev-core, shared/ev-db, shared/ev-auth, driver-service, admin-service]
-- [ ] T002 [P] Create `source/services/rust-toolchain.toml` pinning channel = "1.80"
-- [ ] T003 [P] Create `source/services/shared/ev-core/Cargo.toml` and `src/lib.rs` with nanoid, serde, chrono, thiserror dependencies
-- [ ] T004 [P] Create `source/services/shared/ev-db/Cargo.toml` and `src/lib.rs` with sqlx, ev-core path dependency
-- [ ] T005 [P] Create `source/services/shared/ev-auth/Cargo.toml` and `src/lib.rs` as stub crate
-- [ ] T006 [P] Create `source/services/driver-service/Cargo.toml` with workspace dep inheritance
-- [ ] T007 [P] Create `source/services/admin-service/Cargo.toml` with workspace dep inheritance
+- [X] T001 Create Cargo workspace at `source/services/Cargo.toml` with resolver = "2" and members [shared/ev-core, shared/ev-db, shared/ev-auth, driver-service, admin-service]
+- [X] T002 [P] Create `source/services/rust-toolchain.toml` pinning channel = "1.80"
+- [X] T003 [P] Create `source/services/shared/ev-core/Cargo.toml` and `src/lib.rs` with nanoid, serde, chrono, thiserror dependencies
+- [X] T004 [P] Create `source/services/shared/ev-db/Cargo.toml` and `src/lib.rs` with sqlx, ev-core path dependency
+- [X] T005 [P] Create `source/services/shared/ev-auth/Cargo.toml` and `src/lib.rs` as stub crate
+- [X] T006 [P] Create `source/services/driver-service/Cargo.toml` with workspace dep inheritance
+- [X] T007 [P] Create `source/services/admin-service/Cargo.toml` with workspace dep inheritance
 
 ---
 
@@ -22,15 +22,15 @@
 
 **Purpose**: Shared domain types, error handling, DB helpers, and infrastructure that ALL three user stories depend on
 
-- [ ] T008 [P] Implement ev-core domain types in `source/services/shared/ev-core/src/station.rs`, `charger.rs`, `partner.rs`, `event.rs` with serde Serialize/Deserialize
-- [ ] T009 [P] Implement `AppError` enum with `ResponseError` impl in `source/services/shared/ev-core/src/error.rs` — maps to consistent JSON error shape with code, message, details
-- [ ] T010 [P] Implement ID generation in `source/services/shared/ev-core/src/id.rs` with `EntityPrefix` enum (STA, CHR, PRT) and `generate_entity_id()` using nanoid 0.4
-- [ ] T011 [P] Implement DB pool creation helper in `source/services/shared/ev-db/src/pool.rs` with PgPoolOptions config (max_connections=20, acquire_timeout=5s)
-- [ ] T012 [P] Implement test database setup helper in `source/services/shared/ev-db/src/test_db.rs` — drop/create/migrate/seed for contract tests
-- [ ] T013 [P] Write contract test for `/health` endpoint (both services) in `source/services/driver-service/tests/contract_health.rs` and `source/services/admin-service/tests/contract_health.rs`
-- [ ] T014 [P] Implement RequestId middleware in `source/services/driver-service/src/middleware/mod.rs` and `source/services/admin-service/src/middleware/mod.rs`
-- [ ] T015 [P] Create multi-stage Dockerfiles at `infra/docker/driver-service.Dockerfile` and `infra/docker/admin-service.Dockerfile` with cargo-chef, SQLX_OFFLINE=true, lld linker
-- [ ] T016 Update `infra/docker-compose.yml` with driver-service and admin-service service definitions, depends_on DB health checks
+- [X] T008 [P] Implement ev-core domain types in `source/services/shared/ev-core/src/station.rs`, `charger.rs`, `partner.rs`, `event.rs` with serde Serialize/Deserialize
+- [X] T009 [P] Implement `AppError` enum with `ResponseError` impl in `source/services/shared/ev-core/src/error.rs` — maps to consistent JSON error shape with code, message, details
+- [X] T010 [P] Implement ID generation in `source/services/shared/ev-core/src/id.rs` with `EntityPrefix` enum (STA, CHR, PRT) and `generate_entity_id()` using nanoid 0.4
+- [X] T011 [P] Implement DB pool creation helper in `source/services/shared/ev-db/src/pool.rs` with PgPoolOptions config (max_connections=20, acquire_timeout=5s)
+- [X] T012 [P] Implement test database setup helper in `source/services/shared/ev-db/src/test_db.rs` — drop/create/migrate/seed for contract tests
+- [X] T013 [P] Write contract test for `/health` endpoint (both services) in `source/services/driver-service/tests/contract_health.rs` and `source/services/admin-service/tests/contract_health.rs`
+- [X] T014 [P] Implement RequestId middleware in `source/services/driver-service/src/middleware/mod.rs` and `source/services/admin-service/src/middleware/mod.rs`
+- [X] T015 [P] Create multi-stage Dockerfiles at `infra/docker/driver-service.Dockerfile` and `infra/docker/admin-service.Dockerfile` with cargo-chef, SQLX_OFFLINE=true, lld linker
+- [X] T016 Update `infra/docker-compose.yml` with driver-service and admin-service service definitions, depends_on DB health checks
 
 ---
 

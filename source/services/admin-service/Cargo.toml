@@ -1,0 +1,29 @@
+[package]
+name = "admin-service"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+ev-core = { path = "../shared/ev-core" }
+ev-db = { path = "../shared/ev-db" }
+ev-auth = { path = "../shared/ev-auth" }
+actix-web.workspace = true
+actix-rt.workspace = true
+actix-cors.workspace = true
+tokio.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+chrono.workspace = true
+uuid.workspace = true
+tracing.workspace = true
+tracing-actix-web.workspace = true
+tracing-subscriber.workspace = true
+sqlx.workspace = true
+thiserror.workspace = true
+anyhow.workspace = true
+dotenvy.workspace = true
+
+[dev-dependencies]
+reqwest.workspace = true

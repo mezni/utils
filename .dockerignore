@@ -1,0 +1,15 @@
+.git/
+.gitignore
+.gitattributes
+.github/
+docs/
+specs/
+scripts/
+source/front/
+target/
+.DS_Store
+Thumbs.db
+*.md
+*.swp
+*.swo
+node_modules/

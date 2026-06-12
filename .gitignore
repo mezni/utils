@@ -18,5 +18,8 @@ Thumbs.db
 .vscode/
 *.iml
 
+# Rust build artifacts
+target/
+
 # Logs
 *.log
