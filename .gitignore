@@ -39,3 +39,6 @@ web-build/
 *.mobileprovision
 *.apk
 *.aab
+
+
+graphify-out/
