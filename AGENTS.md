@@ -1,7 +1,7 @@
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan
-at specs/003-design-system-components/plan.md
+at specs/005-integration-testing/plan.md
 
 ## Project Structure
 
@@ -15,8 +15,8 @@ source/           ← ALL runtime code
 │   │   ├── tokens/    ← @bornemap/tokens (Phase 3, completed)
 │   │   ├── ui/        ← @bornemap/ui (Phase 3, completed)
 │   │   └── scripts/   ← Utility scripts (WCAG validation, bundle analysis)
-│   ├── mobile-driver/ ← Expo SDK 54 app (Phase 4)
-│   ├── web-driver/    ← React + Leaflet (Phase 4)
+│   ├── mobile-driver/ ← Expo SDK 50 app (Phase 4, complete)
+│   ├── web-driver/    ← React + Leaflet (Phase 4, complete)
 │   └── dashboard/     ← React + shadcn/ui (Phase 4)
 ├── pnpm-workspace.yaml ← Workspace configuration
 ├── package.json ← Root scripts (typecheck, lint, test)
@@ -34,7 +34,16 @@ source/           ← ALL runtime code
   - All WCAG AA contrast checks passing
   - TypeScript strict mode typechecking passing
   - Bundle size < 50KB gzipped
-- **MVP-1 Phase 4**: Pending (mobile driver app, web driver app)
+- **MVP-1 Phase 4**: Complete (mobile driver app, web driver app)
+  - Mobile (Expo SDK 54, React Native 0.81, Expo Router v6, Zustand, React Query)
+  - Web (React 18, Vite, Zustand, React Query, Leaflet)
+  - 10 phases completed (181 tasks total)
+  - Android production bundle: 3.91 MB (Expo SDK 54, RN 0.81.5, 1379 modules)
+  - Services: 16 mobile, 8 web (geolocation, geocoding, stations, offline, notifications, analytics)
+  - Stores: theme, station, map (all with persistence)
+  - Dark mode with AsyncStorage/localStorage persistence
+  - Offline caching (last 50 stations, 5-min TTL)
+  - Metro configured with pnpm symlink support (unstable_enableSymlinks, watchFolders, nodeModulesPaths)
 
 ## Design System Build Commands
 
@@ -84,7 +93,8 @@ pnpm --filter @bornemap/ui analyze-bundle
 - **Data Model**: Complete (Station, Charger, StationImage entities defined)
 - **API Contracts**: Complete (4 API endpoints + OSM Nominatim contract)
 - **Quickstart**: Complete (setup, build, testing instructions)
-- **Next**: Proceed to `/speckit.tasks` for task breakdown
+- **Implementation**: All 10 phases complete (181 tasks done)
+- **Build**: Android bundle exported (3.02 MB, ~61s export time)
 
 ## Phase 4 Artifacts
 
@@ -112,5 +122,7 @@ pnpm --filter @bornemap/ui analyze-bundle
 10. Web app auth: Public access only (no login)
 11. Loading granularity: Per-screen skeletons + minimal global spinner
 12. Map provider: react-native-maps (open-source, no API key)
+13. pnpm symlinks: Metro configured with unstable_enableSymlinks for pnpm workspace compatibility
+14. @babel/runtime: Added as direct dependency for pnpm's non-hoisted transitive dependency resolution
 
 <!-- SPECKIT END -->
