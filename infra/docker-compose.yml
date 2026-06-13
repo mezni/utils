@@ -83,7 +83,7 @@ services:
     command:
       - "--configFile=/etc/traefik/traefik.yml"
     ports:
-      - "8080:8080"
+      - "8082:8080"
     volumes:
       - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
       - ./traefik/dynamic.yml:/etc/traefik/dynamic.yml:ro
