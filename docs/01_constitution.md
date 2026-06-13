@@ -1,4 +1,4 @@
-# BorneMap Constitution
+# Constitution
 
 ## Version: 1.0
 ## Status: Active
@@ -10,6 +10,7 @@
 
 **If it is not in Specs, it does not exist.**
 **If it is not in MVP, it must not be implemented.**
+**If it is not tested, it does not exist.**
 
 This is the absolute ground rule for all development. Any feature, change, or modification must be:
 
@@ -18,6 +19,7 @@ This is the absolute ground rule for all development. Any feature, change, or mo
 3. Follow existing API contracts
 4. Match specified UX behavior
 5. Be documented before implementation
+6. Have comprehensive tests
 
 ---
 
@@ -30,23 +32,43 @@ OpenCode MUST NEVER:
 - Modify system architecture
 - Add endpoints outside spec
 - Extend MVP scope without instruction
-
-### Code Violations
 - Write code outside source/
 - Bypass @bm/api-client
 - Use fetch() or axios inside apps
 - Access users schema directly
 - Access keycloak_db
-
-### Process Violations
-- Implement features not in active MVP
 - Introduce new libraries without approval
-- Modify response shapes outside spec
-- Access databases incorrectly
+- Implement features not in active MVP
+
+### Backend Violations
+- Business logic in handlers
+- SQL inside controllers
+- Direct database access from frontend
+- Cross-service schema writes
+- Mixed DB + logic layers
+- No PostGIS isolation
+
+### Frontend Violations
+- Direct map library usage outside MapContainer
+- Direct API calls in components
+- Mixed state management (UI + server)
+- Platform logic in components
+- Duplicate UI patterns
+- Inline styling system
+
+### Testing Violations
+- Features without tests
+- Missing integration tests
+- Missing E2E tests
+- No MVP checkpoint validation
+- Flaky tests
+- No UX regression tests
 
 ---
 
 ## 📦 3. ALLOWED WORKING AREAS
+
+OpenCode may ONLY modify:
 
 ### Frontend
 - source/front/apps/mobile-driver
@@ -64,6 +86,14 @@ OpenCode MUST NEVER:
 - source/services/admin-service (MVP-2+)
 - source/services/auth-service (MVP-3+)
 
+### Skills (Must always enforce)
+- api-contract-discipline
+- mvp-scope-enforcement
+- frontend-architecture-discipline
+- llm-execution-control
+- data-ownership
+- testing-enforcement
+
 ---
 
 ## 🔄 4. EXECUTION PRINCIPLE
@@ -73,24 +103,30 @@ OpenCode MUST NEVER:
 If a spec does not exist → STOP.
 
 Implementation must follow this order:
+
 1. Read Constitution
 2. Check active MVP
 3. Read SpecKit feature
 4. Validate API contract
 5. Confirm UX rules
-6. Implement only allowed scope
-7. Log changes
-8. Update bug log if needed
+6. Read Rust Clean Architecture skill
+7. Read Frontend Architecture skill
+8. Read Data Ownership skill
+9. Read Testing Enforcement skill
+10. Implement only allowed scope
+11. Add tests for all features
+12. Log changes
 
 ---
 
-## 📋 5. PRE-EXECUTION CHECKLIST
+## 📋 5. REQUIRED PRE-EXECUTION CHECKLIST
 
 Before writing ANY code, OpenCode MUST confirm:
 
 ### MVP Context
 - [ ] Which MVP is active?
 - [ ] What is the feature scope?
+- [ ] What is forbidden?
 
 ### SpecKit Validation
 - [ ] SpecKit document present?
@@ -109,18 +145,32 @@ Before writing ANY code, OpenCode MUST confirm:
 - [ ] Loading states defined?
 - [ ] Empty states defined?
 - [ ] Error states defined?
-- [ ] Mobile gestures (if applicable) defined?
+
+### Architecture Validation
+- [ ] Read Rust Clean Architecture skill
+- [ ] Read Frontend Architecture skill
+- [ ] Read Data Ownership skill
+- [ ] Read Testing Enforcement skill
+
+### Testing Requirements
+- [ ] Unit tests required
+- [ ] Integration tests required
+- [ ] E2E tests required
+- [ ] Test coverage targets
 
 **If ANY answer is missing → STOP.**
 
 ---
 
-## 🎯 6. MVP ISOLATION RULE
+## 🧱 6. MVP ISOLATION RULE
 
-- Only ONE MVP is active at a time
-- OpenCode MUST NOT implement future MVP features early
-- OpenCode MUST NOT reference future services
-- OpenCode MUST NOT prepare unused architecture
+- Only ONE MVP is active at a time.
+
+OpenCode MUST NOT:
+- implement future MVP features early
+- reference future services
+- prepare unused architecture
+- Add scope beyond active MVP
 
 ---
 
@@ -179,7 +229,6 @@ OpenCode MUST respect:
 - Only auth-service communicates with Keycloak
 - No frontend or backend bypass allowed
 - JWT is the only trusted identity mechanism for services
-- Only services using @bm/api-client for authentication
 
 ---
 
@@ -197,9 +246,9 @@ OpenCode must add tests for:
 ## 🚨 12. ERROR HANDLING RULES
 
 Every feature MUST implement:
-- Loading state (skeleton preferred)
-- Empty state
-- Error state with retry option
+- loading state (skeleton preferred)
+- empty state
+- error state with retry option
 
 **No silent failures allowed.**
 
@@ -233,32 +282,25 @@ When OpenCode completes a task, output MUST include:
 
 ---
 
-## ⚖️ 15. VIOLATION CONSEQUENCES
+## 🎯 15. MVP ISOLATION RULE
 
-Any violation of the constitution results in:
+**Only ONE MVP is active at a time.**
 
-1. **Immediate scope halt** - Stop all work on violation
-2. **Code review rejection** - Changes will not be merged
-3. **Documentation requirement** - Must document why violation occurred
-4. **Process correction** - Must follow proper workflow for future
-5. **Learning loop** - Must be logged and prevented from recurring
-
----
-
-## 🔄 16. AMENDMENT PROCESS
-
-Constitutional changes require:
-
-1. Written proposal
-2. Architecture review
-3. Stakeholder approval
-4. Documentation update
-5. Team communication
-6. OpenCode agent reload
+OpenCode MUST NOT:
+- Implement future MVP features early
+- Reference future services
+- Prepare unused architecture
+- Add scope beyond active MVP
 
 ---
 
-## 🎯 17. SUCCESS GUARANTEE
+## 🧠 16. CORE EXECUTION PRINCIPLE
+
+OpenCode is a deterministic implementation engine driven by SpecKit, constrained by Constitution, and enforced by Skills.
+
+---
+
+## ⚡ RESULT OF THIS FILE
 
 This constitution ensures:
 
@@ -269,6 +311,10 @@ This constitution ensures:
 - ✅ Clean OpenCode output
 - ✅ Feature drift prevention
 - ✅ Architectural integrity
+- ✅ Complete test coverage
+- ✅ Strict scope enforcement
+- ✅ Deterministic execution
+- ✅ Complete skill enforcement
 
 ---
 

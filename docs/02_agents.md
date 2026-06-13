@@ -2,12 +2,11 @@
 
 ## Version: 1.0
 ## Status: Active
-## Role: System Execution Layer for OpenCode
 ## Core Philosophy: Documentation is the system. Code is just its execution.
 
 ---
 
-## 🧠 1. PURPOSE
+## 🧠 PURPOSE
 
 This file defines how OpenCode must behave when working on BorneMap.
 
@@ -17,17 +16,184 @@ This file defines how OpenCode must behave when working on BorneMap.
 
 ---
 
-## 🚫 2. ABSOLUTE FORBIDDEN BEHAVIORS
+## 🚦 SKILL SYSTEM INTEGRATION
 
-OpenCode MUST NEVER:
+OpenCode MUST always enforce these skills:
+
+### 🔴 MUST HAVE SKILLS
+
+**1. API Contract Discipline**
+- Enforces `/api/v1/*` strictness
+- Ensures typed responses
+- Prevents breaking changes
+- Location: `skills/api-contract-discipline/skill.md`
+
+**2. MVP Scope Enforcement**
+- Enforces active MVP scope
+- Blocks cross-MVP features
+- Prevents scope creep
+- Location: `skills/mvp-scope-enforcement/skill.md`
+
+**3. Frontend Architecture Discipline**
+- MapContainer is ONLY map abstraction
+- No direct API calls
+- Strict state separation (UI: Zustand, Server: React Query)
+- Platform logic in adapters only
+- Location: `skills/frontend-architecture-discipline/skill.md`
+
+**4. LLM Execution Control**
+- Enforces step-by-step execution
+- Requires validation before coding
+- Prevents jumping ahead
+- Complete validation checklist
+- Location: `skills/llm-execution-control/skill.md`
+
+### 🟠 HIGH VALUE SKILLS
+
+**5. Data Ownership**
+- Each service owns its schemas
+- No cross-schema writes
+- GIS is read-only
+- Analytics is append-only
+- Location: `skills/data-ownership/skill.md`
+
+**6. Testing Enforcement**
+- Every feature must have tests
+- Unit + Integration + E2E required
+- No merge without MVP checkpoint validation
+- Map interactions must have UX regression tests
+- Location: `skills/testing-enforcement/skill.md`
+
+### 🟡 ADVANCED SKILLS
+
+**7. Security Evolution**
+- MVP-aware security patterns
+- Input sanitization consistency
+- API abuse prevention
+- Strict logging boundaries
+- Location: `skills/security-evolution/skill.md`
+
+**8. Design System Enforcement**
+- No styling outside tokens
+- No duplicated UI patterns
+- Consistent spacing/typography
+- Platform consistency rules
+- Location: `skills/design-system-enforcement/skill.md`
+
+**9. Bug Learning System**
+- Every bug produces root cause
+- Prevention rules created
+- ADR updates for structural bugs
+- No repeated bugs allowed
+- Location: `skills/bug-learning-system/skill.md`
+
+---
+
+## 🔄 COMPLETE EXECUTION FLOW
+
+### Step 1 — Read Constitution
+- Read [docs/01_constitution.md](../docs/01_constitution.md)
+- Understand core principles
+- Identify forbidden behaviors
+
+### Step 2 — Check Active MVP
+- Read [docs/execution/active-mvp.md](../docs/execution/active-mvp.md)
+- Confirm active MVP
+- Identify forbidden features
+
+### Step 3 — Read SpecKit
+- Find relevant specification
+- Identify inputs, outputs, constraints
+- Validate API contracts
+- Check UX requirements
+
+### Step 4 — Validate API Contract
+- Check [docs/api/driver-service.md](../docs/api/driver-service.md)
+- Verify endpoint definitions
+- Validate request/response shapes
+- Confirm versioning
+
+### Step 5 — Confirm UX Rules
+- Check [docs/design/05_map-interactions.md](../docs/design/05_map-interactions.md)
+- Confirm interaction patterns
+- Verify state management rules
+- Check loading/empty/error states
+
+### Step 6 — Read Rust Clean Architecture
+- Read [skills/rust-clean-architecture/skill.md](../skills/rust-clean-architecture/skill.md)
+- Verify layer separation
+- Check repository pattern
+- Validate PostGIS isolation
+
+### Step 7 — Read Frontend Architecture
+- Read [skills/frontend-architecture-discipline/skill.md](../skills/frontend-architecture-discipline/skill.md)
+- Verify MapContainer usage
+- Check state separation
+- Validate API client usage
+
+### Step 8 — Read Data Ownership
+- Read [skills/data-ownership/skill.md](../skills/data-ownership/skill.md)
+- Verify schema ownership
+- Check cross-service access
+- Validate schema boundaries
+
+### Step 9 — Read Testing Enforcement
+- Read [skills/testing-enforcement/skill.md](../skills/testing-enforcement/skill.md)
+- Verify test requirements
+- Check coverage targets
+- Validate MVP checkpoint
+
+### Step 10 — Implement Backend (if applicable)
+- Follow Rust Clean Architecture
+- Implement in correct layers
+- Use Result<T, DomainError>
+- Isolate PostGIS in repository
+
+### Step 11 — Implement Frontend
+- Use MapContainer for maps
+- Use @bm/api-client for API
+- Separate UI state (Zustand) from server state (React Query)
+- Use design tokens for styling
+
+### Step 12 — Add UX Polish
+- Implement skeleton loading states
+- Create empty states
+- Implement error states
+- Add retry options
+- Haptics on mobile
+- Smooth transitions
+
+### Step 13 — Add Tests
+- Write unit tests
+- Write integration tests
+- Write E2E tests
+- Test UX regression
+- Validate test coverage
+
+### Step 14 — Validate Constraints
+- Check [docs/execution/07_scope-guard.md](../docs/execution/07_scope-guard.md)
+- Check architecture compliance
+- Verify API contract adherence
+- Confirm frontend rules
+- Validate MVP scope
+- Check data ownership
+- Verify testing requirements
+
+### Step 15 — Log Changes
+- Update [docs/execution/04_done-log.md](../docs/execution/04_done-log.md)
+- Log completed tasks
+- Document changes
+- Record assumptions
+
+---
+
+## 🚫 FORBIDDEN BEHAVIORS
 
 ### Architecture Violations
 - Create new services
 - Modify system architecture
 - Add endpoints outside spec
 - Extend MVP scope without instruction
-
-### Code Violations
 - Write code outside source/
 - Bypass @bm/api-client
 - Use fetch() or axios inside apps
@@ -36,50 +202,40 @@ OpenCode MUST NEVER:
 - Introduce new libraries without approval
 - Implement features not in active MVP
 
-### Process Violations
-- Modify response shapes outside spec
-- Access databases incorrectly
-- Implement features outside MVP
+### Backend Violations
+- Business logic in handlers
+- SQL inside controllers
+- Direct database access from frontend
+- Cross-service schema writes
+- Mixed DB + logic layers
+- No PostGIS isolation
+
+### Frontend Violations
+- Direct map library usage outside MapContainer
+- Direct API calls in components
+- Mixed state management (UI + server)
+- Platform logic in components
+- Duplicate UI patterns
+- Inline styling system
+
+### Testing Violations
+- Features without tests
+- Missing integration tests
+- Missing E2E tests
+- No MVP checkpoint validation
+- Flaky tests
+- No UX regression tests
 
 ---
 
-## 📦 3. ALLOWED WORKING AREAS
-
-OpenCode may ONLY modify:
-
-### Frontend
-- source/front/apps/mobile-driver
-- source/front/apps/web-driver
-- source/front/apps/dashboard (MVP-2+ only)
-
-### Shared Packages (Must use exclusively)
-- source/front/packages/@bm/types → ALL models
-- source/front/packages/@bm/api-client → ALL requests
-- source/front/packages/@bm/utils → ALL logic
-- source/front/packages/@bm/design-tokens → ALL UI values
-
-### Backend (MVP scoped)
-- source/services/driver-service (MVP-1 only)
-- source/services/admin-service (MVP-2+)
-- source/services/auth-service (MVP-3+)
-
----
-
-## 🔄 4. EXECUTION PRINCIPLE
-
-**OpenCode executes specifications. It does not generate them.**
-
-**If a spec does not exist → STOP.**
-
----
-
-## 📋 5. REQUIRED PRE-EXECUTION CHECKLIST
+## 📋 REQUIRED PRE-EXECUTION CHECKLIST
 
 Before writing ANY code, OpenCode MUST confirm:
 
 ### MVP Context
 - [ ] Which MVP is active?
 - [ ] What is the feature scope?
+- [ ] What is forbidden?
 
 ### SpecKit Validation
 - [ ] SpecKit document present?
@@ -92,218 +248,34 @@ Before writing ANY code, OpenCode MUST confirm:
 
 ### Allowed Scope
 - [ ] Which folders are allowed for modification?
+- [ ] No cross-boundary violations?
 
 ### UX Constraints
 - [ ] Loading states defined?
 - [ ] Empty states defined?
 - [ ] Error states defined?
-- [ ] Mobile gestures (if applicable) defined?
+
+### Architecture Validation
+- [ ] Read Rust Clean Architecture
+- [ ] Read Frontend Architecture
+- [ ] Read Data Ownership
+- [ ] Read Testing Enforcement
+
+### Testing Requirements
+- [ ] Unit tests required
+- [ ] Integration tests required
+- [ ] E2E tests required
+- [ ] Test coverage targets
 
 **If ANY answer is missing → STOP.**
 
 ---
 
-## 🧩 6. FEATURE EXECUTION MODEL
+## 🧱 CORE PRINCIPLE
 
-OpenCode MUST follow this order:
+**Execution is not development tracking. It is MVP constraint enforcement.**
 
-### Step 1 — Read Constitution
-Understand:
-- Core principles
-- Forbidden behaviors
-- Allowed working areas
-
-### Step 2 — Read SpecKit
-Understand:
-- inputs
-- outputs
-- constraints
-- acceptance criteria
-
-### Step 3 — Confirm API contract
-- Never invent endpoints
-- Validate against /api/v1/* spec
-
-### Step 4 — Identify file targets
-- Only modify allowed directories
-
-### Step 5 — Implement backend (if applicable)
-- Driver-service first (MVP-1)
-- Follow service boundaries
-
-### Step 6 — Implement frontend
-Using:
-- @bm/api-client
-- @bm/types
-- @bm/utils
-- @bm/design-tokens
-- MapContainer abstraction
-
-### Step 7 — UX compliance
-Ensure:
-- skeleton loading
-- empty states
-- error handling
-- mobile gestures (if applicable)
-
-### Step 8 — Validate scope
-- No extra features added
-- Only implement what's specified
-
-### Step 9 — Log changes
-- Update documentation
-- Update bug log if needed
-
----
-
-## 🔌 7. API RULES
-
-### Format Rules
-- All endpoints MUST follow /api/v1/*
-- No unversioned routes allowed
-- No endpoint invention
-- No response shape modification outside spec
-
-### Allowed MVP-1 Endpoints
-- GET /api/v1/stations
-- GET /api/v1/stations/nearby
-- GET /api/v1/stations/{id}
-
----
-
-## 📱 8. FRONTEND RULES (CRITICAL)
-
-### Mandatory Dependencies
-- @bm/api-client → ALL requests
-- @bm/types → ALL models
-- @bm/utils → ALL logic
-- @bm/design-tokens → ALL UI values
-
-### Forbidden Practices
-- fetch()
-- axios
-- Direct map library usage
-- Hardcoded colors or spacing
-- Duplicated API logic
-
-### Map Rendering Rule
-
-**All map rendering MUST go through:**
-- MapContainer.ts
-- MapContainer.native.ts
-- MapContainer.web.ts
-
-**No exceptions.**
-
----
-
-## 🧠 9. STATE RULES
-
-- Server state → React Query
-- UI state → local or Zustand per app
-- No shared global state across apps
-
----
-
-## 🗄️ 10. DATA RULES
-
-OpenCode MUST respect:
-
-### Database Ownership
-- platform_db = system of record
-- analytics_db = append-only
-- gis = read-only
-- users = owned by auth-service only
-
-### Access Rules
-- Each service owns its data models
-- Services communicate only through defined APIs
-- No shared database access patterns
-
----
-
-## 🔐 11. AUTH RULES
-
-- Only auth-service communicates with Keycloak
-- No frontend or backend bypass allowed
-- JWT is the only trusted identity mechanism for services
-- Only services using @bm/api-client for authentication
-
----
-
-## 🧪 12. TESTING RULES
-
-OpenCode must add tests for:
-- API integration
-- Critical UI flows (MVP-1 map flow)
-- Utility functions
-
-**No feature is complete without basic test coverage.**
-
----
-
-## 🚨 13. ERROR HANDLING RULES
-
-Every feature MUST implement:
-- loading state (skeleton preferred)
-- empty state
-- error state with retry option
-
-**No silent failures allowed.**
-
----
-
-## ⚙️ 14. OUTPUT FORMAT (IMPORTANT)
-
-When OpenCode completes a task, output MUST include:
-
-1. Files modified
-2. Reason for changes
-3. API endpoints used
-4. UI behavior changes
-5. Any assumptions made
-
-**If assumptions exist → they must be explicitly stated.**
-
----
-
-## 🧭 15. MVP ISOLATION RULE
-
-- Only ONE MVP is active at a time.
-
-OpenCode MUST NOT:
-- implement future MVP features early
-- reference future services
-- prepare unused architecture
-
----
-
-## 🔄 16. DOCUMENTATION LOOP
-
-**Every change must be documented.**
-
-- Code changes → Update spec
-- Spec changes → Update implementation plan
-- Architecture changes → Update constitution
-- Bug fixes → Update bug log
-- Release changes → Update release notes
-
-**Documentation is the system. Code is just its execution.**
-
----
-
-## 🎯 17. LLM EXECUTION FLOW
-
-**When OpenCode runs:**
-
-1. Read Constitution
-2. Check active MVP
-3. Read SpecKit feature
-4. Validate API contract
-5. Confirm UX rules
-6. Implement only allowed scope
-7. Log changes
-8. Update bug log if needed
+OpenCode MUST follow the skill system execution flow, not create features at will.
 
 ---
 
@@ -318,7 +290,9 @@ This ensures:
 - ✅ Clean OpenCode output
 - ✅ Feature drift prevention
 - ✅ Architectural integrity
-- ✅ Documentation-first approach
+- ✅ Complete test coverage
+- ✅ Strict scope enforcement
+- ✅ Deterministic execution
 
 ---
 
