@@ -77,6 +77,26 @@ services:
       - bornemap
     restart: unless-stopped
 
+  traefik:
+    image: traefik:v2.10
+    container_name: bornemap-traefik
+    command:
+      - "--configFile=/etc/traefik/traefik.yml"
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
+      - ./traefik/dynamic.yml:/etc/traefik/dynamic.yml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    depends_on:
+      driver-service:
+        condition: service_started
+      admin-service:
+        condition: service_started
+    networks:
+      - bornemap
+    restart: unless-stopped
+
   admin-service:
     build:
       context: ..

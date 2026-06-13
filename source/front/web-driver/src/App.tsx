@@ -1,31 +1,40 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ThemeProvider } from '@bornemap/ui'
+import { useThemeStore, initializeTheme, subscribeToThemeChanges } from './store/useThemeStore'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { useEffect } from 'react'
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 5 * 60 * 1000,
-      refetchOnWindowFocus: false,
-      retry: 2,
-    },
-  },
-})
+function AppContent() {
+  const { isDarkMode, loadTheme, toggleTheme } = useThemeStore()
 
-function App() {
+  useEffect(() => {
+    // Initialize theme on mount
+    initializeTheme()
+    // Subscribe to theme changes
+    const unsubscribe = subscribeToThemeChanges()
+
+    return () => {
+      unsubscribe()
+    }
+  }, [])
+
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<div className="p-8">Map Screen</div>} />
-            <Route path="/stations" element={<div className="p-8">Station List</div>} />
-            <Route path="/stations/:id" element={<div className="p-8">Station Detail</div>} />
-          </Routes>
-        </BrowserRouter>
-      </ThemeProvider>
-    </QueryClientProvider>
+    <ThemeProvider theme={isDarkMode ? 'dark' : 'light'}>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<div className="p-8">Map Screen</div>} />
+          <Route path="/stations" element={<div className="p-8">Station List</div>} />
+          <Route path="/stations/:id" element={<div className="p-8">Station Detail</div>} />
+        </Routes>
+      </BrowserRouter>
+    </ThemeProvider>
   )
 }
 
-export default App
+export default function App() {
+  return (
+    <QueryClientProvider client={new QueryClient()}>
+      <AppContent />
+    </QueryClientProvider>
+  )
+}

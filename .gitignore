@@ -30,3 +30,12 @@ storybook-static/
 
 # Logs
 *.log
+
+# Expo / React Native
+.expo/
+web-build/
+*.jks
+*.p8
+*.mobileprovision
+*.apk
+*.aab

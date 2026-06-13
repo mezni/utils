@@ -71,32 +71,19 @@ Expected: P95 nearby search latency < 100ms at 50 concurrent requests.
 | Contract tests (driver) | `cargo test --test contract_tests` | `source/services/driver-service` |
 | Contract tests (admin) | `cargo test --test contract_tests` | `source/services/admin-service` |
 | Mobile E2E (discovery) | `maestro test e2e/discovery-flow.yaml` | `source/front/mobile-driver` |
+| Mobile E2E (dark mode) | `maestro test e2e/dark-mode.yaml` | `source/front/mobile-driver` |
 | Web E2E | `npx playwright test e2e/` | `source/front/web-driver` |
-| Load test | `k6 run load-test.js` | `specs/005-integration-testing/tests` |
-| Auth rejection test | `curl -v http://localhost:8080/api/v1/admin/stations` (without auth header) | — |
+| Traefik routing | `bash tests/traefik-routing.sh` | `specs/005-integration-testing/tests` |
+| Event logging | `bash tests/event-logging.sh` | `specs/005-integration-testing/tests` |
+| Auth rejection | `bash tests/auth-rejection.sh` | `specs/005-integration-testing/tests` |
+| Load test | `k6 run tests/load-test.js` | `specs/005-integration-testing/tests` |
+| Test report | `bash tests/report.sh` | `specs/005-integration-testing/tests` |
 
 ## CI Pipeline
 
-Tests are run automatically via GitHub Actions on every push to `005-integration-testing` branch:
+Tests are run automatically via GitHub Actions on every push — see `.github/workflows/integration-tests.yml`. Pipeline stages:
 
-```yaml
-# .github/workflows/integration-tests.yml (to be created)
-jobs:
-  contract-tests:
-    runs-on: ubuntu-latest
-    steps:
-      - run: docker-compose up -d
-      - run: cargo test --test contract_tests
-
-  e2e-tests:
-    runs-on: ubuntu-latest
-    steps:
-      - run: docker-compose up -d
-      - run: npx playwright test e2e/
-
-  load-tests:
-    runs-on: ubuntu-latest
-    steps:
-      - run: docker-compose up -d
-      - run: k6 run load-test.js
-```
+1. **Contract tests**: Driver-service + admin-service Pact tests (parallel)
+2. **Web E2E**: Playwright tests against Chrome
+3. **Load tests**: k6 performance benchmarks (50 concurrent VUs)
+4. **Routing tests**: Traefik routing + auth rejection via Docker Compose

@@ -1,0 +1,134 @@
+name: Integration Tests
+
+on:
+  push:
+    branches: [main, '005-integration-testing']
+  pull_request:
+    branches: [main]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  # Contract tests: Validate API response schemas
+  contract-tests:
+    name: Contract Tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_DB: platform_db
+          POSTGRES_USER: borneadmin
+          POSTGRES_PASSWORD: borne_dev_2026
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready -U borneadmin -d platform_db
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+      analytics-db:
+        image: postgres:16
+        env:
+          POSTGRES_DB: analytics_db
+          POSTGRES_USER: borneadmin
+          POSTGRES_PASSWORD: borne_dev_2026
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd pg_isready -U borneadmin -d analytics_db
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+
+      - name: Run driver-service contract tests
+        working-directory: source/services/driver-service
+        run: cargo test --test contract_tests
+        env:
+          PLATFORM_DB_URL: postgresql://borneadmin:borne_dev_2026@localhost:5432/platform_db
+
+      - name: Run admin-service contract tests
+        working-directory: source/services/admin-service
+        run: cargo test --test contract_tests
+        env:
+          PLATFORM_DB_URL: postgresql://borneadmin:borne_dev_2026@localhost:5432/platform_db
+          ANALYTICS_DB_URL: postgresql://borneadmin:borne_dev_2026@localhost:5433/analytics_db
+
+  # Web E2E: Playwright tests
+  web-e2e:
+    name: Web E2E Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Install Playwright
+        working-directory: source/front/web-driver
+        run: npx playwright install --with-deps chromium
+
+      - name: Run web E2E tests
+        working-directory: source/front/web-driver
+        run: npx playwright test e2e/
+        env:
+          VITE_API_BASE_URL: http://localhost:8080
+
+  # Load tests: k6 performance benchmarks
+  load-tests:
+    name: Load Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install k6
+        run: |
+          sudo gpg -k
+          sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
+          echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+          sudo apt-get update
+          sudo apt-get install k6
+
+      - name: Run load tests
+        run: k6 run specs/005-integration-testing/tests/load-test.js
+
+  # Routing tests: Traefik + curl
+  routing-tests:
+    name: Traefik Routing Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Start Docker Compose
+        working-directory: infra
+        run: docker compose up -d --wait
+
+      - name: Run routing tests
+        run: bash specs/005-integration-testing/tests/traefik-routing.sh
+
+      - name: Run auth rejection tests
+        run: bash specs/005-integration-testing/tests/auth-rejection.sh
+
+      - name: Stop Docker Compose
+        working-directory: infra
+        run: docker compose down

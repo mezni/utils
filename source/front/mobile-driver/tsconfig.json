@@ -3,6 +3,7 @@
   "compilerOptions": {
     "strict": true,
     "jsx": "react-native",
+    "module": "preserve",
     "moduleResolution": "bundler",
     "target": "esnext",
     "lib": ["esnext"],

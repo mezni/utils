@@ -1,0 +1,47 @@
+# Dark Mode E2E Test (Mobile)
+# Tests: US3 - Dark mode toggle works correctly
+# Requires: Running backend + Traefik
+
+appId: host.exp.Exponent
+---
+# Launch app
+- launchApp:
+    appId: host.exp.Exponent
+    clearState: true
+
+# Wait for map screen
+- waitForVisible:
+    id: "map-screen"
+    timeout: 10000
+
+# Navigate to settings / toggle dark mode
+- tapOn:
+    id: "settings-button"
+
+# Toggle dark mode on
+- tapOn:
+    id: "dark-mode-toggle"
+
+# Verify dark mode indicator
+- assertVisible:
+    id: "dark-mode-indicator"
+
+# Verify map is still visible in dark mode
+- waitForVisible:
+    id: "map-screen"
+    timeout: 5000
+
+# Toggle dark mode off
+- tapOn:
+    id: "dark-mode-toggle"
+
+# Verify light mode indicator
+- assertVisible:
+    id: "light-mode-indicator"
+
+# Return to map
+- tapOn:
+    id: "back-button"
+- waitForVisible:
+    id: "map-screen"
+    timeout: 3000

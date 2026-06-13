@@ -1,0 +1,69 @@
+# Traefik dynamic configuration
+# Routes, services, and middleware
+
+## Middleware
+
+# Rate limiting: 100 requests per second per IP
+middlewares:
+  rate-limiter:
+    rateLimit:
+      average: 100
+      burst: 50
+      period: 1s
+      sourceCriterion:
+        ipStrategy:
+          depth: 1
+
+## Services
+
+services:
+  driver-service:
+    loadBalancer:
+      servers:
+        - url: "http://driver-service:8080"
+      passHostHeader: true
+
+  admin-service:
+    loadBalancer:
+      servers:
+        - url: "http://admin-service:8081"
+      passHostHeader: true
+
+## Routers
+
+routers:
+  # Health check — route to driver-service
+  health:
+    rule: "Path(`/health`)"
+    entryPoints:
+      - web
+    service: driver-service
+    middlewares:
+      - rate-limiter
+
+  # Station discovery endpoints → driver-service
+  stations:
+    rule: "PathPrefix(`/api/v1/stations`)"
+    entryPoints:
+      - web
+    service: driver-service
+    middlewares:
+      - rate-limiter
+
+  # Admin endpoints → admin-service
+  admin:
+    rule: "PathPrefix(`/api/v1/admin`)"
+    entryPoints:
+      - web
+    service: admin-service
+    middlewares:
+      - rate-limiter
+
+  # Event endpoints → admin-service
+  events:
+    rule: "PathPrefix(`/api/v1/events`)"
+    entryPoints:
+      - web
+    service: admin-service
+    middlewares:
+      - rate-limiter

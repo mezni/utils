@@ -1,0 +1,67 @@
+# Discovery Flow E2E Test (Mobile)
+# Tests: US3 - Complete station discovery flow
+# Requires: Running backend + Traefik on localhost:8080
+
+appId: host.exp.Exponent
+---
+# Launch app
+- launchApp:
+    appId: host.exp.Exponent
+    clearState: true
+
+# Wait for map screen to load
+- waitForVisible:
+    id: "map-screen"
+    timeout: 10000
+
+# Allow location permission if prompted
+- registerForIdleNotifications:
+    timeout: 5000
+- tapOn:
+    text: "Allow"
+    optional: true
+- tapOn:
+    text: "Allow While Using App"
+    optional: true
+
+# Wait for station markers to appear (5s timeout per SC-006)
+- waitForVisible:
+    id: "station-marker"
+    timeout: 8000
+
+# Tap first station marker
+- tapOn:
+    id: "station-marker"
+    index: 0
+
+# Verify station detail screen loads (2s timeout per SC-006)
+- waitForVisible:
+    id: "station-detail-container"
+    timeout: 5000
+
+# Verify station name is displayed
+- assertVisible:
+    id: "station-name"
+
+# Verify charger information is displayed
+- assertVisible:
+    id: "charger-list"
+
+# Verify charger type is shown (CCS, CHAdeMO, or AC)
+- assertVisible:
+    id: "charger-type"
+
+# Navigate back to map
+- tapOn:
+    id: "back-button"
+
+# Verify map screen is visible again
+- waitForVisible:
+    id: "map-screen"
+    timeout: 3000
+
+# Test pull-to-refresh on station list
+- swipe:
+    direction: DOWN
+    start: 50%, 10%
+    end: 50%, 50%

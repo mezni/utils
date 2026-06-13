@@ -28,17 +28,17 @@
 
 **Purpose**: Project initialization and basic structure for integration testing
 
-- [ ] T001 Create Traefik configuration directory and static routing file in `infra/traefik/dynamic.yml`
-- [ ] T002 [P] Add Traefik service to Docker Compose in `infra/docker-compose.yml`
-- [ ] T003 [P] Configure Traefik routing rules for driver-service (`PathPrefix /api/v1/stations` → `:8080`) in `infra/traefik/dynamic.yml`
-- [ ] T004 [P] Configure Traefik routing rules for admin-service (`PathPrefix /api/v1/admin, /api/v1/events` → `:8081`) in `infra/traefik/dynamic.yml`
-- [ ] T005 [P] Configure Traefik error handling middleware (503 on upstream down) in `infra/traefik/dynamic.yml`
-- [ ] T006 [P] Configure Traefik rate limiting middleware (100 req/s per IP) in `infra/traefik/dynamic.yml`
-- [ ] T007 [P] Install Maestro CLI for mobile E2E tests (document in `source/front/mobile-driver/README.md`)
-- [ ] T008 [P] Install k6 for load testing (document in `specs/005-integration-testing/quickstart.md`)
-- [ ] T009 [P] Install Pact CLI or pact-rust for contract testing in `source/services/driver-service/Cargo.toml` and `source/services/admin-service/Cargo.toml`
-- [ ] T009b [P] Document Android emulator / iOS simulator setup for mobile E2E tests in `source/front/mobile-driver/README.md`
-- [ ] T009c [P] Add fallback note: mobile E2E tests require emulator; web-only E2E (Playwright) can run without it in `source/front/mobile-driver/README.md`
+- [x] T001 Create Traefik configuration directory and static routing file in `infra/traefik/dynamic.yml`
+- [x] T002 [P] Add Traefik service to Docker Compose in `infra/docker-compose.yml`
+- [x] T003 [P] Configure Traefik routing rules for driver-service (`PathPrefix /api/v1/stations` → `:8080`) in `infra/traefik/dynamic.yml`
+- [x] T004 [P] Configure Traefik routing rules for admin-service (`PathPrefix /api/v1/admin, /api/v1/events` → `:8081`) in `infra/traefik/dynamic.yml`
+- [x] T005 [P] Configure Traefik error handling middleware (503 on upstream down) in `infra/traefik/dynamic.yml`
+- [x] T006 [P] Configure Traefik rate limiting middleware (100 req/s per IP) in `infra/traefik/dynamic.yml`
+- [x] T007 [P] Install Maestro CLI for mobile E2E tests (document in `source/front/mobile-driver/README.md`)
+- [x] T008 [P] Install k6 for load testing (document in `specs/005-integration-testing/quickstart.md`)
+- [x] T009 [P] Install Pact CLI or pact-rust for contract testing in `source/services/driver-service/Cargo.toml` and `source/services/admin-service/Cargo.toml`
+- [x] T009b [P] Document Android emulator / iOS simulator setup for mobile E2E tests in `source/front/mobile-driver/README.md`
+- [x] T009c [P] Add fallback note: mobile E2E tests require emulator; web-only E2E (Playwright) can run without it in `source/front/mobile-driver/README.md`
 
 ---
 
@@ -48,11 +48,11 @@
 
 **Critical**: No user story work can begin until this phase is complete
 
-- [ ] T010 Update mobile app API base URL to Traefik gateway (`http://localhost:8080`) in `source/front/mobile-driver/config/env.ts`
-- [ ] T011 Update web app API base URL to Traefik gateway (`http://localhost:8080`) in `source/front/web-driver/src/config/env.ts`
-- [ ] T012 [P] Add `API_BASE_URL` environment variable documentation in `source/front/mobile-driver/.env.example`
-- [ ] T013 [P] Add `API_BASE_URL` environment variable documentation in `source/front/web-driver/.env.example`
-- [ ] T014 Verify Docker Compose starts all services (PostGIS, driver-service, admin-service, Traefik) with `docker-compose up -d` and test connectivity
+- [x] T010 Update mobile app API base URL to Traefik gateway (`http://localhost:8080`) in `source/front/mobile-driver/config/env.ts`
+- [x] T011 Update web app API base URL to Traefik gateway (`http://localhost:8080`) in `source/front/web-driver/src/config/env.ts`
+- [x] T012 [P] Add `API_BASE_URL` environment variable documentation in `source/front/mobile-driver/.env.example`
+- [x] T013 [P] Add `API_BASE_URL` environment variable documentation in `source/front/web-driver/.env.example`
+- [x] T014 Verify Docker Compose starts all services (PostGIS, driver-service, admin-service, Traefik) with `docker-compose up -d` and test connectivity
 
 **Checkpoint**: Foundation ready — all services running behind Traefik, apps configured to route through gateway
 
@@ -64,11 +64,11 @@
 
 **Independent Test**: Send requests to `http://localhost:8080/api/v1/stations` and verify response from driver-service; send to `http://localhost:8080/api/v1/admin/stations` and verify response from admin-service; send unknown route and verify 404; stop driver-service and verify 503
 
-- [ ] T015 [P] [US1] Write script to test Traefik routes to driver-service `GET /api/v1/stations` in `specs/005-integration-testing/tests/traefik-routing.sh`
-- [ ] T016 [P] [US1] Write script to test Traefik routes to admin-service `GET /api/v1/admin/stations` in `specs/005-integration-testing/tests/traefik-routing.sh`
-- [ ] T017 [P] [US1] Write script to test unknown route returns 404 in `specs/005-integration-testing/tests/traefik-routing.sh`
-- [ ] T018 [P] [US1] Write script to test upstream-down returns 503 in `specs/005-integration-testing/tests/traefik-routing.sh`
-- [ ] T019 [US1] Run all Traefik routing tests and verify 100% pass
+- [x] T015 [P] [US1] Write script to test Traefik routes to driver-service `GET /api/v1/stations` in `specs/005-integration-testing/tests/traefik-routing.sh`
+- [x] T016 [P] [US1] Write script to test Traefik routes to admin-service `GET /api/v1/admin/stations` in `specs/005-integration-testing/tests/traefik-routing.sh`
+- [x] T017 [P] [US1] Write script to test unknown route returns 404 in `specs/005-integration-testing/tests/traefik-routing.sh`
+- [x] T018 [P] [US1] Write script to test upstream-down returns 503 in `specs/005-integration-testing/tests/traefik-routing.sh`
+- [x] T019 [US1] Run all Traefik routing tests and verify 100% pass
 
 **Checkpoint**: API gateway routing verified — Traefik correctly routes to both services, handles errors
 
@@ -80,11 +80,11 @@
 
 **Independent Test**: Launch mobile app configured with Traefik URL, verify station list loads from backend; launch web app with same config, verify same data appears
 
-- [ ] T020 [P] [US2] Configure mobile app dev environment to use Traefik gateway URL in `source/front/mobile-driver/.env`
-- [ ] T021 [P] [US2] Configure web app dev environment to use Traefik gateway URL in `source/front/web-driver/.env`
-- [ ] T022 [US2] Start all services with Traefik, launch mobile app, verify station markers load on map from backend data
-- [ ] T023 [US2] Launch web app, verify same station data loads through Traefik
-- [ ] T024 [US2] Create a station via admin API, verify it appears in both mobile and web app within 30 seconds
+- [x] T020 [P] [US2] Configure mobile app dev environment to use Traefik gateway URL in `source/front/mobile-driver/.env`
+- [x] T021 [P] [US2] Configure web app dev environment to use Traefik gateway URL in `source/front/web-driver/.env`
+- [x] T022 [US2] Start all services with Traefik, launch mobile app, verify station markers load on map from backend data
+- [x] T023 [US2] Launch web app, verify same station data loads through Traefik
+- [x] T024 [US2] Create a station via admin API, verify it appears in both mobile and web app within 30 seconds
 
 **Checkpoint**: Mobile and web apps communicate through Traefik — data flows end to end
 
@@ -98,19 +98,19 @@
 
 ### Tests for User Story 3
 
-- [ ] T025 [P] [US3] Create Maestro E2E test flow for station discovery in `source/front/mobile-driver/e2e/discovery-flow.yaml`
-- [ ] T026 [P] [US3] Write test step: simulate geolocation at test station coordinates
-- [ ] T027 [P] [US3] Write test step: wait for map markers to appear within 5s timeout
-- [ ] T028 [P] [US3] Write test step: tap first station marker
-- [ ] T029 [P] [US3] Write test step: verify station detail screen shows name, address, charger info
-- [ ] T030 [P] [US3] Write test step: pull to refresh on station list
-- [ ] T031 [P] [US3] Write test step: verify recovery actions (retry button + back nav) on simulated network failure
-- [ ] T032 [P] [US3] Create Playwright E2E test for web app discovery flow in `source/front/web-driver/e2e/discovery-flow.spec.ts`
-- [ ] T033 [P] [US3] Write web E2E test: load map, verify markers appear
-- [ ] T034 [P] [US3] Write web E2E test: click marker, verify detail screen
-- [ ] T035 [P] [US3] Write dark mode E2E test: toggle theme, verify all screens render correctly in `source/front/mobile-driver/e2e/dark-mode.yaml`
-- [ ] T036 [P] [US3] Write auth rejection test: send request without auth header, verify 401/403 graceful rejection (no crash) in `specs/005-integration-testing/tests/auth-rejection.sh`
-- [ ] T037 [US3] Run full discovery E2E test suite, verify all scenarios pass on 5 consecutive runs
+- [x] T025 [P] [US3] Create Maestro E2E test flow for station discovery in `source/front/mobile-driver/e2e/discovery-flow.yaml`
+- [x] T026 [P] [US3] Write test step: simulate geolocation at test station coordinates
+- [x] T027 [P] [US3] Write test step: wait for map markers to appear within 5s timeout
+- [x] T028 [P] [US3] Write test step: tap first station marker
+- [x] T029 [P] [US3] Write test step: verify station detail screen shows name, address, charger info
+- [x] T030 [P] [US3] Write test step: pull to refresh on station list
+- [x] T031 [P] [US3] Write test step: verify recovery actions (retry button + back nav) on simulated network failure
+- [x] T032 [P] [US3] Create Playwright E2E test for web app discovery flow in `source/front/web-driver/e2e/discovery-flow.spec.ts`
+- [x] T033 [P] [US3] Write web E2E test: load map, verify markers appear
+- [x] T034 [P] [US3] Write web E2E test: click marker, verify detail screen
+- [x] T035 [P] [US3] Write dark mode E2E test: toggle theme, verify all screens render correctly in `source/front/mobile-driver/e2e/dark-mode.yaml`
+- [x] T036 [P] [US3] Write auth rejection test: send request without auth header, verify 401/403 graceful rejection (no crash) in `specs/005-integration-testing/tests/auth-rejection.sh`
+- [x] T037 [US3] Run full discovery E2E test suite, verify all scenarios pass on 5 consecutive runs
 
 **Checkpoint**: Complete discovery flow validated end to end — MVP core functionality verified
 
@@ -122,13 +122,13 @@
 
 **Independent Test**: Perform specific user actions (view station, search, navigate), then query the analytics database to verify corresponding events were captured with correct fields
 
-- [ ] T038 [US4] Trigger a station detail view action, verify `station_detail_view` event appears in `analytics_db.raw_events` with correct `station_id`
-- [ ] T039 [US4] Trigger a text search ("Tunis"), verify `search` event appears with `search_query` and `result_count`
-- [ ] T040 [US4] Trigger a nearby search at test coordinates, verify `nearby_search` event with correct `lat`/`lng`
-- [ ] T041 [US4] Trigger a navigation action to a station, verify `navigate_to_station` event with correct `station_id`
-- [ ] T042 [US4] Send a batch of 50+ events, verify all events persisted without data loss in `analytics_db.raw_events`
-- [ ] T043 [US4] Send malformed event data, verify 400 error with validation message (no partial persistence)
-- [ ] T044 [US4] Document event logging E2E test procedure in `specs/005-integration-testing/quickstart.md`
+- [x] T038 [US4] Trigger a station detail view action, verify `station_detail_view` event appears in `analytics_db.raw_events` with correct `station_id`
+- [x] T039 [US4] Trigger a text search ("Tunis"), verify `search` event appears with `search_query` and `result_count`
+- [x] T040 [US4] Trigger a nearby search at test coordinates, verify `nearby_search` event with correct `lat`/`lng`
+- [x] T041 [US4] Trigger a navigation action to a station, verify `navigate_to_station` event with correct `station_id`
+- [x] T042 [US4] Send a batch of 50+ events, verify all events persisted without data loss in `analytics_db.raw_events`
+- [x] T043 [US4] Send malformed event data, verify 400 error with validation message (no partial persistence)
+- [x] T044 [US4] Document event logging E2E test procedure in `specs/005-integration-testing/quickstart.md`
 
 **Checkpoint**: Event logging verified — all interaction types captured with correct data in analytics database
 
@@ -142,21 +142,21 @@
 
 ### Contract Tests
 
-- [ ] T045 [P] [US5] Write Pact contract test for `GET /api/v1/stations` in `source/services/driver-service/tests/contract_tests.rs`
-- [ ] T046 [P] [US5] Write Pact contract test for `GET /api/v1/stations/{id}` in `source/services/driver-service/tests/contract_tests.rs`
-- [ ] T047 [P] [US5] Write Pact contract test for `GET /api/v1/stations/nearby` in `source/services/driver-service/tests/contract_tests.rs`
-- [ ] T048 [P] [US5] Write Pact contract test for `GET /api/v1/health` in `source/services/driver-service/tests/contract_tests.rs`
-- [ ] T049 [P] [US5] Write Pact contract tests for admin-service station CRUD endpoints in `source/services/admin-service/tests/contract_tests.rs`
-- [ ] T050 [P] [US5] Write Pact contract tests for admin-service event endpoints (single + batch) in `source/services/admin-service/tests/contract_tests.rs`
-- [ ] T051 [US5] Run all contract tests, verify 100% pass for both success and error response schemas
+- [x] T045 [P] [US5] Write Pact contract test for `GET /api/v1/stations` in `source/services/driver-service/tests/contract_tests.rs`
+- [x] T046 [P] [US5] Write Pact contract test for `GET /api/v1/stations/{id}` in `source/services/driver-service/tests/contract_tests.rs`
+- [x] T047 [P] [US5] Write Pact contract test for `GET /api/v1/stations/nearby` in `source/services/driver-service/tests/contract_tests.rs`
+- [x] T048 [P] [US5] Write Pact contract test for `GET /api/v1/health` in `source/services/driver-service/tests/contract_tests.rs`
+- [x] T049 [P] [US5] Write Pact contract tests for admin-service station CRUD endpoints in `source/services/admin-service/tests/contract_tests.rs`
+- [x] T050 [P] [US5] Write Pact contract tests for admin-service event endpoints (single + batch) in `source/services/admin-service/tests/contract_tests.rs`
+- [x] T051 [US5] Run all contract tests, verify 100% pass for both success and error response schemas
 
 ### Performance Tests
 
-- [ ] T052 [P] [US5] Write k6 load test script for nearby search endpoint with 50 concurrent VUs in `specs/005-integration-testing/tests/load-test.js`
-- [ ] T053 [P] [US5] Write k6 load test script for station list endpoint with 50 concurrent VUs in `specs/005-integration-testing/tests/load-test.js`
-- [ ] T054 [US5] Run load tests, verify p95 nearby search latency < 100ms
-- [ ] T055 [US5] Document contract and performance test procedures in `specs/005-integration-testing/quickstart.md`
-- [ ] T055b [US5] Verify FR-016 across all endpoints: send requests without auth header to driver-service (`/api/v1/stations`, `/api/v1/stations/{id}`, `/api/v1/stations/nearby`, `/health`) and admin-service (CRUD, events) — all return 401/403 gracefully in `specs/005-integration-testing/tests/auth-rejection.sh`
+- [x] T052 [P] [US5] Write k6 load test script for nearby search endpoint with 50 concurrent VUs in `specs/005-integration-testing/tests/load-test.js`
+- [x] T053 [P] [US5] Write k6 load test script for station list endpoint with 50 concurrent VUs in `specs/005-integration-testing/tests/load-test.js`
+- [x] T054 [US5] Run load tests, verify p95 nearby search latency < 100ms
+- [x] T055 [US5] Document contract and performance test procedures in `specs/005-integration-testing/quickstart.md`
+- [x] T055b [US5] Verify FR-016 across all endpoints: send requests without auth header to driver-service (`/api/v1/stations`, `/api/v1/stations/{id}`, `/api/v1/stations/nearby`, `/health`) and admin-service (CRUD, events) — all return 401/403 gracefully in `specs/005-integration-testing/tests/auth-rejection.sh`
 
 **Checkpoint**: Contract compliance and performance baselines established — all endpoints meet documented contracts and latency targets
 
@@ -166,13 +166,13 @@
 
 **Purpose**: Automation, reporting, and documentation that affects all user stories
 
-- [ ] T056 Create GitHub Actions workflow for integration tests in `.github/workflows/integration-tests.yml`
-- [ ] T057 [P] Configure contract test job in CI workflow
-- [ ] T058 [P] Configure E2E test job (web) in CI workflow
-- [ ] T059 [P] Configure load test job in CI workflow
-- [ ] T060 Create test report aggregation script that produces single pass/fail summary with timing and failure details in `specs/005-integration-testing/tests/report.sh`
-- [ ] T061 Run quickstart.md validation — verify all documented commands work
-- [ ] T062 Final review: verify all 16 functional requirements have corresponding tests
+- [x] T056 Create GitHub Actions workflow for integration tests in `.github/workflows/integration-tests.yml`
+- [x] T057 [P] Configure contract test job in CI workflow
+- [x] T058 [P] Configure E2E test job (web) in CI workflow
+- [x] T059 [P] Configure load test job in CI workflow
+- [x] T060 Create test report aggregation script that produces single pass/fail summary with timing and failure details in `specs/005-integration-testing/tests/report.sh`
+- [x] T061 Run quickstart.md validation — verify all documented commands work
+- [x] T062 Final review: verify all 16 functional requirements have corresponding tests
 
 ---
 
