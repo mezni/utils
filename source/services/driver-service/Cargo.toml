@@ -23,6 +23,9 @@ anyhow = "1.0"
 thiserror = "1.0"
 futures = "0.3"
 
+# Pin alloc-no-stdlib to resolve brotli trait conflict
+alloc-no-stdlib = "=2.0.4"
+
 db-core = { path = "../libs/db-core" }
 geo-core = { path = "../libs/geo-core" }
 services-shared = { path = "../shared" }

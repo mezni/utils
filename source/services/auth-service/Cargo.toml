@@ -30,5 +30,8 @@ bcrypt = "0.16"
 # HTTP client for Keycloak integration
 reqwest = { version = "0.11", features = ["json"] }
 
+# Pin alloc-no-stdlib to resolve brotli trait conflict
+alloc-no-stdlib = "=2.0.4"
+
 db-core = { path = "../libs/db-core" }
 services-shared = { path = "../shared" }
