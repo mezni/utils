@@ -1,7 +1,6 @@
 use serde::{Deserialize, Serialize};
-use utoipa::ToSchema;
 
-#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreatePartnerRequest {
     pub name: String,
     pub partner_type: String,
@@ -9,7 +8,7 @@ pub struct CreatePartnerRequest {
     pub phone: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreateStationRequest {
     pub partner_id: String,
     pub name: String,
@@ -19,12 +18,12 @@ pub struct CreateStationRequest {
     pub longitude: f64,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UpdateStationLiveRequest {
     pub is_live: bool,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CreateChargerRequest {
     pub station_id: String,
     pub identifier_code: String,

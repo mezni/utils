@@ -1,8 +1,6 @@
 use actix_web::{web, App, HttpServer, middleware, HttpResponse};
 use sqlx::PgPool;
 use tracing_actix_web::TracingLogger;
-use utoipa::OpenApi;
-use utoipa_swagger_ui::SwaggerUi;
 
 mod handlers;
 mod domain;
