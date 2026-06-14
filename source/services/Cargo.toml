@@ -1,0 +1,14 @@
+[workspace]
+members = [
+    "shared",
+    "libs/db-core",
+    "libs/geo-core",
+    "auth-service",
+    "driver-service",
+    "admin-service",
+]
+
+resolver = "2"
+
+[workspace.package]
+edition = "2021"

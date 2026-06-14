@@ -1,0 +1,83 @@
+# source/infra/traefik/dynamic.yml
+# Traefik Dynamic Routing Configuration for BorneMap
+
+http:
+  # ============================================================================
+  # 🚦 MIDDLEWARE LAYER: REQUEST TRANSFORMATION & STRIPPING
+  # ============================================================================
+  middlewares:
+    # Strip /api/v1/driver prefix before sending to driver-service
+    # This converts /api/v1/driver/nearby -> /nearby for the backend
+    strip-driver-prefix:
+      stripPrefix:
+        prefixes:
+          - "/api/v1/driver"
+        forceSlash: false
+
+    # Strip /api/v1/admin prefix before sending to admin-service
+    # This converts /api/v1/admin/partners -> /partners for the backend
+    strip-admin-prefix:
+      stripPrefix:
+        prefixes:
+          - "/api/v1/admin"
+        forceSlash: false
+
+    # Comprehensive security headers for all traffic
+    security-headers:
+      headers:
+        accessControlMaxAge: 100
+        addVaryHeader: true
+        browserXssFilter: true
+        contentTypeNosniff: true
+        forceSTSHeader: true
+        stsIncludeSubdomains: true
+        stsMaxAge: 63072000
+        frameDeny: true
+
+  # ============================================================================
+  # 🔀 ROUTERS: PATH-BASED REQUEST MULTIPLEXING
+  # ============================================================================
+  routers:
+    # Driver Service Router (Read-Only Proximity Lookups)
+    driver-router:
+      rule: "PathPrefix(`/api/v1/driver`)"
+      entrypoints:
+        - "web"
+      service: "driver-service"
+      middlewares:
+        - "strip-driver-prefix"
+        - "security-headers"
+
+    # Admin Service Router (Write Operations)
+    admin-router:
+      rule: "PathPrefix(`/api/v1/admin`)"
+      entrypoints:
+        - "web"
+      service: "admin-service"
+      middlewares:
+        - "strip-admin-prefix"
+        - "security-headers"
+
+  # ============================================================================
+  # 🎯 SERVICES: BACKEND ENDPOINT POOL DEFINITIONS
+  # ============================================================================
+  services:
+    # Driver service load balancer configuration
+    driver-service:
+      loadBalancer:
+        servers:
+          - url: "http://driver-service:8081"
+        healthCheck:
+          path: "/api/v1/driver/health"
+          interval: "30s"
+          timeout: "5s"
+
+    # Admin service load balancer configuration
+    admin-service:
+      loadBalancer:
+        servers:
+          - url: "http://admin-service:8082"
+        healthCheck:
+          path: "/api/v1/admin/health"
+          interval: "30s"
+          timeout: "5s"

@@ -1,0 +1,16 @@
+{
+  "name": "@bornemap/shared-mobile",
+  "version": "1.0.0",
+  "description": "Cross-App Shared TypeScript Contracts and Geospatial Baseline Primitives",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "clean": "rm -rf dist"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  }
+}
