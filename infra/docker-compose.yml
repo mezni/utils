@@ -1,0 +1,43 @@
+services:
+  platform_db:
+    image: postgis/postgis:16-3.4
+    container_name: bornemap-platform-db
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-platform_db}
+      POSTGRES_USER: ${POSTGRES_USER:-bornemap}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-bornemap_dev}
+    volumes:
+      - pgdata_platform:/var/lib/postgresql/data
+      - ./migrations:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-bornemap} -d ${POSTGRES_DB:-platform_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  analytics_db:
+    image: postgres:16
+    container_name: bornemap-analytics-db
+    restart: unless-stopped
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: ${ANALYTICS_DB:-analytics_db}
+      POSTGRES_USER: ${ANALYTICS_USER:-bornemap}
+      POSTGRES_PASSWORD: ${ANALYTICS_PASSWORD:-bornemap_dev}
+    volumes:
+      - pgdata_analytics:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${ANALYTICS_USER:-bornemap} -d ${ANALYTICS_DB:-analytics_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+volumes:
+  pgdata_platform:
+  pgdata_analytics:

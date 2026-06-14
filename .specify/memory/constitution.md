@@ -77,6 +77,8 @@ OpenCode MUST NOT:
 - Map interactions require UX regression tests
 - No merge without MVP checkpoint validation
 
+**Sprint 0 Exception**: Infrastructure provisioning and database seeding scripts are validated through Docker health checks and automated SQL assertions (via validate.sh) rather than unit/integration/E2E frameworks. Once backend service code is introduced (Sprint 1+), all constitution testing requirements apply in full.
+
 **Rationale:** Comprehensive testing ensures system reliability, prevents regression bugs, and provides confidence in incremental changes.
 
 ### V. Architecture Discipline (Backend)
