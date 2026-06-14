@@ -30,10 +30,10 @@ description: "Task list for API Client Layer implementation"
 
 **Purpose**: Package initialization and project structure
 
-- [ ] T001 Create `source/front/packages/@bm/api-client/` directory structure (`src/`, `tests/`)
-- [ ] T002 [P] Create `package.json` with workspace name `@bm/api-client`, TypeScript dependency, vitest
-- [ ] T003 [P] Create `tsconfig.json` with strict mode, ES2022 target, path aliases
-- [ ] T004 Create stub `src/index.ts` with placeholder exports
+- [X] T001 Create `source/front/packages/@bm/api-client/` directory structure (`src/`, `tests/`)
+- [X] T002 [P] Create `package.json` with workspace name `@bm/api-client`, TypeScript dependency, vitest
+- [X] T003 [P] Create `tsconfig.json` with strict mode, ES2022 target, path aliases
+- [X] T004 Create stub `src/index.ts` with placeholder exports
 
 **Checkpoint**: Package skeleton ready — foundation work can begin
 
@@ -45,11 +45,11 @@ description: "Task list for API Client Layer implementation"
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T005 Create `ApiError` class in `src/errors.ts` extending `Error` with `status` and `data` fields
-- [ ] T006 [P] Create HTTP transport abstraction in `src/transport.ts` wrapping platform `fetch` with base URL injection
-- [ ] T007 [P] Define internal types in `src/types.ts` (request config, response shape, parameter validation helpers)
-- [ ] T008 Create `createApiClient` factory in `src/client.ts` that wires transport + error handling
-- [ ] T009 Export all public API from `src/index.ts` (`createApiClient`, `ApiError`, types)
+- [X] T005 Create `ApiError` class in `src/errors.ts` extending `Error` with `status` and `data` fields
+- [X] T006 [P] Create HTTP transport abstraction in `src/transport.ts` wrapping platform `fetch` with base URL injection
+- [X] T007 [P] Define internal types in `src/types.ts` (request config, response shape, parameter validation helpers)
+- [X] T008 Create `createApiClient` factory in `src/client.ts` that wires transport + error handling
+- [X] T009 Export all public API from `src/index.ts` (`createApiClient`, `ApiError`, types)
 
 **Checkpoint**: Foundation ready — all 3 user stories can now begin in parallel
 
@@ -63,13 +63,13 @@ description: "Task list for API Client Layer implementation"
 
 ### Tests for User Story 1
 
-- [ ] T010 [P] [US1] Unit test for `getStations()` response parsing in `tests/client.test.ts`
-- [ ] T011 [P] [US1] Integration test for `getStations()` with mocked HTTP in `tests/integration.test.ts`
+- [X] T010 [P] [US1] Unit test for `getStations()` response parsing in `tests/client.test.ts`
+- [X] T011 [P] [US1] Integration test for `getStations()` with mocked HTTP in `tests/integration.test.ts`
 
 ### Implementation for User Story 1
 
-- [ ] T012 [US1] Implement `getStations()` method in `src/client.ts` calling `GET /api/v1/stations`
-- [ ] T013 [US1] Add parameter validation and error handling for `getStations()` in `src/client.ts`
+- [X] T012 [US1] Implement `getStations()` method in `src/client.ts` calling `GET /api/v1/stations`
+- [X] T013 [US1] Add parameter validation and error handling for `getStations()` in `src/client.ts`
 
 **Checkpoint**: User Story 1 should be fully functional and testable independently
 
@@ -83,13 +83,13 @@ description: "Task list for API Client Layer implementation"
 
 ### Tests for User Story 2
 
-- [ ] T014 [P] [US2] Unit test for `getStationById()` with valid and invalid IDs in `tests/client.test.ts`
-- [ ] T015 [P] [US2] Integration test for `getStationById()` with mocked HTTP in `tests/integration.test.ts`
+- [X] T014 [P] [US2] Unit test for `getStationById()` with valid and invalid IDs in `tests/client.test.ts`
+- [X] T015 [P] [US2] Integration test for `getStationById()` with mocked HTTP in `tests/integration.test.ts`
 
 ### Implementation for User Story 2
 
-- [ ] T016 [US2] Implement `getStationById(id)` method in `src/client.ts` calling `GET /api/v1/stations/{id}`
-- [ ] T017 [US2] Add parameter validation (non-empty string) for `getStationById()` in `src/client.ts`
+- [X] T016 [US2] Implement `getStationById(id)` method in `src/client.ts` calling `GET /api/v1/stations/{id}`
+- [X] T017 [US2] Add parameter validation (non-empty string) for `getStationById()` in `src/client.ts`
 
 **Checkpoint**: User Stories 1 AND 2 should both work independently
 
@@ -103,13 +103,13 @@ description: "Task list for API Client Layer implementation"
 
 ### Tests for User Story 3
 
-- [ ] T018 [P] [US3] Unit test for `getNearbyStations()` parameter validation in `tests/client.test.ts`
-- [ ] T019 [P] [US3] Integration test for `getNearbyStations()` with mocked HTTP in `tests/integration.test.ts`
+- [X] T018 [P] [US3] Unit test for `getNearbyStations()` parameter validation in `tests/client.test.ts`
+- [X] T019 [P] [US3] Integration test for `getNearbyStations()` with mocked HTTP in `tests/integration.test.ts`
 
 ### Implementation for User Story 3
 
-- [ ] T020 [US3] Implement `getNearbyStations(lat, lng, radius)` method in `src/client.ts` calling `GET /api/v1/stations/nearby?lat&lng&radius`
-- [ ] T021 [US3] Add parameter validation (lat/lng range, radius > 0) for `getNearbyStations()` in `src/client.ts`
+- [X] T020 [US3] Implement `getNearbyStations(lat, lng, radius)` method in `src/client.ts` calling `GET /api/v1/stations/nearby?lat&lng&radius`
+- [X] T021 [US3] Add parameter validation (lat/lng range, radius > 0) for `getNearbyStations()` in `src/client.ts`
 
 **Checkpoint**: All user stories should now be independently functional
 
@@ -119,11 +119,11 @@ description: "Task list for API Client Layer implementation"
 
 **Purpose**: Improvements that affect multiple user stories
 
-- [ ] T022 [P] Add request timeout handling in `src/transport.ts` (AbortController with configurable timeout)
-- [ ] T023 [P] Verify cross-platform compilation — confirm package compiles for both DOM and React Native tsconfig targets
-- [ ] T024 [P] Add eslint rule or barrel-file guard preventing `fetch`/`axios` imports outside `@bm/api-client` in consuming apps
-- [ ] T025 Run quickstart.md validation by implementing a minimal integration smoke test
-- [ ] T026 Audit final `src/index.ts` exports — ensure only `createApiClient`, `ApiError`, and types are public
+- [X] T022 [P] Add request timeout handling in `src/transport.ts` (AbortController with configurable timeout)
+- [X] T023 [P] Verify cross-platform compilation — confirm package compiles for both DOM and React Native tsconfig targets
+- [X] T024 [P] Add eslint rule or barrel-file guard preventing `fetch`/`axios` imports outside `@bm/api-client` in consuming apps
+- [X] T025 Run quickstart.md validation by implementing a minimal integration smoke test
+- [X] T026 Audit final `src/index.ts` exports — ensure only `createApiClient`, `ApiError`, and types are public
 
 ---
 

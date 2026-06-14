@@ -6,13 +6,11 @@ release/
 *.rlib
 *.prof*
 
-# IDE
-.idea/
-.vscode/
-
-# OS
-.DS_Store
-Thumbs.db
+# Node.js / TypeScript
+node_modules/
+dist/
+build/
+coverage/
 
 # Logs
 *.log
@@ -20,7 +18,14 @@ Thumbs.db
 # Environment
 .env*
 
+# OS
+.DS_Store
+Thumbs.db
+
 # Editors
+.vscode/
+.idea/
 *.swp
 *.swo
 *~
+*.tmp
