@@ -18,7 +18,7 @@ chrono = { version = "0.4", features = ["serde"] }
 tracing = "0.1"
 tracing-actix-web = "0.7"
 tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
-utoipa = { version = "4.2", features = ["actix-web"] }
+utoipa = { version = "4.2", features = ["actix_extras"] }
 utoipa-swagger-ui = { version = "7.1", features = ["actix-web"] }
 uuid = { version = "1.10", features = ["v4", "serde"] }
 anyhow = "1.0"
