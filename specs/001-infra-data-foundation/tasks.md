@@ -29,9 +29,9 @@ description: "Task list for MVP-1 Sprint 0 — Infrastructure & Data Foundation"
 
 **Purpose**: Create the infrastructure directory layout
 
-- [ ] T001 Create infra/ directory structure (docker-compose.yml, .env.example at root of infra/)
-- [ ] T002 Create infra/migrations/ directory for SQL migration scripts
-- [ ] T003 [P] Create infra/osm-import/ directory for OSM processing scripts
+- [X] T001 Create infra/ directory structure (docker-compose.yml, .env.example at root of infra/)
+- [X] T002 Create infra/migrations/ directory for SQL migration scripts
+- [X] T003 [P] Create infra/osm-import/ directory for OSM processing scripts
 
 ---
 
@@ -41,12 +41,12 @@ description: "Task list for MVP-1 Sprint 0 — Infrastructure & Data Foundation"
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T004 Create infra/.env.example template with dev defaults for platform_db credentials (`POSTGRES_DB=platform_db`, `POSTGRES_USER=bornemap`, `POSTGRES_PASSWORD=bornemap_dev`) and analytics_db credentials (`ANALYTICS_DB=analytics_db`, `ANALYTICS_USER=bornemap`, `ANALYTICS_PASSWORD=bornemap_dev`)
-- [ ] T005 Create infra/docker-compose.yml with two PostgreSQL services:
+- [X] T004 Create infra/.env.example template with dev defaults for platform_db credentials (`POSTGRES_DB=platform_db`, `POSTGRES_USER=bornemap`, `POSTGRES_PASSWORD=bornemap_dev`) and analytics_db credentials (`ANALYTICS_DB=analytics_db`, `ANALYTICS_USER=bornemap`, `ANALYTICS_PASSWORD=bornemap_dev`)
+- [X] T005 Create infra/docker-compose.yml with two PostgreSQL services:
   - `platform_db`: `postgis/postgis:16-3.4` image, port 5432, .env credentials, volumes for data persistence (`pgdata_platform`) and init scripts (`./migrations:/docker-entrypoint-initdb.d/`)
   - `analytics_db`: `postgres:16` image, port 5433, .env credentials, volume for data persistence (`pgdata_analytics`)
   - `healthcheck` on each service using `pg_isready -U ${POSTGRES_USER}`
-- [ ] T005a Create infra/osm-import/prereqs.sh to check and install prerequisites: `which osmium || apt-get install -y osmium-tool`, `which ogr2ogr || apt-get install -y gdal-bin`, `which curl || apt-get install -y curl`
+- [X] T005a Create infra/osm-import/prereqs.sh to check and install prerequisites: `which osmium || apt-get install -y osmium-tool`, `which ogr2ogr || apt-get install -y gdal-bin`, `which curl || apt-get install -y curl`
 
 **Checkpoint**: Foundation ready — `cp .env.example .env && docker compose up -d` starts both databases
 
@@ -63,13 +63,13 @@ description: "Task list for MVP-1 Sprint 0 — Infrastructure & Data Foundation"
 
 ### Implementation for User Story 1
 
-- [ ] T006 [US1] Create infra/migrations/001_extensions.sql to enable PostGIS extension (`CREATE EXTENSION IF NOT EXISTS postgis;`)
-- [ ] T007 [US1] Create infra/migrations/002_schema_inventory.sql with:
+- [X] T006 [US1] Create infra/migrations/001_extensions.sql to enable PostGIS extension (`CREATE EXTENSION IF NOT EXISTS postgis;`)
+- [X] T007 [US1] Create infra/migrations/002_schema_inventory.sql with:
   - `CREATE SCHEMA IF NOT EXISTS inventory;`
   - `CREATE SCHEMA IF NOT EXISTS gis;`
   - `CREATE TABLE inventory.station (id VARCHAR(20) PRIMARY KEY, name VARCHAR(255), status VARCHAR(20) DEFAULT 'active' CHECK (status IN ('active', 'maintenance', 'inactive')), latitude NUMERIC(10,8), longitude NUMERIC(11,8), location GEOGRAPHY(POINT, 4326) NOT NULL, created_at TIMESTAMP DEFAULT NOW());`
   - `CREATE INDEX idx_station_location ON inventory.station USING GIST(location);`
-- [ ] T008 [US1] Verify both databases connect via psql using .env credentials and SQL `SELECT version();` returns PostgreSQL 16
+- [X] T008 [US1] Verify both databases connect via psql using .env credentials and SQL `SELECT version();` returns PostgreSQL 16
 
 **Checkpoint**: US1 complete — Docker infrastructure running with PostGIS enabled, schemas created, station table indexed
 
@@ -83,11 +83,11 @@ description: "Task list for MVP-1 Sprint 0 — Infrastructure & Data Foundation"
 
 ### Implementation for User Story 2
 
-- [ ] T009 [P] [US2] Create infra/osm-import/download.sh to download Geofabrik Tunisia extract: `curl -L -o tunisia-latest.osm.pbf https://download.geofabrik.de/africa/tunisia-latest.osm.pbf`
-- [ ] T010 [P] [US2] Create infra/osm-import/filter.sh to filter for charging stations: `osmium tags-filter tunisia-latest.osm.pbf amenity=charging_station -o charging_stations.osm.pbf`
-- [ ] T011 [US2] Create infra/osm-import/transform.sh to convert filtered OSM to SQL INSERT format using ogr2ogr or Python script, outputting `INSERT INTO inventory.station (id, name, status, latitude, longitude, location) VALUES (...)` with ST_MakePoint and ST_SetSRID for GEOGRAPHY(POINT, 4326) format; include deduplication logic for duplicate OSM IDs
-- [ ] T012 [US2] Create infra/migrations/003_seed_stations.sql by running transform.sh output; seed file placed in migrations/ for container startup auto-execution
-- [ ] T013 [US2] Execute `docker compose down && docker compose up -d` and verify station data loads on startup with `SELECT COUNT(*) FROM inventory.station` (expect >= 50)
+- [X] T009 [P] [US2] Create infra/osm-import/download.sh to download Geofabrik Tunisia extract: `curl -L -o tunisia-latest.osm.pbf https://download.geofabrik.de/africa/tunisia-latest.osm.pbf`
+- [X] T010 [P] [US2] Create infra/osm-import/filter.sh to filter for charging stations: `osmium tags-filter tunisia-latest.osm.pbf amenity=charging_station -o charging_stations.osm.pbf`
+- [X] T011 [US2] Create infra/osm-import/transform.sh to convert filtered OSM to SQL INSERT format using ogr2ogr or Python script, outputting `INSERT INTO inventory.station (id, name, status, latitude, longitude, location) VALUES (...)` with ST_MakePoint and ST_SetSRID for GEOGRAPHY(POINT, 4326) format; include deduplication logic for duplicate OSM IDs
+- [X] T012 [US2] Create infra/migrations/003_seed_stations.sql by running transform.sh output; seed file placed in migrations/ for container startup auto-execution
+- [X] T013 [US2] Execute `docker compose down && docker compose up -d` and verify station data loads on startup with `SELECT COUNT(*) FROM inventory.station` (expect >= 50)
 
 **Checkpoint**: US2 complete — 50–300 real OSM charging stations seeded in inventory.station with valid GEOGRAPHY points
 
@@ -101,17 +101,17 @@ description: "Task list for MVP-1 Sprint 0 — Infrastructure & Data Foundation"
 
 ### Implementation for User Story 3
 
-- [ ] T014 [US3] Create infra/osm-import/validate.sh with SQL validation queries:
+- [X] T014 [US3] Create infra/osm-import/validate.sh with SQL validation queries:
   - `\d inventory.station` to verify GIST index exists
   - `SELECT PostGIS_version();` to verify PostGIS enabled
   - `SELECT COUNT(*) FROM inventory.station WHERE status='active';` (expect >= 50)
   - `SELECT COUNT(DISTINCT id), COUNT(*) FROM inventory.station;` (both equal = no duplicates)
   - `SELECT COUNT(*) FROM inventory.station WHERE location IS NULL OR name IS NULL;` (expect 0)
-- [ ] T015 [US3] Add ST_DWithin query validation in validate.sh:
+- [X] T015 [US3] Add ST_DWithin query validation in validate.sh:
   - Run EXPLAIN ANALYZE of nearby query (Tunis center, 5000m radius) and confirm "Index Scan" in output
   - Run nearby query and verify result count > 0 and ordered by distance ASC
   - Run timing benchmark for ST_DWithin query and assert < 200ms
-- [ ] T016 [US3] Validate GIST index effectiveness: create temp unindexed copy `CREATE TABLE inventory.station_unindexed AS SELECT * FROM inventory.station;`, run EXPLAIN ANALYZE on it, then compare with the indexed `inventory.station`; verify latency reduction > 50%
+- [X] T016 [US3] Validate GIST index effectiveness: create temp unindexed copy `CREATE TABLE inventory.station_unindexed AS SELECT * FROM inventory.station;`, run EXPLAIN ANALYZE on it, then compare with the indexed `inventory.station`; verify latency reduction > 50%
 
 **Checkpoint**: US3 complete — PostGIS queries validated with GIST index, <200ms latency confirmed
 
@@ -121,10 +121,10 @@ description: "Task list for MVP-1 Sprint 0 — Infrastructure & Data Foundation"
 
 **Purpose**: Final touches — .gitignore entries, validation, and documentation
 
-- [ ] T017 Add `.gitignore` entries in infra/ to exclude `.env` files and downloaded OSM `.pbf` files
-- [ ] T018 End-to-end validation: run `validate.sh` from fresh `docker compose down -v && docker compose up -d` and confirm all 3 user story independent tests pass
-- [ ] T019 Update specs/001-infra-data-foundation/checklists/requirements.md to mark all 12 FRs and 6 SCs as complete
-- [ ] T020 Measure cold start time for `docker compose up -d` using `time docker compose up -d` and assert <120s; record result in checklists/requirements.md
+- [X] T017 Add `.gitignore` entries in infra/ to exclude `.env` files and downloaded OSM `.pbf` files
+- [X] T018 End-to-end validation: run `validate.sh` from fresh `docker compose down -v && docker compose up -d` and confirm all 3 user story independent tests pass
+- [X] T019 Update specs/001-infra-data-foundation/checklists/requirements.md to mark all 12 FRs and 6 SCs as complete
+- [X] T020 Measure cold start time for `docker compose up -d` using `time docker compose up -d` and assert <120s; record result in checklists/requirements.md
 
 ---
 
