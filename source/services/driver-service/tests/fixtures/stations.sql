@@ -1,0 +1,4 @@
+INSERT INTO inventory.station (id, name, status, latitude, longitude, location) VALUES ('STA-00001', 'STA-00001', 'active', 36.7807266, 10.1937043, ST_SetSRID(ST_MakePoint(10.1937043, 36.7807266), 4326)::geography);
+INSERT INTO inventory.station (id, name, status, latitude, longitude, location) VALUES ('STA-00002', 'STA-00002', 'active', 35.3741719, 7.2156482, ST_SetSRID(ST_MakePoint(7.2156482, 35.3741719), 4326)::geography);
+INSERT INTO inventory.station (id, name, status, latitude, longitude, location) VALUES ('STA-00003', 'Charging Station Total Kortoba', 'active', 34.8391928, 10.7647117, ST_SetSRID(ST_MakePoint(10.7647117, 34.8391928), 4326)::geography);
+INSERT INTO inventory.station (id, name, status, latitude, longitude, location) VALUES ('STA-00004', 'shell sidi hassine 2$', 'active', 36.7643006, 10.1192249, ST_SetSRID(ST_MakePoint(10.1192249, 36.7643006), 4326)::geography);
