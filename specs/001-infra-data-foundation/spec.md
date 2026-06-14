@@ -79,7 +79,7 @@ A QA engineer needs to validate that PostGIS is correctly configured, spatial in
 - **FR-001**: System MUST start platform_db PostgreSQL container with PostGIS extension pre-installed via docker-compose, using database credentials from `.env` file (not hardcoded)
 - **FR-002**: System MUST create `inventory` schema in platform_db for station data
 - **FR-003**: System MUST create `gis` schema (read-only, reserved for future use) in platform_db
-- **FR-004**: System MUST create `inventory.station` table with columns: id, name, status, latitude, longitude, location (GEOGRAPHY POINT)
+- **FR-004**: System MUST create `inventory.station` table with columns: id, name, status, latitude, longitude, location (GEOGRAPHY POINT), created_at (TIMESTAMP)
 - **FR-005**: System MUST create a GIST spatial index on inventory.station.location for PostGIS query performance
 - **FR-006**: System MUST download and filter OpenStreetMap Tunisia extract for amenity=charging_station
 - **FR-007**: System MUST convert filtered OSM data to SQL INSERT statements with PostGIS GEOGRAPHY(POINT, 4326) format
