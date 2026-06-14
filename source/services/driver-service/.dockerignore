@@ -1,0 +1,23 @@
+# Rust build artifacts
+target/
+debug/
+release/
+
+# Version control
+.git/
+.gitignore
+
+# Environment
+.env*
+*.env
+
+# Logs
+*.log*
+
+# Docker
+Dockerfile*
+.dockerignore
+
+# Documentation
+README.md
+docs/
