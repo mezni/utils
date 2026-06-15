@@ -1,4 +1,4 @@
-import { NearbyStationsResponse } from '@bornemap/shared-types';
+import { NearbyStationsResponse } from '../../../shared-mobile/src';
 
 const API_BASE = 'http://localhost:3001/api/v1';
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Marker } from 'react-native-maps';
-import { NearbyStationDto } from '@bornemap/shared-types';
+import { NearbyStationDto } from '../../../../shared-mobile/src';
 
 interface StationMarkerProps {
   station: NearbyStationDto;

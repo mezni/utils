@@ -1,8 +1,8 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { View, StyleSheet, ActivityIndicator, Text } from 'react-native';
 import MapView, { Region } from 'react-native-maps';
-import { TUNIS_INITIAL_REGION } from '@bornemap/shared-types';
-import { NearbyStationDto } from '@bornemap/shared-types';
+import { TUNIS_INITIAL_REGION } from '../../../../shared-mobile/src';
+import { NearbyStationDto } from '../../../../shared-mobile/src';
 import { StationMarker } from '../components/StationMarker';
 import { fetchNearbyStations } from '../../services/api';
 
