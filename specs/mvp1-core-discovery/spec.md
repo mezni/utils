@@ -6,30 +6,30 @@
 
 **Status**: Draft
 
-**Input**: User description: "Build BorneMap MVP-1 — a lean geospatial system for EV charging station discovery in Tunisia. Core pipeline: OSM → PostGIS → Rust Driver Service → Expo Mobile Map."
+**Input**: User description: "Build BorneMap MVP-1 — a lean geospatial system for EV charging station discovery in Tunisia. Core pipeline: OSM → PostGIS → Rust Driver Service → Mobile + Web Map."
 
 ## User Scenarios & Testing
 
 ### User Story 1 — Nearby Station Discovery on Map (Priority: P1)
 
-A driver opens the BorneMap mobile app, sees their location on a map centered on Tunisia, and views nearby charging stations within a configurable radius.
+A driver opens the BorneMap mobile or web app, sees Tunisia on the map, and views nearby charging stations within a configurable radius.
 
 **Why this priority**: This is the core value proposition — discovering charging stations geographically. Without this, there is no product.
 
-**Independent Test**: Can be fully tested by loading OSM data, running the driver-service, opening the mobile app, and verifying station markers appear on the map.
+**Independent Test**: Can be fully tested by loading OSM data, running the driver-service, opening the mobile or web app, and verifying station markers appear on the map.
 
 **Acceptance Scenarios**:
 
-1. **Given** the system is running with imported OSM Tunisia station data, **When** a user opens the mobile app, **Then** the map displays station markers at correct geographic coordinates.
+1. **Given** the system is running with imported OSM Tunisia station data, **When** a user opens the mobile or web app, **Then** the map displays station markers at correct geographic coordinates.
 2. **Given** a user is viewing the map, **When** they pan to a new area, **Then** new stations within the viewport are fetched via API with a 300ms debounced request.
 3. **Given** a station has `availability = 'AVAILABLE'` in the database, **When** the API returns nearby stations, **Then** the station appears with an available indicator on the map.
 4. **Given** a station has `availability = 'OUT_OF_SERVICE'`, **When** the API returns nearby stations, **Then** the station does not appear in results (GIS filters it out).
 
 ---
 
-### User Story 2 — Station Details with Charger Info (Priority: P2)
+### User Story 2 — Station Data via API (Priority: P2)
 
-A driver taps a station marker on the map and sees the station name, address, distance, and available charger types with power ratings.
+A developer or app queries the API and receives station details including name, address, distance, and charger composition.
 
 **Why this priority**: Essential for decision-making — a driver needs to know if a station has compatible chargers before navigating there.
 
@@ -74,9 +74,10 @@ A developer deploys the system and verifies the service is running and respondin
 - **FR-005**: System MUST return station details including aggregated charger information as JSONB.
 - **FR-006**: System MUST filter out unavailable (`OUT_OF_SERVICE`) stations from results.
 - **FR-007**: System MUST validate driver coordinates are within Tunisia bounds.
-- **FR-008**: Mobile map MUST render station markers from API response.
-- **FR-009**: Mobile app MUST debounce API calls by 300ms during map panning.
-- **FR-010**: Markers MUST use `tracksViewChanges = false` for performance.
+- **FR-008**: Mobile and web maps MUST render station markers from API response.
+- **FR-009**: Client apps MUST debounce API calls by 300ms during map panning.
+- **FR-010**: Mobile markers MUST use `tracksViewChanges = false` for performance.
+- **FR-012**: Web driver MUST use Leaflet with react-leaflet for map rendering.
 - **FR-011**: System MUST replicate `inventory.stations` writes to `gis.osm_stations` via trigger.
 
 ### Key Entities
@@ -90,15 +91,16 @@ A developer deploys the system and verifies the service is running and respondin
 ## Data Flow
 
 ```
-OSM Overpass API → import-tunisia-osm.sh → gis.osm_stations (direct insert)
-                                                    ↓
-inventory.stations (manual/seed) → trigger → gis.osm_stations (sync)
+OSM Overpass API → import-tunisia-osm.sh → gis.osm_stations (direct insert, source='OSM_IMPORT')
                                                     ↓
                                         gis.get_nearby_stations()
                                                     ↓
                                         driver-service /api/v1/stations/nearby
                                                     ↓
-                                        mobile-app map markers
+                              ┌─────────────────────┴──────────────────┐
+                              ▼                                        ▼
+                      mobile-app (Expo)                         web-driver (Leaflet)
+                      react-native-maps markers                  react-leaflet markers
 ```
 
 ## Success Criteria
@@ -115,6 +117,7 @@ inventory.stations (manual/seed) → trigger → gis.osm_stations (sync)
 
 - User has Docker and Docker Compose installed.
 - Mobile development uses Expo Go for testing.
+- Web driver uses Vite + React for dev server.
 - Tunisia EV station data is available via OSM Overpass API.
-- Network latency between mobile and driver-service is <100ms for local dev.
+- Network latency between clients and driver-service is <100ms for local dev.
 - No authentication is required for MVP-1 — all requests use mock identity.

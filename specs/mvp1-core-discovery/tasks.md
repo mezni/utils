@@ -71,9 +71,8 @@
 - [ ] Handle dedup via ON CONFLICT
 
 ### D2: seed-mvp1-data.sql
-- [ ] Insert demo partners (1 BUSINESS, 1 PRIVATE)
-- [ ] Insert 3-5 demo stations in Tunis area
-- [ ] Insert chargers for each station (CCS2, Type2)
+- [ ] Insert 3-5 demo stations directly into gis.osm_stations (source='SEED')
+- [ ] Each station gets name, address, coordinates, is_available=TRUE
 
 ## Phase E — Shared Mobile Lib
 
@@ -99,8 +98,8 @@
 - [ ] package.json with dependencies (react-native-maps, expo-location)
 
 ### F2: Map screen
-- [ ] MapView centered on Tunis
-- [ ] Station markers from API response
+- [ ] MapView centered on Tunis (36.8065, 10.1815)
+- [ ] Station markers from API response (bare markers, no callout on tap)
 - [ ] 300ms debounce on region change
 - [ ] React.memo on markers
 - [ ] tracksViewChanges = false
@@ -110,7 +109,27 @@
 - [ ] Error state handling
 - [ ] Loading state
 
-## Phase G — Infrastructure
+## Phase G — Web Driver
+
+### G1: Project init
+- [ ] Vite + React + TypeScript project setup
+- [ ] package.json with leaflet, react-leaflet, @types/leaflet
+- [ ] tsconfig.json, vite.config.ts
+- [ ] index.html entry point
+
+### G2: Map screen
+- [ ] MapContainer centered on Tunis (36.8065, 10.1815)
+- [ ] TileLayer with OpenStreetMap tiles
+- [ ] Station markers from API response (bare markers, no popup on click)
+- [ ] 300ms debounce on viewport change (onMoveEnd)
+- [ ] React.memo on marker components
+
+### G3: API service
+- [ ] fetch wrapper for driver-service API
+- [ ] Error state handling
+- [ ] Loading state
+
+## Phase H — Infrastructure
 
 ### G1: Dockerfiles
 - [ ] `driver-service/Dockerfile` — multi-stage Rust build

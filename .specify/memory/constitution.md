@@ -21,7 +21,10 @@ All geospatial filtering, aggregation, and transformation runs in PostGIS functi
 Only `driver-service` is implemented. `admin-service` and `auth-service` are deferred. No inter-service communication exists.
 
 ### VII. No Microservice Sprawl
-Allowed components: postgres, driver-service, mobile-app, osm-importer, traefik (minimal). No Redis, Kafka, queues.
+Allowed components: postgres, driver-service, mobile-app, web-driver, osm-importer, traefik (minimal). No Redis, Kafka, queues.
+
+### VIII. OSM Import to gis Only
+OSM import script writes directly to `gis.osm_stations` with `source='OSM_IMPORT'`. It does NOT create `inventory.*` records. Inventory population is handled separately via seed data or admin-service (Phase 3).
 
 ## Technology Stack
 
@@ -30,6 +33,7 @@ Allowed components: postgres, driver-service, mobile-app, osm-importer, traefik 
 | Database | PostgreSQL 17 + PostGIS | No ORM, no extensions beyond PostGIS |
 | Backend | Rust + Actix-Web 4 + SQLx 0.7 | No other web frameworks |
 | Mobile | Expo SDK 54 + react-native-maps | No heavy state frameworks |
+| Web | React + Vite + Leaflet | Shared types with mobile |
 | Routing | Traefik v3 | Minimal config only |
 | Import | bash + curl + psql | No ETL tools |
 

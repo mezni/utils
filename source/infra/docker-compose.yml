@@ -1,0 +1,78 @@
+services:
+  postgres:
+    image: postgis/postgis:17-3.4
+    container_name: bornemap-postgres
+    environment:
+      POSTGRES_DB: bornemap_platform
+      POSTGRES_USER: bornemap
+      POSTGRES_PASSWORD: bornemap
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ../database/platform_db/platform-init.sql:/docker-entrypoint-initdb.d/01-platform-init.sql
+      - ../database/platform_db/functions.sql:/docker-entrypoint-initdb.d/02-functions.sql
+      - ../database/platform_db/triggers.sql:/docker-entrypoint-initdb.d/03-triggers.sql
+      - ../scripts/seed-mvp1-data.sql:/docker-entrypoint-initdb.d/04-seed-data.sql
+    networks:
+      - bornemap-platform-mesh
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bornemap -d bornemap_platform"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  driver-service:
+    build:
+      context: ../services
+      dockerfile: driver-service/Dockerfile
+    container_name: bornemap-driver-node
+    environment:
+      DATABASE_URL: postgres://bornemap:bornemap@postgres:5432/bornemap_platform
+      DRIVER_SERVICE_HOST: 0.0.0.0
+      DRIVER_SERVICE_PORT: 3001
+      RUST_LOG: info,driver_service=debug
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - bornemap-platform-mesh
+    restart: unless-stopped
+
+  web-driver:
+    build:
+      context: ../apps/web-driver
+    container_name: bornemap-web-driver
+    ports:
+      - "5173:80"
+    depends_on:
+      - driver-service
+    networks:
+      - bornemap-platform-mesh
+    restart: unless-stopped
+
+  traefik:
+    image: traefik:v3.0
+    container_name: bornemap-gateway
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
+      - ./traefik/dynamic.yml:/etc/traefik/dynamic/dynamic.yml:ro
+    networks:
+      - bornemap-platform-mesh
+    depends_on:
+      - driver-service
+      - web-driver
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+
+networks:
+  bornemap-platform-mesh:
+    driver: bridge

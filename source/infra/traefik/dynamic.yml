@@ -1,0 +1,29 @@
+http:
+  routers:
+    driver-api:
+      rule: "PathPrefix(`/api/v1/driver`)"
+      service: driver-service
+      middleware:
+        - strip-driver-prefix
+
+    web-app:
+      rule: "Host(`bornemap.local`) || PathPrefix(`/`)"
+      service: web-driver
+
+  services:
+    driver-service:
+      loadBalancer:
+        servers:
+          - url: "http://driver-service:3001"
+
+    web-driver:
+      loadBalancer:
+        servers:
+          - url: "http://web-driver:80"
+
+  middlewares:
+    strip-driver-prefix:
+      stripPrefix:
+        prefixes:
+          - "/api/v1/driver"
+        forceSlash: false

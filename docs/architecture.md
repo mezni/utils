@@ -2,19 +2,23 @@
 
 ## System Overview
 
-BorneMap is a geospatial EV charging station discovery platform for Tunisia. MVP-1 implements the core discovery pipeline: OSM data → PostGIS → Rust API → Mobile map.
+BorneMap is a geospatial EV charging station discovery platform for Tunisia. MVP-1 implements the core discovery pipeline: OSM data → PostGIS → Rust API → Mobile + Web map.
 
 ## Architecture Diagram
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
 │                     🌐 Public Internet                        │
-│  ┌──────────────────────────────────────────────────┐        │
-│  │         Driver Mobile (Expo SDK 54)              │        │
-│  │  MapView + react-native-maps + 300ms debounce    │        │
-│  └──────────────────────┬───────────────────────────┘        │
-│                         │ HTTP :80                            │
-│                         ▼                                     │
+│  ┌────────────────────────┐  ┌──────────────────────────┐   │
+│  │  Driver Mobile          │  │  Web Driver              │   │
+│  │  (Expo SDK 54)          │  │  (React + Leaflet)       │   │
+│  │  react-native-maps      │  │  react-leaflet           │   │
+│  │  300ms debounce         │  │  300ms debounce          │   │
+│  └───────────┬────────────┘  └────────────┬─────────────┘   │
+│              │              │              │                 │
+│              └──────────────┼──────────────┘                 │
+│                             │ HTTP :80                       │
+│                             ▼                                │
 │  ┌──────────────────────────────────────────────────┐        │
 │  │  🚦 Traefik v3 (bornemap-gateway)                │        │
 │  │  Route: /api/v1/driver/* → driver-service:3001   │        │
@@ -72,11 +76,16 @@ BorneMap is a geospatial EV charging station discovery platform for Tunisia. MVP
 - Route prefix stripping: `/api/v1/driver/*` → `driver-service:3001`
 - Intended for future multi-service routing
 
-### 4. Client (Expo SDK 54)
+### 4a. Mobile Client (Expo SDK 54)
 - MapView centered on Tunis (36.8065, 10.1815)
 - Station markers from API with `tracksViewChanges = false`
 - 300ms debounce on region change for API calls
 - React.memo on all marker components
+
+### 4b. Web Client (React + Leaflet)
+- MapContainer centered on Tunis (36.8065, 10.1815)
+- Station markers from API with React.memo
+- 300ms debounce on moveend event for API calls
 
 ### 5. Import (bash + Overpass API)
 - One-shot script: fetch OSM Tunisia EV stations → insert into `gis.osm_stations`
@@ -99,11 +108,16 @@ Query Flow:
     → Returns JSON with station list + charger aggregates
     → Maps to NearbyStationDto and responds
 
-Render Flow:
+Render Flow (Mobile):
   API response → mobile-app state → MapView markers
     → 300ms debounce on pan
     → React.memo markers
     → tracksViewChanges = false
+
+Render Flow (Web):
+  API response → web-driver state → MapContainer markers
+    → 300ms debounce on moveend
+    → React.memo markers
 ```
 
 ## Deferred Components (Future Phases)
@@ -113,7 +127,6 @@ Render Flow:
 | auth-service | Phase 2 | 3000 | Keycloak bridge, JWT validation |
 | admin-service | Phase 3 | 3002 | CRUD for partners, stations, chargers |
 | clickstream-service | Phase 5 | 3003 | Append-only analytics ingestion |
-| web-driver | Phase 6 | — | Leaflet-based web map |
 | admin-dashboard | Phase 7 | — | Admin UI for governance |
 | Keycloak | Phase 2 | 8080 | Identity provider (internal) |
 
@@ -132,7 +145,8 @@ RUST_LOG=info,driver_service=debug
 |---------|-------|---------|------------|
 | postgres | postgis/postgis:17-3.4 | 5432 | — |
 | driver-service | build (source) | 3001 | postgres |
-| traefik | traefik:v3.0 | 80, 8080 | driver-service |
+| web-driver | build (source) | 5173 | driver-service |
+| traefik | traefik:v3.0 | 80, 8080 | driver-service, web-driver |
 
 ## Security Model (MVP-1)
 
