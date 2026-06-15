@@ -1,6 +1,11 @@
 import { NearbyStationsResponse } from '../../../shared-mobile/src';
 
-const API_BASE = 'http://localhost:3001/api/v1';
+import { Platform } from 'react-native';
+
+const API_BASE = Platform.select({
+  android: 'http://10.0.2.2:3001/api/v1',
+  default: 'http://localhost:3001/api/v1',
+});
 
 export async function fetchNearbyStations(
   latitude: number,
