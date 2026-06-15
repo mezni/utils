@@ -1,11 +1,9 @@
 import { NearbyStationsResponse } from '../../../shared-mobile/src';
 
-import { Platform } from 'react-native';
+// Change this to your machine's LAN IP when testing on a physical device
+const DEVICE_HOST = '10.0.2.2'; // emulator default; use e.g. '192.168.1.42' for physical
 
-const API_BASE = Platform.select({
-  android: 'http://10.0.2.2:3001/api/v1',
-  default: 'http://localhost:3001/api/v1',
-});
+const API_BASE = `http://${DEVICE_HOST}:3001/api/v1`;
 
 export async function fetchNearbyStations(
   latitude: number,
