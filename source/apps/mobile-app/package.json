@@ -7,9 +7,11 @@
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "postinstall": "cd ../shared-mobile && npm install && npx tsc"
   },
   "dependencies": {
+    "@bornemap/shared-types": "file:../shared-mobile",
     "expo": "~54.0.0",
     "expo-location": "~18.0.0",
     "react": "18.3.1",

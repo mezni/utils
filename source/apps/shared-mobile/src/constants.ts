@@ -31,6 +31,8 @@ export const CHARGER_STATUS = {
   OFFLINE: 'OFFLINE',
 } as const;
 
-export const API_BASE_URL = __DEV__
+declare var __DEV__: boolean | undefined;
+
+export const API_BASE_URL = typeof __DEV__ !== 'undefined' && __DEV__
   ? 'http://localhost:3001'
-  : 'http://bornemap.local/api/v1/driver';
+  : 'http://localhost/api/v1';
