@@ -1,7 +1,7 @@
 import { NearbyStationsResponse } from '../../../shared-mobile/src';
 
-// Change this to your machine's LAN IP when testing on a physical device
-const DEVICE_HOST = '10.0.2.2'; // emulator default; use e.g. '192.168.1.42' for physical
+// Change to your machine's LAN IP when testing on a physical device
+const DEVICE_HOST = '10.0.2.2'; // Android emulator; use e.g. '192.168.2.54' for physical
 
 const API_BASE = `http://${DEVICE_HOST}:3001/api/v1`;
 
