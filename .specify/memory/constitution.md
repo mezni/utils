@@ -1,50 +1,71 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+# BorneMap MVP-1 Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. Database-First Architecture
+Every feature starts at the database layer. Schema, indexes, and functions are defined before any service code. PostGIS is the sole geospatial authority — all geo-filtering lives in SQL, not application code.
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+### II. GIS Isolation
+The `gis` schema is read-only cache layer. Source of truth is `inventory.stations`. Cross-schema replication is handled by PL/pgSQL triggers only — no application-level dual-write logic.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+### III. Contract-First API
+All endpoints MUST follow `/api/v1/*`. No undocumented endpoints. No ad-hoc endpoint creation. Request/response shapes are frozen before implementation.
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+### IV. Mock Identity (MVP-1)
+auth-service is deferred. All records use `usr-mvp1-fallback` as `created_by`/`updated_by`. JWT validation is out of scope until Phase 2.
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### V. No Business Logic in Rust
+All geospatial filtering, aggregation, and transformation runs in PostGIS functions. Rust services are thin HTTP-to-DB bridges with direct query-to-response mapping.
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+### VI. Single Service (MVP-1)
+Only `driver-service` is implemented. `admin-service` and `auth-service` are deferred. No inter-service communication exists.
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+### VII. No Microservice Sprawl
+Allowed components: postgres, driver-service, mobile-app, osm-importer, traefik (minimal). No Redis, Kafka, queues.
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+## Technology Stack
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+| Layer | Technology | Constraint |
+|-------|-----------|------------|
+| Database | PostgreSQL 17 + PostGIS | No ORM, no extensions beyond PostGIS |
+| Backend | Rust + Actix-Web 4 + SQLx 0.7 | No other web frameworks |
+| Mobile | Expo SDK 54 + react-native-maps | No heavy state frameworks |
+| Routing | Traefik v3 | Minimal config only |
+| Import | bash + curl + psql | No ETL tools |
+
+## Service Boundaries (MVP-1)
+
+| Service | Port | Responsibility |
+|---------|------|----------------|
+| driver-service | 3001 | Geospatial discovery (read-only) |
+| auth-service | 3000 | Deferred to Phase 2 |
+| admin-service | 3002 | Deferred to Phase 3 |
+
+## Database Ownership
+
+| Schema | Owner | Access |
+|--------|-------|--------|
+| inventory | admin-service (deferred) | driver-service read |
+| gis | driver-service (read-only) | Direct reads only |
+| configuration | admin-service (deferred) | References only |
+| users | auth-service (deferred) | Not used in MVP-1 |
+
+## Entity ID Standard
+
+- Stations: `STA-` prefix
+- Partners: `PRT-` prefix
+- Chargers: `CHR-` prefix
+
+## Quality Gates
+
+Before any implementation:
+- [ ] DB schema defined and reviewed
+- [ ] GIS functions defined and reviewed
+- [ ] API contracts documented
+- [ ] Data flow mapped end-to-end
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+This constitution supersedes all other practices for MVP-1. Amendments require documentation in an ADR. All PRs/reviews must verify compliance with these rules.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+**Version**: 1.0.0 | **Ratified**: 2026-06-14 | **Last Amended**: 2026-06-14
