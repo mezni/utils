@@ -13,7 +13,7 @@
 |-------|------|------|
 | Database | PostGIS 17-3.4 | 5432 |
 | API | Rust + Actix-Web 4 | 3001 |
-| Gateway | Traefik v3 | 80 / 8080 |
+| Gateway | Traefik v3 | 80 |
 | Web Client | Vite + React + Leaflet | 5173 |
 | Mobile Client | Expo SDK 54 + react-native-maps | — |
 
@@ -29,17 +29,20 @@ make seed
 # 3. Open web app
 open http://localhost
 
-# Or via Traefik: http://localhost/ (web) + http://localhost/api/v1/driver/ (API)
+# Web at http://localhost/ · API at http://localhost/api/v1/
 ```
 
 ## API Endpoints (via Traefik)
 
 ```bash
 # Health
-curl http://localhost/api/v1/health
+curl -s http://localhost/api/v1/health
 
-# Nearby stations (Tunis center)
-curl 'http://localhost/api/v1/driver/stations/nearby?longitude=10.1815&latitude=36.8065&radius=5000'
+# Nearby stations (Tunis center) — quote URLs with & params
+curl -s 'http://localhost/api/v1/stations/nearby?longitude=10.1815&latitude=36.8065&radius=50000'
+
+# Direct (skip Traefik)
+curl -s http://localhost:3001/api/v1/health
 ```
 
 ## Notable Make Targets
@@ -88,8 +91,8 @@ App at http://localhost:5173
 
 ```
 Internet → Traefik :80
-  ├── /api/v1/driver/* → driver-service :3001 → PostGIS
-  └── /                → web-driver :80 (static build)
+  ├── /api/v1/* → driver-service :3001 → PostGIS
+  └── /          → web-driver :80 (static build)
 ```
 
 See `docs/architecture.md` for full diagram and `docs/api-contracts.md` for endpoint docs.
