@@ -4,6 +4,7 @@
     "slug": "mobile-driver",
     "version": "0.1.0",
     "platforms": ["ios", "android", "web"],
-    "orientation": "portrait"
+    "orientation": "portrait",
+    "entryPoint": "./index.js"
   }
 }
