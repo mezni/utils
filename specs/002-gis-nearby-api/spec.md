@@ -32,33 +32,35 @@ Enable spatial data discovery through geolocation-based queries. The system fetc
 - FR5: The import process uses database locks or transactions to prevent concurrent imports, ensuring only one import runs at a time
 
 ### Spatial Queries
-- FR5: The system provides a function that accepts coordinates and radius to return nearby stations
-- FR6: The query returns stations within the specified distance, ordered by proximity
-- FR7: Only active stations are returned (filtered out by status)
+- FR6: The system provides a function that accepts coordinates and radius to return nearby stations
+- FR7: The query returns stations within the specified distance, ordered by proximity
+- FR8: Only active stations are returned (filtered out by status)
 
 ### Discovery API
-- FR8: An authenticated API endpoint accepts latitude, longitude, and radius parameters via an authorization header
-- FR9: The API endpoint returns a paginated list of nearby stations with details
-- FR10: Each station in the response includes: unique identifier, name, coordinates, address, distance from user, visibility type, and connector details
-- FR11: The API validates that coordinates are within valid geographic ranges
-- FR12: The API enforces a maximum radius limit (e.g., 50 kilometers) to prevent excessive queries
-- FR13: The API enforces a maximum results limit to prevent unbounded response sizes
-- FR14: The API enforces a per-user rate limit (e.g., 100 queries per minute) to prevent abuse
+- FR9: An authenticated API endpoint accepts latitude, longitude, and radius parameters via an authorization header
+- FR10: The API endpoint returns a paginated list of nearby stations with details
+- FR11: Each station in the response includes: unique identifier, name, coordinates, address, distance from user, visibility type, and connector details
+- FR12: The API validates that coordinates are within valid geographic ranges
+- FR13: The API enforces a maximum radius limit (e.g., 50 kilometers) to prevent excessive queries
+- FR14: The API enforces a maximum results limit to prevent unbounded response sizes
+- FR15: The API enforces a per-user rate limit (e.g., 100 queries per minute) to prevent abuse
 
 ### Error Handling
-- FR14: Invalid coordinates (outside valid ranges) return a specific error with 400 status and clear message
-- FR15: Radius or results limit exceeding maximum values return a specific error with 400 status and helpful guidance
-- FR16: Missing authentication header returns a specific error with 401 status and instruction
-- FR17: Invalid authentication credentials return a specific error with 401 status and instruction
-- FR18: Server-side errors return a generic user-friendly message without exposing implementation details
-- FR19: Import process failures return clear error messages indicating the issue and suggested action
+- FR16: Invalid coordinates (outside valid ranges) return a specific error with 400 status and clear message
+- FR17: Radius or results limit exceeding maximum values return a specific error with 400 status and helpful guidance
+- FR18: Missing authentication header returns a specific error with 401 status and instruction
+- FR19: Invalid authentication credentials return a specific error with 401 status and instruction
+- FR20: Server-side errors return a generic user-friendly message without exposing implementation details
+- FR21: Import process failures return clear error messages indicating the issue and suggested action
 
 ### Map Integration
-- FR20: The driver app displays markers for nearby charging stations
-- FR21: The app shows different marker styles for different visibility types (e.g., commercial vs private home)
-- FR22: The app clusters markers at certain zoom levels to improve performance
-- FR23: The driver app displays markers for nearby charging stations
-- FR24: The app clusters markers to optimize rendering performance
+- FR22: The driver app displays markers for nearby charging stations (mobile and web)
+- FR23: The app shows different marker styles for different visibility types (e.g., commercial vs private home)
+- FR24: The app clusters markers at certain zoom levels to improve performance
+- FR25: The app clusters markers to optimize rendering performance
+- FR26: The app clearly indicates data loading states (e.g., spinner, skeleton UI) to the user
+- FR27: The app ensures accessibility for users with disabilities (e.g., screen reader support, sufficient contrast)
+- FR28: The app supports localization for at least one additional language (e.g., Arabic) for text elements
 
 ## Non-functional Requirements
 
