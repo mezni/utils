@@ -1,5 +1,5 @@
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan
-at `specs/001-mvp1-infra-kickoff/plan.md`
+at `specs/002-gis-nearby-api/plan.md`
 <!-- SPECKIT END -->
