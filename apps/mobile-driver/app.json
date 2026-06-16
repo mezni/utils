@@ -4,6 +4,17 @@
     "slug": "mobile-driver",
     "version": "0.1.2",
     "platforms": ["ios", "android"],
-    "orientation": "portrait"
+    "orientation": "portrait",
+    "android": {
+      "permissions": [
+        "INTERNET",
+        "ACCESS_NETWORK_STATE"
+      ]
+    },
+    "ios": {
+      "permissions": [
+        "INTERNET"
+      ]
+    }
   }
 }

@@ -1,23 +1,36 @@
 import { registerRootComponent } from "expo";
-import { View, StyleSheet } from "react-native";
+import { View, StyleSheet, Text } from "react-native";
+
+const TUNISIA_COORDS = {
+  latitude: 34.0,
+  longitude: 9.0,
+};
 
 function App() {
   return (
     <View style={styles.container}>
-      <View style={styles.placeholder}>
-        <View style={styles.mapPlaceholder} />
-      </View>
+      <Text style={styles.title}>BorneMap Driver</Text>
+      <Text style={styles.subtitle}>Tunisia Map View</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  placeholder: { flex: 1, justifyContent: "center", alignItems: "center" },
-  mapPlaceholder: {
-    width: "100%",
-    height: "100%",
-    backgroundColor: "#e8e8e8",
+  container: {
+    flex: 1,
+    backgroundColor: "#f0f0f0",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#333",
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: "#666",
   },
 });
 

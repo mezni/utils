@@ -13,7 +13,8 @@
     "expo": "~54.0.0",
     "metro-runtime": "0.81.5",
     "react": "19.1.0",
-    "react-native": "0.81.5"
+    "react-native": "0.81.5",
+    "react-native-maps": "^1.20.1"
   },
   "devDependencies": {
     "@types/react": "~19.1.10",
