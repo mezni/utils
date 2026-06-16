@@ -7,6 +7,9 @@
     "build": "pnpm -r build",
     "lint": "pnpm -r lint"
   },
+  "devDependencies": {
+    "metro-runtime": "0.81.5"
+  },
   "pnpm": {
     "onlyBuiltDependencies": ["esbuild"]
   }
