@@ -1,0 +1,140 @@
+version: "3.9"
+
+x-app-common: &app-common
+  profiles: ["services"]
+  restart: unless-stopped
+  networks:
+    - bornemap
+
+services:
+  platform_db:
+    image: postgis/postgis:15-3.4
+    profiles: ["infra"]
+    environment:
+      POSTGRES_USER: ${PLATFORM_DB_USER:-bornemap}
+      POSTGRES_PASSWORD: ${PLATFORM_DB_PASSWORD:-bornemap_dev}
+      POSTGRES_DB: ${PLATFORM_DB_NAME:-platform_db}
+    ports:
+      - "${PLATFORM_DB_PORT:-5432}:5432"
+    volumes:
+      - platform_db_data:/var/lib/postgresql/data
+      - ${PWD}/infra/db/init-platform-db.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${PLATFORM_DB_USER:-bornemap} -d ${PLATFORM_DB_NAME:-platform_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  keycloak_db:
+    image: postgres:16-alpine
+    profiles: ["infra"]
+    environment:
+      POSTGRES_USER: ${KEYCLOAK_DB_USER:-bornemap}
+      POSTGRES_PASSWORD: ${KEYCLOAK_DB_PASSWORD:-bornemap_dev}
+      POSTGRES_DB: ${KEYCLOAK_DB_NAME:-keycloak_db}
+    ports:
+      - "${KEYCLOAK_DB_PORT:-5433}:5432"
+    volumes:
+      - keycloak_db_data:/var/lib/postgresql/data
+
+  analytics_db:
+    image: postgres:16-alpine
+    profiles: ["infra"]
+    environment:
+      POSTGRES_USER: ${ANALYTICS_DB_USER:-bornemap}
+      POSTGRES_PASSWORD: ${ANALYTICS_DB_PASSWORD:-bornemap_dev}
+      POSTGRES_DB: ${ANALYTICS_DB_NAME:-analytics_db}
+    ports:
+      - "${ANALYTICS_DB_PORT:-5434}:5432"
+    volumes:
+      - analytics_db_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    profiles: ["infra"]
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  auth-service:
+    <<: *app-common
+    build:
+      context: ${PWD}/services/auth-service
+    ports:
+      - "${AUTH_SERVICE_PORT:-3000}:3000"
+    environment:
+      HOST: 0.0.0.0
+      PORT: 3000
+      DATABASE_URL: postgres://${PLATFORM_DB_USER:-bornemap}:${PLATFORM_DB_PASSWORD:-bornemap_dev}@platform_db:5432/${PLATFORM_DB_NAME:-platform_db}
+      KEYCLOAK_URL: http://keycloak:8080
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    depends_on:
+      platform_db:
+        condition: service_healthy
+
+  driver-service:
+    <<: *app-common
+    build:
+      context: ${PWD}/services/driver-service
+    ports:
+      - "${DRIVER_SERVICE_PORT:-3001}:3001"
+    environment:
+      HOST: 0.0.0.0
+      PORT: 3001
+      DATABASE_URL: postgres://${PLATFORM_DB_USER:-bornemap}:${PLATFORM_DB_PASSWORD:-bornemap_dev}@platform_db:5432/${PLATFORM_DB_NAME:-platform_db}
+      GIS_SERVICE_URL: http://gis-service:3003
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    depends_on:
+      platform_db:
+        condition: service_healthy
+
+  admin-service:
+    <<: *app-common
+    build:
+      context: ${PWD}/services/admin-service
+    ports:
+      - "${ADMIN_SERVICE_PORT:-3002}:3002"
+    environment:
+      HOST: 0.0.0.0
+      PORT: 3002
+      DATABASE_URL: postgres://${PLATFORM_DB_USER:-bornemap}:${PLATFORM_DB_PASSWORD:-bornemap_dev}@platform_db:5432/${PLATFORM_DB_NAME:-platform_db}
+      GIS_SERVICE_URL: http://gis-service:3003
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    depends_on:
+      platform_db:
+        condition: service_healthy
+
+  gis-service:
+    <<: *app-common
+    build:
+      context: ${PWD}/services/gis-service
+    ports:
+      - "${GIS_SERVICE_PORT:-3003}:3003"
+    environment:
+      HOST: 0.0.0.0
+      PORT: 3003
+      DATABASE_URL: postgres://${PLATFORM_DB_USER:-bornemap}:${PLATFORM_DB_PASSWORD:-bornemap_dev}@platform_db:5432/${PLATFORM_DB_NAME:-platform_db}
+      REDIS_URL: redis://redis:6379
+      CACHE_SECRET: ${CACHE_SECRET:-dev-cache-secret}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    depends_on:
+      platform_db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+volumes:
+  platform_db_data:
+  keycloak_db_data:
+  analytics_db_data:
+  redis_data:
+
+networks:
+  bornemap:
+    name: bornemap-network
