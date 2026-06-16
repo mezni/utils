@@ -6,6 +6,7 @@ members = [
     "services/auth-service",
     "services/driver-service",
     "services/admin-service",
+    "services/gis-service",
 ]
 
 [workspace.package]

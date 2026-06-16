@@ -1,15 +1,18 @@
-version: "3.9"
-
 x-app-common: &app-common
   profiles: ["services"]
   restart: unless-stopped
   networks:
     - bornemap
 
+x-infra-common: &infra-common
+  profiles: ["infra"]
+  networks:
+    - bornemap
+
 services:
   platform_db:
+    <<: *infra-common
     image: postgis/postgis:15-3.4
-    profiles: ["infra"]
     environment:
       POSTGRES_USER: ${PLATFORM_DB_USER:-bornemap}
       POSTGRES_PASSWORD: ${PLATFORM_DB_PASSWORD:-bornemap_dev}
@@ -26,8 +29,8 @@ services:
       retries: 5
 
   keycloak_db:
+    <<: *infra-common
     image: postgres:16-alpine
-    profiles: ["infra"]
     environment:
       POSTGRES_USER: ${KEYCLOAK_DB_USER:-bornemap}
       POSTGRES_PASSWORD: ${KEYCLOAK_DB_PASSWORD:-bornemap_dev}
@@ -43,8 +46,8 @@ services:
       retries: 5
 
   analytics_db:
+    <<: *infra-common
     image: postgres:16-alpine
-    profiles: ["infra"]
     environment:
       POSTGRES_USER: ${ANALYTICS_DB_USER:-bornemap}
       POSTGRES_PASSWORD: ${ANALYTICS_DB_PASSWORD:-bornemap_dev}
@@ -53,10 +56,15 @@ services:
       - "${ANALYTICS_DB_PORT:-5434}:5432"
     volumes:
       - analytics_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${ANALYTICS_DB_USER:-bornemap} -d ${ANALYTICS_DB_NAME:-analytics_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   redis:
+    <<: *infra-common
     image: redis:7-alpine
-    profiles: ["infra"]
     ports:
       - "${REDIS_PORT:-6379}:6379"
     volumes:
@@ -70,7 +78,8 @@ services:
   auth-service:
     <<: *app-common
     build:
-      context: ${PWD}/services/auth-service
+      context: ${PWD}
+      dockerfile: ${PWD}/services/auth-service/Dockerfile
     ports:
       - "${AUTH_SERVICE_PORT:-3000}:3000"
     environment:
@@ -86,7 +95,8 @@ services:
   driver-service:
     <<: *app-common
     build:
-      context: ${PWD}/services/driver-service
+      context: ${PWD}
+      dockerfile: ${PWD}/services/driver-service/Dockerfile
     ports:
       - "${DRIVER_SERVICE_PORT:-3001}:3001"
     environment:
@@ -102,7 +112,8 @@ services:
   admin-service:
     <<: *app-common
     build:
-      context: ${PWD}/services/admin-service
+      context: ${PWD}
+      dockerfile: ${PWD}/services/admin-service/Dockerfile
     ports:
       - "${ADMIN_SERVICE_PORT:-3002}:3002"
     environment:
@@ -118,7 +129,8 @@ services:
   gis-service:
     <<: *app-common
     build:
-      context: ${PWD}/services/gis-service
+      context: ${PWD}
+      dockerfile: ${PWD}/services/gis-service/Dockerfile
     ports:
       - "${GIS_SERVICE_PORT:-3003}:3003"
     environment:

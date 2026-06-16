@@ -15,7 +15,7 @@ down:
 	$(DOCKER_COMPOSE) down
 
 build:
-	$(DOCKER_COMPOSE) --profile services build $(SERVICE)
+	$(DOCKER_COMPOSE) --profile "infra" --profile "services" build $(SERVICE)
 
 rebuild: down build up-all
 

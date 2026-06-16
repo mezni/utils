@@ -1038,6 +1038,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "gis-service"
+version = "0.1.0"
+dependencies = [
+ "actix-rt",
+ "actix-web",
+ "env_logger",
+ "log",
+ "serde",
+ "serde_json",
+ "sqlx",
+ "tokio",
+]
+
+[[package]]
 name = "h2"
 version = "0.3.27"
 source = "registry+https://github.com/rust-lang/crates.io-index"
