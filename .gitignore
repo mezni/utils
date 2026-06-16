@@ -3,8 +3,14 @@ dist/
 build/
 .env
 .env.local
+.env.*.local
 target/
 *.log
 .DS_Store
 *.pem
 *.key
+.expo/
+*.tsbuildinfo
+.next/
+.cargo/
+

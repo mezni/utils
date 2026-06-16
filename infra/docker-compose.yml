@@ -36,6 +36,11 @@ services:
       - "${KEYCLOAK_DB_PORT:-5433}:5432"
     volumes:
       - keycloak_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${KEYCLOAK_DB_USER:-bornemap} -d ${KEYCLOAK_DB_NAME:-keycloak_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   analytics_db:
     image: postgres:16-alpine

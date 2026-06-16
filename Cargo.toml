@@ -1,0 +1,13 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/db-models",
+    "crates/validation",
+    "services/auth-service",
+    "services/driver-service",
+    "services/admin-service",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"

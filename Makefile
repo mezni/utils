@@ -66,3 +66,20 @@ setup:
 	@test -f .env || cp .env.example .env
 	@mkdir -p infra/db
 	@echo "Done. Run 'make up' to start."
+
+env-check:
+	@echo "Checking .env..."
+	@if [ ! -f .env ]; then echo "ERROR: .env not found. Run 'make setup' first."; exit 1; fi
+	@echo ".env found."
+	@echo "Checking required variables..."
+	@while IFS='=' read -r key val || [ -n "$$key" ]; do \
+		case "$$key" in \
+			''|'#'*|'export '*) continue;; \
+			*) \
+				eval "expanded=$$val"; \
+				if echo "$$expanded" | grep -q '\$${'; then \
+					echo "WARNING: $$key contains unexpanded variable reference"; \
+				fi;; \
+		esac; \
+	done < .env
+	@echo "Done."
