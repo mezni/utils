@@ -1,6 +1,7 @@
 use actix_web::{web, HttpResponse, ResponseError};
 use sqlx::PgPool;
 use std::env;
+use crate::handler::import::import_handler;
 use crate::handler::nearby::nearby_handler;
 use crate::middleware::auth::verify_jwt;
 use crate::middleware::rate_limit::RateLimiter;
@@ -26,6 +27,12 @@ pub async fn setup_routes(
     app.service(
         web::scope("/api/v1/nearby")
             .route("", web::get().to(nearby_handler))
+    );
+
+    // Import endpoint
+    app.service(
+        web::scope("/api/v1")
+            .route("/import", web::post().to(import_handler))
     );
 }
 

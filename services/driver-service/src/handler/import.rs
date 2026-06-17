@@ -1,0 +1,122 @@
+use actix_web::{web, HttpResponse, Result};
+use serde::Deserialize;
+use crate::models::error::{ErrorResponse, ErrorDetail, Result as AppResult, ResponseMeta};
+use crate::middleware::auth::verify_jwt;
+use uuid::Uuid;
+
+#[derive(Deserialize)]
+pub struct ImportRequest {
+    pub region: String,
+    pub bbox: BoundingBox,
+}
+
+#[derive(Deserialize)]
+pub struct BoundingBox {
+    pub min_lat: f64,
+    pub min_lon: f64,
+    pub max_lat: f64,
+    pub max_lon: f64,
+}
+
+pub async fn import_handler(
+    token: web::Data<String>,
+    import_request: web::Json<ImportRequest>,
+) -> AppResult<HttpResponse> {
+    // Verify JWT token
+    let user_id = verify_jwt(&token).await?;
+
+    // Check if user is admin
+    // TODO: Implement admin role check from database
+    // For now, assume all authenticated users can import
+
+    // Validate bounding box
+    if let Some(error) = validate_bounding_box(&import_request.bbox) {
+        return Ok(HttpResponse::BadRequest().json(error));
+    }
+
+    // TODO: Call OSM import service
+    // This would normally be an async job or separate microservice
+    // For MVP, we'll simulate the import process
+
+    let import_id = format!("imp_{}", Uuid::new_v4());
+
+    let response = serde_json::json!({
+        "data": {
+            "import_id": import_id,
+            "region": import_request.region,
+            "stations_imported": 0,
+            "stations_updated": 0,
+            "stations_failed": 0,
+            "status": "pending",
+        },
+        "meta": ResponseMeta {
+            request_id: uuid::Uuid::new_v4().to_string(),
+            timestamp: chrono::Utc::now().to_rfc3339(),
+        },
+    });
+
+    Ok(HttpResponse::Accepted().json(response))
+}
+
+fn validate_bounding_box(bbox: &BoundingBox) -> Option<ErrorResponse> {
+    // Validate latitude range (-90 to 90)
+    if bbox.min_lat < -90.0 || bbox.max_lat > 90.0 {
+        return Some(ErrorResponse {
+            error: ErrorDetail {
+                code: "GEO_001".to_string(),
+                message: "Bounding box latitude must be within valid range (-90 to 90)".to_string(),
+                field: Some("bbox.min_lat".to_string()),
+            },
+            meta: ResponseMeta {
+                request_id: uuid::Uuid::new_v4().to_string(),
+                timestamp: chrono::Utc::now().to_rfc3339(),
+            },
+        });
+    }
+
+    // Validate longitude range (-180 to 180)
+    if bbox.min_lon < -180.0 || bbox.max_lon > 180.0 {
+        return Some(ErrorResponse {
+            error: ErrorDetail {
+                code: "GEO_001".to_string(),
+                message: "Bounding box longitude must be within valid range (-180 to 180)".to_string(),
+                field: Some("bbox.min_lon".to_string()),
+            },
+            meta: ResponseMeta {
+                request_id: uuid::Uuid::new_v4().to_string(),
+                timestamp: chrono::Utc::now().to_rfc3339(),
+            },
+        });
+    }
+
+    // Validate that min is less than max
+    if bbox.min_lat >= bbox.max_lat {
+        return Some(ErrorResponse {
+            error: ErrorDetail {
+                code: "GEO_001".to_string(),
+                message: "Bounding box min_lat must be less than max_lat".to_string(),
+                field: Some("bbox".to_string()),
+            },
+            meta: ResponseMeta {
+                request_id: uuid::Uuid::new_v4().to_string(),
+                timestamp: chrono::Utc::now().to_rfc3339(),
+            },
+        });
+    }
+
+    if bbox.min_lon >= bbox.max_lon {
+        return Some(ErrorResponse {
+            error: ErrorDetail {
+                code: "GEO_001".to_string(),
+                message: "Bounding box min_lon must be less than max_lon".to_string(),
+                field: Some("bbox".to_string()),
+            },
+            meta: ResponseMeta {
+                request_id: uuid::Uuid::new_v4().to_string(),
+                timestamp: chrono::Utc::now().to_rfc3339(),
+            },
+        });
+    }
+
+    None
+}

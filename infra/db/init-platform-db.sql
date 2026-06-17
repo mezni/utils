@@ -133,15 +133,16 @@ CREATE INDEX idx_osm_roads_geom ON gis.osm_roads USING GIST (geom);
 -- ============================================================
 
 -- Function to find nearby stations
--- Parameters: latitude, longitude, radius_in_km
+-- Parameters: latitude, longitude, radius_in_km, max_results, status_filter, visibility_filter
 -- Returns: paginated list of nearby stations with distance
 CREATE OR REPLACE FUNCTION gis.nearby(
     p_lat float,
     p_lon float,
     p_radius_km float DEFAULT 10.0,
     p_limit int DEFAULT 50,
-    p_status_filter station_status DEFAULT 'active'
-) 
+    p_status_filter station_status DEFAULT 'active',
+    p_visibility_filter station_visibility DEFAULT 'all'
+)
 RETURNS TABLE (
     id varchar(32),
     name varchar(255),
@@ -171,16 +172,17 @@ BEGIN
             ARRAY_AGG(c.power_kw) FILTER (WHERE c.power_kw IS NOT NULL) AS connector_power,
             ST_Distance(
                 s.location,
-                ST_MakePoint(p_lon, p_lat)::geography
+                ST_MakePoint($2, $1)::geography
             ) / 1000.0 AS distance_km
         FROM inventory.station s
         LEFT JOIN inventory.charger c ON c.station_id = s.id AND c.deleted_at IS NULL
         WHERE
             s.deleted_at IS NULL
             AND s.status = p_status_filter
+            AND (p_visibility_filter = 'all' OR s.visibility = p_visibility_filter)
             AND ST_DWithin(
                 s.location::geography,
-                ST_MakePoint(p_lon, p_lat)::geography,
+                ST_MakePoint($2, $1)::geography,
                 p_radius_km * 1000
             )
         GROUP BY
@@ -198,6 +200,42 @@ BEGIN
         connector_power
     FROM nearby_stations
     ORDER BY distance_km
+    LIMIT p_limit;
+END;
+$$;
+
+-- Function to find all stations (for filtering) - only active stations
+CREATE OR REPLACE FUNCTION gis.find_all_active_stations(
+    p_limit int DEFAULT 1000
+)
+RETURNS TABLE (
+    id varchar(32),
+    name varchar(255),
+    visibility station_visibility,
+    status station_status,
+    location geography(POINT, 4326),
+    address text,
+    city varchar(100)
+)
+LANGUAGE plpgsql
+STABLE
+PARALLEL SAFE
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT
+        id,
+        name,
+        visibility,
+        status,
+        location,
+        address,
+        city
+    FROM inventory.station
+    WHERE
+        deleted_at IS NULL
+        AND status = 'active'
+    ORDER BY id
     LIMIT p_limit;
 END;
 $$;

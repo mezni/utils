@@ -134,11 +134,11 @@ curl -X POST http://localhost:3001/api/v1/import \
 - Soft-deleted stations are not displayed
 
 **Implementation Tasks**:
-- [ ] T036 [US2] Add status filter to getNearby() in services/driver-service/src/repository/station_repository.rs
-- [ ] T037 [US2] Add deleted_at IS NULL filter in gis.nearby() SQL function in infra/db/init-platform-db.sql
-- [ ] T038 [US2] Add unit tests for active station filtering in services/driver-service/tests/test_nearby_active.rs
-- [ ] T039 [US2] Add visual indicator for active stations in apps/mobile-driver/src/components/StationMarker.tsx
-- [ ] T040 [US2] Add visual indicator for inactive/closed stations in apps/web-driver/src/components/StationMarker.tsx
+- [X] T036 [US2] Add status filter to getNearby() in services/driver-service/src/repository/station_repository.rs
+- [X] T037 [US2] Add deleted_at IS NULL filter in gis.nearby() SQL function in infra/db/init-platform-db.sql
+- [X] T038 [US2] Add unit tests for active station filtering in services/driver-service/tests/test_active_stations.rs
+- [X] T039 [US2] Add visual indicator for active stations in apps/mobile-driver/src/components/StationMarker.tsx
+- [X] T040 [US2] Add visual indicator for inactive/closed stations in apps/web-driver/src/components/StationMarker.tsx
 
 ### Phase 5: User Story 3 - Driver Filters by Visibility (P2)
 
@@ -150,13 +150,13 @@ curl -X POST http://localhost:3001/api/v1/import \
 - Map displays filtered markers
 
 **Implementation Tasks**:
-- [ ] T041 [US3] Add visibility parameter to getNearby() in services/driver-service/src/repository/station_repository.rs
-- [ ] T042 [US3] Add visibility filter to SQL query in infra/db/init-platform-db.sql
-- [ ] T043 [US3] Add visibility filter to nearby endpoint handler in services/driver-service/src/routes/nearby.rs
-- [ ] T044 [US3] Add visibility filter to API response in services/driver-service/src/handler/nearby.rs
-- [ ] T045 [US3] Create visibility filter UI in apps/mobile-driver/src/components/VisibilityFilter.tsx
-- [ ] T046 [US3] Create visibility filter UI in apps/web-driver/src/components/VisibilityFilter.tsx
-- [ ] T047 [US3] Integrate visibility filter with useNearby hook in packages/shared-hooks/src/useNearby.ts
+- [X] T041 [US3] Add visibility parameter to getNearby() in services/driver-service/src/repository/station_repository.rs
+- [X] T042 [US3] Add visibility filter to SQL query in infra/db/init-platform-db.sql
+- [X] T043 [US3] Add visibility filter to nearby endpoint handler in services/driver-service/src/routes/nearby.rs
+- [X] T044 [US3] Add visibility filter to API response in services/driver-service/src/handler/nearby.rs
+- [X] T045 [US3] Create visibility filter UI in apps/mobile-driver/src/components/VisibilityFilter.tsx
+- [X] T046 [US3] Create visibility filter UI in apps/web-driver/src/components/VisibilityFilter.tsx
+- [X] T047 [US3] Integrate visibility filter with useNearby hook in packages/shared-hooks/src/useNearby.ts
 
 ### Phase 6: User Story 4 - Partner Imports Data (P1)
 

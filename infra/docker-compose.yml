@@ -146,6 +146,20 @@ services:
       redis:
         condition: service_healthy
 
+  osm-importer:
+    <<: *infra-common
+    profiles: ["import"]
+    build:
+      context: ${PWD}
+      dockerfile: ${PWD}/infra/osm-importer/Dockerfile
+    environment:
+      DATABASE_URL: postgres://${PLATFORM_DB_USER:-bornemap}:${PLATFORM_DB_PASSWORD:-bornemap_dev}@platform_db:5432/${PLATFORM_DB_NAME:-platform_db}
+      REGION: ${IMPORT_REGION:-tunisia}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    depends_on:
+      platform_db:
+        condition: service_healthy
+
 volumes:
   platform_db_data:
   keycloak_db_data:

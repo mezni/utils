@@ -5,6 +5,7 @@ import type { Station } from '@bornemap/shared-types';
 import { useNearbyStations } from '@bornemap/shared-hooks';
 import { StationMarker } from '../components/StationMarker';
 import { useClustering } from '../hooks/useClustering';
+import { VisibilityFilter } from '../components/VisibilityFilter';
 
 const TUNISIA_CENTER = {
   latitude: 33.8869,
@@ -17,10 +18,11 @@ export const DriverMapScreen: React.FC = () => {
     longitude: number;
   }>(TUNISIA_CENTER);
   const [zoom, setZoom] = useState(13);
+  const [selectedVisibility, setSelectedVisibility] = useState('all');
 
   const { stations, error, loading, count } = useNearbyStations(
     selectedLocation,
-    { radius_m: 5000, max_results: 50 }
+    { radius_m: 5000, max_results: 50, visibility: selectedVisibility }
   );
 
   const { clusters } = useClustering(stations, zoom);
@@ -58,6 +60,12 @@ export const DriverMapScreen: React.FC = () => {
       </MapView>
 
       <View style={styles.overlay}>
+        <VisibilityFilter
+          selectedVisibility={selectedVisibility}
+          onSelectVisibility={setSelectedVisibility}
+          stations={stations}
+        />
+
         <View style={styles.stats}>
           <Text style={styles.statsText}>
             {loading ? 'Loading...' : `${count} stations nearby`}
