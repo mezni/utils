@@ -21,7 +21,7 @@ services:
       - "${PLATFORM_DB_PORT:-5432}:5432"
     volumes:
       - platform_db_data:/var/lib/postgresql/data
-      - ${PWD}/infra/db/init-platform-db.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./infra/db/init-platform-db.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${PLATFORM_DB_USER:-bornemap} -d ${PLATFORM_DB_NAME:-platform_db}"]
       interval: 5s
@@ -78,8 +78,8 @@ services:
   auth-service:
     <<: *app-common
     build:
-      context: ${PWD}
-      dockerfile: ${PWD}/services/auth-service/Dockerfile
+      context: .
+      dockerfile: services/auth-service/Dockerfile
     ports:
       - "${AUTH_SERVICE_PORT:-3000}:3000"
     environment:
@@ -95,15 +95,14 @@ services:
   driver-service:
     <<: *app-common
     build:
-      context: ${PWD}
-      dockerfile: ${PWD}/services/driver-service/Dockerfile
+      context: .
+      dockerfile: services/driver-service/Dockerfile
     ports:
       - "${DRIVER_SERVICE_PORT:-3001}:3001"
     environment:
       HOST: 0.0.0.0
       PORT: 3001
       DATABASE_URL: postgres://${PLATFORM_DB_USER:-bornemap}:${PLATFORM_DB_PASSWORD:-bornemap_dev}@platform_db:5432/${PLATFORM_DB_NAME:-platform_db}
-      GIS_SERVICE_URL: http://gis-service:3003
       LOG_LEVEL: ${LOG_LEVEL:-info}
     depends_on:
       platform_db:
@@ -112,15 +111,14 @@ services:
   admin-service:
     <<: *app-common
     build:
-      context: ${PWD}
-      dockerfile: ${PWD}/services/admin-service/Dockerfile
+      context: .
+      dockerfile: services/admin-service/Dockerfile
     ports:
       - "${ADMIN_SERVICE_PORT:-3002}:3002"
     environment:
       HOST: 0.0.0.0
       PORT: 3002
       DATABASE_URL: postgres://${PLATFORM_DB_USER:-bornemap}:${PLATFORM_DB_PASSWORD:-bornemap_dev}@platform_db:5432/${PLATFORM_DB_NAME:-platform_db}
-      GIS_SERVICE_URL: http://gis-service:3003
       LOG_LEVEL: ${LOG_LEVEL:-info}
     depends_on:
       platform_db:
@@ -129,8 +127,8 @@ services:
   gis-service:
     <<: *app-common
     build:
-      context: ${PWD}
-      dockerfile: ${PWD}/services/gis-service/Dockerfile
+      context: .
+      dockerfile: services/gis-service/Dockerfile
     ports:
       - "${GIS_SERVICE_PORT:-3003}:3003"
     environment:
@@ -150,8 +148,8 @@ services:
     <<: *infra-common
     profiles: ["import"]
     build:
-      context: ${PWD}
-      dockerfile: ${PWD}/infra/osm-importer/Dockerfile
+      context: .
+      dockerfile: infra/osm-importer/Dockerfile
     environment:
       DATABASE_URL: postgres://${PLATFORM_DB_USER:-bornemap}:${PLATFORM_DB_PASSWORD:-bornemap_dev}@platform_db:5432/${PLATFORM_DB_NAME:-platform_db}
       REGION: ${IMPORT_REGION:-tunisia}

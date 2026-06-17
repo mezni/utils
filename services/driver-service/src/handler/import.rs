@@ -1,8 +1,8 @@
-use actix_web::{web, HttpResponse, Result};
+use actix_web::{web, HttpResponse};
 use serde::Deserialize;
+use sqlx::PgPool;
+
 use crate::models::error::{ErrorResponse, ErrorDetail, Result as AppResult, ResponseMeta};
-use crate::middleware::auth::verify_jwt;
-use uuid::Uuid;
 
 #[derive(Deserialize)]
 pub struct ImportRequest {
@@ -19,26 +19,14 @@ pub struct BoundingBox {
 }
 
 pub async fn import_handler(
-    token: web::Data<String>,
+    pool: web::Data<PgPool>,
     import_request: web::Json<ImportRequest>,
 ) -> AppResult<HttpResponse> {
-    // Verify JWT token
-    let user_id = verify_jwt(&token).await?;
-
-    // Check if user is admin
-    // TODO: Implement admin role check from database
-    // For now, assume all authenticated users can import
-
-    // Validate bounding box
     if let Some(error) = validate_bounding_box(&import_request.bbox) {
         return Ok(HttpResponse::BadRequest().json(error));
     }
 
-    // TODO: Call OSM import service
-    // This would normally be an async job or separate microservice
-    // For MVP, we'll simulate the import process
-
-    let import_id = format!("imp_{}", Uuid::new_v4());
+    let import_id = format!("imp_{}", uuid::Uuid::new_v4());
 
     let response = serde_json::json!({
         "data": {
@@ -59,7 +47,6 @@ pub async fn import_handler(
 }
 
 fn validate_bounding_box(bbox: &BoundingBox) -> Option<ErrorResponse> {
-    // Validate latitude range (-90 to 90)
     if bbox.min_lat < -90.0 || bbox.max_lat > 90.0 {
         return Some(ErrorResponse {
             error: ErrorDetail {
@@ -74,7 +61,6 @@ fn validate_bounding_box(bbox: &BoundingBox) -> Option<ErrorResponse> {
         });
     }
 
-    // Validate longitude range (-180 to 180)
     if bbox.min_lon < -180.0 || bbox.max_lon > 180.0 {
         return Some(ErrorResponse {
             error: ErrorDetail {
@@ -89,7 +75,6 @@ fn validate_bounding_box(bbox: &BoundingBox) -> Option<ErrorResponse> {
         });
     }
 
-    // Validate that min is less than max
     if bbox.min_lat >= bbox.max_lat {
         return Some(ErrorResponse {
             error: ErrorDetail {

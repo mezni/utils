@@ -10,47 +10,46 @@ export interface ClusteredStations {
   total: number;
 }
 
-const CLUSTER_THRESHOLD = 50; // meters
+const CLUSTER_THRESHOLD_DEG = 0.05; // ~5km at equator, scales with latitude
 
 export function useClustering(
   stations: Station[],
   zoom: number,
 ): ClusteredStations {
-  const isClustered = useMemo(() => zoom < 13, [zoom]);
+  return useMemo(() => {
+    const isClustered = zoom < 13;
 
-  if (!isClustered) {
-    return {
-      clusters: stations.map((station) => ({
-        id: station.id,
-        stations: [station],
-        count: 1,
-      })),
-      total: stations.length,
-    };
-  }
+    if (!isClustered || stations.length === 0) {
+      return {
+        clusters: stations.map((station) => ({
+          id: station.id,
+          stations: [station],
+          count: 1,
+        })),
+        total: stations.length,
+      };
+    }
 
-  const clustered = useMemo(() => {
-    if (stations.length === 0) return [];
+    const adjustedThreshold = CLUSTER_THRESHOLD_DEG / Math.pow(2, 13 - zoom);
 
     const clusterCenters = new Map<string, Station[]>();
 
     stations.forEach((station) => {
-      const key = `${Math.round(station.location['lat'] / CLUSTER_THRESHOLD)}_${Math.round(station.location['lon'] / CLUSTER_THRESHOLD)}`;
+      const lat = station.location.lat;
+      const lon = station.location.lon;
+      const key = `${Math.round(lat / adjustedThreshold)}_${Math.round(lon / adjustedThreshold)}`;
       if (!clusterCenters.has(key)) {
         clusterCenters.set(key, []);
       }
-      clusterCenters.get(key)?.push(station);
+      clusterCenters.get(key)!.push(station);
     });
 
-    return Array.from(clusterCenters.entries()).map(([id, clusterStations]) => ({
+    const clusters = Array.from(clusterCenters.entries()).map(([id, clusterStations]) => ({
       id,
       stations: clusterStations,
       count: clusterStations.length,
     }));
-  }, [stations]);
 
-  return {
-    clusters: clustered,
-    total: stations.length,
-  };
+    return { clusters, total: stations.length };
+  }, [stations, zoom]);
 }

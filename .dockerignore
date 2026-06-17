@@ -1,8 +1,12 @@
 target/
 node_modules/
 .git/
-apps/
-packages/
-*.md
-docs/
-specs/
+__pycache__/
+*.pyc
+.DS_Store
+.env
+.env.local
+*.log
+*.pem
+*.key
+.cargo/

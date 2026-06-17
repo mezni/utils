@@ -1,6 +1,8 @@
 use std::collections::HashMap;
 use std::time::{Duration, Instant};
 
+use crate::models::error::{ErrorResponse, ErrorDetail, ResponseMeta};
+
 pub struct RateLimiter {
     requests: HashMap<String, Vec<Instant>>,
     max_requests: usize,

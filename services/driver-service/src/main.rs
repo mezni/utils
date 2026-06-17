@@ -1,15 +1,14 @@
 mod config;
 mod db;
-mod routes;
 mod handler;
 mod middleware;
-mod repository;
 mod models;
+mod repository;
+mod routes;
 
 use actix_web::web::Data;
-use actix_web::{App, HttpServer, middleware};
+use actix_web::{App, HttpServer, middleware as actix_middleware};
 use config::Config;
-use sqlx::PgPool;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -20,17 +19,17 @@ async fn main() -> std::io::Result<()> {
 
     let database_url = cfg.database_url.clone();
 
-    // Connect to database
-    let pool = PgPool::connect(&database_url).await?;
+    log::info!("Connecting to database...");
+    let pool = db::init_pool(&database_url).await;
 
     log::info!("Starting driver-service on {}:{}", cfg.host, cfg.port);
 
+    let pool_data = Data::new(pool);
+
     HttpServer::new(move || {
-        let pool_data = web::Data::new(pool.clone());
         App::new()
-            .app_data(pool_data)
-            .wrap(middleware::Logger::default())
-            .configure(|config| routes::setup_routes(config, pool_data))
+            .wrap(actix_middleware::Logger::default())
+            .configure(|cfg| routes::setup_routes(cfg, pool_data.clone()))
     })
     .bind(format!("{}:{}", cfg.host, cfg.port))?
     .run()

@@ -43,7 +43,7 @@ CREATE INDEX idx_partner_status ON inventory.partner (status);
 
 CREATE TABLE inventory.station (
     id              varchar(32) PRIMARY KEY,
-    partner_id      varchar(32) NOT NULL REFERENCES inventory.partner(id) ON DELETE RESTRICT,
+    partner_id      varchar(32) REFERENCES inventory.partner(id) ON DELETE RESTRICT,
     name            varchar(255) NOT NULL,
     location        geography(Point, 4326) NOT NULL,
     address         text NOT NULL,
@@ -141,14 +141,14 @@ CREATE OR REPLACE FUNCTION gis.nearby(
     p_radius_km float DEFAULT 10.0,
     p_limit int DEFAULT 50,
     p_status_filter station_status DEFAULT 'active',
-    p_visibility_filter station_visibility DEFAULT 'all'
+    p_visibility_filter text DEFAULT 'all'
 )
 RETURNS TABLE (
     id varchar(32),
     name varchar(255),
     visibility station_visibility,
     location geography(POINT, 4326),
-    distance float,
+    distance_m float,
     address text,
     city varchar(100),
     connector_types text[],
@@ -173,7 +173,7 @@ BEGIN
             ST_Distance(
                 s.location,
                 ST_MakePoint($2, $1)::geography
-            ) / 1000.0 AS distance_km
+            ) AS distance_m
         FROM inventory.station s
         LEFT JOIN inventory.charger c ON c.station_id = s.id AND c.deleted_at IS NULL
         WHERE
@@ -193,13 +193,13 @@ BEGIN
         name,
         visibility,
         location,
-        distance_km,
+        distance_m,
         address,
         city,
         connector_types,
         connector_power
     FROM nearby_stations
-    ORDER BY distance_km
+    ORDER BY distance_m
     LIMIT p_limit;
 END;
 $$;

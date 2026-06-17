@@ -35,7 +35,7 @@ export function useNearby(
   const [error, setError] = useState<ErrorResponse | null>(null);
   const [stations, setStations] = useState<(NearbyResponse['stations'][0]) | null>(null);
 
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mountedRef = useRef(true);
 
   useEffect(() => {
@@ -54,12 +54,10 @@ export function useNearby(
     setLoading(true);
     setError(null);
 
-    // Clear existing timeout
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
 
-    // Set new timeout for debouncing
     timeoutRef.current = setTimeout(async () => {
       if (!mountedRef.current) return;
 
@@ -104,24 +102,35 @@ export function useNearby(
     }
   }, [location, fetchNearby]);
 
-  return {
-    stations,
-    error,
-    loading,
-    refetch: fetchNearby,
-  };
+  return { stations, error, loading, refetch: fetchNearby };
+}
+
+interface UseNearbyStationsResult {
+  stations: NearbyResponse['stations'];
+  error: ErrorResponse | null;
+  loading: boolean;
+  count: number;
+  refetch: (location: Location) => void;
 }
 
 export function useNearbyStations(
   location: Location | null,
   options: UseNearbyOptions = {}
-) {
+): UseNearbyStationsResult {
+  const {
+    enabled = true,
+    radius_m = 5000,
+    max_results = 50,
+    visibility = 'all',
+    debounceMs = DEBOUNCE_MS,
+  } = options;
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<ErrorResponse | null>(null);
-  const [stations, setStations] = useState<(NearbyResponse['stations'])>([]);
+  const [stations, setStations] = useState<NearbyResponse['stations']>([]);
   const [count, setCount] = useState(0);
 
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mountedRef = useRef(true);
 
   useEffect(() => {
@@ -135,7 +144,7 @@ export function useNearbyStations(
   }, []);
 
   const fetchNearby = useCallback(async (loc: Location) => {
-    if (!loc || !options.enabled) return;
+    if (!loc || !enabled) return;
 
     setLoading(true);
     setError(null);
@@ -151,9 +160,9 @@ export function useNearbyStations(
         const data = await getNearby({
           lat: loc.lat,
           lon: loc.lon,
-          radius_m: options.radius_m,
-          max_results: options.max_results,
-          visibility: options.visibility,
+          radius_m,
+          max_results,
+          visibility,
         });
 
         if (mountedRef.current) {
@@ -180,8 +189,8 @@ export function useNearbyStations(
           setLoading(false);
         }
       }
-    }, options.debounceMs);
-  }, [options]);
+    }, debounceMs);
+  }, [enabled, radius_m, max_results, visibility, debounceMs]);
 
   useEffect(() => {
     if (location) {
@@ -189,11 +198,5 @@ export function useNearbyStations(
     }
   }, [location, fetchNearby]);
 
-  return {
-    stations,
-    error,
-    loading,
-    count,
-    refetch: fetchNearby,
-  };
+  return { stations, error, loading, count, refetch: fetchNearby };
 }

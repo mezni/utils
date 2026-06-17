@@ -1,32 +1,14 @@
-use crate::models::error::{ErrorResponse, ErrorDetail};
-use sqlx::types::BigDecimal;
+use crate::models::error::{ErrorResponse, ErrorDetail, ResponseMeta};
 
-pub fn validate_coordinates(lat: BigDecimal, lon: BigDecimal) -> Option<ErrorResponse> {
-    let lat: f64 = lat.try_into().ok()?;
-    let lon: f64 = lon.try_into().ok()?;
-
-    if lat < -90.0 || lat > 90.0 {
+pub fn validate_coordinates(lat: f64, lon: f64) -> Option<ErrorResponse> {
+    if lat < -90.0 || lat > 90.0 || lon < -180.0 || lon > 180.0 {
         return Some(ErrorResponse {
             error: ErrorDetail {
                 code: "GEO_001".to_string(),
                 message: "Coordinates must be within valid geographic ranges (lat: -90 to 90, lon: -180 to 180)".to_string(),
                 field: Some("coordinates".to_string()),
             },
-            meta: crate::models::error::ResponseMeta {
-                request_id: uuid::Uuid::new_v4().to_string(),
-                timestamp: chrono::Utc::now().to_rfc3339(),
-            },
-        });
-    }
-
-    if lon < -180.0 || lon > 180.0 {
-        return Some(ErrorResponse {
-            error: ErrorDetail {
-                code: "GEO_001".to_string(),
-                message: "Coordinates must be within valid geographic ranges (lat: -90 to 90, lon: -180 to 180)".to_string(),
-                field: Some("coordinates".to_string()),
-            },
-            meta: crate::models::error::ResponseMeta {
+            meta: ResponseMeta {
                 request_id: uuid::Uuid::new_v4().to_string(),
                 timestamp: chrono::Utc::now().to_rfc3339(),
             },
@@ -46,7 +28,7 @@ pub fn validate_radius_m(radius_m: Option<i32>) -> Option<ErrorResponse> {
                 message: "Radius must be between 1 and 50000 meters".to_string(),
                 field: Some("radius_m".to_string()),
             },
-            meta: crate::models::error::ResponseMeta {
+            meta: ResponseMeta {
                 request_id: uuid::Uuid::new_v4().to_string(),
                 timestamp: chrono::Utc::now().to_rfc3339(),
             },
@@ -66,7 +48,7 @@ pub fn validate_max_results(max_results: Option<i32>) -> Option<ErrorResponse> {
                 message: "Max results must be between 1 and 100".to_string(),
                 field: Some("max_results".to_string()),
             },
-            meta: crate::models::error::ResponseMeta {
+            meta: ResponseMeta {
                 request_id: uuid::Uuid::new_v4().to_string(),
                 timestamp: chrono::Utc::now().to_rfc3339(),
             },

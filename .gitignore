@@ -13,4 +13,7 @@ target/
 *.tsbuildinfo
 .next/
 .cargo/
-
+__pycache__/
+*.pyc
+.vscode/
+.idea/
