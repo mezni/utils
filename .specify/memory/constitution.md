@@ -1,50 +1,162 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!--
+  Sync Impact Report
+  ==================
+  Version change: 0.0.0 (template) → 1.0.0
+  Type: Initial population from template
+  Modified principles: All 5 principles populated from source/docs/constitution.md
+    - [PLACEHOLDER] → I. Validation Before Optimization
+    - [PLACEHOLDER] → II. Strict Service Topology
+    - [PLACEHOLDER] → III. Compile-Time Safety & Type Strictness
+    - [PLACEHOLDER] → IV. Read/Write Separation & Transactional Integrity
+    - [PLACEHOLDER] → V. Security & Identity Isolation
+  Added sections:
+    - Tech Stack & Platform Constraints (was SECTION_2)
+    - Development Workflow & Conventions (was SECTION_3)
+    - Governance with version footer
+  Removed sections: None
+  Templates requiring updates:
+    - .specify/templates/plan-template.md: ✅ No changes needed (dynamic Constitution Check)
+    - .specify/templates/spec-template.md: ✅ No changes needed
+    - .specify/templates/tasks-template.md: ✅ No changes needed
+    - .specify/templates/checklist-template.md: ✅ No changes needed
+    - Command files in extensions/: ✅ No outdated agent references found
+  Deferred TODOs: None — all placeholders resolved
+-->
+
+# BorneMap Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. Validation Before Optimization
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+Fast product validation through rapid iteration ("Validation before Optimization").
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+The platform SHALL NOT include any of the following during the validation phase:
+OCPP integration or direct hardware communications; native billing or payment
+processing workflows; smart charging optimization or grid load balancing telemetry;
+real-time hardware status metrics or continuous charger telemetry tracking;
+distributed event-driven streaming engines (Kafka, RabbitMQ, MQTT); native mobile
+compilation pipelines outside Expo Go; infrastructure autoscaling policies or
+advanced distributed tracing stacks.
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+### II. Strict Service Topology
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+Exactly three Actix-web microservices are defined:
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+- **Auth Service (:3000)**: Sole owner of the `users` schema. Integrates directly
+  with the single `bornemap` Keycloak realm. No other service interacts with
+  Keycloak directly.
+- **Driver Service (:3001)**: Geospatial read API, inventory write operations,
+  Redis cache management. Owns `inventory` schema read patterns and user
+  relationship records (favorites, reviews).
+- **Admin Service (:3002)**: Partner infrastructure management and analytics
+  logging into the isolated `analytics_db`.
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+No additional microservices may be introduced without a constitution amendment
+recorded via ADR.
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+### III. Compile-Time Safety & Type Strictness
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+Every Rust database query to `platform_db` MUST use compile-time type-checked
+`sqlx` macros. No raw unvalidated string concatenation is permitted.
+
+TypeScript strict mode is non-negotiable — the `any` keyword is strictly
+prohibited across all user-facing applications.
+
+Code formatting enforced via `rustfmt` + `clippy` (Rust) and `eslint` + `prettier`
+(TypeScript).
+
+### IV. Read/Write Separation & Transactional Integrity
+
+The Driver Service functions as a read-optimized spatial data API via PostGIS
+SQL functions and Redis caching, while handling its own driver-scoped
+transactional writes. No asynchronous outbox patterns are deployed during the
+validation phase.
+
+All multi-table data modifications within any microservice MUST be wrapped in a
+single database transaction (Unit of Work). Writes to `inventory.station` or
+`inventory.charger` trigger synchronous cache-bust operations on the Redis
+spatial cache managed by the Driver Service.
+
+### V. Security & Identity Isolation
+
+Single Keycloak mono-realm (`bornemap`). Access profiles are isolated via
+granular Client Roles (`role:driver`, `role:partner`, `role:admin`) across
+distinct Keycloak Clients (`mobile-driver-app`, `web-driver-app`,
+`admin-partner-dashboard`).
+
+Cleartext credentials, API keys, or security vectors are completely barred from
+git tracking — handled via environmental injection using gitignored `.env` files.
+
+Central TLS termination managed via Traefik (from MVP-6). Application-layer
+access tokens processed against Keycloak JWT validation steps.
+
+Soft delete enforced exclusively on infrastructure entities (stations, chargers,
+partners) — never on users, core access configurations, or audit logs.
+
+## Tech Stack & Platform Constraints
+
+| Layer | Technology | Constraint |
+|-------|-----------|------------|
+| Mobile Driver App | Expo SDK 54 (locked), React Native, AsyncStorage | No native modules outside Expo Go before validation |
+| Web Driver App | React + Leaflet | Shared hooks/types with mobile |
+| Dashboard | React + Tailwind CSS + shadcn/ui + React Router v6 + Framer Motion (transitions only) + React Query | Framer Motion limited to route transitions |
+| Backend Services | Rust / Actix-web | From MVP-1 onward |
+| Shared Backend | Cargo workspace (`crates/db-models`, `crates/validation`) | sqlx compile-time queries |
+| Shared Frontend | TypeScript packages (`packages/shared-types`, `shared-hooks`, `shared-ui`) | strict mode, no `any` |
+| Database | PostgreSQL 16 + PostGIS | Single `platform_db` with `gis`, `inventory`, `users` schemas; separate `keycloak_db` and `analytics_db` |
+| Identity | Keycloak | Single `bornemap` realm |
+| Cache | Redis | GIS spatial tile cache managed by Driver Service from MVP-5 |
+| Gateway | Traefik | TLS, routing from MVP-6 |
+| Monorepo Root | `source/` | — |
+
+**Entity ID Prefixes** (NanoID): `USR_` (user), `OPR_` (partner/operator),
+`STA_` (station), `CHG_` (charger).
+
+## Development Workflow & Conventions
+
+**Monorepo layout** (`source/`):
+- `apps/` — Frontend applications (mobile-driver, web-driver, dashboard)
+- `services/` — Actix-web microservices (auth-service, driver-service, admin-service)
+- `packages/` — Shared TypeScript workspace (shared-types, shared-hooks, shared-ui)
+- `crates/` — Shared Rust workspace (db-models, validation)
+- `infra/` — Infrastructure (docker-compose.yml, keycloak/, osm-importer/)
+- `docs/` — Documentation including ADR records
+
+**Naming conventions**: Services kebab-case with `-service` suffix; apps
+kebab-case descriptive; packages/crates kebab-case with domain prefix (`shared-`,
+`db-`).
+
+**Core domain rules**:
+- Admin-only partner creation via invitation or admin-validated self-registration
+- Companies (partners) are the top-level grouping — no independent "networks" layer
+- Private home chargers are first-class public map entities alongside commercial stations
+- Private and commercial stations share identical schema constraints; specializations via nullable metadata
+
+**Schema ownership**:
+- `gis` — OpenStreetMap spatial reference data (roads, boundaries, cities)
+- `inventory` — Operational infrastructure (partner, station, charger) + user interactions
+- `users` — User profile mapping (owned by Auth Service, keyed to Keycloak `sub`)
+
+**API versioning**: All endpoints prefixed with `/api/v1/`. Major version on
+breaking changes only. Additive modifications inline.
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+This constitution is the final authority for architectural structure. Direct
+conflicts between source implementations and configuration files are resolved in
+favor of this document.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+- **Amendments**: Modifications to fundamental sections (Core Principles, Tech
+  Stack, Architectural Principles, or Prohibitions) strictly require an
+  accompanying ADR recorded inside `docs/adr/`.
+- **Evolutionary sections**: Monorepo structure, entity lists, service boundaries,
+  and roadmap tasks can adapt dynamically without a formal ADR, provided this
+  document is updated immediately.
+- **AI Model Compliance**: Coding LLMs MUST parse this document alongside
+  `.speckit/rules.md`. Any violation of the SpecKit prohibitions (Section 7 of
+  `source/docs/constitution.md`) constitutes a blocking compliance error.
+- **Documentation sync**: Before completing any task, update
+  `docs/roadmap_status.md`, `docs/sprint_backlog.md`, and `docs/system_state.md`.
+
+**Version**: 1.0.0 | **Ratified**: 2026-06-17 | **Last Amended**: 2026-06-17
