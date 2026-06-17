@@ -74,24 +74,24 @@ curl -X POST http://localhost:3001/api/v1/import \
 
 ### Phase 1: Setup (Project Initialization)
 
-- [ ] T001 Create specs/002-gis-nearby-api directory structure with subdirectories
-- [ ] T002 Copy plan.md to specs/002-gis-nearby-api/plan.md
-- [ ] T003 Copy data-model.md to specs/002-gis-nearby-api/data-model.md
-- [ ] T004 Copy contracts/api.md to specs/002-gis-nearby-api/contracts/api.md
-- [ ] T005 Copy quickstart.md to specs/002-gis-nearby-api/quickstart.md
-- [ ] T006 Update AGENTS.md to reference specs/002-gis-nearby-api/plan.md
+- [X] T001 Create specs/002-gis-nearby-api directory structure with subdirectories
+- [X] T002 Copy plan.md to specs/002-gis-nearby-api/plan.md
+- [X] T003 Copy data-model.md to specs/002-gis-nearby-api/data-model.md
+- [X] T004 Copy contracts/api.md to specs/002-gis-nearby-api/contracts/api.md
+- [X] T005 Copy quickstart.md to specs/002-gis-nearby-api/quickstart.md
+- [X] T006 Update AGENTS.md to reference specs/002-gis-nearby-api/plan.md
 
 ### Phase 2: Foundational (Blocking Prerequisites)
 
-- [ ] T007 Create inventory.station table schema in infra/db/init-platform-db.sql
-- [ ] T008 Create inventory.charger table schema in infra/db/init-platform-db.sql
-- [ ] T009 Create gis.import_log table schema in infra/db/init-platform-db.sql
-- [ ] T010 Add GIST spatial indexes for inventory.station.location
-- [ ] T011 Add btree indexes for inventory.station (status, visibility, city)
-- [ ] T012 Add indexes for inventory.charger (station_id, status, connector_type)
-- [ ] T013 Add indexes for gis.import_log (start_time DESC, status)
-- [ ] T014 Create gis.nearby() SQL function with ST_DWithin in infra/db/init-platform-db.sql
-- [ ] T015 Add spatial extension to platform_db in docker-compose.yml
+- [X] T007 Create inventory.station table schema in infra/db/init-platform-db.sql
+- [X] T008 Create inventory.charger table schema in infra/db/init-platform-db.sql
+- [X] T009 Create gis.import_log table schema in infra/db/init-platform-db.sql
+- [X] T010 Add GIST spatial indexes for inventory.station.location
+- [X] T011 Add btree indexes for inventory.station (status, visibility, city)
+- [X] T012 Add indexes for inventory.charger (station_id, status, connector_type)
+- [X] T013 Add indexes for gis.import_log (start_time DESC, status)
+- [X] T014 Create gis.nearby() SQL function with ST_DWithin in infra/db/init-platform-db.sql
+- [X] T015 Add spatial extension to platform_db in docker-compose.yml
 
 ### Phase 3: User Story 1 - Driver Sees Nearby Stations (P1)
 
@@ -103,26 +103,26 @@ curl -X POST http://localhost:3001/api/v1/import \
 - Mobile and web apps render markers correctly
 
 **Implementation Tasks**:
-- [ ] T016 [US1] Create getNearby() repository method in services/driver-service/src/repository/station_repository.rs
-- [ ] T017 [US1] Implement coordinate validation (GEO_001) in services/driver-service/src/middleware/validation.rs
-- [ ] T018 [US1] Create nearby endpoint handler in services/driver-service/src/routes/nearby.rs
-- [ ] T019 [US1] Add rate limiting middleware (RATE_001) in services/driver-service/src/middleware/rate_limit.rs
-- [ ] T020 [US1] Add authentication middleware (AUTH_001) in services/driver-service/src/middleware/auth.rs
-- [ ] T021 [US1] Implement charger query logic in services/driver-service/src/handler/nearby.rs
-- [ ] T022 [US1] Add error handling (GEO_002, GEO_003) in services/driver-service/src/handler/nearby.rs
-- [ ] T023 [US1] Create shared types (Station, Charger, NearbyResponse) in packages/shared-types/src/gis.ts
-- [ ] T024 [US1] Create API client function in packages/api-client/src/nearby.ts
-- [ ] T025 [US1] Create useNearby hook with debouncing (300ms) in packages/shared-hooks/src/useNearby.ts
-- [ ] T026 [US1] Add marker rendering for commercial stations in apps/mobile-driver/src/components/StationMarker.tsx
-- [ ] T027 [US1] Add marker rendering for private home stations in apps/mobile-driver/src/components/StationMarker.tsx
-- [ ] T028 [US1] Implement marker clustering (zoom < 13) in apps/mobile-driver/src/hooks/useClustering.ts
-- [ ] T029 [US1] Add map marker display in apps/mobile-driver/src/screens/DriverMapScreen.tsx
-- [ ] T030 [US1] Add loading state (spinner) in apps/mobile-driver/src/screens/DriverMapScreen.tsx
-- [ ] T031 [US1] Add error state (retry banner) in apps/mobile-driver/src/screens/DriverMapScreen.tsx
-- [ ] T032 [US1] Add map marker display in apps/web-driver/src/components/StationMarker.tsx
-- [ ] T033 [US1] Implement marker clustering in apps/web-driver/src/hooks/useClustering.ts
-- [ ] T034 [US1] Add map marker display in apps/web-driver/src/screens/Dashboard.tsx
-- [ ] T035 [US1] Add loading/error states in apps/web-driver/src/screens/DriverMapScreen.tsx
+- [X] T016 [US1] Create getNearby() repository method in services/driver-service/src/repository/station_repository.rs
+- [X] T017 [US1] Implement coordinate validation (GEO_001) in services/driver-service/src/middleware/validation.rs
+- [X] T018 [US1] Create nearby endpoint handler in services/driver-service/src/routes/nearby.rs
+- [X] T019 [US1] Add rate limiting middleware (RATE_001) in services/driver-service/src/middleware/rate_limit.rs
+- [X] T020 [US1] Add authentication middleware (AUTH_001) in services/driver-service/src/middleware/auth.rs
+- [X] T021 [US1] Implement charger query logic in services/driver-service/src/handler/nearby.rs
+- [X] T022 [US1] Add error handling (GEO_002, GEO_003) in services/driver-service/src/handler/nearby.rs
+- [X] T023 [US1] Create shared types (Station, Charger, NearbyResponse) in packages/shared-types/src/gis.ts
+- [X] T024 [US1] Create API client function in packages/api-client/src/nearby.ts
+- [X] T025 [US1] Create useNearby hook with debouncing (300ms) in packages/shared-hooks/src/useNearby.ts
+- [X] T026 [US1] Add marker rendering for commercial stations in apps/mobile-driver/src/components/StationMarker.tsx
+- [X] T027 [US1] Add marker rendering for private home stations in apps/mobile-driver/src/components/StationMarker.tsx
+- [X] T028 [US1] Implement marker clustering (zoom < 13) in apps/mobile-driver/src/hooks/useClustering.ts
+- [X] T029 [US1] Add map marker display in apps/mobile-driver/src/screens/DriverMapScreen.tsx
+- [X] T030 [US1] Add loading state (spinner) in apps/mobile-driver/src/screens/DriverMapScreen.tsx
+- [X] T031 [US1] Add error state (retry banner) in apps/mobile-driver/src/screens/DriverMapScreen.tsx
+- [X] T032 [US1] Add map marker display in apps/web-driver/src/components/StationMarker.tsx
+- [X] T033 [US1] Implement marker clustering in apps/web-driver/src/hooks/useClustering.ts
+- [X] T034 [US1] Add map marker display in apps/web-driver/src/screens/Dashboard.tsx
+- [X] T035 [US1] Add loading/error states in apps/web-driver/src/screens/DriverMapScreen.tsx
 
 ### Phase 4: User Story 2 - Driver Sees Active Stations (P1)
 

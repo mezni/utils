@@ -1,9 +1,12 @@
-import { StrictMode } from "react";
-import { createRoot } from "react-dom/client";
-import App from "./App";
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+import { Dashboard } from './screens/Dashboard';
+import './index.css';
 
-createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
+const container = document.getElementById('root')!;
+const root = createRoot(container);
+root.render(
+  <React.StrictMode>
+    <Dashboard />
+  </React.StrictMode>
 );

@@ -63,6 +63,7 @@ CREATE TABLE inventory.station (
 
 CREATE INDEX idx_station_partner ON inventory.station (partner_id);
 CREATE INDEX idx_station_status ON inventory.station (status);
+CREATE INDEX idx_station_visibility ON inventory.station (visibility);
 CREATE INDEX idx_station_city ON inventory.station (city);
 CREATE INDEX idx_station_location ON inventory.station USING GIST (location);
 
@@ -126,6 +127,122 @@ CREATE TABLE gis.osm_roads (
 );
 
 CREATE INDEX idx_osm_roads_geom ON gis.osm_roads USING GIST (geom);
+
+-- ============================================================
+-- GIS Functions
+-- ============================================================
+
+-- Function to find nearby stations
+-- Parameters: latitude, longitude, radius_in_km
+-- Returns: paginated list of nearby stations with distance
+CREATE OR REPLACE FUNCTION gis.nearby(
+    p_lat float,
+    p_lon float,
+    p_radius_km float DEFAULT 10.0,
+    p_limit int DEFAULT 50,
+    p_status_filter station_status DEFAULT 'active'
+) 
+RETURNS TABLE (
+    id varchar(32),
+    name varchar(255),
+    visibility station_visibility,
+    location geography(POINT, 4326),
+    distance float,
+    address text,
+    city varchar(100),
+    connector_types text[],
+    connector_power decimal(6,1)[]
+)
+LANGUAGE plpgsql
+STABLE
+PARALLEL SAFE
+AS $$
+BEGIN
+    RETURN QUERY
+    WITH nearby_stations AS (
+        SELECT
+            s.id,
+            s.name,
+            s.visibility,
+            s.location,
+            s.address,
+            s.city,
+            ARRAY_AGG(c.connector) FILTER (WHERE c.connector IS NOT NULL) AS connector_types,
+            ARRAY_AGG(c.power_kw) FILTER (WHERE c.power_kw IS NOT NULL) AS connector_power,
+            ST_Distance(
+                s.location,
+                ST_MakePoint(p_lon, p_lat)::geography
+            ) / 1000.0 AS distance_km
+        FROM inventory.station s
+        LEFT JOIN inventory.charger c ON c.station_id = s.id AND c.deleted_at IS NULL
+        WHERE
+            s.deleted_at IS NULL
+            AND s.status = p_status_filter
+            AND ST_DWithin(
+                s.location::geography,
+                ST_MakePoint(p_lon, p_lat)::geography,
+                p_radius_km * 1000
+            )
+        GROUP BY
+            s.id, s.name, s.visibility, s.location, s.address, s.city
+    )
+    SELECT
+        id,
+        name,
+        visibility,
+        location,
+        distance_km,
+        address,
+        city,
+        connector_types,
+        connector_power
+    FROM nearby_stations
+    ORDER BY distance_km
+    LIMIT p_limit;
+END;
+$$;
+
+-- Function to get import statistics
+CREATE OR REPLACE FUNCTION gis.get_import_stats()
+RETURNS TABLE (
+    region varchar(100),
+    total_imports int,
+    total_stations int,
+    last_import_time timestamptz
+) 
+LANGUAGE plpgsql
+STABLE
+PARALLEL SAFE
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT
+        region,
+        COUNT(*) as total_imports,
+        SUM(stations_imported) as total_stations,
+        MAX(start_time) as last_import_time
+    FROM gis.import_log
+    GROUP BY region
+    ORDER BY last_import_time DESC;
+END;
+$$;
+
+CREATE TABLE gis.import_log (
+    id              bigserial PRIMARY KEY,
+    region          varchar(100) NOT NULL,
+    bbox            jsonb NOT NULL,
+    stations_imported int DEFAULT 0,
+    stations_updated int DEFAULT 0,
+    stations_failed int DEFAULT 0,
+    status          varchar(50) NOT NULL DEFAULT 'pending', -- pending, running, completed, failed
+    error_message   text,
+    start_time      timestamptz NOT NULL DEFAULT now(),
+    end_time        timestamptz
+);
+
+CREATE INDEX idx_import_log_region ON gis.import_log (region);
+CREATE INDEX idx_import_log_status ON gis.import_log (status);
+CREATE INDEX idx_import_log_start_time ON gis.import_log (start_time DESC);
 
 -- ============================================================
 -- Schema: users
