@@ -7,6 +7,7 @@
 ## Sprint 1.1: Core Data & Storage Foundations
 **Goal:** Dockerized PostGIS, schema DDL, OSM ingestion pipeline, spatial function.
 
+- [x] **1.1.0** — Sprint 1.1 specification & analysis complete
 - [ ] **1.1.1** — Dockerize PostGIS 16 instance with customized spatial limits
 - [ ] **1.1.2** — Script schema migrations (`gis`, `inventory`) and NanoID validations
 - [ ] **1.1.3** — Build `osm-importer` pipeline loading Tunisia PBF map parameters

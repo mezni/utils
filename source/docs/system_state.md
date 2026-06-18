@@ -3,7 +3,7 @@
 **Last Updated:** June 2026
 
 ## Current Phase
-**MVP-1 — Spatial Core Validation Pipeline (Sprint 1.1)**
+**MVP-1 — Spatial Core Validation Pipeline (Sprint 1.1 — Specified & Analyzed)**
 
 ## Infrastructure Status
 | Component | Status | Notes |
@@ -51,9 +51,21 @@
 | File | Status |
 |------|--------|
 | `docs/constitution.md` | ✅ Created (v1.3) |
-| `docs/system_state.md` | ✅ Created (this file) |
-| `docs/roadmap_status.md` | ✅ Created |
-| `docs/sprint_backlog.md` | ✅ Created |
+| `docs/system_state.md` | ✅ Updated (this file) |
+| `docs/roadmap_status.md` | ✅ Updated |
+| `docs/sprint_backlog.md` | ✅ Updated |
 | `docs/bug_tracker.md` | ✅ Created |
 | `.speckit/rules.md` | ✅ Created |
 | `.specify/memory/constitution.md` | ✅ Created (v1.0.0) |
+
+## Sprint 1.1 Artifacts
+| Artifact | Path | Status |
+|----------|------|--------|
+| Spec | `specs/001-core-data-storage/spec.md` | ✅ Passed analysis |
+| Plan | `specs/001-core-data-storage/plan.md` | ✅ Passed constitution check |
+| Tasks | `specs/001-core-data-storage/tasks.md` | ✅ 22 tasks, 6 phases |
+| Research | `specs/001-core-data-storage/research.md` | ✅ Decisions documented |
+| Data Model | `specs/001-core-data-storage/data-model.md` | ✅ 3 entities defined |
+| Contracts | `specs/001-core-data-storage/contracts/` | ✅ Function + compose contracts |
+| Quickstart | `specs/001-core-data-storage/quickstart.md` | ✅ Setup instructions |
+| Analysis | `specs/001-core-data-storage/checklists/requirements.md` | ✅ 16/16 items passing |
