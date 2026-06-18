@@ -31,4 +31,6 @@
 
 ## Notes
 
-- All items pass validation. No [NEEDS CLARIFICATION] markers remain.
+- All items pass validation. All clarifications integrated (Authentication, Observability, Localization, API Protocol, Accessibility).
+- 5 clarification questions answered: Q1-Auth, Q2-Observability, Q3-Localization, Q4-API-Protocol, Q5-Accessibility.
+- Spec is ready for `/speckit.plan`.

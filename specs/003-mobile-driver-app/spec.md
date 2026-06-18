@@ -1,12 +1,12 @@
-# Feature Specification: Mobile Driver App
+# Feature Specification: Web Driver Client
 
-**Feature Branch**: `003-mobile-driver-app`
+**Feature Branch**: `004-web-driver-client`
 
 **Created**: 2026-06-18
 
 **Status**: Draft
 
-**Input**: Sprint 1.3 — Mobile Driver App (Expo SDK 54) with interactive map, station markers, and Tunisia bounds
+**Input**: Sprint 1.4 — Web Driver Client (React + Leaflet) with interactive map, station markers, and Tunisia bounds | **Spec**: [`spec.md`](./spec.md)
 
 ## Clarifications
 
@@ -15,16 +15,21 @@
 - Q: How does the mobile app reach the API from a physical device? → A: Configurable `API_BASE_URL` via Expo app config (`app.json` extras), default documented in quickstart. Developer sets their LAN IP during validation.
 - Q: Should location coordinates stored in AsyncStorage be protected? → A: Round viewport center coordinates to 2 decimal places before caching. Station data cached as-is (no personal data).
 - Q: Should crash/error reporting be integrated (Sentry etc.)? → A: No crash reporting in v1. Rely on Metro logs and device console during validation testing.
+- Q: Authentication & Security → A: Defer authentication to MVP-7. JWT and Keycloak foundation documented in assumptions, but validation uses public API endpoints as currently specified.
+- Q: Observability & Debugging → A: Document minimum observable signals needed for validation: API response timing, error categorization (network vs data), and AsyncStorage cache hit/miss rates. No structured logging framework required for v1.
+- Q: Localization Support → A: Arabic RTL support marked as "will be implemented" enhancement. Default to English/French for v1 validation to unblock testing.
+- Q: API Versioning & Protocol → A: Use HTTP/1.1 with permissive CORS (`*`) during validation to support Expo Go without native build step; specify HTTP/2 and strict CORS in future sprint.
+- Q: Accessibility Considerations → A: Add minimal accessibility requirements for v1: ARIA labels for markers/buttons, WCAG AA color contrast (4.5:1), minimum 44px touch targets. Defer advanced features (screen readers, gestures, voice control) to future sprints.
 
 ## User Scenarios & Testing
 
 ### User Story 1 - Interactive Map with Station Markers (Priority: P1)
 
-A driver opens the mobile app and sees a full-screen `react-native-maps` map centered on their GPS location (or defaulting to Tunis). Charging stations within 10km are fetched from `/api/v1/nearby` and displayed as custom charging pin markers. The map is constrained to the Tunisia bounding box.
+A driver opens the web app and sees a full-screen Leaflet map centered on their GPS location (or defaulting to Tunis). Charging stations within 10km are fetched from `/api/v1/nearby` and displayed as custom charging pin markers. The map is constrained to the Tunisia bounding box.
 
-**Why this priority**: The interactive map is the primary interface. Without it, the mobile app delivers no value. All downstream features depend on this foundation.
+**Why this priority**: The interactive map is the primary interface. Without it, the web app delivers no value. All downstream features depend on this foundation.
 
-**Independent Test**: A driver opens the app, the map renders at their GPS location (or Tunis default), and station markers appear as charging pin icons. Panning outside Tunisia is blocked.
+**Independent Test**: A driver opens the app in a browser, the map renders at their GPS location (or Tunis default), and station markers appear as charging pin icons. Panning outside Tunisia is blocked.
 
 **Acceptance Scenarios**:
 
@@ -32,7 +37,7 @@ A driver opens the mobile app and sees a full-screen `react-native-maps` map cen
 2. **Given** the app is launched without location permission, **When** the driver denies location access, **Then** the map defaults to Tunis (36.8, 10.18) at zoom level 12
 3. **Given** station data is returned from the API, **When** markers are rendered, **Then** custom charging pin icons appear at each station's coordinates
 4. **Given** the driver pans the map, **When** the viewport center moves, **Then** Tunisia boundary constraints prevent panning outside approx 30-38°N, 7-12°E
-5. **Given** station markers are visible, **When** the driver taps a marker, **Then** an info window or callout shows the station name and distance
+5. **Given** station markers are visible, **When** the driver clicks a marker, **Then** an info popup shows the station name and distance
 
 ---
 
@@ -163,3 +168,8 @@ When the user zooms out past zoom level 8 where individual markers would overlap
 - The app is sessionless in v1 — closing and reopening the app reloads from scratch
 - No crash reporting or error tracking service is integrated in v1; debugging is done via Metro logs and device console during validation
 - 10km radius is sufficient for urban area coverage; rural areas will see empty states
+- Observability for validation: capture API response timing, categorize errors (network vs data), and track AsyncStorage cache hit/miss rates. No structured logging framework required; rely on console debugging during validation phase.
+- Localization: Arabic RTL support documented as "will be implemented" enhancement. Default to English/French for v1 validation to unblock testing. Localized strings can be added in future sprint without breaking current implementation.
+- API Protocol: Use HTTP/1.1 with permissive CORS (`*`) for validation to ensure Expo Go works without native build step. Upgrade to HTTP/2 and strict CORS in future sprint.
+- Accessibility: Minimum requirements for v1 include ARIA labels for interactive elements, WCAG AA color contrast (4.5:1), and 44px minimum touch targets. Advanced accessibility features (screen readers, gestures, voice control) deferred to future sprints.
+- Authentication and authorization (Keycloak JWT, driver role) are deferred to MVP-7. Current v1 uses public API endpoints without authentication, per constitution security foundation but validation-phase simplified access

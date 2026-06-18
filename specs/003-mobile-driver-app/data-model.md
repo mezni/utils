@@ -1,25 +1,25 @@
-# Data Model: Mobile Driver App
+# Data Model: Web Driver Client
 
-**Branch**: `003-mobile-driver-app` | **Date**: 2026-06-18 | **Spec**: [`spec.md`](../spec.md)
+**Branch**: `004-web-driver-client` | **Date**: 2026-06-18 | **Spec**: [`spec.md`](../004-web-driver-client/spec.md)
 
 ## Overview
 
-This document defines the client-side data models used by the mobile driver app. All server-side entities (Station, Location) are consumed via the existing Driver Service API — no new backend entities are introduced in this sprint.
+This document defines the client-side data models used by the web driver client application. All server-side entities (Station, Location) are consumed via the existing Driver Service API — no new backend entities are introduced in this sprint.
 
 ## Data Flow
 
 ```text
-Device GPS ──> Expo Location API ──> useNearbyStations hook ──> /api/v1/nearby
-                                       │                            │
-                                       ▼                            ▼
-                                 AsyncStorage cache ────> render StationMarker on MapView
+Device GPS ──> Browser Geolocation API ──> useNearbyStations hook ──> /api/v1/nearby
+                                        │                            │
+                                        ▼                            ▼
+                              localStorage cache ────> render StationMarker on Leaflet Map
 ```
 
 ## Entities
 
 ### StationMarker
 
-Represents a charging station displayed on the map. Data is fetched from `GET /api/v1/nearby` and cached in AsyncStorage.
+Represents a charging station displayed on the map. Data is fetched from `GET /api/v1/nearby` and cached in localStorage.
 
 | Field | Type | Source | Notes |
 |-------|------|--------|-------|
@@ -44,9 +44,9 @@ Tracks the current visible map area for debouncing and API queries.
 | `zoomLevel` | `number` | Map viewport | Derived from delta; threshold at 8 |
 | `lastUpdated` | `number` | Timestamp | Monotonic timestamp for debounce comparison |
 
-### AsyncCacheEntry
+### CacheEntry
 
-Persisted station data written to AsyncStorage on every successful API response.
+Persisted station data written to localStorage on every successful API response.
 
 | Field | Type | Notes |
 |-------|------|-------|
@@ -62,7 +62,7 @@ Discriminated union controlling the map area UI rendering.
 | State | Condition | UI |
 |-------|-----------|-----|
 | `loading` | API call in progress or no cache | ShimmerSkeleton overlay |
-| `success` | API returned 2xx with stations | StationMarker pins on map |
+| `success` | API returned 2xx with stations | StationMarker pins on Leaflet map |
 | `empty` | API returned 2xx with empty array | EmptyState guidance message |
 | `error` | API failed (timeout/non-2xx after retries) | ErrorBoundary with Retry Connection |
 | `offline` | Network unavailable, cache read | Cached markers + OfflineBanner |
@@ -97,8 +97,8 @@ Discriminated union controlling the map area UI rendering.
 |------|-----------|-------------|
 | Latitude bounds | MapViewport | Must be within -90 to 90; Tunisia constraint 30-38°N |
 | Longitude bounds | MapViewport | Must be within -180 to 180; Tunisia constraint 7-12°E |
-| Zoom threshold | MapViewport | Below 8: macro-zoom overlay active |
+| Zoom threshold | MapViewport | Below 4: Zoom-out overlay active |
 | Debounce | MapViewport.lastUpdated | Minimum 300ms between viewport changes before API call |
-| Cache rounding | AsyncCacheEntry | Coordinates rounded to 2 decimal places before storage |
+| Cache rounding | CacheEntry | Coordinates rounded to 2 decimal places before storage |
 | API timeout | ApiFetchState | 10s timeout on fetch; non-2xx treated as error |
 | Max retries | ApiFetchState | 3 retries per manual refresh attempt |

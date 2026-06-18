@@ -1,17 +1,17 @@
-# Contract: Nearby Stations API (Mobile Client)
+# Contract: Nearby Stations API (Web Client)
 
-**Branch**: `003-mobile-driver-app` | **Date**: 2026-06-18
+**Branch**: `004-web-driver-client` | **Date**: 2026-06-18 | **Spec**: [`spec.md`](../004-web-driver-client/spec.md)
 
 ## Overview
 
-The mobile driver app communicates with the existing Driver Service `/api/v1/nearby` endpoint. This contract documents the request/response format as consumed by the mobile client.
+The web driver client communicates with the existing Driver Service `/api/v1/nearby` endpoint. This contract documents the request/response format as consumed by the web client.
 
 ## Base URL
 
 | Environment | Base URL | Source |
 |-------------|----------|--------|
-| Development (emulator) | `http://localhost:3001` | Emulator localhost mapping |
-| Development (physical device) | `http://<LAN_IP>:80` | Via Traefik on developer's machine, set in `API_BASE_URL` |
+| Development | `http://localhost:3001` | Direct to driver-service port 3001 |
+| Production | `https://bornemap-api.example.com` | Via Traefik on production |
 
 ## Endpoint
 
@@ -86,33 +86,37 @@ Health check endpoint used for debugging connectivity.
 
 ## Client Configuration
 
-The `API_BASE_URL` is set via Expo `app.json` extras:
-
-```json
-{
-  "expo": {
-    "extra": {
-      "apiBaseUrl": "http://192.168.1.42:80"
-    }
-  }
-}
-```
-
-Accessed at runtime via `expo-constants`:
+The `API_BASE_URL` is set via environment variable or runtime config:
 
 ```typescript
-import Constants from 'expo-constants';
-const API_BASE_URL = Constants.expoConfig?.extra?.apiBaseUrl ?? 'http://localhost:3001';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3001';
 ```
 
-## Mobile Client Behavior
+### Via `.env` file:
+
+```env
+VITE_API_BASE_URL=http://localhost:3001
+```
+
+### Via browser config (for production):
+
+```json
+// vite.config.js
+export default defineConfig({
+  define: {
+    import.meta.env.VITE_API_BASE_URL: JSON.stringify('https://api.bornemap.com')
+  }
+})
+```
+
+## Web Client Behavior
 
 | Scenario | Behavior |
 |----------|----------|
-| Network available | Fetch from API, render markers, update AsyncStorage cache |
-| Network unavailable + cache exists | Read AsyncStorage, render cached markers, show OfflineBanner |
+| Network available | Fetch from API, render markers, update localStorage cache |
+| Network unavailable + cache exists | Read localStorage, render cached markers, show OfflineBanner |
 | Network unavailable + no cache | Show ErrorBoundary with "Retry Connection" |
 | API timeout (>10s) | Show ErrorBoundary with "Retry Connection" |
 | API returns 4xx | Show ErrorBoundary (driver cannot fix bad request) |
 | API returns 5xx | Retry up to 3 times, then show ErrorBoundary |
-| Pull-to-refresh | Clear existing state, re-fetch from API |
+| Manual refresh | Clear existing state, re-fetch from API |
