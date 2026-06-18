@@ -13,7 +13,8 @@
       "supportsTablet": true,
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "BorneMap uses your location to show nearby charging stations."
-      }
+      },
+      "bundleIdentifier": "com.anonymous.mobiledriver"
     },
     "android": {
       "adaptiveIcon": {
@@ -23,7 +24,13 @@
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"]
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
+      ],
+      "package": "com.anonymous.mobiledriver"
     },
     "web": {
       "favicon": "./assets/favicon.png"
