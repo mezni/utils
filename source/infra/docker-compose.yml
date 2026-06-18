@@ -18,6 +18,39 @@ services:
       retries: 10
       start_period: 30s
 
+  driver-service:
+    build: ../services/driver-service
+    container_name: bornemap-driver
+    environment:
+      LISTEN_ADDR: 0.0.0.0:3001
+      DATABASE_URL: postgres://bornemap:${DB_PASSWORD:-bornemap_dev}@platform_db:5432/platform_db
+      DB_POOL_MIN: "1"
+      DB_POOL_MAX: "10"
+      RUST_LOG: info
+    ports:
+      - "3001:3001"
+    depends_on:
+      platform_db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  traefik:
+    image: traefik:v3.1
+    container_name: bornemap-gateway
+    command:
+      - "--api.insecure=true"
+      - "--providers.file.directory=/etc/traefik/dynamic"
+      - "--providers.file.watch=true"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - ./traefik/dynamic.yml:/etc/traefik/dynamic/dynamic.yml:ro
+    depends_on:
+      - driver-service
+    restart: unless-stopped
+
   osm-importer:
     build: ./osm-importer
     container_name: bornemap-importer

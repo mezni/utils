@@ -3,6 +3,7 @@
 members = [
     "crates/db-models",
     "crates/validation",
+    "services/driver-service",
 ]
 
 resolver = "2"

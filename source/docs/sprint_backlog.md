@@ -19,10 +19,10 @@
 ## Sprint 1.2: Rust Edge Engine Services
 **Goal:** Actix-web driver-service, SQLx pooling, `/api/v1/nearby` endpoint, Traefik routing.
 
-- [ ] **1.2.1** — Setup Actix-web `driver-service` configuration structures
-- [ ] **1.2.2** — Build SQLx connection pooling logic with health diagnostics
-- [ ] **1.2.3** — Construct `/api/v1/nearby` coordinate stream controller
-- [ ] **1.2.4** — Configure Traefik gateway routing rules across the proxy layer
+- [x] **1.2.1** — Setup Actix-web `driver-service` configuration structures
+- [x] **1.2.2** — Build SQLx connection pooling logic with health diagnostics
+- [x] **1.2.3** — Construct `/api/v1/nearby` coordinate stream controller
+- [x] **1.2.4** — Configure Traefik gateway routing rules across the proxy layer
 
 ---
 

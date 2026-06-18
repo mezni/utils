@@ -24,9 +24,9 @@
 
 **Purpose**: Project initialization and basic structure
 
-- [ ] T001 Create `source/services/driver-service/` directory tree (src/, src/api/, src/db/, src/models/, tests/)
-- [ ] T002 [P] Create `source/services/driver-service/Cargo.toml` with dependencies: actix-web, sqlx (postgres + runtime-tokio + tls-native-tls + macros), serde, serde_json, tracing, tracing-subscriber, config, dotenvy, chrono, uuid
-- [ ] T003 [P] Create `source/services/driver-service/.env.template` with documented env vars (LISTEN_ADDR, DATABASE_URL, DB_POOL_MIN, DB_POOL_MAX, CORS_ORIGINS, RUST_LOG)
+- [x] T001 Create `source/services/driver-service/` directory tree (src/, src/api/, src/db/, src/models/, tests/)
+- [x] T002 [P] Create `source/services/driver-service/Cargo.toml` with dependencies: actix-web, sqlx (postgres + runtime-tokio + tls-native-tls + macros), serde, serde_json, tracing, tracing-subscriber, config, dotenvy, chrono, uuid
+- [x] T003 [P] Create `source/services/driver-service/.env.template` with documented env vars (LISTEN_ADDR, DATABASE_URL, DB_POOL_MIN, DB_POOL_MAX, CORS_ORIGINS, RUST_LOG)
 
 ---
 
@@ -36,11 +36,11 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T004 Implement Config struct in `source/services/driver-service/src/config.rs` — load from env/config crate with sensible defaults
-- [ ] T005 [P] Implement JSON logging setup in `source/services/driver-service/src/logging.rs` — tracing-subscriber JSON fmt to stdout
-- [ ] T006 [P] Implement database pool module in `source/services/driver-service/src/db/pool.rs` — sqlx::PgPool builder with configurable min/max
-- [ ] T007 Create NearbyStation response struct in `source/services/driver-service/src/models/station.rs` — maps to gis.get_nearby_stations return columns
-- [ ] T008 Create models module file in `source/services/driver-service/src/models/mod.rs` — re-exports station
+- [x] T004 Implement Config struct in `source/services/driver-service/src/config.rs` — load from env/config crate with sensible defaults
+- [x] T005 [P] Implement JSON logging setup in `source/services/driver-service/src/logging.rs` — tracing-subscriber JSON fmt to stdout
+- [x] T006 [P] Implement database pool module in `source/services/driver-service/src/db/pool.rs` — sqlx::PgPool builder with configurable min/max
+- [x] T007 Create NearbyStation response struct in `source/services/driver-service/src/models/station.rs` — maps to gis.get_nearby_stations return columns
+- [x] T008 Create models module file in `source/services/driver-service/src/models/mod.rs` — re-exports station
 
 **Checkpoint**: Foundation ready — user story implementation can now begin in parallel
 
@@ -54,9 +54,9 @@
 
 ### Implementation for User Story 1
 
-- [ ] T009 [P] [US1] Implement API module root in `source/services/driver-service/src/api/mod.rs` — empty mod declarations for nearby and health
-- [ ] T010 [P] [US1] Implement nearby handler in `source/services/driver-service/src/api/nearby.rs` — extract lat/lng/radius query params, validate bounds, call gis.get_nearby_stations via sqlx, return JSON array
-- [ ] T011 [US1] Implement main.rs in `source/services/driver-service/src/main.rs` — bootstrap config, logging, pool, configure CORS middleware, register routes (nearby only), start Actix-web server
+- [x] T009 [P] [US1] Implement API module root in `source/services/driver-service/src/api/mod.rs` — empty mod declarations for nearby and health
+- [x] T010 [P] [US1] Implement nearby handler in `source/services/driver-service/src/api/nearby.rs` — extract lat/lng/radius query params, validate bounds, call gis.get_nearby_stations via sqlx, return JSON array
+- [x] T011 [US1] Implement main.rs in `source/services/driver-service/src/main.rs` — bootstrap config, logging, pool, configure CORS middleware, register routes (nearby only), start Actix-web server
 
 **Checkpoint**: At this point, `GET /api/v1/nearby` works independently. MVP deliverable.
 
@@ -70,8 +70,8 @@
 
 ### Implementation for User Story 2
 
-- [ ] T012 [P] [US2] Implement health handler in `source/services/driver-service/src/api/health.rs` — try pool acquire with 500ms timeout, return 200/503 with status JSON
-- [ ] T013 [US2] Register /health route in `source/services/driver-service/src/api/mod.rs` and add to main.rs
+- [x] T012 [P] [US2] Implement health handler in `source/services/driver-service/src/api/health.rs` — try pool acquire with 500ms timeout, return 200/503 with status JSON
+- [x] T013 [US2] Register /health route in `source/services/driver-service/src/api/mod.rs` and add to main.rs
 
 **Checkpoint**: Health endpoint functional. Both US1 and US2 independently testable.
 
@@ -85,8 +85,8 @@
 
 ### Implementation for User Story 3
 
-- [ ] T014 [P] [US3] Create Traefik dynamic config in `source/infra/traefik/dynamic.yml` — router rule PathPrefix(/api/v1/) → driver-service:3001, health check on /health
-- [ ] T015 [US3] Update `source/infra/docker-compose.yml` — add driver-service service (build context, env vars, port 3001), add traefik service (image, ports, volumes, dynamic config mount), add healthcheck on driver-service
+- [x] T014 [P] [US3] Create Traefik dynamic config in `source/infra/traefik/dynamic.yml` — router rule PathPrefix(/api/v1/) → driver-service:3001, health check on /health
+- [x] T015 [US3] Update `source/infra/docker-compose.yml` — add driver-service service (build context, env vars, port 3001), add traefik service (image, ports, volumes, dynamic config mount), add healthcheck on driver-service
 
 **Checkpoint**: Traefik routes requests to driver-service correctly.
 
@@ -96,10 +96,10 @@
 
 **Purpose**: Improvements that affect multiple user stories, plus docs and validation.
 
-- [ ] T016 [P] Create integration tests in `source/services/driver-service/tests/api_tests.rs` — test nearby with valid params, empty result, invalid params, health check
-- [ ] T017 [P] Update `source/docs/system_state.md` and `source/docs/roadmap_status.md` with Sprint 1.2 completion
-- [ ] T018 Update `source/docs/sprint_backlog.md` — mark Sprint 1.2 tasks complete
-- [ ] T019 Run quickstart.md validation — verify all curl commands produce expected output
+- [x] T016 [P] Create integration tests in `source/services/driver-service/tests/api_tests.rs` — test nearby with valid params, empty result, invalid params, health check
+- [x] T017 [P] Update `source/docs/system_state.md` and `source/docs/roadmap_status.md` with Sprint 1.2 completion
+- [x] T018 Update `source/docs/sprint_backlog.md` — mark Sprint 1.2 tasks complete
+- [x] T019 Run quickstart.md validation — verify all curl commands produce expected output
 
 ---
 

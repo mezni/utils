@@ -12,10 +12,12 @@
 | Containerized `osm-importer` for Tunisia PBF | 1.1 | ✅ Complete | Tunisia OSM data loaded |
 | Native `gis.get_nearby_stations` PostGIS function | 1.1 | ✅ Complete | Moved from inventory schema; all tests pass |
 | Inventory→GIS sync outbox (sync_outbox + trigger + worker) | 1.1 | ✅ Complete | Transactional outbox; gis.process_sync_outbox() drains to gis.osm_stations |
-| Actix-web `driver-service` scaffold | 1.2 | 🔴 Pending | |
-| SQLx connection pool + `/health` endpoint | 1.2 | 🔴 Pending | |
-| `/api/v1/nearby` endpoint | 1.2 | 🔴 Pending | |
-| Traefik reverse proxy routing | 1.2 | 🔴 Pending | |
+| Sprint 1.2 specification & planning | 1.2 | ✅ Complete | Spec, plan, tasks, analysis all passed |
+| Actix-web `driver-service` scaffold | 1.2 | ✅ Complete | `source/services/driver-service/` — Cargo.toml, config, logging, main.rs |
+| SQLx connection pool + `/health` endpoint | 1.2 | ✅ Complete | db/pool.rs + api/health.rs — 500ms timeout, 200/503 |
+| `/api/v1/nearby` endpoint | 1.2 | ✅ Complete | api/nearby.rs — input validation, PostGIS function call, JSON response |
+| 4 integration tests | 1.2 | ✅ Complete | All passing against live DB |
+| Traefik reverse proxy routing | 1.2 | ✅ Complete | dynamic.yml — PathPrefix(/api/v1/) → driver-service:3001 with health check |
 | Expo SDK 54 mobile app scaffold | 1.3 | 🔴 Pending | |
 | React + Leaflet web client scaffold | 1.3 | 🔴 Pending | |
 | Map markers, loading skeletons, out-of-bounds UX | 1.3 | 🔴 Pending | |

@@ -1,0 +1,25 @@
+# Dynamic Traefik configuration
+# Routing rules for the driver-service API
+
+routers:
+  driver-api:
+    rule: "PathPrefix(`/api/v1/`)"
+    service: driver-service
+    middlewares:
+      - strip-api-prefix
+
+middlewares:
+  strip-api-prefix:
+    stripPrefix:
+      prefixes:
+        - "/api/v1"
+
+services:
+  driver-service:
+    loadBalancer:
+      servers:
+        - url: "http://driver-service:3001"
+      healthCheck:
+        path: "/health"
+        interval: "10s"
+        timeout: "3s"
