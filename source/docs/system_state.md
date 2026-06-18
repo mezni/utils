@@ -3,7 +3,7 @@
 **Last Updated:** June 2026
 
 ## Current Phase
-**MVP-1 — Spatial Core Validation Pipeline (Sprint 1.2 — Implemented)**
+**MVP-1 — Spatial Core Validation Pipeline (Sprint 1.3 — Planning Complete)**
 
 ## Infrastructure Status
 | Component | Status | Notes |
@@ -26,8 +26,8 @@
 ## Client Status
 | Client | Tech Stack | Status | Notes |
 |--------|-----------|--------|-------|
-| Mobile Driver | Expo SDK 54 | 🔴 Not Scaffolded | Sprint 1.3 task |
-| Web Driver | React + Leaflet | 🔴 Not Scaffolded | Sprint 1.3 task |
+| Mobile Driver | Expo SDK 54 | 🟡 Planning Complete | Sprint 1.3 — spec, plan, tasks, analysis complete |
+| Web Driver | React + Leaflet | 🔴 Not Scaffolded | Sprint 1.4 task — spec written |
 | Dashboard | React + shadcn/ui | 🔴 Not Scaffolded | MVP-3 task |
 
 ## Database State
@@ -50,7 +50,7 @@
 ## Tracking Files
 | File | Status |
 |------|--------|
-| `docs/constitution.md` | ✅ Created (v1.3) |
+| `docs/constitution.md` | ✅ Created (v1.4) |
 | `docs/system_state.md` | ✅ Updated (this file) |
 | `docs/roadmap_status.md` | ✅ Updated |
 | `docs/sprint_backlog.md` | ✅ Updated |
@@ -80,3 +80,21 @@
 | Data Model | `specs/002-driver-service-api/data-model.md` | ✅ API response + config + state models |
 | Contracts | `specs/002-driver-service-api/contracts/` | ✅ nearby-api.md, health-api.md |
 | Quickstart | `specs/002-driver-service-api/quickstart.md` | ✅ Setup + test instructions |
+
+## Sprint 1.3 Artifacts
+| Artifact | Path | Status |
+|----------|------|--------|
+| Spec | `specs/003-mobile-driver-app/spec.md` | ✅ Passed analysis |
+| Plan | `specs/003-mobile-driver-app/plan.md` | ✅ Passed constitution check |
+| Tasks | `specs/003-mobile-driver-app/tasks.md` | ✅ 28 tasks, 8 phases — ready for implementation |
+| Research | `specs/003-mobile-driver-app/research.md` | ✅ 7 decisions documented |
+| Data Model | `specs/003-mobile-driver-app/data-model.md` | ✅ 5 entities + state transitions |
+| Contracts | `specs/003-mobile-driver-app/contracts/nearby-api.md` | ✅ Mobile client behavior matrix |
+| Quickstart | `specs/003-mobile-driver-app/quickstart.md` | ✅ Setup + 8 test scenarios |
+| Analysis | `specs/003-mobile-driver-app/checklists/requirements.md` | ✅ 16/16 items passing |
+
+## Sprint 1.4 Artifacts
+| Artifact | Path | Status |
+|----------|------|--------|
+| Spec | `specs/004-web-driver-client/spec.md` | ✅ Draft — ready for planning |
+| Checklist | `specs/004-web-driver-client/checklists/requirements.md` | ✅ 16/16 items passing |

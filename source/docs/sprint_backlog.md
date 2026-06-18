@@ -26,12 +26,29 @@
 
 ---
 
-## Sprint 1.3: Premium Front-End GIS Viewports
-**Goal:** Expo mobile and React/Leaflet web clients with shared hooks, markers, and UX states.
+## Sprint 1.3: Mobile Driver App (Expo)
+**Goal:** Expo SDK 54 mobile driver app with interactive map, station markers, and Tunisia viewport bounds.
 
-- [ ] **1.3.1** — Scaffold Expo SDK 54 shell with coordinate lock restrictions
-- [ ] **1.3.2** — Wire Leaflet web component client using shared layout elements
-- [ ] **1.3.3** — Build unified map markers, loading skeletons, and out-of-bounds indicators
+- [x] **1.3.0** — Sprint 1.3 specification & planning (spec, plan, tasks, analysis all passed)
+- [ ] **1.3.1** — Scaffold Expo SDK 54 project at `source/apps/mobile-driver/`
+- [ ] **1.3.2** — Implement MapContainer with react-native-maps, Tunisia boundary constraints, custom markers
+- [ ] **1.3.3** — Implement viewport debouncing (300ms) with AbortController and pull-to-refresh
+- [ ] **1.3.4** — Implement shimmer loading, error boundary, and empty-state UI components
+- [ ] **1.3.5** — Implement AsyncStorage offline cache with offline banner
+- [ ] **1.3.6** — Implement macro-zoom overlay at zoom level < 8
+
+---
+
+## Sprint 1.4: Web Driver Client & Map Visualization
+**Goal:** React + Leaflet web driver client with debounced viewport, shimmer loading, station drawer, and macro-zoom overlay.
+
+- [ ] **1.4.0** — Sprint 1.4 specification & planning
+- [ ] **1.4.1** — Scaffold web driver app at `source/apps/web-driver/` with Leaflet + Tailwind + React
+- [ ] **1.4.2** — Implement MapContainer with Tunisia boundary constraints and custom charging pin markers
+- [ ] **1.4.3** — Implement useDebounce hook (300ms) cancelling in-flight requests via AbortController
+- [ ] **1.4.4** — Implement shimmer loading, error boundary, and empty-state UI components
+- [ ] **1.4.5** — Implement macro-zoom overlay at zoom level < 8
+- [ ] **1.4.6** — Implement StationDrawer premium sliding card with station details
 
 ---
 

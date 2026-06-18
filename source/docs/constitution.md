@@ -31,14 +31,14 @@ The platform SHALL NOT include any of the following features during the validati
 
 ## 2. Tech Stack & Architectural Constraints
 
-- **Mobile:** Expo SDK 54 (locked), React Native + AsyncStorage (for local offline viewport and marker caching).
+- **Mobile:** Expo SDK 54 (locked), React Native + AsyncStorage (for local offline viewport and marker caching). No custom native modules — every feature must run inside default Expo Go during validation.
 - **Web (Driver):** React + Leaflet.
-- **Unified Experience:** Shared codebase/components between mobile and web driver apps where possible (shared business logic, hooks, types); platform-specific rendering only where required (e.g., Leaflet on web / react-native-maps on mobile).
 - **Dashboard:** React + Tailwind CSS + shadcn/ui + React Router v6 + Framer Motion (route transitions only) + React Query.
 - **Backend:** Rust / Actix-web from MVP-1.
 - **Shared Service Code:** Cargo workspace crates for backend models and validations; separate TypeScript packages for frontend resource sharing.
+- **Frontend Code Sharing Boundary:** All data-fetching logic (React Query hooks), auth token refresh wrappers, metric validation parsing, coordinate utilities, and TypeScript payload interfaces MUST live in `packages/shared-hooks` and `packages/shared-types`. Map container view code MUST NOT be shared — web uses React-Leaflet (DOM-based), mobile uses react-native-maps (native OS-based). Attempting a single unified map component across both platforms breaks the Expo compilation pipeline.
 - **Database:** PostgreSQL + PostGIS. Single instance `platform_db` isolating concerns via schemas: `gis`, `inventory`, `users`. Dedicated `keycloak_db` and separate `analytics_db`.
-- **Identity:** Keycloak, single realm (`bornemap`). Access profiles isolated via granular Client Roles (`role:driver`, `role:partner`, `role:admin`) across distinct Keycloak Clients (`mobile-driver-app`, `web-driver-app`, `admin-partner-dashboard`).
+- **Identity:** Keycloak, single realm (`bornemap`). Access profiles isolated via granular Client Roles (`role:driver`, `role:partner`, `role:admin`) across distinct Keycloak Clients (`mobile-driver-app`, `web-driver-app`, `admin-partner-dashboard`). Web tokens managed in memory or secure isolated browser state; mobile tokens in secure device storage.
 - **Cache:** Redis (GIS query and spatial tile cache managed directly by the Driver Service from MVP-6).
 - **Gateway:** Traefik (TLS, routing, from MVP-6).
 - **Monorepo Root:** `source/`
@@ -59,10 +59,10 @@ source/
 │   ├── auth-service/         # :3000 (Central Identity & User Schema Gateway)
 │   ├── driver-service/       # :3001 (Geospatial Read API + Inventory Writes + Cache Management)
 │   └── admin-service/        # :3002 (Partner Infrastructure Management + Analytics Logging)
-├── packages/                 # Shared TypeScript Workspace
-│   ├── shared-types/         # Unified API Request/Response TS interfaces
-│   ├── shared-hooks/         # React Query hooks for auth, locations, and nearby queries
-│   └── shared-ui/            # Tailwind configurations, inputs, form components
+├── packages/                 # Shared TypeScript Workspace (business logic only, no platform-specific views)
+│   ├── shared-types/         # Unified API Request/Response TS interfaces, coordinate types, payload contracts
+│   ├── shared-hooks/         # React Query hooks for auth, locations, nearby queries — never map components
+│   └── shared-ui/            # Tailwind config tokens, form components, layout primitives
 ├── crates/                   # Shared Rust Workspace
 │   ├── db-models/            # SQLx Structs for platform_db schemas & NanoID generation
 │   └── validation/           # Domain business rules (e.g., plug speeds, geographic limits)
@@ -111,6 +111,39 @@ source/
 - **Audit Logging:** MongoDB-based independent asynchronous audit logging engine tracks structural layout changes across stations, chargers, and partners.
 - **ADR Governance:** Structural adjustments or tooling adaptations are recorded as Architectural Decision Records within `docs/adr/`.
 - **Read/Write Separation:** The Driver Service functions as a read-optimized spatial data API via SQL PostGIS functions and internal Redis layers, while handling its own driver transactional updates. No asynchronous outbox patterns are deployed for the validation phase.
+
+---
+
+## 5a. Frontend Presentation & Interaction Rules
+
+### State-Driven Interface Checklist
+Every screen or container interacting with an API network loop must explicitly implement four core states:
+
+- **Loading:** Customized shimmer skeleton primitives mirroring the exact layout of the target data card. No raw blank screens or simple spinner rings.
+- **Success:** Render map markers or lists immediately with smooth layout animations (Framer Motion for web, LayoutAnimation for React Native).
+- **Empty Data:** If a remote-area search returns zero stations, display clear illustrative feedback instructing the user to zoom out or pan to a major city (Tunis, Sousse, Sfax).
+- **Error:** Wrap major query layers in structural Error Boundaries featuring a prominent styled "Retry Connection" button.
+
+### Map Interaction Flow Constraints
+
+- **Coordinate Debouncing:** Viewport adjustments (panning/zooming) must debounce incoming coordinate triggers by at least 300ms before querying the backend Driver Service `/api/v1/nearby` endpoint.
+- **Zoom Feedback Thresholds:** When a user zooms past the macro threshold where rendering individual markers degrades performance, hide pins and display an overlay toast reading: "Zoom in closer to view available charging stations."
+
+### Mobile-Specific Rules (Expo SDK 54 / AsyncStorage)
+
+- **Zero Custom Native Modules:** No libraries requiring manual `ios/` or `android/` folder modifications or custom `npx expo run:ios` builds. Every feature must run inside default Expo Go during validation.
+- **AsyncStorage Defensive Blueprint:** On every successful nearby spatial query, immediately update a local coordinate snapshot cache in AsyncStorage.
+- **Offline Fallback:** When network drops, gracefully read the last known viewport array from AsyncStorage, render those markers in offline mode, and append a top-bar banner: "Viewing cached data. Connect to the internet for real-time status updates."
+
+### Web-Specific Rules (React + Leaflet)
+
+- **Tailwind Consistency:** All styling tokens drawn from a central shared Tailwind configuration (`packages/shared-ui`) to match colors, spacing, and padding across web driver app and partner dashboard.
+- **Leaflet Asset Optimization:** Map marker icon graphics (SVGs or PNGs) must be bundled locally and pre-loaded to prevent rendering stutter during high-velocity map dragging.
+
+### Security & Data Integrity
+
+- **Token Isolation:** Keycloak JWTs — web manages tokens in memory or secure isolated browser state; mobile isolates tokens using secure device storage.
+- **Zero Input Mutation:** Coordinate data from location sensors must pass through shared validation patterns (`packages/validation` in Rust backend, `packages/shared-types` in frontend) before being passed to API query strings.
 
 ---
 

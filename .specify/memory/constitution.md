@@ -98,14 +98,14 @@ partners) — never on users, core access configurations, or audit logs.
 
 | Layer | Technology | Constraint |
 |-------|-----------|------------|
-| Mobile Driver App | Expo SDK 54 (locked), React Native, AsyncStorage | No native modules outside Expo Go before validation |
-| Web Driver App | React + Leaflet | Shared hooks/types with mobile |
+| Mobile Driver App | Expo SDK 54 (locked), React Native, AsyncStorage | No native modules outside Expo Go before validation. Offline fallback via AsyncStorage snapshot cache. Coordinate inputs validated through shared types. |
+| Web Driver App | React + Leaflet | Custom markers bundled locally. Styling via shared Tailwind tokens. Coordinate inputs validated through shared types. |
 | Dashboard | React + Tailwind CSS + shadcn/ui + React Router v6 + Framer Motion (transitions only) + React Query | Framer Motion limited to route transitions |
 | Backend Services | Rust / Actix-web | From MVP-1 onward |
 | Shared Backend | Cargo workspace (`crates/db-models`, `crates/validation`) | sqlx compile-time queries |
-| Shared Frontend | TypeScript packages (`packages/shared-types`, `shared-hooks`, `shared-ui`) | strict mode, no `any` |
+| Shared Frontend | TypeScript packages (`packages/shared-types`, `shared-hooks`, `shared-ui`) | strict mode, no `any`. Data fetching, auth, and types shared; map views NOT shared (web=Leaflet, mobile=react-native-maps) |
 | Database | PostgreSQL 16 + PostGIS | Single `platform_db` with `gis`, `inventory`, `users` schemas; separate `keycloak_db` and `analytics_db` |
-| Identity | Keycloak | Single `bornemap` realm |
+| Identity | Keycloak | Single `bornemap` realm. Web: tokens in memory or secure browser state. Mobile: tokens in secure device storage. |
 | Cache | Redis | GIS spatial tile cache managed by Driver Service from MVP-5 |
 | Gateway | Traefik | TLS, routing from MVP-6 |
 | Monorepo Root | `source/` | — |
@@ -140,6 +140,31 @@ kebab-case descriptive; packages/crates kebab-case with domain prefix (`shared-`
 
 **API versioning**: All endpoints prefixed with `/api/v1/`. Major version on
 breaking changes only. Additive modifications inline.
+
+## Frontend Presentation & Interaction Rules
+
+**State-Driven Interface Checklist**: Every API-interacting screen MUST implement four states:
+- **Loading**: Shimmer skeletons mirroring the target card layout (no spinners or blank screens).
+- **Success**: Smooth layout animations (Framer Motion for web, LayoutAnimation for React Native).
+- **Empty**: Illustrative feedback guiding users to pan to major cities (Tunis, Sousse, Sfax).
+- **Error**: Structural error boundary with prominent "Retry Connection" button.
+
+**Map Interaction**:
+- Viewport debounce ≥ 300ms before querying `/api/v1/nearby`.
+- Zoom-out past threshold: hide markers + overlay "Zoom in closer to view available charging stations."
+
+**Mobile**:
+- Zero custom native modules — must run in default Expo Go.
+- Successful nearby queries update AsyncStorage coordinate snapshot cache.
+- Offline: read AsyncStorage cache, render markers, show "Viewing cached data" banner.
+
+**Web**:
+- All styling via shared Tailwind config (`packages/shared-ui`).
+- Marker SVGs/PNGs bundled locally and pre-loaded.
+
+**Security**:
+- Web: JWTs in memory or secure browser state. Mobile: JWTs in secure device storage.
+- Coordinate data must pass through shared validation before reaching API query strings.
 
 ## Governance
 

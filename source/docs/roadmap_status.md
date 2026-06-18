@@ -18,9 +18,12 @@
 | `/api/v1/nearby` endpoint | 1.2 | ✅ Complete | api/nearby.rs — input validation, PostGIS function call, JSON response |
 | 4 integration tests | 1.2 | ✅ Complete | All passing against live DB |
 | Traefik reverse proxy routing | 1.2 | ✅ Complete | dynamic.yml — PathPrefix(/api/v1/) → driver-service:3001 with health check |
-| Expo SDK 54 mobile app scaffold | 1.3 | 🔴 Pending | |
-| React + Leaflet web client scaffold | 1.3 | 🔴 Pending | |
-| Map markers, loading skeletons, out-of-bounds UX | 1.3 | 🔴 Pending | |
+| Sprint 1.3 specification & planning | 1.3 | ✅ Complete | Spec, plan, tasks, analysis, constitution check all passed — `specs/003-mobile-driver-app/` |
+| Expo SDK 54 mobile driver app scaffold | 1.3 | 🔴 Pending | Map, markers, shimmer, offline cache, macro-zoom overlay |
+| Sprint 1.4 specification & planning | 1.4 | ✅ Complete | Spec written at `specs/004-web-driver-client/spec.md` |
+| Web driver client (React + Leaflet) scaffold | 1.4 | 🔴 Pending | Full-screen map, station markers, shimmer loading, viewport debouncing |
+| Station detail drawer | 1.4 | 🔴 Pending | Premium sliding card with station info |
+| Macro-zoom overlay | 1.4 | 🔴 Pending | Blocks interaction when zoomed out too far |
 
 ## MVP-2: Central Identity Integration
 | Task | Status | Notes |
