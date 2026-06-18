@@ -19,7 +19,7 @@
 | 4 integration tests | 1.2 | ✅ Complete | All passing against live DB |
 | Traefik reverse proxy routing | 1.2 | ✅ Complete | dynamic.yml — PathPrefix(/api/v1/) → driver-service:3001 with health check |
 | Sprint 1.3 specification & planning | 1.3 | ✅ Complete | Spec, plan, tasks, analysis, constitution check all passed — `specs/003-mobile-driver-app/` |
-| Expo SDK 54 mobile driver app scaffold | 1.3 | 🔴 Pending | Map, markers, shimmer, offline cache, macro-zoom overlay |
+| Expo SDK 54 mobile driver app implementation | 1.3 | ✅ Complete | 28 tasks, 8 phases, 0 type errors — map, markers, debounce, shimmer, error/empty states, offline cache, macro-zoom overlay |
 | Sprint 1.4 specification & planning | 1.4 | ✅ Complete | Spec written at `specs/004-web-driver-client/spec.md` |
 | Web driver client (React + Leaflet) scaffold | 1.4 | 🔴 Pending | Full-screen map, station markers, shimmer loading, viewport debouncing |
 | Station detail drawer | 1.4 | 🔴 Pending | Premium sliding card with station info |

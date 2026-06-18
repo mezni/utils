@@ -3,7 +3,7 @@
 **Last Updated:** June 2026
 
 ## Current Phase
-**MVP-1 — Spatial Core Validation Pipeline (Sprint 1.3 — Planning Complete)**
+**MVP-1 — Spatial Core Validation Pipeline (Sprint 1.3 — Implemented)**
 
 ## Infrastructure Status
 | Component | Status | Notes |
@@ -26,7 +26,7 @@
 ## Client Status
 | Client | Tech Stack | Status | Notes |
 |--------|-----------|--------|-------|
-| Mobile Driver | Expo SDK 54 | 🟡 Planning Complete | Sprint 1.3 — spec, plan, tasks, analysis complete |
+| Mobile Driver | Expo SDK 56 | ✅ Implemented | Sprint 1.3 complete — 28 tasks, 8 phases, 0 type errors |
 | Web Driver | React + Leaflet | 🔴 Not Scaffolded | Sprint 1.4 task — spec written |
 | Dashboard | React + shadcn/ui | 🔴 Not Scaffolded | MVP-3 task |
 
@@ -86,7 +86,7 @@
 |----------|------|--------|
 | Spec | `specs/003-mobile-driver-app/spec.md` | ✅ Passed analysis |
 | Plan | `specs/003-mobile-driver-app/plan.md` | ✅ Passed constitution check |
-| Tasks | `specs/003-mobile-driver-app/tasks.md` | ✅ 28 tasks, 8 phases — ready for implementation |
+| Tasks | `specs/003-mobile-driver-app/tasks.md` | ✅ 28 tasks, 8 phases — all completed |
 | Research | `specs/003-mobile-driver-app/research.md` | ✅ 7 decisions documented |
 | Data Model | `specs/003-mobile-driver-app/data-model.md` | ✅ 5 entities + state transitions |
 | Contracts | `specs/003-mobile-driver-app/contracts/nearby-api.md` | ✅ Mobile client behavior matrix |

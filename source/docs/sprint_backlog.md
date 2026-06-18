@@ -27,15 +27,15 @@
 ---
 
 ## Sprint 1.3: Mobile Driver App (Expo)
-**Goal:** Expo SDK 54 mobile driver app with interactive map, station markers, and Tunisia viewport bounds.
+**Goal:** Expo SDK 56 mobile driver app with interactive map, station markers, viewport debouncing, and Tunisia viewport bounds.
 
 - [x] **1.3.0** — Sprint 1.3 specification & planning (spec, plan, tasks, analysis all passed)
-- [ ] **1.3.1** — Scaffold Expo SDK 54 project at `source/apps/mobile-driver/`
-- [ ] **1.3.2** — Implement MapContainer with react-native-maps, Tunisia boundary constraints, custom markers
-- [ ] **1.3.3** — Implement viewport debouncing (300ms) with AbortController and pull-to-refresh
-- [ ] **1.3.4** — Implement shimmer loading, error boundary, and empty-state UI components
-- [ ] **1.3.5** — Implement AsyncStorage offline cache with offline banner
-- [ ] **1.3.6** — Implement macro-zoom overlay at zoom level < 8
+- [x] **1.3.1** — Scaffold Expo SDK 56 project at `source/apps/mobile-driver/` with TypeScript strict mode
+- [x] **1.3.2** — Implement MapContainer with react-native-maps, Tunisia boundary constraints, custom markers
+- [x] **1.3.3** — Implement viewport debouncing (300ms) with AbortController and pull-to-refresh
+- [x] **1.3.4** — Implement shimmer loading, error boundary, and empty-state UI components
+- [x] **1.3.5** — Implement AsyncStorage offline cache with offline banner
+- [x] **1.3.6** — Implement macro-zoom overlay at zoom level < 8
 
 ---
 
