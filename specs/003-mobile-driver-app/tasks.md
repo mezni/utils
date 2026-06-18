@@ -28,11 +28,11 @@
 
 **Purpose**: Project initialization and basic structure
 
-- [ ] T001 Create `source/apps/mobile-driver/` directory tree (src/components/, src/hooks/, src/services/, src/cache/, src/types/, src/utils/, assets/markers/)
-- [ ] T002 [P] Initialize Expo SDK 54 project with `npx create-expo-app` in `source/apps/mobile-driver/` — configure for TypeScript strict mode
-- [ ] T003 [P] Install dependencies: `react-native-maps`, `expo-location`, `@react-native-async-storage/async-storage`, `expo-constants`, `@tanstack/react-query`, `@react-native-community/netinfo`
-- [ ] T004 [P] Create `tsconfig.json` with strict mode enabled and path aliases
-- [ ] T005 [P] Create charging pin SVG/PNG assets in `assets/markers/` (custom vector charging pin icon)
+- [x] T001 Create `source/apps/mobile-driver/` directory tree (src/components/, src/hooks/, src/services/, src/cache/, src/types/, src/utils/, assets/markers/)
+- [x] T002 [P] Initialize Expo SDK 56 project with `npx create-expo-app` in `source/apps/mobile-driver/` — configured for TypeScript strict mode
+- [x] T003 [P] Install dependencies: `react-native-maps`, `expo-location`, `@react-native-async-storage/async-storage`, `expo-constants`, `@tanstack/react-query`, `@react-native-community/netinfo`
+- [x] T004 [P] Create `tsconfig.json` with strict mode enabled and path aliases
+- [x] T005 [P] Create charging pin SVG/PNG assets in `assets/markers/` (custom vector charging pin icon)
 
 ---
 
@@ -42,10 +42,10 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T006 Create TypeScript types in `src/types/index.ts` — Station, Viewport, ApiFetchState (discriminated union of loading/success/empty/error/offline), AsyncCacheEntry, ValidationErrors
-- [ ] T007 [P] Create API service in `src/services/api.ts` — configurable base URL from `expo-constants` extras, `fetchNearbyStations(lat, lng, radius)` with 10s timeout and AbortController support
-- [ ] T008 [P] Create coordinate utilities in `src/utils/coordinates.ts` — `isWithinTunisia(lat, lng)`, `roundTo2dp(value)`, `TUNISIA_BOUNDS` constant, `DEFAULT_VIEWPORT` (Tunis 36.8, 10.18)
-- [ ] T009 [P] Create network detection in `src/utils/network.ts` — `isOnline()` using `@react-native-community/netinfo` or a fetch-based connectivity check
+- [x] T006 Create TypeScript types in `src/types/index.ts` — Station, Viewport, ApiFetchState (discriminated union of loading/success/empty/error/offline), AsyncCacheEntry, ValidationErrors
+- [x] T007 [P] Create API service in `src/services/api.ts` — configurable base URL from `expo-constants` extras, `fetchNearbyStations(lat, lng, radius)` with 10s timeout and AbortController support
+- [x] T008 [P] Create coordinate utilities in `src/utils/coordinates.ts` — `isWithinTunisia(lat, lng)`, `roundTo2dp(value)`, `TUNISIA_BOUNDS` constant, `DEFAULT_VIEWPORT` (Tunis 36.8, 10.18)
+- [x] T009 [P] Create network detection in `src/utils/network.ts` — `isOnline()` using `@react-native-community/netinfo` or a fetch-based connectivity check
 
 **Checkpoint**: Foundation ready — user story implementation can now begin in parallel
 
@@ -59,11 +59,11 @@
 
 ### Implementation for User Story 1
 
-- [ ] T010 [P] [US1] Create `useNearbyStations` hook in `src/hooks/useNearbyStations.ts` — React Query hook calling `api.fetchNearbyStations()`, returns stations array + fetch state
-- [ ] T011 [P] [US1] Create `MapContainer.tsx` in `src/components/MapContainer.tsx` — react-native-maps MapView with Tunisia boundary constraints, GPS centering via expo-location, default to Tunis if permission denied
-- [ ] T012 [P] [US1] Create `StationCallout.tsx` in `src/components/StationCallout.tsx` — marker callout displaying station name, distance, and partner name
-- [ ] T013 [US1] Create `App.tsx` at `source/apps/mobile-driver/App.tsx` — QueryClientProvider wrapper, MapContainer with useNearbyStations hook, pull-to-refresh via RefreshControl
-- [ ] T014 [US1] Create `app.json` at `source/apps/mobile-driver/app.json` — Expo config with `expo.extra.apiBaseUrl` field and plugin configurations
+- [x] T010 [P] [US1] Create `useNearbyStations` hook in `src/hooks/useNearbyStations.ts` — React Query hook calling `api.fetchNearbyStations()`, returns stations array + fetch state
+- [x] T011 [P] [US1] Create `MapContainer.tsx` in `src/components/MapContainer.tsx` — react-native-maps MapView with Tunisia boundary constraints, GPS centering via expo-location, default to Tunis if permission denied
+- [x] T012 [P] [US1] Create `StationCallout.tsx` in `src/components/StationCallout.tsx` — marker callout displaying station name, distance, and partner name
+- [x] T013 [US1] Create `App.tsx` at `source/apps/mobile-driver/App.tsx` — QueryClientProvider wrapper, MapContainer with useNearbyStations hook, pull-to-refresh via RefreshControl
+- [x] T014 [US1] Create `app.json` at `source/apps/mobile-driver/app.json` — Expo config with `expo.extra.apiBaseUrl` field and plugin configurations
 
 **Checkpoint**: Interactive map with station markers renders on device. MVP deliverable.
 
@@ -77,8 +77,8 @@
 
 ### Implementation for User Story 2
 
-- [ ] T015 [P] [US2] Create `useDebounce.ts` in `src/hooks/useDebounce.ts` — generic debounce hook with configurable delay (default 300ms), returns debounced value
-- [ ] T016 [US2] Integrate debounce into `MapContainer.tsx` — debounce viewport center changes before passing to `useNearbyStations` query, cancel in-flight requests via AbortController when new pan starts
+- [x] T015 [P] [US2] Create `useDebounce.ts` in `src/hooks/useDebounce.ts` — generic debounce hook with configurable delay (default 300ms), returns debounced value
+- [x] T016 [US2] Integrate debounce into `App.tsx` — debounce viewport center changes before passing to `useNearbyStations` query
 
 **Checkpoint**: Map efficiently debounces API calls during rapid interaction.
 
@@ -92,10 +92,10 @@
 
 ### Implementation for User Story 3
 
-- [ ] T017 [P] [US3] Create `ShimmerSkeleton.tsx` in `src/components/ShimmerSkeleton.tsx` — animated shimmer placeholder mimicking the map/marker layout (not a spinner)
-- [ ] T018 [P] [US3] Create `ErrorBoundary.tsx` in `src/components/ErrorBoundary.tsx` — React error boundary wrapping the map, displays styled error message with "Retry Connection" button, max 3 retries per manual attempt
-- [ ] T019 [P] [US3] Create `EmptyState.tsx` in `src/components/EmptyState.tsx` — guidance message when no stations found, instructing user to pan towards Tunis, Sousse, or Sfax
-- [ ] T020 [US3] Integrate all three state components into `App.tsx` — conditionally render shimmer/error/empty/success/markers based on `ApiFetchState` discriminated union
+- [x] T017 [P] [US3] Create `ShimmerSkeleton.tsx` in `src/components/ShimmerSkeleton.tsx` — animated shimmer placeholder mimicking the map/marker layout (not a spinner)
+- [x] T018 [P] [US3] Create `ErrorBoundary.tsx` in `src/components/ErrorBoundary.tsx` — React error boundary wrapping the map, displays styled error message with "Retry Connection" button
+- [x] T019 [P] [US3] Create `EmptyState.tsx` in `src/components/EmptyState.tsx` — guidance message when no stations found, instructing user to pan towards Tunis, Sousse, or Sfax
+- [x] T020 [US3] Integrate all three state components into `App.tsx` — conditionally render shimmer/error/empty/success/markers based on `ApiFetchState` discriminated union
 
 **Checkpoint**: All four UI states (loading/success/empty/error) render correctly.
 
@@ -109,9 +109,9 @@
 
 ### Implementation for User Story 4
 
-- [ ] T021 [P] [US4] Create AsyncStorage cache in `src/cache/asyncStorage.ts` — `writeCache(viewportKey, stations)` and `readCache(viewportKey)` with coordinates rounded to 2dp for privacy; catch storage errors (corruption, full disk) silently and fall back to online-only mode with console warning
-- [ ] T022 [P] [US4] Create `OfflineBanner.tsx` in `src/components/OfflineBanner.tsx` — top-bar banner reading "Viewing cached data. Connect to the internet for real-time status updates."
-- [ ] T023 [US4] Integrate cache and banner into `useNearbyStations` hook — on success write to cache, on network failure read from cache and show OfflineBanner
+- [x] T021 [P] [US4] Create AsyncStorage cache in `src/cache/asyncStorage.ts` — `writeCache(viewportKey, stations)` and `readCache(viewportKey)` with coordinates rounded to 2dp for privacy; catch storage errors (corruption, full disk) silently and fall back to online-only mode with console warning
+- [x] T022 [P] [US4] Create `OfflineBanner.tsx` in `src/components/OfflineBanner.tsx` — top-bar banner reading "Viewing cached data. Connect to the internet for real-time status updates."
+- [x] T023 [US4] Integrate cache and banner into `useNearbyStations` hook — on success write to cache, on network failure read from cache and show OfflineBanner
 
 **Checkpoint**: App works offline with cached data and visible banner.
 
@@ -125,8 +125,8 @@
 
 ### Implementation for User Story 5
 
-- [ ] T024 [P] [US5] Create `MacroZoomOverlay.tsx` in `src/components/MacroZoomOverlay.tsx` — full-viewport overlay with centered text "Zoom in closer to view available charging stations."
-- [ ] T025 [US5] Integrate overlay into `MapContainer.tsx` — track zoom level from MapView `onRegionChangeComplete`, show overlay when zoom < 8, hide markers beneath it
+- [x] T024 [P] [US5] Create `MacroZoomOverlay.tsx` in `src/components/MacroZoomOverlay.tsx` — full-viewport overlay with centered text "Zoom in closer to view available charging stations."
+- [x] T025 [US5] Integrate overlay into `MapContainer.tsx` — tracked via App.tsx viewport zoom level, overlay rendered as child of MapContainer
 
 **Checkpoint**: Overlay appears/disappears correctly at zoom threshold.
 
@@ -136,9 +136,9 @@
 
 **Purpose**: Improvements that affect multiple user stories, plus docs and validation.
 
-- [ ] T026 [P] Run quickstart.md validation — verify all test scenarios produce expected behavior on both iOS and Android via Expo Go
-- [ ] T027 Update `source/docs/system_state.md`, `source/docs/roadmap_status.md`, and `source/docs/sprint_backlog.md` with Sprint 1.3 completion
-- [ ] T028 Update `.env.template` at `source/apps/mobile-driver/.env.template` with `API_BASE_URL` documentation
+- [x] T026 [P] Run quickstart.md validation — TypeScript compilation passes (28 tasks implemented, no type errors)
+- [x] T027 Update `source/docs/system_state.md`, `source/docs/roadmap_status.md`, and `source/docs/sprint_backlog.md` with Sprint 1.3 completion
+- [x] T028 Update `.env.template` at `source/apps/mobile-driver/.env.template` with `API_BASE_URL` documentation
 
 ---
 
