@@ -4,14 +4,16 @@
 
 ```
 platform_db (PostgreSQL 16 + PostGIS 3.4)
-├── gis schema              (OSM reference data — imported)
-│   ├── osm_roads           (road network geometries)
-│   ├── osm_cities          (populated place boundaries)
-│   └── osm_points          (points of interest)
-└── inventory schema        (application infrastructure — managed)
-    ├── partner             (station operator/owner)
-    ├── station             (physical charging location)
-    └── charger             (individual charging unit)
+├── gis schema              (OSM reference + mirrored map layers)
+│   ├── osm_roads           (road network geometries — imported via osm2pgsql)
+│   ├── osm_cities          (populated place boundaries — imported)
+│   ├── osm_points          (points of interest — imported)
+│   └── osm_stations        (station geometry mirrored from inventory — sync layer)
+├── inventory schema        (application infrastructure — managed)
+│   ├── partner             (station operator/owner)
+│   ├── station             (physical charging location)
+│   ├── charger             (individual charging unit)
+│   └── sync_outbox         (event outbox for inventory→GIS replication)
 ```
 
 ---
@@ -99,10 +101,46 @@ All tables include:
 
 ---
 
-## Stored Function: inventory.get_nearby_stations
+## gis.osm_stations (Mirrored Layer)
 
-```sql
-FUNCTION inventory.get_nearby_stations(
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| osm_id | TEXT | PK, matches `inventory.station.id` | Station identifier (STA_ prefix) |
+| name | TEXT | NOT NULL | Station display name |
+| tags | JSONB | DEFAULT '{}' | Enriched metadata (operator, city, address, inventory metadata) |
+| way | GEOMETRY(Point, 4326) | NOT NULL | PostGIS geometry point for spatial joins with OSM data |
+
+**Indexes**:
+- GIST index on `way`
+
+**Purpose**: Maintained by the inventory→GIS sync pipeline. Used for spatial background analyses (road proximity, boundary caching) without querying the operational inventory tables directly. The `way` column uses the `GEOMETRY` type (matching osm2pgsql convention) rather than `GEOGRAPHY`, since this layer is designed for spatial overlay and visualization, not geodesic distance computation.
+
+---
+
+## inventory.sync_outbox (Event Outbox)
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| id | BIGSERIAL | PK | Auto-incrementing event ID |
+| entity_type | VARCHAR(50) | NOT NULL | Entity type discriminator ('STATION') |
+| entity_id | VARCHAR(50) | NOT NULL | Entity identifier (e.g. 'STA_001') |
+| action_type | VARCHAR(20) | NOT NULL | 'INSERT', 'UPDATE', or 'DELETE' |
+| processed | BOOLEAN | DEFAULT FALSE | Whether the sync worker has consumed this event |
+| retry_count | INT | DEFAULT 0 | Number of failed processing attempts |
+| created_at | TIMESTAMPTZ | DEFAULT CURRENT_TIMESTAMP | Event creation time |
+| processed_at | TIMESTAMPTZ | NULLABLE | When the sync worker processed this event |
+
+**Indexes**:
+- BTREE index on `(processed, created_at)` — supports the worker's unprocessed-rows query
+
+**Architecture**: Outbox pattern avoids coupling inventory writes to GIS sync on the API thread. When a station is created/updated/deleted, the trigger `inventory.tr_queue_station_sync()` appends an event to this table within the same transaction. A separate sync worker (`gis.process_sync_outbox()`) polls unprocessed rows and upserts/deletes the corresponding row in `gis.osm_stations`. Failed events are retried up to `max_retries` times by incrementing `retry_count`.
+
+---
+
+## Stored Function: gis.get_nearby_stations
+
+### Signature
+FUNCTION gis.get_nearby_stations(
     lng DOUBLE PRECISION,
     lat DOUBLE PRECISION,
     radius_meters DOUBLE PRECISION
@@ -123,3 +161,23 @@ FUNCTION inventory.get_nearby_stations(
 - Orders results by `ST_Distance` ascending
 - Only returns non-deleted stations (`deleted_at IS NULL`)
 - Returns empty set (not NULL) when no stations match
+
+---
+
+## Sync Functions
+
+### gis.sync_station
+`FUNCTION gis.sync_station(target_id TEXT) RETURNS VOID`
+
+Upserts a single station from `inventory.station` into `gis.osm_stations`. Shared between the seed data INSERT and the `process_sync_outbox` worker. Merges `inventory.station.metadata` into the `gis.osm_stations.tags` JSONB column.
+
+### gis.process_sync_outbox
+`FUNCTION gis.process_sync_outbox(max_retries INT DEFAULT 3) RETURNS TABLE(processed_id BIGINT, entity_id TEXT, action_type TEXT, status TEXT)`
+
+Drains unprocessed events from `inventory.sync_outbox`:
+- **INSERT / UPDATE**: Calls `gis.sync_station()` to upsert the row
+- **DELETE**: Removes the row from `gis.osm_stations`
+- Marks successfully processed events with `processed = TRUE` and `processed_at`
+- On error, increments `retry_count` and leaves `processed = FALSE` for retry
+- Uses `FOR UPDATE SKIP LOCKED` for safe concurrent execution
+- Skips events whose `retry_count >= max_retries`

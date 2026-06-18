@@ -1,0 +1,65 @@
+-- Contract: inventory.sync_outbox + trigger + gis.process_sync_outbox
+--
+-- Implements a transactional outbox pattern for replicating inventory
+-- station changes into the gis.osm_stations geometry layer.
+--
+-- Version: 1.0.0
+-- Status: IMPLEMENTED
+-- Owner: Admin Service (writes) / Driver Service (reads gis.osm_stations)
+
+-- ============================================================
+-- 1. TABLE inventory.sync_outbox
+-- ============================================================
+-- Stores change events queued by the trigger on inventory.station.
+-- The sync worker drains this table asynchronously.
+--
+-- Columns:
+--   id            BIGSERIAL    PK
+--   entity_type   VARCHAR(50)  NOT NULL  — 'STATION'
+--   entity_id     VARCHAR(50)  NOT NULL  — e.g. 'STA_001'
+--   action_type   VARCHAR(20)  NOT NULL  — 'INSERT' | 'UPDATE' | 'DELETE'
+--   processed     BOOLEAN      DEFAULT FALSE
+--   retry_count   INT          DEFAULT 0
+--   created_at    TIMESTAMPTZ  DEFAULT CURRENT_TIMESTAMP
+--   processed_at  TIMESTAMPTZ
+--
+-- Index: (processed, created_at) BTREE for worker polling
+
+-- ============================================================
+-- 2. TRIGGER inventory.tr_queue_station_sync
+-- ============================================================
+-- Fires AFTER INSERT / UPDATE / DELETE on inventory.station.
+-- - INSERT: queues 'INSERT' event
+-- - UPDATE with deleted_at transition: queues 'DELETE' (soft-delete)
+-- - UPDATE without deletion: queues 'UPDATE' event
+-- - DELETE: queues 'DELETE' event (hard-delete), returns OLD
+
+-- ============================================================
+-- 3. FUNCTION gis.process_sync_outbox(max_retries INT DEFAULT 3)
+-- ============================================================
+-- Polls unprocessed events with FOR UPDATE SKIP LOCKED.
+-- For each event:
+--   INSERT/UPDATE → calls gis.sync_station(entity_id)
+--   DELETE        → DELETE FROM gis.osm_stations WHERE osm_id = entity_id
+-- On success:     marks processed = TRUE, sets processed_at
+-- On error:       increments retry_count, leaves processed = FALSE
+-- Skips events where retry_count >= max_retries.
+
+-- ============================================================
+-- 4. FUNCTION gis.sync_station(target_id TEXT)
+-- ============================================================
+-- Upserts a single station into gis.osm_stations.
+-- Merges inventory.station.metadata into tags.
+-- Used by both the seed INSERT and process_sync_outbox.
+
+-- ============================================================
+-- Sync Flow
+-- ============================================================
+-- [Admin/Partner API] → INSERT/UPDATE inventory.station
+--                       └─ trigger appends to sync_outbox (same TX)
+-- [Sync Worker]        → SELECT FROM sync_outbox WHERE NOT processed
+--                       └─ FOR UPDATE SKIP LOCKED
+--                       └─ upsert/delete gis.osm_stations
+--                       └─ mark processed = TRUE
+-- [GIS Queries]        → Spatial joins use gis.osm_stations.way
+--                        (GEOMETRY Point 4326, matching osm2pgsql convention)

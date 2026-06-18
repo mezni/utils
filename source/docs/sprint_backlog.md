@@ -8,10 +8,11 @@
 **Goal:** Dockerized PostGIS, schema DDL, OSM ingestion pipeline, spatial function.
 
 - [x] **1.1.0** — Sprint 1.1 specification & analysis complete
-- [ ] **1.1.1** — Dockerize PostGIS 16 instance with customized spatial limits
-- [ ] **1.1.2** — Script schema migrations (`gis`, `inventory`) and NanoID validations
-- [ ] **1.1.3** — Build `osm-importer` pipeline loading Tunisia PBF map parameters
-- [ ] **1.1.4** — Implement native `get_nearby_stations` PostGIS distance handler
+- [x] **1.1.1** — Dockerize PostGIS 16 instance with customized spatial limits
+- [x] **1.1.2** — Script schema migrations (`gis`, `inventory`) and NanoID validations
+- [x] **1.1.3** — Build `osm-importer` pipeline loading Tunisia PBF map parameters
+- [x] **1.1.4** — Implement native `gis.get_nearby_stations` PostGIS distance handler (moved from inventory schema)
+- [x] **1.1.5** — Build inventory→GIS sync layer: `gis.osm_stations` mirror table, `inventory.sync_outbox` event outbox, trigger-captured station changes, `gis.process_sync_outbox()` worker
 
 ---
 

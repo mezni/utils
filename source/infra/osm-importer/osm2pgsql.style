@@ -1,0 +1,28 @@
+# osm2pgsql style file for BorneMap
+# Selects: roads, populated places, administrative boundaries
+
+node,highway,text,linear
+node,place,text,linear
+node,boundary,text,linear
+node,name,text,linear
+node,admin_level,text,linear
+node,population,text,linear
+
+way,highway,text,linear
+way,place,text,linear
+way,boundary,text,linear
+way,name,text,linear
+way,admin_level,text,linear
+way,population,text,linear
+way,ref,text,linear
+way,maxspeed,text,linear
+way,oneway,text,linear
+way,surface,text,linear
+way,lanes,text,linear
+
+relation,highway,text,linear
+relation,place,text,linear
+relation,boundary,text,linear
+relation,name,text,linear
+relation,admin_level,text,linear
+relation,type,text,linear

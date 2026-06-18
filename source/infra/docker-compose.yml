@@ -1,0 +1,42 @@
+services:
+  platform_db:
+    image: postgis/postgis:16-3.4
+    container_name: bornemap-db
+    environment:
+      POSTGRES_DB: platform_db
+      POSTGRES_USER: bornemap
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-bornemap_dev}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/01-init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bornemap -d platform_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  osm-importer:
+    build: ./osm-importer
+    container_name: bornemap-importer
+    environment:
+      DB_HOST: platform_db
+      DB_PORT: "5432"
+      DB_USER: bornemap
+      DB_PASSWORD: ${DB_PASSWORD:-bornemap_dev}
+      DB_NAME: platform_db
+      OSM_FILE: /tmp/tunisia-latest.osm.pbf
+    volumes:
+      - osm-pbf-cache:/tmp
+    depends_on:
+      platform_db:
+        condition: service_healthy
+    profiles:
+      - import
+    restart: "no"
+
+volumes:
+  pgdata:
+  osm-pbf-cache:

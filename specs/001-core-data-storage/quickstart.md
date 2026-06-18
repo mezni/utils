@@ -26,7 +26,7 @@ docker compose -f source/infra/docker-compose.yml exec platform_db psql -U borne
 
 # 6. Test spatial function
 docker compose -f source/infra/docker-compose.yml exec platform_db psql -U bornemap -d platform_db \
-  -c "SELECT station_id, station_name, distance_meters FROM inventory.get_nearby_stations(10.1, 36.8, 10000);"
+  -c "SELECT station_id, station_name, distance_meters FROM gis.get_nearby_stations(10.1, 36.8, 10000);"
 ```
 
 ## Expected Results

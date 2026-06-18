@@ -1,9 +1,9 @@
--- Contract: inventory.get_nearby_stations
+-- Contract: gis.get_nearby_stations
 --
 -- Finds charging stations within a given radius of a coordinate,
 -- sorted by geodesic distance ascending.
 --
--- Version: 1.0.0
+-- Version: 1.1.0
 -- Status: DRAFT
 -- Owner: Driver Service (called at the API layer in Sprint 1.2)
 
@@ -26,8 +26,11 @@
 --   P0001 (raise_exception) if radius_meters <= 0
 --
 -- Empty result: Returns 0 rows (not NULL) when no stations match
+--
+-- Note: Moved from inventory to gis schema in Sprint 1.1 sync refactor.
+--       The function still queries inventory.station and inventory.partner.
 
-CREATE OR REPLACE FUNCTION inventory.get_nearby_stations(
+CREATE OR REPLACE FUNCTION gis.get_nearby_stations(
     lng DOUBLE PRECISION,
     lat DOUBLE PRECISION,
     radius_meters DOUBLE PRECISION

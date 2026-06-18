@@ -1,0 +1,8 @@
+[workspace]
+
+members = [
+    "crates/db-models",
+    "crates/validation",
+]
+
+resolver = "2"

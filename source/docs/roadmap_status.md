@@ -7,10 +7,11 @@
 |------|--------|--------|-------|
 | Directory structure initialization | — | ✅ Complete | |
 | Sprint 1.1 specification & planning | 1.1 | ✅ Complete | Spec, plan, tasks, analysis all passed |
-| PostGIS 16 Docker profile | 1.1 | 🔴 Pending | Ready for implementation |
-| `gis` & `inventory` schema DDL (`init.sql`) | 1.1 | 🔴 Pending | Ready for implementation |
-| Containerized `osm-importer` for Tunisia PBF | 1.1 | 🔴 Pending | Ready for implementation |
-| Native `get_nearby_stations` PostGIS function | 1.1 | 🔴 Pending | Ready for implementation |
+| PostGIS 16 Docker profile | 1.1 | ✅ Complete | Running on port 5432 |
+| `gis` & `inventory` schema DDL (`init.sql`) | 1.1 | ✅ Complete | 3 tables, indexes, seed data |
+| Containerized `osm-importer` for Tunisia PBF | 1.1 | ✅ Complete | Tunisia OSM data loaded |
+| Native `gis.get_nearby_stations` PostGIS function | 1.1 | ✅ Complete | Moved from inventory schema; all tests pass |
+| Inventory→GIS sync outbox (sync_outbox + trigger + worker) | 1.1 | ✅ Complete | Transactional outbox; gis.process_sync_outbox() drains to gis.osm_stations |
 | Actix-web `driver-service` scaffold | 1.2 | 🔴 Pending | |
 | SQLx connection pool + `/health` endpoint | 1.2 | 🔴 Pending | |
 | `/api/v1/nearby` endpoint | 1.2 | 🔴 Pending | |

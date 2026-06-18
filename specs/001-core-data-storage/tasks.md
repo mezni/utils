@@ -10,10 +10,10 @@
 
 **Purpose**: Project initialization and basic structure
 
-- [ ] T001 Create `source/infra/db/` and `source/infra/osm-importer/` directory structure
-- [ ] T002 [P] Initialize Cargo workspace at `source/Cargo.toml` with `crates/db-models` and `crates/validation` members
-- [ ] T003 [P] Create `source/.env.template` with `DB_PASSWORD=change_me` placeholder
-- [ ] T003b [P] Create `source/.gitignore` with entries for `.env`, `*.env`, `target/`, and `node_modules/` to protect credentials per constitution §7
+- [x] T001 Create `source/infra/db/` and `source/infra/osm-importer/` directory structure
+- [x] T002 [P] Initialize Cargo workspace at `source/Cargo.toml` with `crates/db-models` and `crates/validation` members
+- [x] T003 [P] Create `source/.env.template` with `DB_PASSWORD=change_me` placeholder
+- [x] T003b [P] Create `source/.gitignore` with entries for `.env`, `*.env`, `target/`, and `node_modules/` to protect credentials per constitution §7
 
 ---
 
@@ -23,8 +23,8 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T004 Create `source/infra/docker-compose.yml` with `platform_db` service (postgis/postgis:16-3.4), named volume `pgdata`, healthcheck, and port mapping
-- [ ] T005 Create `source/infra/db/init.sql` with `gis` schema (empty) and `inventory` schema (empty) — tables added in user story phases
+- [x] T004 Create `source/infra/docker-compose.yml` with `platform_db` service (postgis/postgis:16-3.4), named volume `pgdata`, healthcheck, and port mapping
+- [x] T005 Create `source/infra/db/init.sql` with `gis` schema (empty) and `inventory` schema (empty) — tables added in user story phases
 
 **Checkpoint**: Foundation ready — PostGIS container starts, schemas exist, user story implementation can begin
 
@@ -36,12 +36,12 @@
 
 **Independent Test**: `docker compose up -d platform_db`, connect with `psql`, verify `gis` and `inventory` schemas present with expected tables.
 
-- [ ] T006 [US1] Define `inventory.partner` table in `source/infra/db/init.sql` with columns per data-model.md (id TEXT PK OPR_, name, contact_email, contact_phone, created_at, updated_at, deleted_at)
-- [ ] T007 [US1] Define `inventory.station` table in `source/infra/db/init.sql` with columns per data-model.md (id TEXT PK STA_, partner_id FK, name, address, city, latitude, longitude, location GEOGRAPHY(Point,4326), is_private, metadata JSONB, timestamps, deleted_at)
-- [ ] T008 [US1] Define `inventory.charger` table in `source/infra/db/init.sql` with columns per data-model.md (id TEXT PK CHG_, station_id FK, connector_type, power_kw, status, timestamps, deleted_at)
-- [ ] T009 [P] [US1] Add GIST index on `inventory.station.location` and BTREE indexes on partner_id and station_id foreign keys in `source/infra/db/init.sql`
-- [ ] T010 [US1] Create `source/.env` with `DB_PASSWORD=bornemap_dev` for local development (verify `source/.gitignore` already excludes `.env`)
-- [ ] T011 [US1] Verify: `docker compose -f source/infra/docker-compose.yml up -d` completes, `\dn` shows both schemas, `\dt inventory.*` shows 3 tables
+- [x] T006 [US1] Define `inventory.partner` table in `source/infra/db/init.sql` with columns per data-model.md (id TEXT PK OPR_, name, contact_email, contact_phone, created_at, updated_at, deleted_at)
+- [x] T007 [US1] Define `inventory.station` table in `source/infra/db/init.sql` with columns per data-model.md (id TEXT PK STA_, partner_id FK, name, address, city, latitude, longitude, location GEOGRAPHY(Point,4326), is_private, metadata JSONB, timestamps, deleted_at)
+- [x] T008 [US1] Define `inventory.charger` table in `source/infra/db/init.sql` with columns per data-model.md (id TEXT PK CHG_, station_id FK, connector_type, power_kw, status, timestamps, deleted_at)
+- [x] T009 [P] [US1] Add GIST index on `inventory.station.location` and BTREE indexes on partner_id and station_id foreign keys in `source/infra/db/init.sql`
+- [x] T010 [US1] Create `source/.env` with `DB_PASSWORD=bornemap_dev` for local development (verify `source/.gitignore` already excludes `.env`)
+- [x] T011 [US1] Verify: `docker compose -f source/infra/docker-compose.yml up -d` completes, `\dn` shows both schemas, `\dt inventory.*` shows 3 tables
 
 **Checkpoint**: PostGIS database running with complete schema — independently testable via psql connection
 
@@ -53,10 +53,10 @@
 
 **Independent Test**: Run osm-importer, query `gis.osm_roads` for record count > 0.
 
-- [ ] T012 [P] [US2] Create `source/infra/osm-importer/Dockerfile` based on `osgeo/gdal:ubuntu-small-latest` with osm2pgsql installed
-- [ ] T013 [US2] Create `source/infra/osm-importer/import.sh`: download `tunisia-latest.osm.pbf` from Geofabrik, run osm2pgsql with custom style file, create GIST indexes on geometry columns
-- [ ] T014 [P] [US2] Create `source/infra/osm-importer/osm2pgsql.style` selecting roads (highway=*), populated places (place=city/town/village), and administrative boundaries
-- [ ] T015 [US2] Verify: run importer, check `gis.osm_roads` has records, spatial indexes exist on geometry columns
+- [x] T012 [P] [US2] Create `source/infra/osm-importer/Dockerfile` based on `osgeo/gdal:ubuntu-small-latest` with osm2pgsql installed
+- [x] T013 [US2] Create `source/infra/osm-importer/import.sh`: download `tunisia-latest.osm.pbf` from Geofabrik, run osm2pgsql with custom style file, create GIST indexes on geometry columns
+- [x] T014 [P] [US2] Create `source/infra/osm-importer/osm2pgsql.style` selecting roads (highway=*), populated places (place=city/town/village), and administrative boundaries
+- [x] T015 [US2] Verify: run importer, check `gis.osm_roads` has records, spatial indexes exist on geometry columns
 
 **Checkpoint**: Tunisia OSM reference data loaded in `gis` schema — independently testable by record count
 
@@ -66,11 +66,11 @@
 
 **Goal**: `get_nearby_stations` function returns stations sorted by geodesic distance.
 
-**Independent Test**: Call `inventory.get_nearby_stations(10.1, 36.8, 5000)` with seed data, verify stations within 5km returned sorted.
+**Independent Test**: Call `gis.get_nearby_stations(10.1, 36.8, 5000)` with seed data, verify stations within 5km returned sorted.
 
-- [ ] T016 [US3] Add seed data to `source/infra/db/init.sql`: 1 partner record (OPR_001), 10 station records across Tunis (4), Sousse (3), Sfax (3) with valid coordinates and station names
-- [ ] T017 [US3] Write `inventory.get_nearby_stations(lng, lat, radius_meters)` function in `source/infra/db/init.sql` using `ST_SetSRID(ST_MakePoint(lng,lat),4326)::geography`, `ST_DWithin` filter, `ST_Distance` sort, input validation raises on invalid bounds
-- [ ] T018 [US3] Verify: function returns records within radius, empty set for no-match, proper error for invalid coords, stations ordered nearest-first; validate result distances are within 1m of known true geodesic distance for a control pair; confirm query in Tunis returns no Sfax stations
+- [x] T016 [US3] Add seed data to `source/infra/db/init.sql`: 1 partner record (OPR_001), 10 station records across Tunis (4), Sousse (3), Sfax (3) with valid coordinates and station names
+- [x] T017 [US3] Write `gis.get_nearby_stations(lng, lat, radius_meters)` function in `source/infra/db/init.sql` using `ST_SetSRID(ST_MakePoint(lng,lat),4326)::geography`, `ST_DWithin` filter, `ST_Distance` sort, input validation raises on invalid bounds
+- [x] T018 [US3] Verify: function returns records within radius, empty set for no-match, proper error for invalid coords, stations ordered nearest-first; validate result distances are within 1m of known true geodesic distance for a control pair; confirm query in Tunis returns no Sfax stations
 
 **Checkpoint**: Spatial proximity query function operational — independently testable via function call with known coordinates
 
@@ -80,10 +80,10 @@
 
 **Purpose**: Verification, documentation updates, and final validation
 
-- [ ] T019 Update `source/docs/sprint_backlog.md` — mark Sprint 1.1 tasks complete
-- [ ] T020 Update `source/docs/roadmap_status.md` — mark MVP-1 Sprint 1.1 tasks complete
-- [ ] T021 Update `source/docs/system_state.md` — reflect platform_db running, all Sprint 1.1 artifacts deployed
-- [ ] T022 Final verification: run all 9 acceptance scenarios from spec.md (3 US1 + 3 US2 + 3 US3) and document results
+- [x] T019 Update `source/docs/sprint_backlog.md` — mark Sprint 1.1 tasks complete
+- [x] T020 Update `source/docs/roadmap_status.md` — mark MVP-1 Sprint 1.1 tasks complete
+- [x] T021 Update `source/docs/system_state.md` — reflect platform_db running, all Sprint 1.1 artifacts deployed
+- [x] T022 Final verification: run all 9 acceptance scenarios from spec.md (3 US1 + 3 US2 + 3 US3) and document results
 
 ---
 
