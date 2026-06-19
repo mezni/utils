@@ -10,7 +10,7 @@
 | MVP | Description | Status | Depends on |
 |-----|-----------|--------|-----------|
 | 0 | Project scaffolding: docs, guardrails, constitution, monorepo layout, skills | 🟢 Complete | — |
-| 1 | Admin flow: infra (Keycloak, Postgres, Redis, Traefik) + Auth Service + Admin Service + Dashboard UI | 🟢 Auth Service implemented (44/44 tasks complete) — all core features implemented, Dockerfile created, integration tests stubbed, load testing script ready, security verification procedure documented | MVP-0 |
+| 1 | Admin flow: infra (Keycloak, Postgres, Redis, Traefik) + Auth Service + Admin Service + Dashboard UI | 🟡 Admin Service Sprint 2 in progress (tasks generated for partner/station/charger CRUD, transactions, cache busting, audit) — Spec/plan/research/data-model/contracts/quickstart/tasks complete | MVP-0 |
 | 2 | Driver Service: PostGIS spatial reads, materialized views, Redis cache consumption | ⬜ Not started | MVP-1 |
 | 3 | Web driver app: React + Leaflet map, station list, favourites | ⬜ Not started | MVP-2 |
 | 4 | Mobile driver app: Expo SDK 54, map view, offline cache, favourites | ⬜ Not started | MVP-2 |
