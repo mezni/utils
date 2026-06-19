@@ -8,10 +8,12 @@
 
 ## How to use these guardrails
 
-1. Read this file completely before starting any task.
-2. Read the domain-specific guardrail file(s) relevant to your task.
-3. At the end of every file you produce, run the **self-check** listed in the relevant domain file.
-4. Never skip a guardrail because the task seems small. Small violations compound.
+1. Read `docs/GUARDRAILS.md` completely before starting any task.
+2. Read the domain-specific guardrail file(s) from `docs/guardrails/` relevant to your task.
+3. Read `docs/SYSTEM_STATE.md` to understand what exists and what does not.
+4. Read the relevant MVP spec in `docs/specs/mvp-[N].md` (if one exists).
+5. At the end of every file you produce, run the **self-check** listed in the relevant domain file.
+6. Never skip a guardrail because the task seems small. Small violations compound.
 
 ---
 
@@ -58,7 +60,7 @@ These are hard stops. If any of the following is true of your output, do not sub
 - All endpoints under `/api/v1/`. No exceptions.
 - Auth Service is the sole caller of Keycloak. No other service or client touches Keycloak APIs.
 - Traefik performs JWT validation via cached JWKS only. It does not call Keycloak token endpoints.
-- Redis spatial cache is owned by Driver Service. Admin Service busts it synchronously on station/charger writes.
+- Redis spatial cache is managed by Driver Service. Admin Service triggers synchronous cache bust on it after every station/charger write (post-commit, never before).
 - `analytics_db` is written to exclusively by Admin Service.
 - `keycloak_db` is owned exclusively by Keycloak. No application code connects to it.
 
@@ -81,8 +83,7 @@ These are hard stops. If any of the following is true of your output, do not sub
 
 ## 4. Session discipline
 
-- Read `docs/SYSTEM_STATE.md` before starting. Do not re-implement what is already built.
-- Read the relevant MVP spec in `docs/specs/` before writing any code.
-- Update `docs/SYSTEM_STATE.md` at the end of every session.
+- Read `docs/GUARDRAILS.md` (this file) first. Then read the relevant domain guardrail, `docs/SYSTEM_STATE.md`, and the relevant MVP spec — in that order.
+- At the end of every session, update all three tracking files: `docs/SYSTEM_STATE.md`, `docs/roadmap_status.md`, and `docs/sprint_backlog.md`.
 - Never leave a TODO comment without a linked issue reference.
 - Never commit directly to `main`. All output targets a feature branch.

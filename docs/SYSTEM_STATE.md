@@ -49,7 +49,7 @@
 - `source/infra/docker-compose.yml` — infrastructure orchestration
 - `source/infra/keycloak/` — Keycloak configuration
 - `source/infra/migrations/` — database migration files
-- `infra/osm-importer/` — OSM data pipeline
+- `source/infra/osm-importer/` — OSM data pipeline
 - `docs/adr/` — no ADRs yet
 
 ## Environment

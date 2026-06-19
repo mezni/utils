@@ -24,16 +24,121 @@
 
 **Keycloak (`source/infra/keycloak/`)**
 - Single realm: `bornemap`
-- Clients: `dashboard-app`, `mobile-driver-app`, `admin-dashboard`
+- Clients: `mobile-driver-app`, `web-driver-app`, `dashboard-app`
 - Roles: `role:admin`, `role:partner`, `role:driver`
 - Enable OIDC password + refresh flows
 - Enable JWKS endpoint: `/realms/bornemap/protocol/openid-connect/certs`
 
-**PostgreSQL (`source/infra/migrations/`)**
-- `platform_db` with schemas: `gis`, `inventory`, `users`
-- `analytics_db` (isolated, owned by Admin Service)
-- PostGIS extension enabled
-- Materialized views: `mv_stations_geo`, `mv_stations_summary`, `mv_stations_reviews`
+**PostgreSQL — schema DDL (`source/infra/migrations/0001_init_schemas.sql`)**
+
+```sql
+-- Schema setup
+CREATE SCHEMA IF NOT EXISTS gis;
+CREATE SCHEMA IF NOT EXISTS inventory;
+CREATE SCHEMA IF NOT EXISTS users;
+
+-- updated_at trigger (required on every table with this column)
+CREATE OR REPLACE FUNCTION trigger_set_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Lookup tables (reference data, SERIAL PKs)
+CREATE TABLE inventory.connector_types (
+    id   SMALLSERIAL PRIMARY KEY,
+    name VARCHAR(50) NOT NULL UNIQUE
+);
+
+CREATE TABLE inventory.connector_statuses (
+    id   SMALLSERIAL PRIMARY KEY,
+    name VARCHAR(50) NOT NULL UNIQUE
+);
+
+CREATE TABLE inventory.current_types (
+    id   SMALLSERIAL PRIMARY KEY,
+    name VARCHAR(50) NOT NULL UNIQUE
+);
+
+-- Partners (top-level grouping — no networks layer per constitution)
+CREATE TABLE inventory.partners (
+    id             TEXT        PRIMARY KEY CHECK (id ~ '^OPR-.+'),
+    name           VARCHAR(255) NOT NULL,
+    network_type   VARCHAR(20) NOT NULL CHECK (network_type IN ('INDIVIDUAL', 'COMPANY')),
+    support_phone  VARCHAR(50),
+    support_email  VARCHAR(255),
+    is_verified    BOOLEAN     DEFAULT FALSE,
+    created_by     TEXT,
+    updated_by     TEXT,
+    created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at     TIMESTAMPTZ
+);
+CREATE INDEX idx_partners_active ON inventory.partners (name) WHERE deleted_at IS NULL;
+
+CREATE TRIGGER set_updated_at
+    BEFORE UPDATE ON inventory.partners
+    FOR EACH ROW EXECUTE FUNCTION trigger_set_updated_at();
+
+-- Stations
+CREATE TABLE inventory.stations (
+    id          TEXT        PRIMARY KEY CHECK (id ~ '^STA-.+'),
+    partner_id  TEXT        NOT NULL REFERENCES inventory.partners(id),
+    osm_id      BIGINT,                                           -- nullable: partner-created stations have no OSM ref
+    name        VARCHAR(255) NOT NULL,
+    address     TEXT,
+    location    GEOGRAPHY(Point, 4326) NOT NULL,
+    tags        HSTORE,
+    created_by  TEXT,
+    updated_by  TEXT,
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at  TIMESTAMPTZ
+);
+CREATE INDEX idx_stations_partner ON inventory.stations (partner_id) WHERE deleted_at IS NULL;
+CREATE INDEX idx_stations_location ON inventory.stations USING GIST (location);
+
+CREATE TRIGGER set_updated_at
+    BEFORE UPDATE ON inventory.stations
+    FOR EACH ROW EXECUTE FUNCTION trigger_set_updated_at();
+
+-- Chargers
+CREATE TABLE inventory.chargers (
+    id                TEXT        PRIMARY KEY CHECK (id ~ '^CHG-.+'),
+    station_id        TEXT        NOT NULL REFERENCES inventory.stations(id) ON DELETE CASCADE,
+    connector_type_id SMALLINT   NOT NULL REFERENCES inventory.connector_types(id),
+    status_id         SMALLINT   NOT NULL REFERENCES inventory.connector_statuses(id),
+    current_type_id   SMALLINT   NOT NULL REFERENCES inventory.current_types(id),
+    power_kw          DECIMAL(5,2),
+    voltage           INT,
+    amperage          INT,
+    count_available   INT        DEFAULT 1 CHECK (count_available >= 0),
+    count_total       INT        DEFAULT 1 CHECK (count_total >= 1 AND count_total >= count_available),
+    created_by        TEXT,
+    updated_by        TEXT,
+    created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at        TIMESTAMPTZ,
+    CONSTRAINT unique_connector UNIQUE (station_id, connector_type_id, current_type_id)
+);
+CREATE INDEX idx_chargers_station ON inventory.chargers (station_id) WHERE deleted_at IS NULL;
+
+CREATE TRIGGER set_updated_at
+    BEFORE UPDATE ON inventory.chargers
+    FOR EACH ROW EXECUTE FUNCTION trigger_set_updated_at();
+```
+
+**`analytics_db`** (separate database, not schema)
+- Event logs, audit trails, partner modification history
+- Written exclusively by Admin Service
+- Schema TBD (simple audit_log table with actor, action, target, payload, timestamp)
+
+**Materialized views** (created after initial data load, `source/infra/migrations/0002_materialized_views.sql`):
+- `inventory.mv_stations_geo` — spatial summary for map display
+- `inventory.mv_stations_summary` — list view data
+- `inventory.mv_stations_reviews` — aggregated review stats
 
 **Redis**
 - GIS tile caching keys: `stations:tile:{z}:{x}:{y}`, `stations:near:{lat}:{lng}:{radius}`

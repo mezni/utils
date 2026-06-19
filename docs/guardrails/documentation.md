@@ -120,15 +120,10 @@ docs/
   roadmap_status.md        # MVP completion status
   sprint_backlog.md        # Current sprint tasks
   bug_tracker.md           # Active bugs, reproduction steps, and fixes
-  adr/                     # Architecture Decision Records
-    ADR-001-keycloak-single-realm.md
-    ADR-002-...
-  specs/
+  adr/                     # Architecture Decision Records (one file per ADR)
+  specs/                   # MVP specs (one file per MVP)
     mvp-1-admin-flow.md
-    mvp-2-gis.md
-    ...
   guardrails/              # Domain guardrails (see GUARDRAILS.md index)
-  api/                     # Auto-generated OpenAPI specs (do not edit manually)
 ```
 
 ---

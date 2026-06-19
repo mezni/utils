@@ -20,10 +20,10 @@
 
 | MVP | Task | Priority | Dependencies | Est. effort |
 |-----|------|----------|-------------|-----------|
-| MVP-1 | Phase 1 — Infra: Docker Compose (Postgres + Redis + Keycloak + Traefik) | High | MVP-0 | 3h |
+| MVP-1 | Phase 1 — Infra: Docker Compose (Postgres + Redis + Keycloak + Traefik routing) | High | MVP-0 | 3h |
 | MVP-1 | Phase 1 — Infra: Keycloak realm export + client config (bornemap) | High | MVP-1 (Docker) | 2h |
-| MVP-1 | Phase 1 — Infra: Traefik routing config + JWKS validation middleware | High | MVP-1 (Keycloak) | 3h |
-| MVP-1 | Phase 1 — Infra: platform_db + analytics_db migrations (schemas, PostGIS, audit columns) | High | MVP-1 (Docker) | 2h |
+| MVP-1 | Phase 1 — Infra: platform_db + analytics_db migrations (schemas, PostGIS, audit columns, updated_at trigger) | High | MVP-1 (Docker) | 2h |
+| MVP-1 | Phase 1 — Infra: Traefik JWKS validation middleware + header injection | High | MVP-1 (Keycloak) | 2h |
 | MVP-1 | Phase 2 — Auth Service: Cargo project, config, errors, domain types | High | MVP-1 (infra) | 2h |
 | MVP-1 | Phase 2 — Auth Service: login handler + Keycloak proxy + USR- upsert | High | MVP-1 (auth-types) | 3h |
 | MVP-1 | Phase 2 — Auth Service: refresh handler | High | MVP-1 (login) | 1h |
@@ -33,7 +33,6 @@
 | MVP-1 | Phase 3 — Admin Service: Station/charger CRUD handlers + transactions | High | MVP-1 (partner-CRUD) | 3h |
 | MVP-1 | Phase 3 — Admin Service: Redis cache bust (sync) + analytics_db logging | High | MVP-1 (station-CRUD) | 2h |
 | MVP-1 | Phase 3 — Admin Service: integration tests | High | MVP-1 (all handlers) | 2h |
-| MVP-1 | Phase 4 — Traefik JWKS validation (wire up against Keycloak certs) | High | MVP-1 (Keycloak) | 2h |
 | MVP-1 | Phase 5 — Dashboard: login page, token storage (memory), React Router auth guard | High | MVP-1 (auth-service) | 3h |
 | MVP-1 | Phase 5 — Dashboard: partner/station CRUD pages + React Query mutations | High | MVP-1 (admin-service) | 4h |
 | MVP-2 | Create inventory schema migrations (partners, stations, chargers, materialized views) | Medium | MVP-1 | 2h |
@@ -53,7 +52,7 @@ When assigning a new task to a builder session, copy this template:
 - Constitution: `.specify/memory/constitution.md`
 - Guardrails: `docs/guardrails/[domain].md`
 - System state: `docs/SYSTEM_STATE.md`
-- Prior spec: `docs/specs/mvp-[N-1].md` (if applicable)
+- Prior spec: `docs/specs/mvp-[N-1].md` (omit for MVP-1 as MVP-0 was scaffolding with no spec)
 
 **Acceptance criteria:**
 1. [Criterion 1]

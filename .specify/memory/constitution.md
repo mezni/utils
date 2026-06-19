@@ -32,10 +32,10 @@ No additional microservices may be introduced without a constitution amendment r
 - The Driver Service functions as a read-optimized spatial data API via PostGIS SQL functions and Redis caching, while handling its own driver-scoped transactional writes.
 - No asynchronous outbox patterns are deployed during the validation phase.
 - All multi-table data modifications within any microservice MUST be wrapped in a single database transaction (Unit of Work).
-- Writes to `inventory.station` or `inventory.charger` trigger synchronous cache-bust operations on the Redis spatial cache managed by the Driver Service.
+- Writes to `inventory.station` or `inventory.charger` trigger synchronous cache-bust operations — initiated by Admin Service after `tx.commit()`, targeting the Driver Service-managed Redis spatial cache.
 
 5. **Security & identity isolation**
-- Single Keycloak mono-realm (`bornemap`). Access profiles are isolated via granular Client Roles (`role:driver`, `role:partner`, `role:admin`) across distinct Keycloak Clients (`mobile-driver-app`, `web-driver-app`, `admin-partner-dashboard`).
+- Single Keycloak mono-realm (`bornemap`). Access profiles are isolated via granular Client Roles (`role:driver`, `role:partner`, `role:admin`) across distinct Keycloak Clients (`mobile-driver-app`, `web-driver-app`, `dashboard-app`).
 - Clients (mobile and web) MUST NOT call Keycloak token or admin endpoints directly. All auth flows (login, token refresh, logout) are routed through Auth Service REST endpoints (`/api/v1/auth/*`).
 - Traefik validates JWTs locally using Keycloak public keys fetched via JWKS (`/realms/bornemap/protocol/openid-connect/certs`) and cached. Traefik does NOT call Keycloak token endpoints.
 - Cleartext credentials, API keys, or security vectors are completely barred from git tracking — handled via environmental injection using gitignored `.env` files.

@@ -40,10 +40,10 @@ Never feed the builder:
 
 When the builder completes a task or reaches a handoff point:
 
-1. **Update `docs/SYSTEM_STATE.md`**:
-   - Mark built and verified items
-   - Record any known issues discovered
-   - Update migration/configuration status
+1. **Update tracking files** (all three):
+   - `docs/SYSTEM_STATE.md` — mark built items, record known issues
+   - `docs/roadmap_status.md` — update MVP status
+   - `docs/sprint_backlog.md` — close completed tasks, advance backlog
 
 2. **Self-check** against the relevant domain guardrail's self-check checklist.
 
