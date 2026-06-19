@@ -1,6 +1,6 @@
 # BorneMap — System State
 
-**Last updated:** 2026-06-18  **Session:** Sprint plan finalized — MVP-1 reorganized into 8 sprints (Sprint 0–7), sprint backlog rewritten with 36 tickets mapped to spec sections
+**Last updated:** 2026-06-18  **Session:** Sprint 0 — spec, plan, tasks, and analysis complete. Branch `001-infra-bootstrap` ready for implementation.
 
 ## Built and verified
 
@@ -34,7 +34,7 @@
 
 ## Not yet built
 
-- `source/` — no application code exists yet (empty monorepo root)
+- `source/` — no application code exists yet (empty monorepo root) — Sprint 0 infra spec complete, ready to implement
 - `source/apps/mobile-driver` — mobile driver app
 - `source/apps/web-driver` — web driver app
 - `source/apps/dashboard` — partner/admin dashboard
@@ -55,16 +55,16 @@
 
 ## Sprint plan
 
-| Sprint | Focus | Tickets |
-|--------|-------|---------|
-| 0 | Platform bootstrap (Docker, Keycloak, DB schemas, Traefik routing) | INF-1–4 |
-| 1 | Auth Service (login, refresh, USR- upsert, JWT utils, DB role) | AUTH-1–5 |
-| 2 | Admin Service CRUD (partners, stations, chargers, transaction orchestrator, DB role) | ADM-1–5 |
-| 3 | Gateway security (JWKS, audience, header injection, Keycloak isolation) | SEC-1–5 |
-| 4 | Redis + MV refresh (post-commit bust, failure policy, MV refresh, driver read) | REDIS-1–5 |
-| 5 | Analytics + audit (analytics_db, BEFORE/AFTER diff, mutation hooks, indexes) | AUD-1–4 |
-| 6 | Idempotency + hardening (Idempotency-Key, duplicate detection, validation, error contracts) | SAFE-1–4 |
-| 7 | E2E integration (full flow tests, gateway security, audit verification) | E2E-1–6 |
+| Sprint | Focus | Tickets | Status |
+|--------|-------|---------|--------|
+| 0 | Platform bootstrap (Docker, Keycloak, DB schemas, Traefik routing) | INF-1–4 → spec, plan, tasks generated | 🟢 Spec complete |
+| 1 | Auth Service (login, refresh, USR- upsert, JWT utils, DB role) | AUTH-1–5 | ⬜ Not started |
+| 2 | Admin Service CRUD (partners, stations, chargers, transaction orchestrator, DB role) | ADM-1–5 | ⬜ Not started |
+| 3 | Gateway security (JWKS, audience, header injection, Keycloak isolation) | SEC-1–5 | ⬜ Not started |
+| 4 | Redis + MV refresh (post-commit bust, failure policy, MV refresh, driver read) | REDIS-1–5 | ⬜ Not started |
+| 5 | Analytics + audit (analytics_db, BEFORE/AFTER diff, mutation hooks, indexes) | AUD-1–4 | ⬜ Not started |
+| 6 | Idempotency + hardening (Idempotency-Key, duplicate detection, validation, error contracts) | SAFE-1–4 | ⬜ Not started |
+| 7 | E2E integration (full flow tests, gateway security, audit verification) | E2E-1–6 | ⬜ Not started |
 
 Total: 36 tickets across 8 sprints. See `docs/sprint_backlog.md` for details.
 
