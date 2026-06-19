@@ -46,13 +46,13 @@
 
 **Goal:** Admin can create partners, stations, chargers with safe transactions.
 
-| ID | Ticket | Est. effort | Dependencies |
-|----|--------|-------------|-------------|
-| ADM-1 | Partner CRUD (create/update endpoints) | 3h | INF-3 |
-| ADM-2 | Station CRUD (create/update endpoints) | 3h | INF-3 |
-| ADM-3 | Charger CRUD (create/update endpoints) | 3h | INF-3 |
-| ADM-4 | Transaction orchestrator (BEGIN → WRITE → COMMIT, rollback safety) | 2h | ADM-1/2/3 |
-| ADM-5 | DB role enforcement (admin_service_role, inventory-only access) | 0.5h | INF-3 |
+| ID | Ticket | Est. effort | Dependencies | Status |
+|----|--------|-------------|-------------|--------|
+| ADM-1 | Partner CRUD (create/update endpoints) | 3h | INF-3 | 🟡 Specified & Planned |
+| ADM-2 | Station CRUD (create/update endpoints) | 3h | INF-3 | 🟡 Specified & Planned |
+| ADM-3 | Charger CRUD (create/update endpoints) | 3h | INF-3 | 🟡 Specified & Planned |
+| ADM-4 | Transaction orchestrator (BEGIN → WRITE → COMMIT, rollback safety) | 2h | ADM-1/2/3 | 🟡 Specified & Planned |
+| ADM-5 | DB role enforcement (admin_service_role, inventory-only access) | 0.5h | INF-3 | 🟡 Specified & Planned |
 
 **Exit:** Partner/station/charger CRUD via API, transactional writes, unauthorized schema access blocked.
 
