@@ -1,0 +1,31 @@
+# Environment
+.env
+*.env.local
+
+# Rust
+target/
+debug/
+release/
+*.rs.bk
+*.rlib
+*.prof*
+**/*.rs.bk
+**/*.rlib
+**/*.prof*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+
+# Docker
+source/infra/postgres/data/

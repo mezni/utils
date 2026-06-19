@@ -1,0 +1,165 @@
+{
+  "id": "bornemap",
+  "realm": "bornemap",
+  "enabled": true,
+  "sslRequired": "none",
+  "accessTokenLifespan": 300,
+  "ssoSessionIdleTimeout": 1800,
+  "ssoSessionMaxLifespan": 36000,
+  "offlineSessionIdleTimeout": 2592000,
+  "defaultSignatureAlgorithm": "RS256",
+  "revokeRefreshToken": false,
+  "accessCodeLifespan": 60,
+  "accessCodeLifespanUserAction": 300,
+  "users": [],
+  "roles": {
+    "realm": [
+      {
+        "name": "role:admin",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "bornemap"
+      },
+      {
+        "name": "role:partner",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "bornemap"
+      },
+      {
+        "name": "role:driver",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "bornemap"
+      }
+    ],
+    "client": {}
+  },
+  "clients": [
+    {
+      "clientId": "mobile-driver-app",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": false,
+      "authorizationServicesEnabled": false,
+      "redirectUris": ["http://localhost/*"],
+      "webOrigins": ["http://localhost"],
+      "defaultRoles": [],
+      "protocolMappers": [
+        {
+          "name": "realm roles",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "multivalued": "true",
+            "user.attribute": "foo",
+            "access.token.claim": "true",
+            "id.token.claim": "true",
+            "claim.name": "roles",
+            "jsonType.label": "String"
+          }
+        }
+      ]
+    },
+    {
+      "clientId": "web-driver-app",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": false,
+      "authorizationServicesEnabled": false,
+      "redirectUris": ["http://localhost/*"],
+      "webOrigins": ["http://localhost"],
+      "defaultRoles": [],
+      "protocolMappers": [
+        {
+          "name": "realm roles",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "multivalued": "true",
+            "user.attribute": "foo",
+            "access.token.claim": "true",
+            "id.token.claim": "true",
+            "claim.name": "roles",
+            "jsonType.label": "String"
+          }
+        }
+      ]
+    },
+    {
+      "clientId": "admin-dashboard",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": false,
+      "authorizationServicesEnabled": false,
+      "redirectUris": ["http://localhost/*"],
+      "webOrigins": ["http://localhost"],
+      "defaultRoles": [],
+      "protocolMappers": [
+        {
+          "name": "realm roles",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "multivalued": "true",
+            "user.attribute": "foo",
+            "access.token.claim": "true",
+            "id.token.claim": "true",
+            "claim.name": "roles",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-hardcoded-claim-mapper",
+          "consentRequired": false,
+          "config": {
+            "access.token.claim": "true",
+            "id.token.claim": "true",
+            "claim.value": "admin-dashboard",
+            "claim.name": "aud",
+            "jsonType.label": "String"
+          }
+        }
+      ]
+    }
+  ],
+  "internationalizationEnabled": false,
+  "loginWithEmailAllowed": true,
+  "registrationEmailAsUsername": true,
+  "rememberMe": false,
+  "verifyEmail": false,
+  "resetPasswordAllowed": false,
+  "editUsernameAllowed": false,
+  "userManagedAccessAllowed": false,
+  "bruteForceProtected": true,
+  "maxFailureWaitSeconds": 900,
+  "minimumQuickLoginWaitSeconds": 60,
+  "waitIncrementSeconds": 60,
+  "quickLoginCheckMilliSeconds": 1000,
+  "maxDeltaTimeSeconds": 43200,
+  "failureFactor": 30,
+  "otpPolicyType": "totp",
+  "otpPolicyAlgorithm": "HmacSHA1",
+  "otpPolicyDigits": 6,
+  "otpPolicyPeriod": 30,
+  "otpPolicyInitialCounter": 0,
+  "otpPolicyLookAheadWindow": 1,
+  "otpPolicyCodeReusable": false,
+  "attributes": {},
+  "keycloakVersion": "25.0.0",
+  "userManagedAccessAllowed": false
+}
