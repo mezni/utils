@@ -1,0 +1,72 @@
+http:
+  routers:
+    auth:
+      rule: "PathPrefix(`/api/v1/auth/`)"
+      service: auth-service
+      priority: 10
+      middlewares:
+        - strip-auth-prefix
+        - rewrite-to-root
+
+    admin:
+      rule: "PathPrefix(`/api/v1/admin/`)"
+      service: admin-service
+      priority: 10
+      middlewares:
+        - strip-admin-prefix
+        - rewrite-to-root
+
+    driver:
+      rule: "PathPrefix(`/api/v1/driver/`)"
+      service: driver-service
+      priority: 10
+      middlewares:
+        - strip-driver-prefix
+        - rewrite-to-root
+
+    catch-all:
+      rule: "PathPrefix(`/`)"
+      service: catch-all-service
+      priority: 1
+
+  middlewares:
+    strip-auth-prefix:
+      stripPrefix:
+        prefixes:
+          - "/api/v1/auth"
+
+    strip-admin-prefix:
+      stripPrefix:
+        prefixes:
+          - "/api/v1/admin"
+
+    strip-driver-prefix:
+      stripPrefix:
+        prefixes:
+          - "/api/v1/driver"
+
+    rewrite-to-root:
+      replacePathRegex:
+        regex: "^/.*"
+        replacement: "/"
+
+  services:
+    auth-service:
+      loadBalancer:
+        servers:
+          - url: "http://auth-service:3000"
+
+    admin-service:
+      loadBalancer:
+        servers:
+          - url: "http://admin-service:3002"
+
+    driver-service:
+      loadBalancer:
+        servers:
+          - url: "http://driver-service:3001"
+
+    catch-all-service:
+      loadBalancer:
+        servers:
+          - url: "http://catch-all:3099"

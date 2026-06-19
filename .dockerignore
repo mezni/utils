@@ -1,0 +1,7 @@
+.git/
+*.log
+.env
+.env.local
+.gitignore
+.gitattributes
+*.md
