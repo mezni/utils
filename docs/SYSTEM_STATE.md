@@ -1,6 +1,6 @@
 # BorneMap — System State
 
-**Last updated:** 2026-06-19  **Session:** Sprint 1 — Auth Service implementation complete (all 42 tasks). Branch `002-auth-service` ready for deployment.
+**Last updated:** 2026-06-19  **Session:** Sprint 1 — Auth Service implementation complete (44/44 tasks). Branch `002-auth-service` ready for deployment and testing.
 
 ## Built and verified
 
@@ -75,7 +75,7 @@
 | Sprint | Focus | Tickets | Status |
 |--------|-------|---------|--------|
 | 0 | Platform bootstrap (Docker, Keycloak, DB schemas, Traefik routing) | INF-1–4 | 🟢 Complete |
-| 1 | Auth Service (login, refresh, USR- upsert, logout, audience propagation) | 30 tasks in `specs/002-auth-service/tasks.md` | 🟡 Spec/plan/tasks complete — branch `002-auth-service` |
+| 1 | Auth Service (login, refresh, USR- upsert, logout, audience propagation) | 44 tasks in `specs/002-auth-service/tasks.md` | 🟢 Complete — all tasks finished, Dockerfile, integration tests, load testing, security verification |
 | 2 | Admin Service CRUD (partners, stations, chargers, transaction orchestrator, DB role) | ADM-1–5 | ⬜ Not started |
 | 3 | Gateway security (JWKS, audience, header injection, Keycloak isolation) | SEC-1–5 | ⬜ Not started |
 | 4 | Redis + MV refresh (post-commit bust, failure policy, MV refresh, driver read) | REDIS-1–5 | ⬜ Not started |

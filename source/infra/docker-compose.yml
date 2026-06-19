@@ -82,10 +82,28 @@ services:
 
   auth-service:
     build:
-      context: ./stubs/auth-service
-    container_name: bornemap-auth-stub
-    expose:
-      - "3000"
+      context: ../../services/auth-service
+      dockerfile: Dockerfile
+    container_name: bornemap-auth-service
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgresql://auth_user:${POSTGRES_PASSWORD}@postgres:5432/platform_db
+      KEYCLOAK_URL: http://keycloak:8080
+      KEYCLOAK_CLIENT_ID: auth-service
+      PORT: 3000
+      RUST_LOG: info
+    depends_on:
+      postgres:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/health || exit 1"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
     networks:
       - bornemap-net
 
