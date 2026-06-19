@@ -72,6 +72,13 @@ curl -s -X POST http://localhost/api/v1/auth/logout \
   -d '{"refresh_token":"<token from login>"}'
 ```
 
+### Profile (after login)
+
+```bash
+curl -s http://localhost/api/v1/auth/me \
+  -H "Authorization: Bearer <access_token from login>"
+```
+
 ## Run Tests
 
 ```bash

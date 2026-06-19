@@ -1,4 +1,4 @@
-# Implementation Plan: Auth Service — Login, Refresh & Logout
+# Implementation Plan: Auth Service — Login, Refresh, Logout & Profile
 
 **Branch**: `002-auth-service` | **Date**: 2026-06-19 | **Spec**: [spec.md](./spec.md)
 
@@ -6,7 +6,7 @@
 
 ## Summary
 
-Build the Auth Service — a Rust web service providing three authenticated endpoints (login, refresh, logout). Acts as the sole Keycloak proxy: no client or other service talks to Keycloak directly. Upserts a USR- user profile in the `users` schema on every successful authentication. Validates and propagates token audience claims without minting tokens.
+Build the Auth Service — a Rust web service providing four endpoints (login, refresh, logout, and profile). Acts as the sole Keycloak proxy: no client or other service talks to Keycloak directly. Upserts a USR- user profile in the `users` schema on every successful authentication. Validates and propagates token audience claims without minting tokens.
 
 ## Technical Context
 
@@ -24,9 +24,9 @@ Build the Auth Service — a Rust web service providing three authenticated endp
 
 **Performance Goals**: Login <2s p95, refresh <1s p95, 100 concurrent requests
 
-**Constraints**: No service touches Keycloak except Auth Service; no raw SQL strings (sqlx macros only); no `unwrap()`/`expect()` outside test code; credentials never logged
+**Constraints**: No service touches Keycloak except Auth Service; no raw SQL strings (sqlx macros only); no `unwrap()`/`expect()` outside test code; credentials, `access_token`, and `refresh_token` never logged
 
-**Scale/Scope**: 3 endpoints (login, refresh, logout), 1 DB schema (`users`), single external integration (Keycloak), ~1K lines of service code
+**Scale/Scope**: 4 endpoints (login, refresh, logout, me), 1 DB schema (`users`), single external integration (Keycloak), ~1.2K lines of service code
 
 ## Constitution Check
 
@@ -73,17 +73,26 @@ source/services/auth-service/
 │   │   ├── mod.rs
 │   │   ├── login.rs
 │   │   ├── refresh.rs
-│   │   └── logout.rs
+│   │   ├── logout.rs
+│   │   └── me.rs
 │   ├── keycloak/               # Keycloak HTTP client
 │   │   ├── mod.rs
-│   │   └── client.rs
+│   │   ├── client.rs
+│   │   └── claims.rs           # JWT claims parser
 │   ├── db/                     # Database layer (sqlx)
 │   │   ├── mod.rs
 │   │   └── users.rs
+│   ├── middleware/             # Middleware
+│   │   ├── mod.rs
+│   │   ├── redaction.rs        # Log redaction (FR-001)
+│   │   └── rate_limit.rs       # Rate limiting (FR-009)
 │   ├── models/                 # Domain types
 │   │   ├── mod.rs
 │   │   ├── user.rs
 │   │   └── auth.rs
+│   ├── validation/             # Request validation
+│   │   ├── mod.rs
+│   │   └── token.rs            # Token format validation (FR-006a)
 │   └── error.rs                # Unified error handling
 └── tests/
     ├── integration/

@@ -39,3 +39,4 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO admin_analytics
 CREATE ROLE keycloak WITH LOGIN PASSWORD 'keycloak_dev_pass';
 GRANT ALL PRIVILEGES ON DATABASE keycloak_db TO keycloak;
 GRANT ALL ON SCHEMA public TO keycloak;
+

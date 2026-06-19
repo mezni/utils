@@ -26,6 +26,7 @@ Content-Type: application/json
   "access_token": "eyJhbGciOiJSUzI1NiIs...",
   "refresh_token": "eyJhbGciOiJSUzI1NiIs...",
   "expires_in": 300,
+  "refresh_expires_in": 1800,
   "token_type": "Bearer"
 }
 ```

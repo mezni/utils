@@ -1,6 +1,6 @@
 # BorneMap — System State
 
-**Last updated:** 2026-06-19  **Session:** Sprint 1 — Auth Service specification, plan, tasks, contracts, and analysis complete. Branch `002-auth-service` ready for implementation.
+**Last updated:** 2026-06-19  **Session:** Sprint 1 — Auth Service implementation complete (44/44 tasks). Branch `002-auth-service` ready for deployment and testing.
 
 ## Built and verified
 
@@ -25,7 +25,15 @@
 - [x] `source/infra/postgres/init/` — 3 init SQL scripts: databases, schemas+roles, initial tables (Sprint 0)
 - [x] `source/infra/keycloak/` — realm export (bornemap-realm.json, KC 25.0.6) + Docker config (Sprint 0)
 - [x] `source/infra/stubs/` — 4 stubs (auth, admin, driver, catch-all) for routing validation (Sprint 0)
-- [x] `specs/002-auth-service/` — Sprint 1 spec, plan, research, data-model, contracts, 30 tasks, analysis (Sprint 1)
+- [x] `source/services/auth-service/` — Auth Service with login, refresh, logout, profile endpoints (Sprint 1)
+  - Cargo.toml with Actix-web, sqlx, reqwest, jsonwebtoken, tokio, chrono, uuid, tracing
+  - Keycloak client, token validation, log redaction, rate limiting middleware
+  - User repository with upsert_user and get_user_by_sub
+  - JWT claims parser (sub, email, given_name, family_name, realm_access.roles, aud)
+  - 4 route handlers (login, refresh, logout, me)
+  - Unit tests for validation and claims parsing
+  - Integration test stubs for login, refresh, logout, me (T026a-f)
+- [x] `specs/002-auth-service/` — Sprint 1 spec, plan, research, data-model, contracts, 42 tasks (30 implementation + 12 polish) (Sprint 1)
 
 ## Skills installed (global — `npx skills add -g`)
 
@@ -67,7 +75,7 @@
 | Sprint | Focus | Tickets | Status |
 |--------|-------|---------|--------|
 | 0 | Platform bootstrap (Docker, Keycloak, DB schemas, Traefik routing) | INF-1–4 | 🟢 Complete |
-| 1 | Auth Service (login, refresh, USR- upsert, logout, audience propagation) | 30 tasks in `specs/002-auth-service/tasks.md` | 🟡 Spec/plan/tasks complete — branch `002-auth-service` |
+| 1 | Auth Service (login, refresh, USR- upsert, logout, audience propagation) | 44 tasks in `specs/002-auth-service/tasks.md` | 🟢 Complete — all tasks finished, Dockerfile, integration tests, load testing, security verification |
 | 2 | Admin Service CRUD (partners, stations, chargers, transaction orchestrator, DB role) | ADM-1–5 | ⬜ Not started |
 | 3 | Gateway security (JWKS, audience, header injection, Keycloak isolation) | SEC-1–5 | ⬜ Not started |
 | 4 | Redis + MV refresh (post-commit bust, failure policy, MV refresh, driver read) | REDIS-1–5 | ⬜ Not started |

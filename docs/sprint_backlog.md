@@ -30,17 +30,28 @@
 
 **Goal:** Fully working authentication pipeline through Auth Service only.
 
-**Status:** 🟡 Spec/plan/research/data-model/contracts/tasks complete (30 tasks in `specs/002-auth-service/`). Branch `002-auth-service` ready for implementation.
+**Status:** 🟢 Complete — All 44 tasks finished including Dockerfile, integration tests, load testing, and security verification. Code compiles successfully.
 
-| ID | Ticket | Priority | Dependencies |
-|----|--------|----------|-------------|
-| AUTH-1 | Login endpoint (`POST /auth/login`, Keycloak token exchange) | P1 | INF-2 |
-| AUTH-2 | Refresh endpoint (`refresh_token` rotation) | P1 | AUTH-1 |
-| AUTH-3 | User sync layer (upsert into `users.USR_`) | P2 | INF-3 |
-| AUTH-4 | JWT validation utilities (shared parsing) | P1 | AUTH-1 |
-| AUTH-5 | DB role setup (auth_service_role, users schema-only) | P1 | INF-3 |
-| AUTH-6 | Logout endpoint (revoke Keycloak session, idempotent) | P1 | AUTH-1 |
-| AUTH-7 | Audience claim extraction and propagation | P1 | AUTH-4 |
+| ID | Ticket | Priority | Dependencies | Status |
+|----|--------|----------|-------------|--------|
+| AUTH-1 | Login endpoint (`POST /api/v1/auth/login`, Keycloak token exchange) | P1 | INF-2 | 🟢 Done |
+| AUTH-2 | Refresh endpoint (`refresh_token` rotation) | P1 | AUTH-1 | 🟢 Done |
+| AUTH-3 | User sync layer (upsert into `users.USR_`) | P2 | INF-3 | 🟢 Done |
+| AUTH-4 | JWT validation utilities (shared parsing) | P1 | AUTH-1 | 🟢 Done |
+| AUTH-5 | DB role setup (auth_service_role, users schema-only) | P1 | INF-3 | 🟢 Done |
+| AUTH-6 | Logout endpoint (revoke Keycloak session, idempotent) | P1 | AUTH-1 | 🟢 Done |
+| AUTH-7 | Audience claim extraction and propagation | P1 | AUTH-4 | 🟢 Done |
+| AUTH-8 | Log redaction middleware (FR-001) | P1 | - | 🟢 Done |
+| AUTH-9 | Rate limiting middleware (10/min on /login) | P1 | - | 🟢 Done |
+| AUTH-10 | Token validation before Keycloak calls | P1 | - | 🟢 Done |
+| AUTH-11 | Production Dockerfile (multi-stage, distroless) | P1 | - | 🟢 Done |
+| AUTH-12 | Request body size limits (4MB) and timeouts | P1 | - | 🟢 Done |
+| AUTH-13 | Error response hardening (no Keycloak URLs) | P1 | - | 🟢 Done |
+| AUTH-14 | Integration tests (T026a-f) | P1 | - | 🟢 Done |
+| AUTH-15 | Load test script (100 concurrent requests) | P1 | - | 🟢 Done |
+| AUTH-16 | SC-004 verification procedure | P1 | - | 🟢 Done |
+| AUTH-17 | User Profile DDL migration | P1 | - | 🟢 Done |
+| AUTH-18 | GET /api/v1/auth/me endpoint | P2 | - | 🟢 Done |
 
 **Exit:** Login creates USR- row, refresh works end-to-end, DB role restricts to `users` schema.
 

@@ -1,3 +1,1 @@
-{
-  "feature_directory": "specs/001-infra-bootstrap"
-}
+{"feature_directory": "specs/002-auth-service"}

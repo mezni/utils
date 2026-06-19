@@ -1,4 +1,4 @@
-# Feature Specification: Auth Service — Login, Refresh & Logout
+# Feature Specification: Auth Service — Login, Refresh, Logout & Profile
 
 **Feature Branch**: `002-auth-service`
 
@@ -68,12 +68,27 @@ A user clicks "Sign Out" in the dashboard. The system revokes their active sessi
 
 **Why this priority**: Without server-side logout, tokens remain valid until expiry even after a user signs out, creating a security gap. The constitution mandates that all auth flows (login, refresh, logout) route through the Auth Service.
 
-**Independent Test**: Can be fully tested by logging in, obtaining a valid token pair, calling the logout endpoint with the refresh token, then attempting to use the original access token — must be rejected by the gateway.
+**Independent Test**: Can be fully tested by logging in, obtaining a valid token pair, calling the logout endpoint with the refresh token, then attempting to use the same refresh token to obtain a new access token — must be rejected.
 
 **Acceptance Scenarios**:
 
-1. **Given** an authenticated user with valid tokens, **When** they call the logout endpoint with their refresh token, **Then** the session is revoked and subsequent use of the tokens is rejected.
+1. **Given** an authenticated user with valid tokens, **When** they call the logout endpoint with their refresh token, **Then** the refresh token is revoked and no new access token can be obtained using it.
 2. **Given** an already-expired refresh token, **When** it is submitted to the logout endpoint, **Then** the server still acknowledges the logout (no error) since the session is effectively already terminated.
+
+---
+
+### User Story 5 - Client retrieves authenticated profile (Priority: P2)
+
+A user opens the dashboard or mobile app and the application needs to verify the user's identity, roles, and profile data without decoding JWTs on the client. The app sends the access token to the Auth Service, which validates it and returns the synchronized user profile from the platform database.
+
+**Why this priority**: Dashboard bootstrapping, role-gating for UI elements, and mobile auth flows all benefit from a dedicated profile endpoint. Decoupling profile resolution from JWT decoding simplifies frontend code and centralizes profile access.
+
+**Independent Test**: Login to obtain an access token, call `GET /api/v1/auth/me` with the token, verify the response contains the correct user profile (id, email, roles). Repeat with an expired token and verify 401.
+
+**Acceptance Scenarios**:
+
+1. **Given** an authenticated user, **When** they call `/me` with a valid access token, **Then** they receive their user profile (id, email, roles) from the platform database.
+2. **Given** an expired or invalid access token, **When** they call `/me`, **Then** they receive a 401 error.
 
 ---
 
@@ -88,7 +103,7 @@ A user clicks "Sign Out" in the dashboard. The system revokes their active sessi
 
 ### Functional Requirements
 
-- **FR-001**: The system MUST provide a login endpoint that accepts user credentials and authenticates them against the identity provider before returning tokens. Credentials must never be logged or stored.
+- **FR-001**: The system MUST provide a login endpoint that accepts user credentials and authenticates them against the identity provider before returning tokens. Credentials, `access_token`, and `refresh_token` must never be logged or stored. Only trace IDs and request metadata may appear in logs.
 - **FR-002**: The system MUST provide a token refresh endpoint that accepts a refresh token and returns a new access token and refresh token.
 - **FR-003**: The system MUST create or update a user profile record in the platform database on every successful authentication or token refresh, keyed to the identity provider's user identifier.
 - **FR-004**: The system MUST act as the sole interface to the identity provider. No client application or other service may call the identity provider's authentication endpoints directly.
@@ -98,8 +113,20 @@ A user clicks "Sign Out" in the dashboard. The system revokes their active sessi
   - Identity provider unreachable: 503 with error code `auth_unavailable`
   - Malformed request: 400 with error code `validation_error` and a list of details
 - **FR-006**: The system MUST NOT expose identity provider internal endpoints, URLs, or credentials to clients in any response.
+- **FR-006a**: The system MUST validate token format (non-empty, valid JWT structure) before contacting the identity provider. Malformed tokens must return 400 `validation_error` without any Keycloak call.
 - **FR-007**: The system MUST validate and pass through the token audience claim. It must NOT mint or modify tokens — the identity provider remains the sole token issuer.
 - **FR-008**: The system MUST provide a logout endpoint that accepts a refresh token and revokes the session with the identity provider. The endpoint must succeed (no error) even if the token is already expired or revoked. On success, it returns `{"message": "logged_out"}`.
+- **FR-009**: The system MUST implement per-IP login rate limiting: 10 attempts/minute per IP. Implemented as Auth Service middleware. The rate limit must not apply to refresh, logout, or /me endpoints.
+- **FR-010**: The system MUST provide a `GET /api/v1/auth/me` endpoint that accepts an access token (via `Authorization: Bearer` header), validates it, and returns the synchronized user profile from the platform database. This enables dashboard bootstrapping, role-gating, and mobile auth without frontend JWT decoding.
+
+### Endpoints
+
+| Method | Path | Description | Story |
+|--------|------|-------------|-------|
+| `POST` | `/api/v1/auth/login` | Authenticate with email+password, return token pair | US1 |
+| `POST` | `/api/v1/auth/refresh` | Exchange refresh token for new token pair | US2 |
+| `POST` | `/api/v1/auth/logout` | Revoke refresh token session | US4 |
+| `GET` | `/api/v1/auth/me` | Return current user profile from database | US5 |
 
 ### Key Entities *(include if feature involves data)*
 
@@ -111,9 +138,9 @@ A user clicks "Sign Out" in the dashboard. The system revokes their active sessi
 
 ### Measurable Outcomes
 
-- **SC-001**: Users can complete the login flow (submit credentials → receive tokens) in under 2 seconds under normal network conditions, measured from the client's perspective.
-- **SC-002**: Token refresh completes in under 1 second, enabling seamless background token rotation without user-visible delay.
-- **SC-003**: The authentication system handles at least 100 concurrent login or refresh requests without degradation in response time or error rate.
+- **SC-001**: Login flow completes with P95 latency under 2 seconds under normal network conditions, measured from the client's perspective.
+- **SC-002**: Token refresh completes with P95 latency under 1 second, enabling seamless background token rotation without user-visible delay.
+- **SC-003**: A single Auth Service instance handles at least 100 concurrent login or refresh requests without degradation in response time or error rate.
 - **SC-004**: Zero authentication requests bypass the Auth Service to reach the identity provider directly, verifiable through identity provider access logs.
 - **SC-005**: 100% of login attempts with invalid credentials receive a clear 401 error — never a timeout or internal server error.
 
@@ -124,3 +151,4 @@ A user clicks "Sign Out" in the dashboard. The system revokes their active sessi
 - Clients (dashboard, mobile app) handle token storage and inclusion in subsequent API requests per the platform security guidelines (access tokens in memory only, never in localStorage).
 - Network connectivity between the Auth Service and Keycloak is reliable under normal conditions; the 503 error path exists for degradation scenarios.
 - The refresh token rotation model is handled by the identity provider — the Auth Service simply proxies the response.
+- **Idempotency**: Authentication endpoints (login, refresh, logout) do NOT require `Idempotency-Key` headers. These requests are naturally repeatable — duplicate logins produce new token pairs, duplicate logouts are idempotent at the identity provider, and duplicate refreshes with an already-rotated token return an error.
