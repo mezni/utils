@@ -118,6 +118,7 @@ docs/
   GUARDRAILS.md            # LLM entry-point — read first every session
   roadmap_status.md        # MVP completion status
   sprint_backlog.md        # Current sprint tasks
+  bug_tracker.md           # Active bugs, reproduction steps, and fixes
   adr/                     # Architecture Decision Records
     ADR-001-keycloak-single-realm.md
     ADR-002-...

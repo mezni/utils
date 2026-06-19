@@ -15,6 +15,9 @@
 - [x] `docs/guardrails/agents.md` — builder session orchestration rules
 - [x] `.specify/memory/constitution.md` — BorneMap Architecture Constitution Rev 2
 - [x] `docs/SYSTEM_STATE.md` — this file (living state tracker)
+- [x] `docs/roadmap_status.md` — MVP milestones tracker
+- [x] `docs/sprint_backlog.md` — granular task backlog
+- [x] `docs/bug_tracker.md` — active bug tracking
 - [x] `docs/adr/` — directory created (empty, awaiting first ADR)
 - [x] `docs/specs/` — directory created (empty, awaiting first MVP spec)
 
