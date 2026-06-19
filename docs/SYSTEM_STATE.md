@@ -1,6 +1,6 @@
 # BorneMap — System State
 
-**Last updated:** 2026-06-18  **Session:** Sprint 0 — spec, plan, tasks, and analysis complete. Branch `001-infra-bootstrap` ready for implementation.
+**Last updated:** 2026-06-19  **Session:** Sprint 1 — Auth Service specification, plan, tasks, contracts, and analysis complete. Branch `002-auth-service` ready for implementation.
 
 ## Built and verified
 
@@ -20,6 +20,12 @@
 - [x] `docs/bug_tracker.md` — active bug tracking
 - [x] `docs/specs/mvp-1-admin-flow.md` — MVP-1 spec written, reviewed, delta-patches applied. Ready for execution.
 - [x] `docs/adr/` — directory created (empty, awaiting first ADR)
+- [x] `source/infra/docker-compose.yml` — 8-service stack with health checks, volumes, network (Sprint 0)
+- [x] `source/infra/traefik/` — static + dynamic config, `rewrite-to-root` middleware (Sprint 0)
+- [x] `source/infra/postgres/init/` — 3 init SQL scripts: databases, schemas+roles, initial tables (Sprint 0)
+- [x] `source/infra/keycloak/` — realm export (bornemap-realm.json, KC 25.0.6) + Docker config (Sprint 0)
+- [x] `source/infra/stubs/` — 4 stubs (auth, admin, driver, catch-all) for routing validation (Sprint 0)
+- [x] `specs/002-auth-service/` — Sprint 1 spec, plan, research, data-model, contracts, 30 tasks, analysis (Sprint 1)
 
 ## Skills installed (global — `npx skills add -g`)
 
@@ -32,13 +38,19 @@
 - [x] `adobe/skills@appbuilder-e2e-testing`
 - [x] `dauquangthanh/hanoi-rainbow@keycloak-administration`
 
+## Built in Sprint 0 but not yet wired to app code
+
+- `source/infra/docker-compose.yml` — 6 backend services running (Postgres 16+PostGIS, Redis 7, Keycloak 25, Traefik 3, 3 stubs)
+- `source/infra/keycloak/realm-export/bornemap-realm.json` — bornemap realm, 3 clients (auth-service, admin-dashboard, driver-app), 3 roles, audience mapper
+- `source/infra/postgres/init/` — 3 init SQL scripts creating 3 databases, schemas, roles, initial tables
+- `source/infra/traefik/dynamic/routing.yml` — 4 routers with `rewrite-to-root` middleware, StripPrefix
+
 ## Not yet built
 
-- `source/` — no application code exists yet (empty monorepo root) — Sprint 0 infra spec complete, ready to implement
 - `source/apps/mobile-driver` — mobile driver app
 - `source/apps/web-driver` — web driver app
 - `source/apps/dashboard` — partner/admin dashboard
-- `source/services/auth-service` — Auth Service (:3000)
+- `source/services/auth-service` — Auth Service (:3000) — Sprint 1 in progress
 - `source/services/driver-service` — Driver Service (:3001)
 - `source/services/admin-service` — Admin Service (:3002)
 - `source/packages/shared-types` — shared TypeScript types
@@ -46,10 +58,7 @@
 - `source/packages/shared-ui` — shared Tailwind/component library
 - `source/crates/db-models` — shared Rust database models
 - `source/crates/validation` — shared Rust validation
-- `source/infra/docker-compose.yml` — infrastructure orchestration
-- `source/infra/keycloak/` — Keycloak realm export + Docker config
 - `source/infra/migrations/` — database migration files (4 planned: init, audit, seed, materialized views)
-- `source/infra/traefik/` — Traefik static + dynamic config, JWKS middleware
 - `source/infra/osm-importer/` — OSM data pipeline
 - `docs/adr/` — no ADRs yet
 
@@ -57,8 +66,8 @@
 
 | Sprint | Focus | Tickets | Status |
 |--------|-------|---------|--------|
-| 0 | Platform bootstrap (Docker, Keycloak, DB schemas, Traefik routing) | INF-1–4 → spec, plan, tasks generated | 🟢 Spec complete |
-| 1 | Auth Service (login, refresh, USR- upsert, JWT utils, DB role) | AUTH-1–5 | ⬜ Not started |
+| 0 | Platform bootstrap (Docker, Keycloak, DB schemas, Traefik routing) | INF-1–4 | 🟢 Complete |
+| 1 | Auth Service (login, refresh, USR- upsert, logout, audience propagation) | 30 tasks in `specs/002-auth-service/tasks.md` | 🟡 Spec/plan/tasks complete — branch `002-auth-service` |
 | 2 | Admin Service CRUD (partners, stations, chargers, transaction orchestrator, DB role) | ADM-1–5 | ⬜ Not started |
 | 3 | Gateway security (JWKS, audience, header injection, Keycloak isolation) | SEC-1–5 | ⬜ Not started |
 | 4 | Redis + MV refresh (post-commit bust, failure policy, MV refresh, driver read) | REDIS-1–5 | ⬜ Not started |
@@ -68,13 +77,14 @@
 
 Total: 36 tickets across 8 sprints. See `docs/sprint_backlog.md` for details.
 
-## Environment
-- platform_db: not provisioned
-- keycloak_db: not provisioned
-- analytics_db: not provisioned
-- Keycloak: not configured
-- Redis: not provisioned
-- Traefik: not configured
+## Environment (Sprint 0 infra)
+- platform_db: provisioned via init SQL (01-create-dbs, 02-schemas-and-roles, 03-initial-tables)
+- keycloak_db: provisioned (Keycloak manages its own schema)
+- analytics_db: provisioned via init SQL
+- Keycloak: configured with bornemap realm, 3 clients, 3 roles, audience mapper (KC 25.0.6)
+- Redis: provisioned (port 6379)
+- Traefik: configured with 4 routers, `rewrite-to-root` middleware, StripPrefix
+- Stubs: 3 HTTP stubs + 1 catch-all for routing verification
 
 ## Known issues
 

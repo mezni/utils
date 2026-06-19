@@ -17,10 +17,10 @@
 
 | ID | Ticket | Est. effort | Dependencies |
 |----|--------|-------------|-------------|
-| INF-1 | Docker Compose base stack (Postgres 16+PostGIS, Redis, Keycloak, Traefik) | 2h | MVP-0 |
-| INF-2 | Keycloak bootstrap (realm: bornemap, clients, roles) | 1h | INF-1 |
-| INF-3 | DB schema bootstrap (schemas, partners, stations, chargers, lookup tables) | 2h | INF-1 |
-| INF-4 | Traefik routing (no auth yet — /api/v1/auth → auth, /admin → admin, /driver → driver) | 1h | INF-1 |
+| INF-1 | Docker Compose base stack (Postgres 16+PostGIS, Redis, Keycloak, Traefik) | 🟢 Done | MVP-0 |
+| INF-2 | Keycloak bootstrap (realm: bornemap, clients, roles) | 🟢 Done | INF-1 |
+| INF-3 | DB schema bootstrap (schemas, partners, stations, chargers, lookup tables) | 🟢 Done | INF-1 |
+| INF-4 | Traefik routing (no auth yet — /api/v1/auth → auth, /admin → admin, /driver → driver) | 🟢 Done | INF-1 |
 
 **Exit:** All services start via docker-compose, DB reachable, Keycloak admin UI accessible, Traefik routes correctly.
 
@@ -30,13 +30,17 @@
 
 **Goal:** Fully working authentication pipeline through Auth Service only.
 
-| ID | Ticket | Est. effort | Dependencies |
-|----|--------|-------------|-------------|
-| AUTH-1 | Login endpoint (`POST /auth/login`, Keycloak token exchange) | 3h | INF-2 |
-| AUTH-2 | Refresh endpoint (`refresh_token` rotation) | 1h | AUTH-1 |
-| AUTH-3 | User sync layer (upsert into `users.USR_`) | 1h | INF-3 |
-| AUTH-4 | JWT validation utilities (shared parsing) | 1h | AUTH-1 |
-| AUTH-5 | DB role setup (auth_service_role, users schema-only) | 0.5h | INF-3 |
+**Status:** 🟡 Spec/plan/research/data-model/contracts/tasks complete (30 tasks in `specs/002-auth-service/`). Branch `002-auth-service` ready for implementation.
+
+| ID | Ticket | Priority | Dependencies |
+|----|--------|----------|-------------|
+| AUTH-1 | Login endpoint (`POST /auth/login`, Keycloak token exchange) | P1 | INF-2 |
+| AUTH-2 | Refresh endpoint (`refresh_token` rotation) | P1 | AUTH-1 |
+| AUTH-3 | User sync layer (upsert into `users.USR_`) | P2 | INF-3 |
+| AUTH-4 | JWT validation utilities (shared parsing) | P1 | AUTH-1 |
+| AUTH-5 | DB role setup (auth_service_role, users schema-only) | P1 | INF-3 |
+| AUTH-6 | Logout endpoint (revoke Keycloak session, idempotent) | P1 | AUTH-1 |
+| AUTH-7 | Audience claim extraction and propagation | P1 | AUTH-4 |
 
 **Exit:** Login creates USR- row, refresh works end-to-end, DB role restricts to `users` schema.
 
