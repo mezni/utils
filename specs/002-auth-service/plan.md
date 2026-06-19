@@ -1,4 +1,4 @@
-# Implementation Plan: Auth Service — Login, Refresh & Logout
+# Implementation Plan: Auth Service — Login, Refresh, Logout & Profile
 
 **Branch**: `002-auth-service` | **Date**: 2026-06-19 | **Spec**: [spec.md](./spec.md)
 
@@ -24,7 +24,7 @@ Build the Auth Service — a Rust web service providing four endpoints (login, r
 
 **Performance Goals**: Login <2s p95, refresh <1s p95, 100 concurrent requests
 
-**Constraints**: No service touches Keycloak except Auth Service; no raw SQL strings (sqlx macros only); no `unwrap()`/`expect()` outside test code; credentials, access_token, and refresh_token never logged
+**Constraints**: No service touches Keycloak except Auth Service; no raw SQL strings (sqlx macros only); no `unwrap()`/`expect()` outside test code; credentials, `access_token`, and `refresh_token` never logged
 
 **Scale/Scope**: 4 endpoints (login, refresh, logout, me), 1 DB schema (`users`), single external integration (Keycloak), ~1.2K lines of service code
 
@@ -77,14 +77,22 @@ source/services/auth-service/
 │   │   └── me.rs
 │   ├── keycloak/               # Keycloak HTTP client
 │   │   ├── mod.rs
-│   │   └── client.rs
+│   │   ├── client.rs
+│   │   └── claims.rs           # JWT claims parser
 │   ├── db/                     # Database layer (sqlx)
 │   │   ├── mod.rs
 │   │   └── users.rs
+│   ├── middleware/             # Middleware
+│   │   ├── mod.rs
+│   │   ├── redaction.rs        # Log redaction (FR-001)
+│   │   └── rate_limit.rs       # Rate limiting (FR-009)
 │   ├── models/                 # Domain types
 │   │   ├── mod.rs
 │   │   ├── user.rs
 │   │   └── auth.rs
+│   ├── validation/             # Request validation
+│   │   ├── mod.rs
+│   │   └── token.rs            # Token format validation (FR-006a)
 │   └── error.rs                # Unified error handling
 └── tests/
     ├── integration/

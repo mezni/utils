@@ -1,4 +1,4 @@
-# Feature Specification: Auth Service — Login, Refresh & Logout
+# Feature Specification: Auth Service — Login, Refresh, Logout & Profile
 
 **Feature Branch**: `002-auth-service`
 
@@ -77,6 +77,21 @@ A user clicks "Sign Out" in the dashboard. The system revokes their active sessi
 
 ---
 
+### User Story 5 - Client retrieves authenticated profile (Priority: P2)
+
+A user opens the dashboard or mobile app and the application needs to verify the user's identity, roles, and profile data without decoding JWTs on the client. The app sends the access token to the Auth Service, which validates it and returns the synchronized user profile from the platform database.
+
+**Why this priority**: Dashboard bootstrapping, role-gating for UI elements, and mobile auth flows all benefit from a dedicated profile endpoint. Decoupling profile resolution from JWT decoding simplifies frontend code and centralizes profile access.
+
+**Independent Test**: Login to obtain an access token, call `GET /api/v1/auth/me` with the token, verify the response contains the correct user profile (id, email, roles). Repeat with an expired token and verify 401.
+
+**Acceptance Scenarios**:
+
+1. **Given** an authenticated user, **When** they call `/me` with a valid access token, **Then** they receive their user profile (id, email, roles) from the platform database.
+2. **Given** an expired or invalid access token, **When** they call `/me`, **Then** they receive a 401 error.
+
+---
+
 ### Edge Cases
 
 - What happens when the identity provider is unreachable? The system must return a clear service-unavailable error rather than timing out indefinitely or exposing internal errors.
@@ -101,8 +116,8 @@ A user clicks "Sign Out" in the dashboard. The system revokes their active sessi
 - **FR-006a**: The system MUST validate token format (non-empty, valid JWT structure) before contacting the identity provider. Malformed tokens must return 400 `validation_error` without any Keycloak call.
 - **FR-007**: The system MUST validate and pass through the token audience claim. It must NOT mint or modify tokens — the identity provider remains the sole token issuer.
 - **FR-008**: The system MUST provide a logout endpoint that accepts a refresh token and revokes the session with the identity provider. The endpoint must succeed (no error) even if the token is already expired or revoked. On success, it returns `{"message": "logged_out"}`.
-- **FR-009**: The system SHOULD implement per-IP login rate limiting (recommended: 10 attempts/minute). This may be implemented as Traefik middleware or in the Auth Service. The rate limit must not apply to refresh or logout endpoints.
-- **FR-010 (stretch)**: The system SHOULD provide a `GET /api/v1/auth/me` endpoint that accepts an access token (via `Authorization: Bearer` header), validates it, and returns the synchronized user profile from the platform database. This enables dashboard bootstrapping, role-gating, and mobile auth without frontend JWT decoding.
+- **FR-009**: The system MUST implement per-IP login rate limiting: 10 attempts/minute per IP. Implemented as Auth Service middleware. The rate limit must not apply to refresh, logout, or /me endpoints.
+- **FR-010**: The system MUST provide a `GET /api/v1/auth/me` endpoint that accepts an access token (via `Authorization: Bearer` header), validates it, and returns the synchronized user profile from the platform database. This enables dashboard bootstrapping, role-gating, and mobile auth without frontend JWT decoding.
 
 ### Endpoints
 
@@ -111,7 +126,7 @@ A user clicks "Sign Out" in the dashboard. The system revokes their active sessi
 | `POST` | `/api/v1/auth/login` | Authenticate with email+password, return token pair | US1 |
 | `POST` | `/api/v1/auth/refresh` | Exchange refresh token for new token pair | US2 |
 | `POST` | `/api/v1/auth/logout` | Revoke refresh token session | US4 |
-| `GET` | `/api/v1/auth/me` | Return current user profile from database (stretch — see FR-010) | Shared |
+| `GET` | `/api/v1/auth/me` | Return current user profile from database | US5 |
 
 ### Key Entities *(include if feature involves data)*
 

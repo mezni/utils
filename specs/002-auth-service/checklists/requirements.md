@@ -1,4 +1,4 @@
-# Specification Quality Checklist: Auth Service — Login, Refresh & Logout
+# Specification Quality Checklist: Auth Service — Login, Refresh, Logout & Profile
 
 **Purpose**: Validate specification completeness and quality before proceeding to planning
 **Created**: 2026-06-19

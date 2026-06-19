@@ -1,4 +1,4 @@
-# Tasks: Auth Service — Login, Refresh & Logout
+# Tasks: Auth Service — Login, Refresh, Logout & Profile
 
 **Input**: Design documents from `/specs/002-auth-service/`
 
@@ -25,7 +25,7 @@
 
 - [ ] T001 Initialize Rust Cargo project at `source/services/auth-service/` with Actix-web, sqlx (postgres feature), reqwest, serde, jsonwebtoken, tokio, chrono, uuid dependencies
 - [ ] T002 [P] Add `rustfmt` and `clippy` configuration in `source/services/auth-service/rustfmt.toml` and `.cargo/config.toml`
-- [ ] T003 Create directory structure: `src/routes/`, `src/keycloak/`, `src/db/`, `src/models/`, `tests/integration/`
+- [ ] T003 Create directory structure: `src/routes/`, `src/keycloak/`, `src/db/`, `src/models/`, `src/middleware/`, `src/validation/`, `tests/integration/`
 
 ---
 
@@ -36,14 +36,19 @@
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
 - [ ] T004 [P] Implement unified error enum `AuthError` with `ResponseError` trait in `source/services/auth-service/src/error.rs` covering all 4 error codes (400 validation_error, 401 invalid_credentials, 401 token_expired, 503 auth_unavailable)
-- [ ] T005 [P] Define request/response types in `source/services/auth-service/src/models/auth.rs` (LoginRequest, RefreshRequest, LogoutRequest, TokenResponse with `refresh_expires_in`, ErrorResponse)
+- [ ] [P] T004a Implement log redaction middleware in `source/services/auth-service/src/middleware/redaction.rs` — must never log `password`, `access_token`, or `refresh_token` fields (required by FR-001)
+- [ ] T005 [P] Define request/response types in `source/services/auth-service/src/models/auth.rs` (LoginRequest, RefreshRequest, LogoutRequest, LogoutResponse, TokenResponse with `refresh_expires_in`, ErrorResponse)
+- [ ] [P] T005a Define `LogoutResponse` struct with `message: String` in `source/services/auth-service/src/models/auth.rs`
 - [ ] T006 Define UserProfile struct and `UpsertUser` query type in `source/services/auth-service/src/models/user.rs`
-- [ ] [P] T006a Implement audience claim extraction and propagation in `source/services/auth-service/src/keycloak/client.rs` — expose `aud` from Keycloak token response, include in `TokenResponse` model
+- [ ] [P] T006a Implement JWT claims parser in `source/services/auth-service/src/keycloak/claims.rs` — extract `sub`, `email`, `given_name`, `family_name`, `realm_access.roles`, and `aud` claims from the Keycloak token response
+- [ ] [P] T006b Create SQL migration at `source/infra/migrations/0003_users_profiles.sql` — `CREATE TABLE users.user_profiles`, indexes, and `updated_at` trigger
+- [ ] [P] T006c Implement refresh/logout token validation in `source/services/auth-service/src/validation/token.rs` — validate non-empty, expected JWT structure, max length; return 400 `validation_error` before any Keycloak call
 - [ ] T007 [P] Implement Keycloak HTTP client in `source/services/auth-service/src/keycloak/client.rs` with methods: `login(email, password)`, `refresh(refresh_token)`, `logout(refresh_token)` — each returning raw jsonwebtoken values or an `AuthError`
 - [ ] T008 [P] Implement DB users repository in `source/services/auth-service/src/db/users.rs` with `upsert_user` sqlx query that inserts or updates a USR- row keyed to `keycloak_sub`
 - [ ] T009 Set up Actix-web app entrypoint in `source/services/auth-service/src/main.rs` with router, JSON config, CORS, and a `GET /health` returning 200
+- [ ] [P] T009a Implement rate limiting middleware in `source/services/auth-service/src/middleware/rate_limit.rs` — 10 attempts/minute/IP, applies to `POST /login` only; refresh and logout exempt
 
-**Checkpoint**: Foundation ready — error handling, Keycloak client, DB users repo, and server scaffold all wired. US1/2/4 can begin.
+**Checkpoint**: Foundation ready — error handling, Keycloak client, JWT claims parser, token validation, DB users repo, and server scaffold all wired. US1/2/4/5 can begin.
 
 ---
 
@@ -98,6 +103,24 @@
 
 ---
 
+## Phase 5a: User Story 5 - Retrieve authenticated profile (Priority: P2)
+
+**Goal**: `GET /api/v1/auth/me` accepts Bearer token, validates it, returns synchronized user profile from database.
+
+**Why this priority**: Enables dashboard bootstrapping, role-gating, and mobile auth without frontend JWT decoding.
+
+**Independent Test**: Login, then call /me with the access token → receive profile. Use expired token → 401.
+
+### Implementation for User Story 5
+
+- [ ] [P] T021a [US5] Implement `GET /api/v1/auth/me` route handler in `source/services/auth-service/src/routes/me.rs` — validate Bearer token, look up user profile by `sub`, return profile
+- [ ] T021b [US5] Wire `/me` route into router in `src/routes/mod.rs`
+- [ ] T021c [US5] Write integration test in `tests/integration/me_test.rs` — valid token returns profile; invalid token returns 401
+
+**Checkpoint**: Profile retrieval endpoint functional.
+
+---
+
 ## Phase 6: Polish & Cross-Cutting Concerns
 
 **Purpose**: Production readiness improvements
@@ -116,9 +139,6 @@
 - [ ] T027 Update `docs/SYSTEM_STATE.md` to reflect Auth Service deployment
 - [ ] [P] T028 Write load test script at `tests/load/login_load_test.py` targeting login + refresh endpoints — verify SC-003: 100 concurrent requests without degradation
 - [ ] [P] T029 Write SC-004 verification procedure — document manual steps to review Keycloak access logs for direct token-endpoint calls after integration test run
-- [ ] T030 [P] Implement `GET /api/v1/auth/me` route handler in `source/services/auth-service/src/routes/me.rs` — validate Bearer token, look up user profile by `sub`, return profile
-- [ ] T031 Wire `/me` route into router and `src/routes/mod.rs`
-- [ ] T032 Write integration test for `/me` — valid token returns profile; invalid token returns 401
 
 ---
 
@@ -131,6 +151,7 @@
 - **US1 — Login (Phase 3)**: Depends on Phase 2 — MVP, no other story dependencies
 - **US2 — Refresh (Phase 4)**: Depends on Phase 2 + US1 login (needs working login to get a refresh_token for testing)
 - **US4 — Logout (Phase 5)**: Depends on Phase 2 + US1 login (needs working login to get a refresh_token for testing)
+- **US5 — Profile (Phase 5a)**: Depends on Phase 2 (needs DB users repo + JWT validation) — independent of US1/2/4
 - **Polish (Phase 6)**: Depends on all desired user stories being complete
 
 ### User Story Dependencies
@@ -138,13 +159,15 @@
 - **US1 (P1)**: Can start after Foundational — no dependencies on other stories
 - **US2 (P1)**: Depends on US1 — needs login to produce a valid refresh_token for testing, but the handler file is independent
 - **US4 (P1)**: Depends on US1 — needs login to produce a valid refresh_token for testing, but the handler file is independent
+- **US5 (P2)**: Depends on Foundational (JWT claims parser + DB users repo) — independent of US1/2/4
 - **US2 and US4**: Independent of each other — can be implemented in parallel once US1 is done
 
 ### Parallel Opportunities
 
 - T002 + T003 (Setup) can run in parallel
-- T004 + T005 + T007 + T008 (Foundational) can run in parallel
+- T004 + T005 + T005a + T006a + T006c + T007 + T008 (Foundational) can run in parallel
 - T014 and T018 (US2 handler, US4 handler) can run in parallel once US1 completes
+- T021a (US5 handler) can run in parallel with US2/US4 (no dependency on US1)
 
 ---
 
@@ -180,7 +203,8 @@ Task: T018 [P] [US4] Implement logout handler
 2. Add US1 (Login) → Test independently → Deploy/Demo (MVP!)
 3. Add US2 (Refresh) → Test independently → Deploy/Demo
 4. Add US4 (Logout) → Test independently → Deploy/Demo
-5. Each story adds value without breaking previous stories
+5. Add US5 (Profile) → Test independently → Deploy/Demo
+6. Each story adds value without breaking previous stories
 
 ---
 
