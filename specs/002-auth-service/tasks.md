@@ -36,7 +36,7 @@
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
 - [ ] T004 [P] Implement unified error enum `AuthError` with `ResponseError` trait in `source/services/auth-service/src/error.rs` covering all 4 error codes (400 validation_error, 401 invalid_credentials, 401 token_expired, 503 auth_unavailable)
-- [ ] T005 [P] Define request/response types in `source/services/auth-service/src/models/auth.rs` (LoginRequest, RefreshRequest, LogoutRequest, TokenResponse, ErrorResponse)
+- [ ] T005 [P] Define request/response types in `source/services/auth-service/src/models/auth.rs` (LoginRequest, RefreshRequest, LogoutRequest, TokenResponse with `refresh_expires_in`, ErrorResponse)
 - [ ] T006 Define UserProfile struct and `UpsertUser` query type in `source/services/auth-service/src/models/user.rs`
 - [ ] [P] T006a Implement audience claim extraction and propagation in `source/services/auth-service/src/keycloak/client.rs` — expose `aud` from Keycloak token response, include in `TokenResponse` model
 - [ ] T007 [P] Implement Keycloak HTTP client in `source/services/auth-service/src/keycloak/client.rs` with methods: `login(email, password)`, `refresh(refresh_token)`, `logout(refresh_token)` — each returning raw jsonwebtoken values or an `AuthError`
@@ -107,9 +107,18 @@
 - [ ] T024 Add request body size limits and timeout configuration to Actix-web server
 - [ ] T025 Harden error responses — ensure no Keycloak URLs or internal details leak in any error body
 - [ ] T026 Run full integration test suite against live Docker stack and fix any failures
+- [ ] T026a [P] Write integration test AUTH-IT-01: successful login creates USR row in `platform_db.users`
+- [ ] T026b [P] Write integration test AUTH-IT-02: successful refresh updates USR row (last_login_at)
+- [ ] T026c [P] Write integration test AUTH-IT-03: logout revokes refresh token (cannot reuse)
+- [ ] T026d [P] Write integration test AUTH-IT-04: Keycloak unavailable returns 503 `auth_unavailable`
+- [ ] T026e [P] Write integration test AUTH-IT-05: malformed refresh token returns 400 `validation_error` without contacting Keycloak
+- [ ] T026f [P] Write integration test AUTH-IT-06: `auth_service_role` cannot SELECT from `inventory.partners`
 - [ ] T027 Update `docs/SYSTEM_STATE.md` to reflect Auth Service deployment
 - [ ] [P] T028 Write load test script at `tests/load/login_load_test.py` targeting login + refresh endpoints — verify SC-003: 100 concurrent requests without degradation
 - [ ] [P] T029 Write SC-004 verification procedure — document manual steps to review Keycloak access logs for direct token-endpoint calls after integration test run
+- [ ] T030 [P] Implement `GET /api/v1/auth/me` route handler in `source/services/auth-service/src/routes/me.rs` — validate Bearer token, look up user profile by `sub`, return profile
+- [ ] T031 Wire `/me` route into router and `src/routes/mod.rs`
+- [ ] T032 Write integration test for `/me` — valid token returns profile; invalid token returns 401
 
 ---
 

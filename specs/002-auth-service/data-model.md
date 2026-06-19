@@ -19,6 +19,21 @@ Represents an authenticated user in the platform. Created and updated exclusivel
 | `created_at` | `TIMESTAMPTZ` | `NOT NULL DEFAULT NOW()` | First profile creation |
 | `updated_at` | `TIMESTAMPTZ` | `NOT NULL DEFAULT NOW()` | Last profile update |
 
+## DDL
+
+```sql
+CREATE TABLE users.user_profiles (
+    id TEXT PRIMARY KEY CHECK (id ~ '^USR-.+'),
+    keycloak_sub TEXT UNIQUE NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    display_name VARCHAR(255),
+    roles TEXT[] NOT NULL DEFAULT '{}',
+    last_login_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+```
+
 ### Indexes
 
 ```sql
@@ -32,6 +47,17 @@ CREATE TRIGGER set_updated_at
     BEFORE UPDATE ON users.users
     FOR EACH ROW EXECUTE FUNCTION trigger_set_updated_at();
 ```
+
+### Claims Synchronized from Keycloak
+
+On each login or token refresh, the following Keycloak token claims are synced to the `user_profiles` row:
+
+| User Profile Column | Keycloak Claim Source | Notes |
+|--------------------|----------------------|-------|
+| `keycloak_sub` | `sub` | Always present, used as join key |
+| `email` | `email` | From Keycloak user profile |
+| `display_name` | `given_name` + `family_name` | Concatenated with space |
+| `roles` | `realm_access.roles` | Filtered to known roles (`role:admin`, `role:partner`, `role:driver`) |
 
 ### State Transitions
 
