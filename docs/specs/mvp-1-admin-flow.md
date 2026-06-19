@@ -21,9 +21,13 @@
 
 ---
 
-## Execution order (5 phases)
+## Execution order (8 sprints)
 
-### Phase 1 — Infrastructure
+See `sprint_backlog.md` for granular tickets. The spec below is organized by sprint.
+
+---
+
+### Sprint 0 — Infrastructure
 
 **Keycloak (`source/infra/keycloak/`)**
 - Single realm: `bornemap`
@@ -178,11 +182,13 @@ Written exclusively by Admin Service.
 - `inventory.mv_stations_geo` — spatial summary for map display
 - `inventory.mv_stations_summary` — list view data
 - `inventory.mv_stations_reviews` — aggregated review stats
+- **Refresh strategy**: Admin Service triggers `REFRESH MATERIALIZED VIEW CONCURRENTLY` synchronously after every station/charger write, in the same service orchestration step as the Redis cache bust (after `tx.commit()`, before HTTP response). This ensures map freshness without stale PostGIS windows.
 
 **Redis**
 - GIS tile caching keys: `stations:tile:{z}:{x}:{y}`, `stations:near:{lat}:{lng}:{radius}`
 - Key namespace ownership: Admin Service invalidates (`del`), Driver Service reads (`get`)
 - Invalidation occurs in the **service orchestration layer**, not the repository layer
+- **Failure policy (MVP)**: Redis failure does NOT roll back the DB transaction. Log a warning, set response header `X-Cache-Bust-Failed: true`, and return the successful response. The next successful write or TTL expiry will eventually correct the cache.
 
 **Traefik (`source/infra/traefik/`)**
 - Reverse proxy routing:
@@ -194,7 +200,7 @@ Written exclusively by Admin Service.
 - **Audience validation**: JWT `aud` must match the calling client (`admin-dashboard` for admin routes)
 - **Network isolation**: Block external access to `/realms/bornemap/protocol/openid-connect/*` — only Auth Service may reach Keycloak
 
-### Phase 2 — Auth Service (`source/services/auth-service/`)
+### Sprint 1 — Auth Service (`source/services/auth-service/`)
 
 Actix-web service on :3000.
 
@@ -202,14 +208,24 @@ Actix-web service on :3000.
 - `POST /api/v1/auth/login` — credentials → Keycloak token call → upsert USR- profile → return JWT + refresh
 - `POST /api/v1/auth/refresh` — refresh_token → Keycloak rotate → return new tokens
 
+**Error contracts:**
+
+| Condition | Status | Response body |
+|-----------|--------|-------------|
+| Invalid credentials | `401 Unauthorized` | `{ "error": "invalid_credentials" }` |
+| Expired refresh_token | `401 Unauthorized` | `{ "error": "token_expired" }` |
+| Keycloak unreachable | `503 Service Unavailable` | `{ "error": "auth_unavailable" }` |
+| Malformed request | `400 Bad Request` | `{ "error": "validation_error", "details": [...] }` |
+
 **Key rules:**
 - Sole caller of Keycloak. No other service touches Keycloak APIs.
 - Never expose Keycloak endpoints to clients.
 - Map Keycloak `sub` claim → USR- row in `users` schema.
+- **Audience propagation**: Auth Service validates and propagates the `aud` claim from Keycloak — it does NOT mint tokens. Keycloak remains the sole token issuer. Auth Service is a proxy, not an issuer.
 
 **Dependencies:** sqlx (compile-time), reqwest, serde, JWT crate.
 
-### Phase 3 — Admin Service (`source/services/admin-service/`)
+### Sprint 2 — Admin Service Core (CRUD + Transactions) (`source/services/admin-service/`)
 
 Actix-web service on :3002.
 
@@ -223,17 +239,37 @@ Actix-web service on :3002.
 
 **Transaction contract (strict):**
 
-Redis invalidation occurs in the **service orchestration layer** after commit and before HTTP response:
+All post-commit steps happen in the **service orchestration layer** (`admin_orchestrator.rs` or equivalent), in order:
 
 ```
 BEGIN TX
   Write inventory.partners / stations / chargers
 COMMIT TX
+REFRESH MATERIALIZED VIEW CONCURRENTLY (mv_stations_geo, mv_stations_summary)
 Redis cache bust (synchronous, in service layer after commit, before response)
-analytics_db log insert with BEFORE/AFTER diff
+analytics_db audit_log insert with BEFORE/AFTER diff (computed in service layer)
+Return HTTP response
 ```
 
-**Idempotency:**
+**Failure handling:**
+- MV refresh fails → log warning, proceed. Stale data corrects on next write.
+- Redis bust fails → log warning, set `X-Cache-Bust-Failed: true`, proceed. Do NOT roll back.
+- Audit log fails → log error, proceed. Audit is observability, not transactional.
+
+**Error contracts:**
+
+| Condition | Status | Response body |
+|-----------|--------|-------------|
+| Missing or invalid auth header | `401 Unauthorized` | `{ "error": "unauthorized" }` |
+| Wrong role (not admin/partner) | `403 Forbidden` | `{ "error": "forbidden", "required_role": "role:admin" }` |
+| Missing Idempotency-Key on POST | `400 Bad Request` | `{ "error": "missing_idempotency_key" }` |
+| Duplicate Idempotency-Key (replay) | `200 OK` + header `Idempotency-Replayed: true` | original response body |
+| Duplicate without key | `409 Conflict` | `{ "error": "duplicate_request" }` |
+| DB constraint violation | `409 Conflict` | `{ "error": "constraint_violation", "detail": "..." }` |
+| Entity not found | `404 Not Found` | `{ "error": "not_found", "entity_type": "...", "entity_id": "..." }` |
+| Updating soft-deleted entity | `410 Gone` | `{ "error": "entity_deleted" }` |
+| Internal/database error | `500 Internal Server Error` | `{ "error": "internal_error" }` |
+| Redis failure (non-fatal) | `200 OK` | response body + header `X-Cache-Bust-Failed: true` |
 - All `POST` endpoints MUST support `Idempotency-Key` header
 - If a request with a previously seen key arrives within 24h, return the original response (201) without re-executing
 - Duplicate without key → 409 Conflict
@@ -247,7 +283,7 @@ analytics_db log insert with BEFORE/AFTER diff
   - `actor_id`: from `X-User-Id`
 - Redis invalidation is synchronous per constitution (MVP phase — no event bus)
 
-### Phase 4 — Gateway Security
+### Sprint 3 — Gateway Security
 
 Wire Traefik JWKS validation middleware against Keycloak certs endpoint.
 Validate: signature, `exp`, `aud`, `iss`. Cache public keys with TTL.
@@ -257,7 +293,7 @@ Validate: signature, `exp`, `aud`, `iss`. Cache public keys with TTL.
 - Auth routes may accept multiple audiences
 - Reject tokens with mismatched audience at the gateway before forwarding to any service
 
-### Phase 5 — Dashboard (`source/apps/dashboard/`)
+### Sprint 7 — Dashboard (`source/apps/dashboard/`)
 
 **Auth:** login via Auth Service (never direct to Keycloak). JWT in memory only.
 **Role gating:** admin-only routes gated on `role:admin` / `role:partner`.
@@ -309,7 +345,11 @@ interface ChargerDTO { id: string; stationId: string; status: string; /* ... */ 
 - [ ] DB roles enforce schema-level access (auth_service_role, admin_service_role, driver_service_role)
 - [ ] Analytics writes go to isolated `analytics_db` (never `platform_db`)
 - [ ] All endpoints under `/api/v1/`
-- [ ] POST endpoints require `Idempotency-Key` header
+- [ ] Redis failure does not roll back DB (log warning, proceed)
+- [ ] MV refresh failure does not roll back DB (log warning, proceed)
+- [ ] Audit log failure does not roll back mutation (log error, proceed)
+- [ ] Diff computed in service layer (not repository, not DB trigger)
+- [ ] Auth Service validates and propagates audience — does not mint tokens
 - [ ] JWT `aud` validated at Traefik against the calling client
 - [ ] JWT never stored in `localStorage` (in-memory only)
 - [ ] No `unwrap()` / `expect()` outside test code
@@ -324,6 +364,10 @@ interface ChargerDTO { id: string; stationId: string; status: string; /* ... */ 
 - Traefik returns 401 on expired/malformed JWT
 - Traefik returns 401 on mismatched `aud` claim
 - Keycloak token endpoint unreachable from outside Auth Service network
-- Idempotent POST with same key returns original response (not duplicate)
+- Duplicate Idempotency-Key returns original response (not 409)
+- All error contracts match the spec (401, 403, 409, 503, 410 per endpoint)
+- Redis failure returns 200 with `X-Cache-Bust-Failed: true` header (not 500)
+- Auth Service returns 503 when Keycloak is unreachable
+- MV refresh triggered synchronously after station/charger commit
 - DB role `driver_service_role` cannot write to `inventory` tables
 - DB role `auth_service_role` cannot read `inventory` tables

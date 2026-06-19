@@ -1,6 +1,6 @@
 # BorneMap — System State
 
-**Last updated:** 2026-06-18  **Session:** MVP-1 spec review — applied all delta patches (Issues A-F, A5-7, C7-8, E5)
+**Last updated:** 2026-06-18  **Session:** Sprint plan finalized — MVP-1 reorganized into 8 sprints (Sprint 0–7), sprint backlog rewritten with 36 tickets mapped to spec sections
 
 ## Built and verified
 
@@ -52,6 +52,21 @@
 - `source/infra/traefik/` — Traefik static + dynamic config, JWKS middleware
 - `source/infra/osm-importer/` — OSM data pipeline
 - `docs/adr/` — no ADRs yet
+
+## Sprint plan
+
+| Sprint | Focus | Tickets |
+|--------|-------|---------|
+| 0 | Platform bootstrap (Docker, Keycloak, DB schemas, Traefik routing) | INF-1–4 |
+| 1 | Auth Service (login, refresh, USR- upsert, JWT utils, DB role) | AUTH-1–5 |
+| 2 | Admin Service CRUD (partners, stations, chargers, transaction orchestrator, DB role) | ADM-1–5 |
+| 3 | Gateway security (JWKS, audience, header injection, Keycloak isolation) | SEC-1–5 |
+| 4 | Redis + MV refresh (post-commit bust, failure policy, MV refresh, driver read) | REDIS-1–5 |
+| 5 | Analytics + audit (analytics_db, BEFORE/AFTER diff, mutation hooks, indexes) | AUD-1–4 |
+| 6 | Idempotency + hardening (Idempotency-Key, duplicate detection, validation, error contracts) | SAFE-1–4 |
+| 7 | E2E integration (full flow tests, gateway security, audit verification) | E2E-1–6 |
+
+Total: 36 tickets across 8 sprints. See `docs/sprint_backlog.md` for details.
 
 ## Environment
 - platform_db: not provisioned

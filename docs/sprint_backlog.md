@@ -1,73 +1,139 @@
 # BorneMap — Sprint Backlog
 
-> Granular tasks assigned to builder sessions. One task = one LLM session.
+> Granular tasks assigned to builder sessions. One ticket = one LLM session.
 > For high-level tracking, see `roadmap_status.md`.
 
 ---
 
-## Current sprint
+## MVP-1: Admin Flow System
 
-**Sprint:** N/A (scaffolding)  **Started:** 2026-06-18  **Target:** TBD
-
-| Task | Status | Assigned to | Notes |
-|------|--------|-----------|-------|
-| Project scaffolding complete | 🟢 Done | — | docs, guardrails, constitution, skills |
-| Write MVP-1 spec | 🟢 Done | — | `docs/specs/mvp-1-admin-flow.md` |
+**Scope:** Admin → Traefik → Auth Service → Keycloak → Admin Service → PostGIS + Redis + analytics_db
 
 ---
 
-## Backlog
+### 🚀 Sprint 0 — Platform Bootstrap
 
-| MVP | Task | Priority | Dependencies | Est. effort |
-|-----|------|----------|-------------|-----------|
-| MVP-1 | Phase 1 — Infra: Docker Compose (Postgres + Redis + Keycloak + Traefik routing) | High | MVP-0 | 3h |
-| MVP-1 | Phase 1 — Infra: Keycloak realm export + client config (bornemap, clients: mobile-driver-app, web-driver-app, admin-dashboard) | High | MVP-1 (Docker) | 2h |
-| MVP-1 | Phase 1 — Infra: platform_db + analytics_db migrations (schemas, PostGIS, audit columns, updated_at trigger) | High | MVP-1 (Docker) | 2h |
-| MVP-1 | Phase 1 — Infra A5: DB role provisioning (auth_service_role, admin_service_role, driver_service_role) | High | MVP-1 (migrations) | 1h |
-| MVP-1 | Phase 1 — Infra A6: Network segmentation (Keycloak internal-only, service network isolation) | High | MVP-1 (Docker) | 1h |
-| MVP-1 | Phase 1 — Infra A7: Redis namespace contract (Admin invalidates, Driver reads) | High | MVP-1 (Redis) | 0.5h |
-| MVP-1 | Phase 1 — Infra: Traefik JWKS validation middleware + header injection + audience check | High | MVP-1 (Keycloak) | 2h |
-| MVP-1 | Phase 1 — Infra: Block external Keycloak token endpoint access in Traefik | High | MVP-1 (Traefik) | 0.5h |
-| MVP-1 | Phase 2 — Auth Service: Cargo project, config, errors, domain types | High | MVP-1 (infra) | 2h |
-| MVP-1 | Phase 2 — Auth Service: login handler + Keycloak proxy + USR- upsert | High | MVP-1 (auth-types) | 3h |
-| MVP-1 | Phase 2 — Auth Service: refresh handler | High | MVP-1 (login) | 1h |
-| MVP-1 | Phase 2 — Auth Service: integration tests (login, refresh, 401, 403) | High | MVP-1 (handlers) | 2h |
-| MVP-1 | Phase 3 — Admin Service: Cargo project, AppError, domain types, repo traits | High | MVP-1 (infra) | 3h |
-| MVP-1 | Phase 3 — Admin Service: Partner CRUD handlers + transactions + idempotency | High | MVP-1 (admin-types) | 3h |
-| MVP-1 | Phase 3 — Admin Service: Station/charger CRUD handlers + transactions | High | MVP-1 (partner-CRUD) | 3h |
-| MVP-1 | Phase 3 — Admin Service: Redis cache bust (sync, in service layer) + analytics_db diff-based audit | High | MVP-1 (station-CRUD) | 2h |
-| MVP-1 | Phase 3 — Admin Service: integration tests (incl. idempotency, audit diff, DB role enforcement) | High | MVP-1 (all handlers) | 3h |
-| MVP-1 | Phase 5 — Dashboard: login page, token storage (memory), React Router auth guard | High | MVP-1 (auth-service) | 3h |
-| MVP-1 | Phase 5 — Dashboard: partner/station CRUD pages + React Query mutations | High | MVP-1 (admin-service) | 4h |
-| MVP-2 | Create inventory schema migrations (partners, stations, chargers, materialized views) | Medium | MVP-1 | 2h |
-| MVP-2 | Implement driver-service: nearby query + materialized views + Redis reads | Medium | MVP-2 (migrations) | 4h |
-| MVP-5 | Create OSM importer script + gis schema migration | Low | MVP-2 | 3h |
+**Goal:** System runnable locally with all dependencies wired, no business logic.
+
+| ID | Ticket | Est. effort | Dependencies |
+|----|--------|-------------|-------------|
+| INF-1 | Docker Compose base stack (Postgres 16+PostGIS, Redis, Keycloak, Traefik) | 2h | MVP-0 |
+| INF-2 | Keycloak bootstrap (realm: bornemap, clients, roles) | 1h | INF-1 |
+| INF-3 | DB schema bootstrap (schemas, partners, stations, chargers, lookup tables) | 2h | INF-1 |
+| INF-4 | Traefik routing (no auth yet — /api/v1/auth → auth, /admin → admin, /driver → driver) | 1h | INF-1 |
+
+**Exit:** All services start via docker-compose, DB reachable, Keycloak admin UI accessible, Traefik routes correctly.
 
 ---
 
-## Task template
+### 🔐 Sprint 1 — Auth Service + Keycloak Integration
 
-When assigning a new task to a builder session, copy this template:
+**Goal:** Fully working authentication pipeline through Auth Service only.
 
-```markdown
-## Task: [MVP-N] [Short description]
+| ID | Ticket | Est. effort | Dependencies |
+|----|--------|-------------|-------------|
+| AUTH-1 | Login endpoint (`POST /auth/login`, Keycloak token exchange) | 3h | INF-2 |
+| AUTH-2 | Refresh endpoint (`refresh_token` rotation) | 1h | AUTH-1 |
+| AUTH-3 | User sync layer (upsert into `users.USR_`) | 1h | INF-3 |
+| AUTH-4 | JWT validation utilities (shared parsing) | 1h | AUTH-1 |
+| AUTH-5 | DB role setup (auth_service_role, users schema-only) | 0.5h | INF-3 |
 
-**Inputs:**
-- Constitution: `.specify/memory/constitution.md`
-- Guardrails: `docs/guardrails/[domain].md`
-- System state: `docs/SYSTEM_STATE.md`
-- Prior spec: `docs/specs/mvp-[N-1].md` (omit for MVP-1 as MVP-0 was scaffolding with no spec)
+**Exit:** Login creates USR- row, refresh works end-to-end, DB role restricts to `users` schema.
 
-**Acceptance criteria:**
-1. [Criterion 1]
-2. [Criterion 2]
-3. Tests pass (`cargo test`, `vitest run`)
-4. `docs/SYSTEM_STATE.md` updated
+---
 
-**Files to create/modify:**
-- `source/services/[name]/...`
-- `source/infra/migrations/...`
-```
+### 🧠 Sprint 2 — Admin Service Core (CRUD + Transactions)
+
+**Goal:** Admin can create partners, stations, chargers with safe transactions.
+
+| ID | Ticket | Est. effort | Dependencies |
+|----|--------|-------------|-------------|
+| ADM-1 | Partner CRUD (create/update endpoints) | 3h | INF-3 |
+| ADM-2 | Station CRUD (create/update endpoints) | 3h | INF-3 |
+| ADM-3 | Charger CRUD (create/update endpoints) | 3h | INF-3 |
+| ADM-4 | Transaction orchestrator (BEGIN → WRITE → COMMIT, rollback safety) | 2h | ADM-1/2/3 |
+| ADM-5 | DB role enforcement (admin_service_role, inventory-only access) | 0.5h | INF-3 |
+
+**Exit:** Partner/station/charger CRUD via API, transactional writes, unauthorized schema access blocked.
+
+---
+
+### ⚡ Sprint 3 — Security Layer (Gateway + Identity Enforcement)
+
+**Goal:** Secure and production-safe at ingress level.
+
+| ID | Ticket | Est. effort | Dependencies |
+|----|--------|-------------|-------------|
+| SEC-1 | JWKS validation middleware (signature, caching 10-30min TTL) | 2h | INF-4 |
+| SEC-2 | JWT claims validation (exp, iss, aud checks) | 1h | SEC-1 |
+| SEC-3 | Audience enforcement (admin-dashboard for admin routes) | 1h | SEC-2 |
+| SEC-4 | Header injection (`X-User-Id`, `X-User-Roles`) | 0.5h | SEC-1 |
+| SEC-5 | Keycloak network isolation (block external `/realms/*` access) | 0.5h | INF-1 |
+
+**Exit:** Invalid JWT → 401, wrong audience → blocked, Keycloak unreachable except from Auth Service.
+
+---
+
+### 🧱 Sprint 4 — Redis + Cache Invalidation System
+
+**Goal:** Spatial read acceleration + strict invalidation model.
+
+| ID | Ticket | Est. effort | Dependencies |
+|----|--------|-------------|-------------|
+| REDIS-1 | Redis client integration in Admin Service (connection pool, key strategy) | 1h | INF-1 |
+| REDIS-2 | Cache key design (`stations:tile:{z}:{x}:{y}`, `stations:near:{lat}:{lng}:{radius}`) | 0.5h | REDIS-1 |
+| REDIS-3 | Invalidation service layer (post-commit bust logic, failure policy: log + header, no rollback) | 1.5h | REDIS-2, ADM-4 |
+| REDIS-4 | MV refresh integration (`REFRESH MATERIALIZED VIEW CONCURRENTLY` in same orchestration step) | 1h | REDIS-3, INF-3 |
+| REDIS-5 | Driver read integration (basic — verify cache hit/miss, placeholder handler) | 1h | REDIS-2 |
+
+**Exit:** Admin update triggers cache invalidation + MV refresh after commit, Redis failure does not roll back DB.
+
+---
+
+### 📊 Sprint 5 — Analytics + Audit System
+
+**Goal:** Track all mutations with BEFORE/AFTER diff logging.
+
+| ID | Ticket | Est. effort | Dependencies |
+|----|--------|-------------|-------------|
+| AUD-1 | analytics_db setup + audit_log schema | 1h | INF-1 |
+| AUD-2 | BEFORE/AFTER diff generator in service layer | 1.5h | ADM-4 |
+| AUD-3 | Admin mutation logging hook (partner/station/charger, computed in service layer) | 1.5h | AUD-2, ADM-1/2/3 |
+| AUD-4 | Index strategy on audit_log (actor_id, target_type+target_id, created_at DESC) | 0.5h | AUD-1 |
+
+**Exit:** Every mutation logged with before/after diff, queryable audit trail exists.
+
+---
+
+### 🔁 Sprint 6 — Idempotency + Hardening
+
+**Goal:** Admin APIs safe for retries and production traffic.
+
+| ID | Ticket | Est. effort | Dependencies |
+|----|--------|-------------|-------------|
+| SAFE-1 | Idempotency middleware (UUID v4 keys, 24h cache store, deterministic replay) | 2h | ADM-4 |
+| SAFE-2 | Duplicate detection logic (replayed key → return original response + `Idempotency-Replayed: true`) | 1h | SAFE-1 |
+| SAFE-3 | Validation layer (reject invalid payloads, enforce constraint rules) | 1.5h | ADM-1/2/3 |
+| SAFE-4 | Error contract standardization (401/403/404/409/410/500 per spec table) | 1h | AUTH-1, ADM-1/2/3 |
+
+**Exit:** Duplicate POST does not create duplicates, same key returns same response, all error codes match spec.
+
+---
+
+### 🧪 Sprint 7 — End-to-End System Integration
+
+**Goal:** Full Admin flow working end-to-end.
+
+| ID | Ticket | Est. effort | Dependencies |
+|----|--------|-------------|-------------|
+| E2E-1 | Full login flow test (Dashboard → Auth → Keycloak → USR- upsert) | 1h | All above |
+| E2E-2 | Partner creation flow test (CRUD + audit + Redis bust + MV refresh) | 1h | All above |
+| E2E-3 | Station update flow test (CRUD + audit + Redis bust + MV refresh) | 1h | All above |
+| E2E-4 | Redis invalidation verification (after commit, not before; Redis failure path) | 1h | All above |
+| E2E-5 | Audit logging verification (before/after diff correctness) | 0.5h | All above |
+| E2E-6 | Gateway security tests (401 expired, 401 wrong aud, 403 wrong role, 503 Keycloak down) | 1.5h | All above |
+
+**Exit:** Full system works without bypass, all constraints enforced, no direct DB/service violations.
 
 ---
 
