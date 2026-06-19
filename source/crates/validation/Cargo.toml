@@ -1,0 +1,12 @@
+[package]
+name = "validation"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+validator = { version = "0.18", features = ["derive"] }
+serde = { workspace = true, features = ["derive"] }
+
+[lib]
+name = "validation_lib"
+path = "src/lib.rs"

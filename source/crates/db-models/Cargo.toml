@@ -1,0 +1,13 @@
+[package]
+name = "db-models"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+serde = { workspace = true, features = ["derive"] }
+chrono = { workspace = true, features = ["serde"] }
+uuid = { workspace = true, features = ["serde"] }
+
+[lib]
+name = "db_models"
+path = "src/lib.rs"

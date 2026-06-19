@@ -1,0 +1,47 @@
+# Git
+.git
+.gitignore
+.github
+
+# Documentation
+docs/
+specs/
+*.md
+
+# CI/CD
+.github/workflows/
+.gitlab-ci.yml
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Test files
+tests/
+*.test.*
+*_test.*
+
+# Build artifacts
+target/
+dist/
+build/
+*.out
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Docker files
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Other
+.gitkeep

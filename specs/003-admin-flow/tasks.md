@@ -27,10 +27,10 @@
 
 **Purpose**: Project initialization and basic structure
 
-- [ ] T001 Create `admin-service` directory structure in `source/services/admin-service/`
-- [ ] T002 Initialize Rust project for `admin-service` with `actix-web`, `sqlx`, `serde`, `chrono`, `uuid`, `reqwest`, `tracing`, `redis` dependencies in `source/services/admin-service/Cargo.toml`
-- [ ] T003 Create `db-models` crate in `source/crates/db-models/` with `Cargo.toml`
-- [ ] T004 Create `validation` crate in `source/crates/validation/` with `Cargo.toml`
+- [X] T001 Create `admin-service` directory structure in `source/services/admin-service/`
+- [X] T002 Initialize Rust project for `admin-service` with `actix-web`, `sqlx`, `serde`, `chrono`, `uuid`, `reqwest`, `tracing`, `redis` dependencies in `source/services/admin-service/Cargo.toml`
+- [X] T003 Create `db-models` crate in `source/crates/db-models/` with `Cargo.toml`
+- [X] T004 Create `validation` crate in `source/crates/validation/` with `Cargo.toml`
 - [ ] T005 [P] Configure `admin-service` Dockerfile for multi-stage build (`rust:1.88-slim-bullseye` as builder, `debian:bookworm-slim` as runtime) in `source/services/admin-service/Dockerfile`
 - [ ] T006 [P] Update `source/infra/docker-compose.yml` to include `admin-service` and its environment variables (`DATABASE_URL`, `REDIS_URL`, `KEYCLOAK_URL`, `KEYCLOAK_CLIENT_ID`, `PORT`, `RUST_LOG`)
 
@@ -42,16 +42,16 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T007 Implement base error types and `ResponseError` trait in `source/services/admin-service/src/error.rs`
-- [ ] T008 Configure application logging with `tracing` and `EnvFilter` in `source/services/admin-service/src/main.rs`
-- [ ] T009 Implement generic helper for `NanoID` entity ID generation in `source/services/admin-service/src/utils/id_generator.rs`
-- [ ] T010 Implement Redis client initialization and connection pooling in `source/services/admin-service/src/redis.rs`
-- [ ] T011 Implement `UserContext` extraction from Traefik headers (`X-User-Id`, `X-User-Roles`) in `source/services/admin-service/src/middleware/auth.rs`
-- [ ] T012 Configure basic Actix-web server and JSON payload limits in `source/services/admin-service/src/main.rs`
-- [ ] T013 Implement `IdempotencyMiddleware` to check for `Idempotency-Key` header and handle duplicate requests in `source/services/admin-service/src/middleware/idempotency.rs`
-- [ ] T014 Implement Redis client for idempotency key storage and retrieval (`idempotency:{key}` namespace with 24h TTL) in `source/services/admin-service/src/redis.rs`
-- [ ] T015 Implement `TraefikHeaderValidationMiddleware` to validate required headers (`X-User-Id`, `X-User-Roles`) in `source/services/admin-service/src/middleware/traefik_validation.rs`
-- [ ] T016 Implement `RoleEnforcementMiddleware` to allow `role:admin`, `role:partner` and reject 403 forbidden in `source/services/admin-service/src/middleware/role_enforcement.rs`
+- [X] T007 Implement base error types and `ResponseError` trait in `source/services/admin-service/src/error.rs`
+- [X] T008 Configure application logging with `tracing` and `EnvFilter` in `source/services/admin-service/src/main.rs`
+- [X] T009 Implement generic helper for `NanoID` entity ID generation in `source/services/admin-service/src/utils/id_generator.rs`
+- [X] T010 Implement Redis client initialization and connection pooling in `source/services/admin-service/src/redis.rs`
+- [X] T011 Implement `UserContext` extraction from Traefik headers (`X-User-Id`, `X-User-Roles`) in `source/services/admin-service/src/middleware/auth.rs`
+- [X] T012 Configure basic Actix-web server and JSON payload limits in `source/services/admin-service/src/main.rs`
+- [X] T013 Implement `IdempotencyMiddleware` to check for `Idempotency-Key` header and handle duplicate requests in `source/services/admin-service/src/middleware/idempotency.rs`
+- [X] T014 Implement Redis client for idempotency key storage and retrieval (`idempotency:{key}` namespace with 24h TTL) in `source/services/admin-service/src/redis.rs`
+- [X] T015 Implement `TraefikHeaderValidationMiddleware` to validate required headers (`X-User-Id`, `X-User-Roles`) in `source/services/admin-service/src/middleware/traefik_validation.rs`
+- [X] T016 Implement `RoleEnforcementMiddleware` to allow `role:admin`, `role:partner` and reject 403 forbidden in `source/services/admin-service/src/middleware/role_enforcement.rs`
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -63,10 +63,10 @@
 
 **⚠️ CRITICAL**: Must be complete before all CRUD operations
 
-- [ ] T017 Implement `AdminOrchestrator` with transaction workflow: BEGIN TX → WRITE ENTITY → COMMIT → REFRESH MATERIALIZED VIEW → REDIS INVALIDATION → AUDIT LOG WRITE in `source/services/admin-service/src/services/admin_orchestrator.rs`
-- [ ] T018 Implement `AuditDiffService` to capture BEFORE snapshot, capture AFTER snapshot, build JSON diff payload, insert analytics_db.audit_log in `source/services/admin-service/src/services/audit_service.rs` and `source/services/admin-service/src/models/audit.rs`
-- [ ] T019 Implement `CacheBustService` to invalidate Redis caches (stations:tile:*, stations:near:*) with warning-only on failure and add X-Cache-Bust-Failed header in `source/services/admin-service/src/services/cache_service.rs`
-- [ ] T020 Implement `MVRefreshService` to execute REFRESH MATERIALIZED VIEW CONCURRENTLY inventory.mv_stations_geo and inventory.mv_stations_summary with warning on failure in `source/services/admin-service/src/services/materialized_view_service.rs`
+- [X] T017 Implement `AdminOrchestrator` with transaction workflow: BEGIN TX → WRITE ENTITY → COMMIT → REFRESH MATERIALIZED VIEW → REDIS INVALIDATION → AUDIT LOG WRITE in `source/services/admin-service/src/services/admin_orchestrator.rs`
+- [X] T018 Implement `AuditDiffService` to capture BEFORE snapshot, capture AFTER snapshot, build JSON diff payload, insert analytics_db.audit_log in `source/services/admin-service/src/services/audit_service.rs` and `source/services/admin-service/src/models/audit.rs`
+- [X] T019 Implement `CacheBustService` to invalidate Redis caches (stations:tile:*, stations:near:*) with warning-only on failure and add X-Cache-Bust-Failed header in `source/services/admin-service/src/services/cache_service.rs`
+- [X] T020 Implement `MVRefreshService` to execute REFRESH MATERIALIZED VIEW CONCURRENTLY inventory.mv_stations_geo and inventory.mv_stations_summary with warning on failure in `source/services/admin-service/src/services/materialized_view_service.rs`
 
 **Checkpoint**: Transaction orchestrator ready with audit, cache bust, and MV refresh
 
