@@ -48,12 +48,31 @@
 - [ ] T010 Implement Redis client initialization and connection pooling in `source/services/admin-service/src/redis.rs`
 - [ ] T011 Implement `UserContext` extraction from Traefik headers (`X-User-Id`, `X-User-Roles`) in `source/services/admin-service/src/middleware/auth.rs`
 - [ ] T012 Configure basic Actix-web server and JSON payload limits in `source/services/admin-service/src/main.rs`
+- [ ] T013 Implement `IdempotencyMiddleware` to check for `Idempotency-Key` header and handle duplicate requests in `source/services/admin-service/src/middleware/idempotency.rs`
+- [ ] T014 Implement Redis client for idempotency key storage and retrieval (`idempotency:{key}` namespace with 24h TTL) in `source/services/admin-service/src/redis.rs`
+- [ ] T015 Implement `TraefikHeaderValidationMiddleware` to validate required headers (`X-User-Id`, `X-User-Roles`) in `source/services/admin-service/src/middleware/traefik_validation.rs`
+- [ ] T016 Implement `RoleEnforcementMiddleware` to allow `role:admin`, `role:partner` and reject 403 forbidden in `source/services/admin-service/src/middleware/role_enforcement.rs`
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
 ---
 
-## Phase 3: User Story 1 - Partner Management (Priority: P1) 🎯 MVP
+## Phase 3: Transaction Orchestrator (Blocking Prerequisites)
+
+**Purpose**: Core transaction orchestrator that enforces post-commit steps (audit, cache bust, MV refresh)
+
+**⚠️ CRITICAL**: Must be complete before all CRUD operations
+
+- [ ] T017 Implement `AdminOrchestrator` with transaction workflow: BEGIN TX → WRITE ENTITY → COMMIT → REFRESH MATERIALIZED VIEW → REDIS INVALIDATION → AUDIT LOG WRITE in `source/services/admin-service/src/services/admin_orchestrator.rs`
+- [ ] T018 Implement `AuditDiffService` to capture BEFORE snapshot, capture AFTER snapshot, build JSON diff payload, insert analytics_db.audit_log in `source/services/admin-service/src/services/audit_service.rs` and `source/services/admin-service/src/models/audit.rs`
+- [ ] T019 Implement `CacheBustService` to invalidate Redis caches (stations:tile:*, stations:near:*) with warning-only on failure and add X-Cache-Bust-Failed header in `source/services/admin-service/src/services/cache_service.rs`
+- [ ] T020 Implement `MVRefreshService` to execute REFRESH MATERIALIZED VIEW CONCURRENTLY inventory.mv_stations_geo and inventory.mv_stations_summary with warning on failure in `source/services/admin-service/src/services/materialized_view_service.rs`
+
+**Checkpoint**: Transaction orchestrator ready with audit, cache bust, and MV refresh
+
+---
+
+## Phase 4: User Story 1 - Partner Management (Priority: P1) 🎯 MVP
 
 **Goal**: A partner administrator can create, retrieve, update, and soft-delete partner entities. Partners are assigned unique `OPR-` identifiers, and all mutations are transactional and logged to the audit trail.
 
@@ -61,23 +80,23 @@
 
 ### Implementation for User Story 1
 
-- [ ] T013 [P] [US1] Create `Partner` model (for `inventory.partners`) in `source/crates/db-models/src/partner.rs`
-- [ ] T014 [P] [US1] Create `CreatePartnerRequest` and `UpdatePartnerRequest` DTOs in `source/services/admin-service/src/models/partner.rs`
-- [ ] T015 [P] [USOR-1] Create `inventory` repository methods for partners in `source/services/admin-service/src/repositories/inventory.rs`
-- [ ] T016 [US1] Implement `AdminOrchestrator::create_partner` to handle transactional writes, audit logging, and `NanoID` generation in `source/services/admin-service/src/services/admin_orchestrator.rs`
-- [ ] T017 [US1] Implement `create_partner` route handler (`POST /api/v1/admin/partner`) in `source/services/admin-service/src/routes/partner.rs`
-- [ ] T018 [US1] Implement `get_partner` route handler (`GET /api/v1/admin/partner/:id`) in `source/services/admin-service/src/routes/partner.rs`
-- [ ] T019 [US1] Implement `update_partner` route handler (`PUT /api/v1/admin/partner/:id`) in `source/services/admin-service/src/routes/partner.rs`
-- [ ] T020 [US1] Implement `delete_partner_soft` route handler (`DELETE /api/v1/admin/partner/:id`) in `source/services/admin-service/src/routes/partner.rs`
-- [ ] T021 [US1] Add partner management routes to `source/services/admin-service/src/routes/mod.rs`
-- [ ] T022 [US1] Add unit tests for partner database operations in `source/services/admin-service/tests/unit/repositories_test.rs`
-- [ ] T023 [US1] Add integration tests for Partner CRUD (create, get, update, delete) in `source/services/admin-service/tests/integration/partner_test.rs`
+- [ ] T021 [P] [US1] Create `Partner` model (for `inventory.partners`) in `source/crates/db-models/src/partner.rs`
+- [ ] T022 [P] [US1] Create `CreatePartnerRequest` and `UpdatePartnerRequest` DTOs in `source/services/admin-service/src/models/partner.rs`
+- [ ] T023 [P] [USOR-1] Create `inventory` repository methods for partners in `source/services/admin-service/src/repositories/partner_repository.rs`
+- [ ] T024 [US1] Implement `create_partner` endpoint (`POST /api/v1/admin/partner`) with transaction and audit in `source/services/admin-service/src/routes/partner/create.rs`
+- [ ] T025 [US1] Implement `update_partner` endpoint (`PUT /api/v1/admin/partner/:id`) with BEFORE snapshot capture in `source/services/admin-service/src/routes/partner/update.rs`
+- [ ] T026 [US1] Implement `get_partner` endpoint (`GET /api/v1/admin/partner/:id`) in `source/services/admin-service/src/routes/partner/get.rs`
+- [ ] T027 [US1] Implement `delete_partner_soft` endpoint (`DELETE /api/v1/admin/partner/:id`) with audit logging in `source/services/admin-service/src/routes/partner/delete.rs`
+- [ ] T028 [US1] Add partner management routes to `source/services/admin-service/src/routes/partner/mod.rs`
+- [ ] T029 [US1] Add partner management module to `source/services/admin-service/src/routes/mod.rs`
+- [ ] T030 [US1] Add unit tests for partner repository in `source/services/admin-service/tests/unit/partner_repository_test.rs`
+- [ ] T031 [US1] Add integration tests for Partner CRUD in `source/services/admin-service/tests/integration/partner_crud_test.rs`
 
 **Checkpoint**: At this point, User Story 1 should be fully functional and testable independently
 
 ---
 
-## Phase 4: User Story 2 - Station Management (Priority: P1)
+## Phase 5: User Story 2 - Station Management (Priority: P1)
 
 **Goal**: A partner administrator can create, retrieve, update, and soft-delete station entities. Stations are assigned unique `STA-` identifiers, linked to a partner, geolocated, and all mutations are transactional and trigger MV refresh and Redis cache bust.
 
@@ -85,23 +104,23 @@
 
 ### Implementation for User Story 2
 
-- [ ] T024 [P] [US2] Create `Station` model (for `inventory.stations`) in `source/crates/db-models/src/station.rs`
-- [ ] T025 [P] [US2] Create `CreateStationRequest` and `UpdateStationRequest` DTOs in `source/services/admin-service/src/models/station.rs`
-- [ ] T026 [P] [US2] Implement `StationRepository` (create, get, update, soft-delete) in `source/services/admin-service/src/repositories/station.rs`
-- [ ] T027 [US2] Implement `AdminOrchestrator::create_station` to handle transactional writes, audit logging, `NanoID` generation, MV refresh, and Redis cache bust in `source/services/admin-service/src/services/admin_orchestrator.rs`
-- [ ] T028 [US2] Implement `create_station` route handler (`POST /api/v1/admin/station`) in `source/services/admin-service/src/routes/station.rs`
-- [ ] T029 [US2] Implement `get_station` route handler (`GET /api/v1/admin/station/:id`) in `source/services/admin-service/src/routes/station.rs`
-- [ ] T030 [US2] Implement `update_station` route handler (`PUT /api/v1/admin/station/:id`) in `source/services/admin-service/src/routes/station.rs`
-- [ ] T031 [US2] Implement `delete_station_soft` route handler (`DELETE /api/v1/admin/station/:id`) in `source/services/admin-service/src/routes/station.rs`
-- [ ] T032 [US2] Add station management routes to `source/services/admin-service/src/routes/mod.rs`
-- [ ] T033 [US2] Add unit tests for `StationRepository` in `source/services/admin-service/tests/unit/repositories_test.rs`
-- [ ] T034 [US2] Add integration tests for Station CRUD, MV refresh, and Redis cache bust in `source/services/admin-service/tests/integration/station_test.rs`
+- [ ] T032 [P] [US2] Create `Station` model (for `inventory.stations`) in `source/crates/db-models/src/station.rs`
+- [ ] T033 [P] [US2] Create `CreateStationRequest` and `UpdateStationRequest` DTOs in `source/services/admin-service/src/models/station.rs`
+- [ ] T034 [P] [US2] Implement `StationRepository` (create, get, update, soft-delete) in `source/services/admin-service/src/repositories/station_repository.rs`
+- [ ] T035 [US2] Implement `create_station` endpoint (`POST /api/v1/admin/station`) with transaction, audit, MV refresh, and cache bust in `source/services/admin-service/src/routes/station/create.rs`
+- [ ] T036 [US2] Implement `update_station` endpoint (`PUT /api/v1/admin/station/:id`) with BEFORE snapshot capture, MV refresh, and cache bust in `source/services/admin-service/src/routes/station/update.rs`
+- [ ] T037 [US2] Implement `get_station` endpoint (`GET /api/v1/admin/station/:id`) in `source/services/admin-service/src/routes/station/get.rs`
+- [ ] T038 [US2] Implement `delete_station_soft` endpoint (`DELETE /api/v1/admin/station/:id`) with audit, MV refresh, and cache bust in `source/services/admin-service/src/routes/station/delete.rs`
+- [ ] T039 [US2] Add station management routes to `source/services/admin-service/src/routes/station/mod.rs`
+- [ ] T040 [US2] Add station management module to `source/services/admin-service/src/routes/mod.rs`
+- [ ] T041 [US2] Add unit tests for station repository in `source/services/admin-service/tests/unit/station_repository_test.rs`
+- [ ] T042 [US2] Add integration tests for Station CRUD, MV refresh, and cache bust in `source/services/admin-service/tests/integration/station_crud_test.rs`
 
 **Checkpoint**: At this point, User Stories 1 AND 2 should both work independently
 
 ---
 
-## Phase 5: User Story 3 - Charger Management (Priority: P1)
+## Phase 6: User Story 3 - Charger Management (Priority: P1)
 
 **Goal**: A partner administrator can create, retrieve, update, and soft-delete charger entities. Chargers are assigned unique `CHG-` identifiers, linked to a station, have technical specifications, and all mutations are transactional and trigger MV refresh and Redis cache bust.
 
@@ -109,82 +128,44 @@
 
 ### Implementation for User Story 3
 
-- [ ] T035 [P] [US3] Create `Charger` model (for `inventory.chargers`) in `source/crates/db-models/src/charger.rs`
-- [ ] T036 [P] [US3] Create `CreateChargerRequest` and `UpdateChargerRequest` DTOs in `source/services/admin-service/src/models/charger.rs`
-- [ ] T037 [P] [US3] Implement `ChargerRepository` (create, get, update, soft-delete) in `source/services/admin-service/src/repositories/charger.rs`
-- [ ] T038 [US3] Implement `AdminOrchestrator::create_charger` to handle transactional writes, audit logging, `NanoID` generation, MV refresh, and Redis cache bust in `source/services/admin-service/src/services/admin_orchestrator.rs`
-- [ ] T039 [US3] Implement `create_charger` route handler (`POST /api/v1/admin/charger`) in `source/services/admin-service/src/routes/charger.rs`
-- [ ] T040 [US3] Implement `get_charger` route handler (`GET /api/v1/admin/charger/:id`) in `source/services/admin-service/src/routes/charger.rs`
-- [ ] T041 [US3] Implement `update_charger` route handler (`PUT /api/v1/admin/charger/:id`) in `source/services/admin-service/src/routes/charger.rs`
-- [ ] T042 [US3] Implement `delete_charger_soft` route handler (`DELETE /api/v1/admin/charger/:id`) in `source/services/admin-service/src/routes/charger.rs`
-- [ ] T043 [US3] Add charger management routes to `source/services/admin-service/src/routes/mod.rs`
-- [ ] T044 [US3] Add unit tests for `ChargerRepository` in `source/services/admin-service/tests/unit/repositories_test.rs`
-- [ ] T045 [US3] Add integration tests for Charger CRUD, MV refresh, and Redis cache bust in `source/services/admin-service/tests/integration/charger_test.rs`
+- [ ] T043 [P] [US3] Create `Charger` model (for `inventory.chargers`) in `source/crates/db-models/src/charger.rs`
+- [ ] T044 [P] [US3] Create `CreateChargerRequest` and `UpdateChargerRequest` DTOs in `source/services/admin-service/src/models/charger.rs`
+- [ ] T045 [P] [US3] Implement `ChargerRepository` (create, get, update, soft-delete) in `source/services/admin-service/src/repositories/charger_repository.rs`
+- [ ] T046 [US3] Implement `create_charger` endpoint (`POST /api/v1/admin/charger`) with transaction, audit, MV refresh, and cache bust in `source/services/admin-service/src/routes/charger/create.rs`
+- [ ] T047 [US3] Implement `update_charger` endpoint (`PUT /api/v1/admin/charger/:id`) with BEFORE snapshot capture, MV refresh, and cache bust in `source/services/admin-service/src/routes/charger/update.rs`
+- [ ] T048 [US3] Implement `get_charger` endpoint (`GET /api/v1/admin/charger/:id`) in `source/services/admin-service/src/routes/charger/get.rs`
+- [ ] T049 [US3] Implement `delete_charger_soft` endpoint (`DELETE /api/v1/admin/charger/:id`) with audit, MV refresh, and cache bust in `source/services/admin-service/src/routes/charger/delete.rs`
+- [ ] T050 [US3] Add charger management routes to `source/services/admin-service/src/routes/charger/mod.rs`
+- [ ] T051 [US3] Add charger management module to `source/services/admin-service/src/routes/mod.rs`
+- [ ] T052 [US3] Add unit tests for charger repository in `source/services/admin-service/tests/unit/charger_repository_test.rs`
+- [ ] T053 [US3] Add integration tests for Charger CRUD, MV refresh, and cache bust in `source/services/admin-service/tests/integration/charger_crud_test.rs`
 
 **Checkpoint**: At this point, User Stories 1, 2, and 3 should work independently
 
 ---
 
-## Phase 6: User Story 4 - Idempotent Operations (Priority: P2)
+## Phase 7: Testing & Validation
 
-**Goal**: A partner administrator submits the same POST request multiple times (e.g., due to network retry). The system detects the duplicate request using an idempotency key and returns the original response without re-executing the mutation.
+**Purpose**: Verify all acceptance criteria and operational requirements
 
-**Why this priority**: Prevents duplicate partner, station, or charger creation from network retries. Critical for data integrity but not as foundational as the CRUD operations themselves.
-
-**Independent Test**: Can be fully tested by making two identical POST requests with the same idempotency key within 24 hours and verifying the second request returns the original response with `Idempotency-Replayed: true` header.
-
-### Implementation for User Story 4
-
-- [ ] T046 [P] [US4] Implement `IdempotencyMiddleware` to check for `Idempotency-Key` header and handle duplicate requests in `source/services/admin-service/src/middleware/idempotency.rs`
-- [ ] T047 [US4] Integrate `IdempotencyMiddleware` into Actix-web application in `source/services/admin-service/src/main.rs`
-- [ ] T048 [US4] Implement `Redis` client for idempotency key storage and retrieval (`idempotency:{key}` namespace with 24h TTL) in `source/services/admin-service/src/redis.rs`
-- [ ] T049 [US4] Add unit tests for `IdempotencyMiddleware` in `source/services/admin-service/tests/unit/middleware_test.rs`
-- [ ] T050 [US4] Add integration tests for idempotent POST requests in `source/services/admin-service/tests/integration/idempotency_test.rs`
+- [ ] T054 [P] Add transaction failure tests in `source/services/admin-service/tests/integration/transaction_failure_test.rs` — verify rollback behavior
+- [ ] T055 [P] Add idempotency replay tests in `source/services/admin-service/tests/integration/idempotency_replay_test.rs` — verify same key + same response + no duplicate rows
+- [ ] T056 [P] Add DB role enforcement tests in `source/services/admin-service/tests/integration/db_permissions_test.rs` — verify admin_service_role can write inventory, driver_service_role cannot write inventory, auth_service_role cannot access inventory
+- [ ] T057 Add integration tests for Partner, Station, and Charger all endpoints in `source/services/admin-service/tests/integration/full_crud_test.rs`
+- [ ] T058 Add performance/load tests with 100 concurrent requests in `source/services/admin-service/tests/load/admin_load_test.py` — verify no degradation
+- [ ] T059 Add OpenAPI contract tests for all endpoints in `source/services/admin-service/tests/contracts/api_contract_test.rs`
+- [ ] T060 Add failure scenario tests (malformed JSON, missing fields, Keycloak unavailable, Traefik header missing) in `source/services/admin-service/tests/integration/failure_scenarios_test.rs`
 
 ---
 
-## Phase 7: User Story 5 - Transactional Consistency (Priority: P2)
+## Phase 8: Polish & Documentation
 
-**Goal**: All database operations within a single request complete successfully before returning the response, maintaining ACID properties.
+**Purpose**: Production deployment and documentation
 
-**Independent Test**: Make a mutation that involves multiple database operations and verify either all operations commit or none do, with appropriate error handling.
-
-### Implementation for User Story 5
-
-- [ ] T051 [US5] Ensure all multi-table data modifications are wrapped in a single `sqlx::Transaction` within `AdminOrchestrator` methods in `source/services/admin-service/src/services/admin_orchestrator.rs`
-- [ ] T052 [US5] Implement robust error handling for transaction failures (rollback and return 500 Internal Server Error or 409 Conflict) in `source/services/admin-service/src/services/admin_orchestrator.rs`
-- [ ] T053 [US5] Add integration tests for transactional consistency, including scenarios where one operation fails and the transaction rolls back in `source/services/admin-service/tests/integration/transaction_test.rs`
-
----
-
-## Phase 8: User Story 6 - Audit Trail (Priority: P2)
-
-**Goal**: Every mutation performed by authenticated users is logged to an audit log with comprehensive information about what changed, when it changed, and who made the change, including before and after snapshots.
-
-**Independent Test**: Make a mutation and query the audit log to verify it contains the correct actor, action, target information, and before/after snapshots.
-
-### Implementation for User Story 6
-
-- [ ] T054 [P] [US6] Create `AuditLog` model (for `analytics_db.audit_log`) in `source/crates/db-models/src/audit_log.rs`
-- [ ] T055 [P] [US6] Implement `AuditRepository` for inserting audit log entries into `analytics_db` in `source/services/admin-service/src/repositories/audit.rs`
-- [ ] T056 [US6] Implement `AdminOrchestrator::log_audit_event` to compute BEFORE/AFTER snapshots and insert into audit log in `source/services/admin-service/src/services/admin_orchestrator.rs`
-- [ ] T057 [US6] Integrate `AdminOrchestrator::log_audit_event` into all `create`, `update`, and `delete_soft` methods in `source/services/admin-service/src/services/admin_orchestrator.rs`
-- [ ] T058 [US6] Ensure repository layer is audit-unaware (no audit logic in `partner.rs`, `station.rs`, `charger.rs` repositories)
-- [ ] T059 [US6] Add unit tests for `AuditRepository` in `source/services/admin-service/tests/unit/repositories_test.rs`
-- [ ] T060 [US6] Add integration tests for audit logging with before/after snapshots in `source/services/admin-service/tests/integration/audit_log_test.rs`
-
----
-
-## Phase 9: Polish & Cross-Cutting Concerns
-
-**Purpose**: Improvements that affect multiple user stories
-
-- [ ] T061 [P] Ensure all validation rules from `data-model.md` and `api-contracts.md` are implemented in `source/crates/validation/` and used in route handlers.
-- [ ] T062 Review and refine all error messages and responses to match `error-contracts.md` in `source/services/admin-service/src/error.rs` and route handlers.
-- [ ] T063 Add comprehensive unit tests for all DTOs and models in `source/services/admin-service/tests/unit/models_test.rs`.
-- [ ] T064 Run `cargo clippy -- -D warnings` and fix all warnings in `source/services/admin-service/`.
-- [ ] T065 Update `quickstart.md` with additional testing scenarios and troubleshooting tips.
-- [ ] T066 Update documentation (`docs/roadmap_status.md`, `docs/sprint_backlog.md`, `docs/SYSTEM_STATE.md`) to reflect Admin Service Sprint 2 completion.
+- [ ] T061 [P] Create production Dockerfile at `source/services/admin-service/Dockerfile` (multi-stage, distroless runtime)
+- [ ] T062 Add environment configuration module in `src/config.rs` loading from environment variables (Database URL, Redis URL, Keycloak URL, Keycloak Client ID, listen port)
+- [ ] T063 Update `docs/SYSTEM_STATE.md` to reflect Admin Service deployment
+- [ ] T064 Update `docs/sprint_backlog.md` to reflect Sprint 2 completion
 
 ---
 
@@ -194,38 +175,33 @@
 
 - **Setup (Phase 1)**: No dependencies - can start immediately
 - **Foundational (Phase 2)**: Depends on Setup completion - BLOCKS all user stories
-- **User Stories (Phase 3-8)**: All depend on Foundational phase completion
+- **Transaction Orchestrator (Phase 3)**: Depends on Foundational - BLOCKS all CRUD operations
+- **User Stories (Phase 4-6)**: All depend on Transaction Orchestrator completion
   - User stories can then proceed in parallel (if staffed)
   - Or sequentially in priority order (P1 → P2 → P3)
-- **Polish (Phase 9)**: Depends on all desired user stories being complete
+- **Testing & Validation (Phase 7)**: Depends on all CRUD operations being complete
+- **Polish & Documentation (Phase 8)**: Depends on all desired user stories being complete
 
 ### User Story Dependencies
 
-- **User Story 1 (P1 - Partner Management)**: Can start after Foundational (Phase 2) - No dependencies on other stories
-- **User Story 2 (P1 - Station Management)**: Can start after Foundational (Phase 2) - Depends on US1 (partners must exist to create stations)
-- **User Story 3 (P1 - Charger Management)**: Can start after Foundational (Phase 2) - Depends on US2 (stations must exist to create chargers)
-- **User Story 4 (P2 - Idempotent Operations)**: Can start after Foundational (Phase 2) - Can be implemented in parallel with P1 stories, but needs Redis.
-- **User Story 5 (P2 - Transactional Consistency)**: Can start after Foundational (Phase 2) - Applies to all transactional writes in P1 stories.
-- **User Story 6 (P2 - Audit Trail)**: Can start after Foundational (Phase 2) - Applies to all mutations in P1 stories.
-
-### Within Each User Story
-
-- Models before repositories/services
-- Repositories before orchestrators
-- Orchestrators before route handlers
-- Unit tests before integration tests
-- Core implementation before cross-cutting concerns within the story
+- **User Story 1 (P1 - Partner Management)**: Can start after Transaction Orchestrator - No dependencies on other stories
+- **User Story 2 (P1 - Station Management)**: Can start after Transaction Orchestrator - No dependencies on US1 (independent repositories)
+- **User Story 3 (P1 - Charger Management)**: Can start after Transaction Orchestrator - No dependencies on US1/US2 (independent repositories)
+- **User Stories 1, 2, 3 can proceed in parallel** once Transaction Orchestrator is complete
 
 ### Parallel Opportunities
 
 - All Setup tasks marked [P] can run in parallel
 - All Foundational tasks marked [P] can run in parallel (within Phase 2)
 - Once Foundational phase completes:
-  - US1, US4, US5, US6 can start in parallel (US1 is foundational for US2/US3, but the others are cross-cutting)
-  - US2 can start after US1 is complete
-  - US3 can start after US2 is complete
+  - T013, T014, T015, T016 (middleware) can run in parallel
+  - User Stories 1, 2, 3 can all start in parallel (independent repositories)
+- Within each user story:
+  - Models (T021, T032, T043) can run in parallel
+  - DTOs (T022, T033, T044) can run in parallel
+  - Repositories (T023, T034, T045) can run in parallel
+  - Core routes (create/update/get/delete) can run in parallel
 - All tests for a user story marked [P] can run in parallel
-- Models within a story marked [P] can run in parallel
 - `source/crates/db-models` and `source/crates/validation` can be developed in parallel to the `admin-service` core logic.
 
 ---
@@ -233,40 +209,80 @@
 ## Parallel Example: User Story 1 (P1 - Partner Management)
 
 ```bash
-# Foundational tasks completed.
+# Transaction Orchestrator completed.
 # Developer A starts US1: Partner Management
 Task: "Create Partner model (for inventory.partners) in source/crates/db-models/src/partner.rs"
 Task: "Create CreatePartnerRequest and UpdatePartnerRequest DTOs in source/services/admin-service/src/models/partner.rs"
-Task: "Implement PartnerRepository (create, get, update, soft-delete) in source/services/admin-service/src/repositories/partner.rs"
+Task: "Implement PartnerRepository (create, get, update, soft-delete) in source/services/admin-service/src/repositories/partner_repository.rs"
 
-# Once these are done, Developer A continues with orchestrator and routes for US1:
-Task: "Implement AdminOrchestrator::create_partner to handle transactional writes, audit logging, NanoID generation in source/services/admin-service/src/services/admin_orchestrator.rs"
-Task: "Implement create_partner route handler (POST /api/v1/admin/partner) in source/services/admin-service/src/routes/partner.rs"
-Task: "Add partner management routes to source/services/admin-service/src/routes/mod.rs"
+# Once these are done, Developer A continues with routes for US1:
+Task: "Implement create_partner endpoint (POST /api/v1/admin/partner) with transaction and audit in source/services/admin-service/src/routes/partner/create.rs"
+Task: "Implement update_partner endpoint (PUT /api/v1/admin/partner/:id) with BEFORE snapshot capture in source/services/admin-service/src/routes/partner/update.rs"
+Task: "Implement get_partner endpoint (GET /api/v1/admin/partner/:id) in source/services/admin-service/src/routes/partner/get.rs"
+Task: "Implement delete_partner_soft endpoint (DELETE /api/v1/admin/partner/:id) with audit logging in source/services/admin-service/src/routes/partner/delete.rs"
+```
+
+---
+
+## Parallel Example: User Stories 2 & 3 (after Transaction Orchestrator)
+
+```bash
+# All middleware and orchestrator done.
+# With 3 developers available:
+Developer A: User Story 1 (Partner Management)
+Developer B: User Story 2 (Station Management)
+Developer C: User Story 3 (Charger Management)
+
+# Within each story:
+Developer A (US1):
+  - Create Partner model
+  - Create DTOs
+  - Implement PartnerRepository
+  - Implement create_partner route
+  - Implement update_partner route
+  - Implement get_partner route
+  - Implement delete_partner route
+  - Write unit tests
+  - Write integration tests
+
+# Parallel work:
+Developer B (US2) starts after US1 models are done:
+  - Create Station model (depends on Partner)
+  - Create DTOs (can run in parallel)
+  - Implement StationRepository (can run in parallel)
+  - Implement station routes (can run in parallel)
+  - Write tests (can run in parallel)
+
+Developer C (US3) starts after US2 models are done:
+  - Create Charger model
+  - Create DTOs (can run in parallel)
+  - Implement ChargerRepository (can run in parallel)
+  - Implement charger routes (can run in parallel)
+  - Write tests (can run in parallel)
 ```
 
 ---
 
 ## Implementation Strategy
 
-### MVP First (User Story 1 Only)
+### MVP First (User Stories 1-3 All Complete)
 
 1. Complete Phase 1: Setup
-2. Complete Phase 2: Foundational (CRITICAL - blocks all stories)
-3. Complete Phase 3: User Story 1 (Partner Management)
-4. **STOP and VALIDATE**: Test User Story 1 independently (full CRUD for partners)
-5. Deploy/demo if ready
+2. Complete Phase 2: Foundational
+3. Complete Phase 3: Transaction Orchestrator
+4. Complete Phase 4-6: User Stories 1, 2, 3 (all P1 stories in parallel if staffed)
+5. **STOP and VALIDATE**: Test all CRUD operations independently (partners, stations, chargers)
+6. Deploy/demo if ready
 
 ### Incremental Delivery
 
-1. Complete Setup + Foundational → Foundation ready
+1. Complete Setup + Foundational + Transaction Orchestrator → Foundation ready
 2. Add User Story 1 (Partner Management) → Test independently → Deploy/Demo (MVP!)
 3. Add User Story 2 (Station Management) → Test independently → Deploy/Demo
 4. Add User Story 3 (Charger Management) → Test independently → Deploy/Demo
-5. Add User Story 4 (Idempotent Operations) → Test independently → Deploy/Demo
-6. Add User Story 5 (Transactional Consistency) → Test independently → Deploy/Demo
-7. Add User Story 6 (Audit Trail) → Test independently → Deploy/Demo
-8. Each story adds value without breaking previous stories
+5. Add Phase 7: Testing & Validation → Test independently → Deploy/Demo
+6. Add Phase 8: Polish & Documentation → Test independently → Deploy/Demo
+7. Each story adds value without breaking previous stories
 
 ### Parallel Team Strategy
 
@@ -274,11 +290,35 @@ With multiple developers:
 
 1. Team completes Setup + Foundational together
 2. Once Foundational is done:
-   - **Developer A**: User Story 1 (Partner Management)
-   - **Developer B**: User Story 4 (Idempotent Operations), User Story 5 (Transactional Consistency), User Story 6 (Audit Trail) - These can be integrated into US1 later or as features become available.
-   - **Developer C**: User Story 2 (Station Management, once US1 is done)
-   - **Developer D**: User Story 3 (Charger Management, once US2 is done)
-3. Stories complete and integrate independently
+   - **Developer A**: Phase 3 (Transaction Orchestrator)
+   - **Developer B**: User Story 1 (Partner Management)
+   - **Developer C**: User Story 2 (Station Management) - starts when Partner model is done
+   - **Developer D**: User Story 3 (Charger Management) - starts when Station model is done
+3. Once Transaction Orchestrator completes:
+   - **Developer A**: Integrates audit, cache bust, MV refresh into all CRUD operations
+   - **Developer B**: User Story 1 routes and tests
+   - **Developer C**: User Story 2 routes and tests
+   - **Developer D**: User Story 3 routes and tests
+4. Stories complete and integrate independently
+
+---
+
+## Sprint Exit Criteria
+
+Sprint 2 should not close until all of the following are verified:
+
+- ✅ Partner CRUD operational (create, update, get, soft-delete)
+- ✅ Station CRUD operational (create, update, get, soft-delete)
+- ✅ Charger CRUD operational (create, update, get, soft-delete)
+- ✅ sqlx transactions used everywhere
+- ✅ BEFORE/AFTER audit logs stored in analytics_db.audit_log
+- ✅ Redis invalidation after commit (stations:tile:*, stations:near:*)
+- ✅ MV refresh after commit (inventory.mv_stations_geo, inventory.mv_stations_summary)
+- ✅ Idempotency-Key support working (IdempotencyMiddleware, Redis storage)
+- ✅ Traefik header validation working (X-User-Id, X-User-Roles)
+- ✅ Role enforcement working (role:admin, role:partner)
+- ✅ DB role isolation verified (admin_service_role, driver_service_role, auth_service_role)
+- ✅ Integration tests passing (transaction failure, idempotency replay, DB permissions, full CRUD, failure scenarios, OpenAPI contracts)
 
 ---
 
@@ -291,3 +331,10 @@ With multiple developers:
 - Commit after each task or logical group
 - Stop at any checkpoint to validate story independently
 - Avoid: vague tasks, same file conflicts, cross-story dependencies that break independence
+- Idempotency-Key must be validated (UUID v4) and stored with 24h TTL
+- BEFORE/AFTER audit snapshots required for all UPDATE and DELETE operations
+- Redis invalidation must be warning-only on failure (X-Cache-Bust-Failed header)
+- MV refresh must use CONCURRENTLY to avoid table locks
+- Transaction orchestrator must catch errors at each step and rollback appropriately
+- Traefik headers (X-User-Id, X-User-Roles) are required for all endpoints
+- Role enforcement must allow admin and partner roles, reject all others
