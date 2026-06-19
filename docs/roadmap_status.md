@@ -23,7 +23,9 @@
 
 | Milestone | Target date | Criteria |
 |-----------|-----------|--------|
-| Auth working | TBD | Login, refresh, role-based access working end-to-end |
+| Auth + Admin infra live | TBD | Keycloak realm + Postgres + Redis + Traefik running in Docker |
+| Auth working | TBD | Login, refresh, role-based access, JWKS validation, USR- upsert working end-to-end |
+| Admin CRUD operational | TBD | Partner/station/charger CRUD with transactions, Redis bust, diff-based audit |
 | Map visible | TBD | Stations shown on web + mobile maps from real data |
 | Partner can add stations | TBD | Dashboard CRUD + cache bust + map update |
 | Full mobile experience | TBD | Offline cache, favourites, navigation |

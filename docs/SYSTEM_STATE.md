@@ -1,6 +1,6 @@
 # BorneMap — System State
 
-**Last updated:** 2026-06-18  **Session:** Scaffolding — docs/ + guardrails + skills + MVP-1 spec
+**Last updated:** 2026-06-18  **Session:** MVP-1 spec review — applied all delta patches (Issues A-F, A5-7, C7-8, E5)
 
 ## Built and verified
 
@@ -18,8 +18,8 @@
 - [x] `docs/roadmap_status.md` — MVP milestones tracker
 - [x] `docs/sprint_backlog.md` — granular task backlog
 - [x] `docs/bug_tracker.md` — active bug tracking
+- [x] `docs/specs/mvp-1-admin-flow.md` — MVP-1 spec written, reviewed, delta-patches applied. Ready for execution.
 - [x] `docs/adr/` — directory created (empty, awaiting first ADR)
-- [x] `docs/specs/mvp-1-admin-flow.md` — MVP-1 spec written, not started
 
 ## Skills installed (global — `npx skills add -g`)
 
@@ -47,13 +47,13 @@
 - `source/crates/db-models` — shared Rust database models
 - `source/crates/validation` — shared Rust validation
 - `source/infra/docker-compose.yml` — infrastructure orchestration
-- `source/infra/keycloak/` — Keycloak configuration
-- `source/infra/migrations/` — database migration files
+- `source/infra/keycloak/` — Keycloak realm export + Docker config
+- `source/infra/migrations/` — database migration files (4 planned: init, audit, seed, materialized views)
+- `source/infra/traefik/` — Traefik static + dynamic config, JWKS middleware
 - `source/infra/osm-importer/` — OSM data pipeline
 - `docs/adr/` — no ADRs yet
 
 ## Environment
-
 - platform_db: not provisioned
 - keycloak_db: not provisioned
 - analytics_db: not provisioned

@@ -6,13 +6,13 @@ Applies to: all migrations in `infra/migrations/`, all sqlx queries in `services
 
 ## Schema ownership (hard rules)
 
-| Schema | Owner | Who can write |
-|--------|-------|--------------|
-| `gis` | OSM importer pipeline | `osm-importer` script only |
-| `inventory` | Driver Service (reads) / Admin Service (writes to partners, stations, chargers) | Driver Service, Admin Service |
-| `users` | Auth Service | Auth Service only |
-| `keycloak_db` | Keycloak runtime | Keycloak only — no application code |
-| `analytics_db` | Admin Service | Admin Service only — event logs, audit trails, partner modification history |
+| Schema | Owner | Who can write | DB role |
+|--------|-------|--------------|---------|
+| `gis` | OSM importer pipeline | `osm-importer` script only | — |
+| `inventory` | Driver Service (reads) / Admin Service (writes to partners, stations, chargers) | Driver Service, Admin Service | `driver_service_role` (read-only), `admin_service_role` (read/write) |
+| `users` | Auth Service | Auth Service only | `auth_service_role` |
+| `keycloak_db` | Keycloak runtime | Keycloak only — no application code | — |
+| `analytics_db` | Admin Service | Admin Service only — event logs, audit trails, partner modification history | `admin_analytics_role` |
 
 Any code that writes to a schema it does not own is a blocking violation.
 

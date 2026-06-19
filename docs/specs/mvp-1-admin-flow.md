@@ -11,10 +11,13 @@
 1. Admin/partner operator can log in via Dashboard → Auth Service → Keycloak
 2. Auth Service upserts USR- profile into `users` schema on login/refresh
 3. Admin Service handles partner CRUD, station/charger management in transactions
-4. All inventory writes trigger synchronous Redis cache bust after commit
-5. Every mutation is logged to `analytics_db`
-6. Traefik validates JWT via cached JWKS before forwarding to Admin Service
+4. All inventory writes trigger synchronous Redis cache bust after commit (in service layer)
+5. Every mutation is logged to `analytics_db` with BEFORE/AFTER diff
+6. Traefik validates JWT via cached JWKS before forwarding, including `aud` check
 7. No service bypasses Traefik. No service touches Keycloak except Auth Service.
+8. PostgreSQL roles per service enforce schema-level access (not just logical)
+9. All POST endpoints support `Idempotency-Key` header to prevent duplicate creation
+10. Keycloak `/realms/bornemap/protocol/openid-connect/*` blocked from external access
 
 ---
 
@@ -24,7 +27,7 @@
 
 **Keycloak (`source/infra/keycloak/`)**
 - Single realm: `bornemap`
-- Clients: `mobile-driver-app`, `web-driver-app`, `dashboard-app`
+- Clients: `mobile-driver-app`, `web-driver-app`, `admin-dashboard`
 - Roles: `role:admin`, `role:partner`, `role:driver`
 - Enable OIDC password + refresh flows
 - Enable JWKS endpoint: `/realms/bornemap/protocol/openid-connect/certs`
@@ -36,6 +39,20 @@
 CREATE SCHEMA IF NOT EXISTS gis;
 CREATE SCHEMA IF NOT EXISTS inventory;
 CREATE SCHEMA IF NOT EXISTS users;
+
+-- DB roles per service (physical enforcement of schema ownership)
+CREATE ROLE auth_service_role WITH LOGIN;
+GRANT USAGE ON SCHEMA users TO auth_service_role;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA users TO auth_service_role;
+
+CREATE ROLE admin_service_role WITH LOGIN;
+GRANT USAGE ON SCHEMA inventory TO admin_service_role;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA inventory TO admin_service_role;
+-- analytics_db roles applied at that DB level (separate database)
+
+CREATE ROLE driver_service_role WITH LOGIN;
+GRANT USAGE ON SCHEMA inventory TO driver_service_role;
+GRANT SELECT ON ALL TABLES IN SCHEMA inventory TO driver_service_role;
 
 -- updated_at trigger (required on every table with this column)
 CREATE OR REPLACE FUNCTION trigger_set_updated_at()
@@ -131,9 +148,31 @@ CREATE TRIGGER set_updated_at
 ```
 
 **`analytics_db`** (separate database, not schema)
-- Event logs, audit trails, partner modification history
-- Written exclusively by Admin Service
-- Schema TBD (simple audit_log table with actor, action, target, payload, timestamp)
+
+```sql
+-- Audit log for all Admin Service mutations
+CREATE TABLE audit_log (
+    id          UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+    actor_id    TEXT        NOT NULL,           -- X-User-Id from Traefik
+    action      TEXT        NOT NULL,           -- e.g. 'partner.created', 'station.updated'
+    target_type TEXT        NOT NULL,           -- e.g. 'partner', 'station', 'charger'
+    target_id   TEXT        NOT NULL,           -- NanoID of the affected entity
+    before_snapshot JSONB,                      -- NULL on CREATE, full row on UPDATE
+    after_snapshot  JSONB,                      -- full row after mutation
+    payload     JSONB,                          -- additional context (request body, metadata)
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX idx_audit_actor ON audit_log (actor_id);
+CREATE INDEX idx_audit_target ON audit_log (target_type, target_id);
+CREATE INDEX idx_audit_created ON audit_log (created_at DESC);
+
+-- DB role for Admin Service on analytics_db
+-- (run on analytics_db, not platform_db)
+CREATE ROLE admin_analytics_role WITH LOGIN;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO admin_analytics_role;
+```
+
+Written exclusively by Admin Service.
 
 **Materialized views** (created after initial data load, `source/infra/migrations/0002_materialized_views.sql`):
 - `inventory.mv_stations_geo` — spatial summary for map display
@@ -142,6 +181,8 @@ CREATE TRIGGER set_updated_at
 
 **Redis**
 - GIS tile caching keys: `stations:tile:{z}:{x}:{y}`, `stations:near:{lat}:{lng}:{radius}`
+- Key namespace ownership: Admin Service invalidates (`del`), Driver Service reads (`get`)
+- Invalidation occurs in the **service orchestration layer**, not the repository layer
 
 **Traefik (`source/infra/traefik/`)**
 - Reverse proxy routing:
@@ -150,6 +191,8 @@ CREATE TRIGGER set_updated_at
   - `/api/v1/driver/*` → Driver Service (:3001)
 - JWKS validation middleware (cached, TTL 10-30 min)
 - Header injection: `X-User-Id` (sub), `X-User-Roles` (realm_access.roles)
+- **Audience validation**: JWT `aud` must match the calling client (`admin-dashboard` for admin routes)
+- **Network isolation**: Block external access to `/realms/bornemap/protocol/openid-connect/*` — only Auth Service may reach Keycloak
 
 ### Phase 2 — Auth Service (`source/services/auth-service/`)
 
@@ -179,23 +222,40 @@ Actix-web service on :3002.
 - `PUT /api/v1/admin/charger/:id` — update charger
 
 **Transaction contract (strict):**
+
+Redis invalidation occurs in the **service orchestration layer** after commit and before HTTP response:
+
 ```
 BEGIN TX
   Write inventory.partners / stations / chargers
 COMMIT TX
-Redis cache bust (synchronous, after commit)
-analytics_db log insert
+Redis cache bust (synchronous, in service layer after commit, before response)
+analytics_db log insert with BEFORE/AFTER diff
 ```
+
+**Idempotency:**
+- All `POST` endpoints MUST support `Idempotency-Key` header
+- If a request with a previously seen key arrives within 24h, return the original response (201) without re-executing
+- Duplicate without key → 409 Conflict
+- Key format: UUID v4
 
 **Key rules:**
 - Reads `X-User-Id` and `X-User-Roles` from Traefik headers (never from client body)
-- Every mutation logged to `analytics_db` with actor ID, action, timestamp, diff
+- Every mutation logged to `analytics_db.audit_log` with:
+  - `before_snapshot`: JSON snapshot before mutation (NULL on CREATE)
+  - `after_snapshot`: JSON snapshot after mutation
+  - `actor_id`: from `X-User-Id`
 - Redis invalidation is synchronous per constitution (MVP phase — no event bus)
 
 ### Phase 4 — Gateway Security
 
 Wire Traefik JWKS validation middleware against Keycloak certs endpoint.
 Validate: signature, `exp`, `aud`, `iss`. Cache public keys with TTL.
+
+**Audience enforcement:**
+- Admin routes require JWT `aud` == `admin-dashboard`
+- Auth routes may accept multiple audiences
+- Reject tokens with mismatched audience at the gateway before forwarding to any service
 
 ### Phase 5 — Dashboard (`source/apps/dashboard/`)
 
@@ -241,11 +301,16 @@ interface ChargerDTO { id: string; stationId: string; status: string; /* ... */ 
 
 - [ ] No service bypasses Traefik
 - [ ] No service touches Keycloak except Auth Service
+- [ ] Keycloak token endpoints blocked from external network access
 - [ ] All multi-table writes wrapped in explicit `sqlx` transaction
-- [ ] Cache bust after `tx.commit()`, never before
+- [ ] Cache bust after `tx.commit()` in service layer, never before
+- [ ] Redis invalidation in service orchestration layer (not repository)
 - [ ] `X-User-Id` / `X-User-Roles` trusted from Traefik only (never from client)
+- [ ] DB roles enforce schema-level access (auth_service_role, admin_service_role, driver_service_role)
 - [ ] Analytics writes go to isolated `analytics_db` (never `platform_db`)
 - [ ] All endpoints under `/api/v1/`
+- [ ] POST endpoints require `Idempotency-Key` header
+- [ ] JWT `aud` validated at Traefik against the calling client
 - [ ] JWT never stored in `localStorage` (in-memory only)
 - [ ] No `unwrap()` / `expect()` outside test code
 - [ ] No raw SQL strings — `sqlx::query!` macros only
@@ -255,5 +320,10 @@ interface ChargerDTO { id: string; stationId: string; status: string; /* ... */ 
 - `cargo test` — all unit + integration tests pass
 - `cargo clippy -- -D warnings` — zero warnings
 - Dashboard login flow works end-to-end
-- Partner CRUD creates DB rows + busts Redis + logs to analytics
+- Partner CRUD creates DB rows + busts Redis + logs diff-based audit to analytics
 - Traefik returns 401 on expired/malformed JWT
+- Traefik returns 401 on mismatched `aud` claim
+- Keycloak token endpoint unreachable from outside Auth Service network
+- Idempotent POST with same key returns original response (not duplicate)
+- DB role `driver_service_role` cannot write to `inventory` tables
+- DB role `auth_service_role` cannot read `inventory` tables
