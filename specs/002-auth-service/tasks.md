@@ -125,20 +125,20 @@
 
 **Purpose**: Production readiness improvements
 
-- [ ] T022 [P] Create production Dockerfile at `source/services/auth-service/Dockerfile` (multi-stage, distroless runtime)
-- [ ] T023 Add environment configuration module in `src/config.rs` loading from environment variables (Keycloak URL, DB URL, listen port)
-- [ ] T024 Add request body size limits and timeout configuration to Actix-web server
-- [ ] T025 Harden error responses — ensure no Keycloak URLs or internal details leak in any error body
-- [ ] T026 Run full integration test suite against live Docker stack and fix any failures
-- [ ] T026a [P] Write integration test AUTH-IT-01: successful login creates USR row in `platform_db.users`
-- [ ] T026b [P] Write integration test AUTH-IT-02: successful refresh updates USR row (last_login_at)
-- [ ] T026c [P] Write integration test AUTH-IT-03: logout revokes refresh token (cannot reuse)
-- [ ] T026d [P] Write integration test AUTH-IT-04: Keycloak unavailable returns 503 `auth_unavailable`
-- [ ] T026e [P] Write integration test AUTH-IT-05: malformed refresh token returns 400 `validation_error` without contacting Keycloak
-- [ ] T026f [P] Write integration test AUTH-IT-06: `auth_service_role` cannot SELECT from `inventory.partners`
-- [ ] T027 Update `docs/SYSTEM_STATE.md` to reflect Auth Service deployment
-- [ ] [P] T028 Write load test script at `tests/load/login_load_test.py` targeting login + refresh endpoints — verify SC-003: 100 concurrent requests without degradation
-- [ ] [P] T029 Write SC-004 verification procedure — document manual steps to review Keycloak access logs for direct token-endpoint calls after integration test run
+- [X] T022 [P] Create production Dockerfile at `source/services/auth-service/Dockerfile` (multi-stage, distroless runtime)
+- [X] T023 Add environment configuration module in `src/config.rs` loading from environment variables (Keycloak URL, DB URL, listen port)
+- [X] T024 Add request body size limits and timeout configuration to Actix-web server
+- [X] T025 Harden error responses — ensure no Keycloak URLs or internal details leak in any error body
+- [X] T026 Run full integration test suite against live Docker stack and fix any failures
+- [X] T026a [P] Write integration test AUTH-IT-01: successful login creates USR row in `platform_db.users`
+- [X] T026b [P] Write integration test AUTH-IT-02: successful refresh updates USR row (last_login_at)
+- [X] T026c [P] Write integration test AUTH-IT-03: logout revokes refresh token (cannot reuse)
+- [X] T026d [P] Write integration test AUTH-IT-04: Keycloak unavailable returns 503 `auth_unavailable`
+- [X] T026e [P] Write integration test AUTH-IT-05: malformed refresh token returns 400 `validation_error` without contacting Keycloak
+- [X] T026f [P] Write integration test AUTH-IT-06: `auth_service_role` cannot SELECT from `inventory.partners`
+- [X] T027 Update `docs/SYSTEM_STATE.md` to reflect Auth Service deployment
+- [X] [P] T028 Write load test script at `tests/load/login_load_test.py` targeting login + refresh endpoints — verify SC-003: 100 concurrent requests without degradation
+- [X] [P] T029 Write SC-004 verification procedure — document manual steps to review Keycloak access logs for direct token-endpoint calls after integration test run
 
 ---
 

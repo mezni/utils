@@ -23,15 +23,25 @@ pub async fn logout(
     })?;
 
     // Call Keycloak to revoke the refresh token
-    let _ = client
+    let result = client
         .logout(&refresh_token)
-        .await
-        .map_err(|e| {
-            tracing::error!("Logout failed: {}", e);
-            e
-        })?;
+        .await;
 
-    tracing::info!("User logged out: refresh_token_revoked=true");
+    match result {
+        Ok(_) => {
+            tracing::info!("User logged out: refresh_token_revoked=true");
+        }
+        Err(e) => {
+            tracing::error!("Logout failed: {}", e);
+            // Return AuthUnavailable for non-validation errors
+            if matches!(e, AuthError::ValidationError(_)) {
+                Err(e)
+            } else {
+                tracing::error!("Failed to revoke refresh token");
+                Err(AuthError::AuthUnavailable)
+            }
+        }
+    }
 
     Ok(LogoutResponse {
         message: "logged_out".to_string(),

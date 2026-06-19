@@ -7,6 +7,16 @@ mod models;
 mod routes;
 mod validation;
 
+#[cfg(test)]
+mod tests {
+    use sqlx::PgPool;
+
+    #[actix_web::test]
+    async fn init_database(pool: PgPool) -> PgPool {
+        pool
+    }
+}
+
 use actix_cors::Cors;
 use actix_web::{web, App, HttpServer};
 use middleware::log_redaction;
@@ -16,6 +26,18 @@ use middleware::rate_limit::RateLimitMiddleware;
 fn get_db_url() -> String {
     std::env::var("DATABASE_URL")
         .expect("DATABASE_URL environment variable must be set")
+}
+
+/// Get the test database URL (uses database URL if set, otherwise generates one).
+#[cfg(test)]
+fn get_test_db_url() -> String {
+    std::env::var("TEST_DATABASE_URL")
+        .unwrap_or_else(|_| {
+            // Generate a test database URL from the regular one
+            // For PostgreSQL: postgresql://user:pass@host:port/dbname -> postgresql://user:pass@host:port/test_db
+            let db_url = get_db_url();
+            db_url.replace(&format!("/{}$", std::path::MAIN_SEPARATOR), "/test_db")
+        })
 }
 
 /// Get the Keycloak URL from environment variables.
@@ -77,6 +99,7 @@ async fn main() -> std::io::Result<()> {
 
     HttpServer::new(move || {
         App::new()
+            .app_data(web::JsonConfig::default().limit(4 * 1024 * 1024)) // 4MB limit
             .app_data(web::Data::new(pool))
             .app_data(web::Data::new(&keycloak_client))
             .wrap(Cors::permissive())
@@ -84,6 +107,8 @@ async fn main() -> std::io::Result<()> {
             .wrap(log_redaction::LogRedactionMiddleware::new())
             .configure(routes::configure)
     })
+    .client_timeout(std::time::Duration::from_secs(30))
+    .client_keep_alive(std::time::Duration::from_secs(75))
     .bind(("0.0.0.0", port))?
     .run()
     .await

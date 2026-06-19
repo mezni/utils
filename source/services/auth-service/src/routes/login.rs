@@ -35,8 +35,13 @@ pub async fn login(
         .login(&email, &password)
         .await
         .map_err(|e| {
-            tracing::error!("Login failed for {}: {}", email, e);
-            e
+            // Do not log detailed Keycloak error
+            tracing::error!("Authentication failed");
+            if matches!(e, AuthError::InvalidCredentials) {
+                e
+            } else {
+                AuthError::AuthUnavailable
+            }
         })?;
 
     // Extract claims from the access token

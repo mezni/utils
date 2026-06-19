@@ -30,8 +30,13 @@ pub async fn refresh(
         .refresh(&refresh_token)
         .await
         .map_err(|e| {
-            tracing::error!("Token refresh failed: {}", e);
-            e
+            // Do not log detailed Keycloak error
+            tracing::error!("Token refresh failed");
+            if matches!(e, AuthError::TokenExpired) {
+                e
+            } else {
+                AuthError::AuthUnavailable
+            }
         })?;
 
     // Extract claims from the new access token
