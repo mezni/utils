@@ -6,6 +6,7 @@ http:
       priority: 10
       middlewares:
         - strip-auth-prefix
+        - rewrite-to-root
 
     admin:
       rule: "PathPrefix(`/api/v1/admin/`)"
@@ -13,6 +14,7 @@ http:
       priority: 10
       middlewares:
         - strip-admin-prefix
+        - rewrite-to-root
 
     driver:
       rule: "PathPrefix(`/api/v1/driver/`)"
@@ -20,6 +22,7 @@ http:
       priority: 10
       middlewares:
         - strip-driver-prefix
+        - rewrite-to-root
 
     catch-all:
       rule: "PathPrefix(`/`)"
@@ -37,14 +40,15 @@ http:
         prefixes:
           - "/api/v1/admin"
 
-    catch-all-root:
-      replacePath:
-        path: /
-
     strip-driver-prefix:
       stripPrefix:
         prefixes:
           - "/api/v1/driver"
+
+    rewrite-to-root:
+      replacePathRegex:
+        regex: "^/.*"
+        replacement: "/"
 
   services:
     auth-service:
