@@ -1,5 +1,5 @@
-use actix_web::web;
-use actix_web::Result;
+use actix_web::{web, HttpResponse};
+use actix_web::HttpRequest;
 
 use crate::db::UsersRepository;
 use crate::error::AuthError;
@@ -10,9 +10,9 @@ use crate::models::auth::ErrorResponse;
 ///
 /// Returns the authenticated user's profile from the database.
 pub async fn me(
-    claims: Option<Claims>,
+    claims: Option<crate::keycloak::Claims>,
     repo: web::Data<UsersRepository>,
-    client: web::Data<KeycloakClient>,
+    client: web::Data<&KeycloakClient>,
 ) -> Result<web::Json<serde_json::Value>, HttpResponse> {
     let claims = claims.ok_or_else(|| {
         tracing::warn!("GET /me called without authentication");

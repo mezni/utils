@@ -2,7 +2,7 @@ use crate::error::AuthError;
 use crate::models::user::{UserProfile, UpsertUser};
 use crate::validation::token::validate_required;
 use chrono::Utc;
-use sqlx::PgPool;
+use uuid::Uuid;
 
 /// Repository for user operations in the platform database.
 pub struct UsersRepository;
@@ -66,18 +66,10 @@ impl UsersRepository {
 
     /// Generate a user ID from the Keycloak sub claim.
     ///
-    /// Uses NanoID with a USR- prefix.
+    /// Uses UUIDv5 for deterministic uniqueness based on the OIDC namespace.
     fn generate_user_id(sub: &str) -> String {
-        // Simple implementation: hash the sub and take first 10 chars
-        // In production, use a proper NanoID library
-        use std::collections::hash_map::DefaultHasher;
-        use std::hash::{Hash, Hasher};
-
-        let mut hasher = DefaultHasher::new();
-        sub.hash(&mut hasher);
-        let hash = hasher.finish();
-
-        format!("USR-{:016x}", hash)
+        let uuid = Uuid::new_v5(&Uuid::NAMESPACE_OID, sub.as_bytes());
+        format!("USR-{}", uuid.to_string())
     }
 
     /// Fetch a user profile by their Keycloak sub.
@@ -121,7 +113,7 @@ mod tests {
     fn test_generate_user_id() {
         let id = UsersRepository::generate_user_id("test_sub_123");
         assert!(id.starts_with("USR-"));
-        assert!(id.len() == 20); // USR- + 16 hex digits
+        assert!(id.len() == 28); // USR- + UUID (32 chars)
     }
 
     #[test]

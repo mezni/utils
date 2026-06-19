@@ -5,16 +5,20 @@ pub mod refresh;
 pub mod logout;
 pub mod me;
 
-pub use login::{login, configure as configure_login};
-pub use refresh::{refresh, configure as configure_refresh};
-pub use logout::{logout, configure as configure_logout};
-pub use me::{me, configure as configure_me};
-
 pub fn configure(cfg: &mut web::ServiceConfig) {
-    cfg.service(web::scope("/api/v1/auth").configure(configure_login));
-    cfg.service(web::scope("/api/v1/auth").configure(configure_refresh));
-    cfg.service(web::scope("/api/v1/auth").configure(configure_logout));
-    cfg.service(web::scope("/api/v1/auth").configure(configure_me));
+    // Login endpoint
+    cfg.route("/login", web::post().to(login));
+
+    // Refresh endpoint
+    cfg.route("/refresh", web::post().to(refresh));
+
+    // Logout endpoint
+    cfg.route("/logout", web::post().to(logout));
+
+    // Profile endpoint
+    cfg.route("/me", web::get().to(me));
+
+    // Health check endpoint
     cfg.route("/health", web::get().to(health_check));
 }
 

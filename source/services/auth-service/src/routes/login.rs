@@ -1,21 +1,31 @@
-use actix_web::web;
+use actix_web::{web, HttpResponse};
 use actix_web::HttpRequest;
-use actix_web::Result;
 
 use crate::db::UsersRepository;
 use crate::error::AuthError;
 use crate::keycloak::KeycloakClient;
 use crate::models::auth::{LoginRequest, TokenResponse};
+use crate::validation::token::validate_token;
 
 /// Handle login requests.
 pub async fn login(
-    claims: Option<Claims>,
+    req: web::Json<LoginRequest>,
+    claims: Option<crate::keycloak::Claims>,
     repo: web::Data<UsersRepository>,
-    client: web::Data<KeycloakClient>,
-    login_req: web::Json<LoginRequest>,
-    request: HttpRequest,
-) -> Result<TokenResponse> {
-    let LoginRequest { email, password } = login_req.into_inner();
+    client: web::Data<&KeycloakClient>,
+) -> Result<TokenResponse, AuthError> {
+    let LoginRequest { email, password } = req.into_inner();
+
+    // Validate token format before contacting Keycloak
+    validate_token(&email).map_err(|e| {
+        tracing::warn!("Login validation error: {}", e);
+        AuthError::ValidationError(e.to_string())
+    })?;
+
+    validate_token(&password).map_err(|e| {
+        tracing::warn!("Login validation error: {}", e);
+        AuthError::ValidationError(e.to_string())
+    })?;
 
     // Check if request came from a proxy and extract user info (if available)
     let keycloak_sub = claims.map(|c| c.sub);

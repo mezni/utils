@@ -13,6 +13,7 @@ const KEYCLOAK_TOKEN_ENDPOINT: &str = "/realms/bornemap/protocol/openid-connect/
 pub struct KeycloakClient {
     http_client: Client,
     base_url: String,
+    client_id: String,
 }
 
 impl KeycloakClient {
@@ -21,7 +22,14 @@ impl KeycloakClient {
         Self {
             http_client: Client::new(),
             base_url,
+            client_id: "auth-service".to_string(),
         }
+    }
+
+    /// Set the client ID (e.g., from environment variable).
+    pub fn with_client_id(mut self, client_id: String) -> Self {
+        self.client_id = client_id;
+        self
     }
 
     /// Authenticate with Keycloak using email and password.
@@ -40,7 +48,7 @@ impl KeycloakClient {
                 ("grant_type", "password"),
                 ("username", email),
                 ("password", password),
-                ("client_id", "auth-service"),
+                ("client_id", &self.client_id),
             ])
             .send()
             .await
@@ -105,7 +113,7 @@ impl KeycloakClient {
             .post(&format!("{}{}", self.base_url, KEYCLOAK_TOKEN_ENDPOINT))
             .form(&[
                 ("grant_type", "refresh_token"),
-                ("client_id", "auth-service"),
+                ("client_id", &self.client_id),
                 ("refresh_token", refresh_token),
             ])
             .send()
@@ -174,7 +182,7 @@ impl KeycloakClient {
                 "/realms/bornemap/protocol/openid-connect/logout"
             ))
             .form(&[
-                ("client_id", "auth-service"),
+                ("client_id", &self.client_id),
                 ("refresh_token", refresh_token),
             ])
             .send()
@@ -201,5 +209,49 @@ impl KeycloakClient {
     pub fn extract_claims(&self, token: &str) -> Result<Claims, AuthError> {
         let token_data = crate::validation::token::decode_token(token)?;
         Ok(token_data.claims)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use jsonwebtoken::{encode, Header, EncodingKey};
+
+    fn create_test_token(secret: &str) -> String {
+        let header = Header::default();
+        let payload = Claims {
+            sub: "test_sub".to_string(),
+            email: "test@example.com".to_string(),
+            given_name: Some("Test".to_string()),
+            family_name: Some("User".to_string()),
+            realm_access: Some(RealmAccess {
+                roles: vec!["role:admin".to_string()],
+            }),
+            aud: vec!["bornemap".to_string()],
+        };
+
+        encode(&header, &payload, &EncodingKey::from_secret(secret.as_bytes()))
+            .unwrap()
+    }
+
+    #[test]
+    fn test_login_validation_error() {
+        let client = KeycloakClient::new("http://localhost:8080".to_string());
+        let result = client.login("", "password").await;
+        assert!(matches!(result, Err(AuthError::ValidationError(_))));
+    }
+
+    #[test]
+    fn test_refresh_validation_error() {
+        let client = KeycloakClient::new("http://localhost:8080".to_string());
+        let result = client.refresh("").await;
+        assert!(matches!(result, Err(AuthError::ValidationError(_))));
+    }
+
+    #[test]
+    fn test_logout_validation_error() {
+        let client = KeycloakClient::new("http://localhost:8080".to_string());
+        let result = client.logout("").await;
+        assert!(matches!(result, Err(AuthError::ValidationError(_))));
     }
 }

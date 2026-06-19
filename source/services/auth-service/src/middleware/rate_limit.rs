@@ -8,6 +8,8 @@ use std::pin::Pin;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
+use crate::error::AuthError;
+
 /// Rate limiting middleware for login endpoint.
 ///
 /// Limits login attempts to 10 per minute per IP address.
