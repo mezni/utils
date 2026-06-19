@@ -51,7 +51,7 @@ The Auth Service is the exclusive interface between the platform and Keycloak. N
 1. Client POSTs credentials to `POST /api/v1/auth/login`.
 2. Auth Service calls Keycloak internally: `POST /realms/bornemap/protocol/openid-connect/token`.
 3. Keycloak returns `access_token` (JWT) + `refresh_token` to Auth Service.
-4. Auth Service upserts a USR_ profile row in `users` schema (`platform_db`).
+4. Auth Service upserts a USR- profile row in `users` schema (`platform_db`).
 5. Auth Service returns both tokens to the client.
 6. Token storage: mobile — secure device storage; web — memory or secure browser state. Never `localStorage`.
 
@@ -94,7 +94,7 @@ Entity ID prefixes (NanoID): USR- (user), OPR- (partner/operator), STA- (station
 **platform_db** — PostgreSQL 16 + PostGIS
 - **gis schema**: OpenStreetMap spatial reference data (roads, boundaries, cities, raw OSM import via `osm_charging_stations_temp`).
 - **inventory schema**: Operational infrastructure (partners, stations, chargers) and user interactions (favorites, reviews). Materialized views: `mv_stations_geo`, `mv_stations_summary`, `mv_stations_reviews`.
-- **users schema**: User profile mapping (USR_ rows), owned exclusively by Auth Service, keyed to Keycloak `sub` claim.
+- **users schema**: User profile mapping (USR- rows), owned exclusively by Auth Service, keyed to Keycloak `sub` claim.
 
 **keycloak_db**
 A dedicated PostgreSQL database owned entirely by Keycloak. No application service or microservice connects to `keycloak_db` directly. It is provisioned and managed exclusively by Keycloak at runtime.

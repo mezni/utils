@@ -1,6 +1,6 @@
 # BorneMap — System State
 
-**Last updated:** 2026-06-18  **Session:** Scaffolding — docs/ + guardrails + skills
+**Last updated:** 2026-06-18  **Session:** Scaffolding — docs/ + guardrails + skills + MVP-1 spec
 
 ## Built and verified
 
@@ -19,7 +19,7 @@
 - [x] `docs/sprint_backlog.md` — granular task backlog
 - [x] `docs/bug_tracker.md` — active bug tracking
 - [x] `docs/adr/` — directory created (empty, awaiting first ADR)
-- [x] `docs/specs/` — directory created (empty, awaiting first MVP spec)
+- [x] `docs/specs/mvp-1-admin-flow.md` — MVP-1 spec written, not started
 
 ## Skills installed (global — `npx skills add -g`)
 
@@ -50,10 +50,7 @@
 - `source/infra/keycloak/` — Keycloak configuration
 - `source/infra/migrations/` — database migration files
 - `infra/osm-importer/` — OSM data pipeline
-- `docs/specs/mvp-1-*.md` — no MVP specs yet
 - `docs/adr/` — no ADRs yet
-- `docs/roadmap_status.md` — not yet created
-- `docs/sprint_backlog.md` — not yet created
 
 ## Environment
 

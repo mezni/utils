@@ -9,17 +9,13 @@
 
 | MVP | Description | Status | Depends on |
 |-----|-----------|--------|-----------|
-| 0 | Project scaffolding: docs, guardrails, constitution, monorepo layout | 🟢 Complete | — |
-| 1 | Auth Service: login, refresh, profile sync, Keycloak realm | ⬜ Not started | MVP-0 |
-| 2 | GIS ingestion & Driver Service: PostGIS, nearby query, materialized views | ⬜ Not started | MVP-1 |
-| 3 | Admin Service: partner CRUD, station/charger management | ⬜ Not started | MVP-2 |
-| 4 | Web driver app: map, station list, favourites | ⬜ Not started | MVP-2 |
-| 5 | Mobile driver app: Expo map, offline cache, favourites | ⬜ Not started | MVP-2 |
-| 6 | Dashboard: partner portal, admin panel, analytics | ⬜ Not started | MVP-3 |
-| 7 | Traefik gateway: TLS, routing, JWT validation | ⬜ Not started | MVP-1 |
-| 8 | Redis cache layer: spatial tile caching, cache bust | ⬜ Not started | MVP-2 |
-| 9 | OSM data pipeline: importer, sync, deduplication | ⬜ Not started | MVP-2 |
-| 10 | E2E testing & hardening: Playwright, CI pipeline, bug bash | ⬜ Not started | MVP-4/5/6 |
+| 0 | Project scaffolding: docs, guardrails, constitution, monorepo layout, skills | 🟢 Complete | — |
+| 1 | Admin flow: infra (Keycloak, Postgres, Redis, Traefik) + Auth Service + Admin Service + Dashboard UI | ⬜ Not started | MVP-0 |
+| 2 | Driver Service: PostGIS spatial reads, materialized views, Redis cache consumption | ⬜ Not started | MVP-1 |
+| 3 | Web driver app: React + Leaflet map, station list, favourites | ⬜ Not started | MVP-2 |
+| 4 | Mobile driver app: Expo SDK 54, map view, offline cache, favourites | ⬜ Not started | MVP-2 |
+| 5 | OSM data pipeline: importer, sync, deduplication | ⬜ Not started | MVP-2 |
+| 6 | E2E testing & hardening: Playwright, CI pipeline, bug bash | ⬜ Not started | MVP-3/4 |
 
 ---
 

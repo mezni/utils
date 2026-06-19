@@ -112,10 +112,11 @@ interface StationCardProps {
 ## docs/ directory structure
 
 ```
-docs/
+.specify/memory/
   constitution.md          # Architectural authority (never auto-generated)
-  SYSTEM_STATE.md          # Current build state — updated every session
+docs/
   GUARDRAILS.md            # LLM entry-point — read first every session
+  SYSTEM_STATE.md          # Current build state — updated every session
   roadmap_status.md        # MVP completion status
   sprint_backlog.md        # Current sprint tasks
   bug_tracker.md           # Active bugs, reproduction steps, and fixes
@@ -123,9 +124,10 @@ docs/
     ADR-001-keycloak-single-realm.md
     ADR-002-...
   specs/
-    mvp-1-auth.md
+    mvp-1-admin-flow.md
     mvp-2-gis.md
     ...
+  guardrails/              # Domain guardrails (see GUARDRAILS.md index)
   api/                     # Auto-generated OpenAPI specs (do not edit manually)
 ```
 

@@ -45,8 +45,8 @@ Rules:
 ```sql
 -- Every table follows this baseline pattern
 CREATE TABLE inventory.stations (
-    -- NanoID primary key with service-specific prefix
-    id          TEXT        PRIMARY KEY CHECK (id LIKE 'STA_%'),
+    -- NanoID primary key with service-specific prefix (STA-, CHG-, OPR-, USR-)
+    id          TEXT        PRIMARY KEY CHECK (id ~ '^(STA|CHG|OPR|USR)-.+'),
 
     -- Foreign keys reference by ID string, not serial int
     partner_id  TEXT        NOT NULL REFERENCES inventory.partners(id),
@@ -70,7 +70,7 @@ CREATE TRIGGER set_updated_at
 ```
 
 Rules:
-- Primary keys are `TEXT` NanoID strings with the entity prefix (STA_, CHG_, OPR_, USR_).
+- Primary keys are `TEXT` NanoID strings with the entity prefix (STA-, CHG-, OPR-, USR-). The CHECK constraint uses a regex (`~`) to match the literal prefix: `id ~ '^(STA|CHG|OPR|USR)-.+'`.
 - Every table has `created_at` and `updated_at`. The trigger is mandatory.
 - Soft delete (`deleted_at`) is used on infrastructure entities only. User tables use hard delete.
 - All geometry columns use SRID 4326. Never store raw lat/lng floats alongside a geometry column — the geometry is the source of truth.
