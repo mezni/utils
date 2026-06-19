@@ -239,15 +239,18 @@ Actix-web service on :3002.
 
 **Transaction contract (strict):**
 
-All post-commit steps happen in the **service orchestration layer** (`admin_orchestrator.rs` or equivalent), in order:
+All post-commit steps happen in the **service orchestration layer** (`admin_orchestrator.rs` or equivalent), in order. Steps 2–4 are defined fully in Sprints 4–6; this contract shows the orchestration shape:
 
 ```
 BEGIN TX
   Write inventory.partners / stations / chargers
 COMMIT TX
 REFRESH MATERIALIZED VIEW CONCURRENTLY (mv_stations_geo, mv_stations_summary)
+  — synchronously awaited with 2–5s soft timeout guard (Sprint 4)
 Redis cache bust (synchronous, in service layer after commit, before response)
+  — on failure: log structued warning, set X-Cache-Bust-Failed: true, proceed (Sprint 4)
 analytics_db audit_log insert with BEFORE/AFTER diff (computed in service layer)
+  — computed ONLY in admin_orchestrator.rs, repository layer is audit-unaware (Sprint 5)
 Return HTTP response
 ```
 
@@ -292,6 +295,64 @@ Validate: signature, `exp`, `aud`, `iss`. Cache public keys with TTL.
 - Admin routes require JWT `aud` == `admin-dashboard`
 - Auth routes may accept multiple audiences
 - Reject tokens with mismatched audience at the gateway before forwarding to any service
+
+### Sprint 4 — Redis + MV Refresh Integration
+
+**Redis client:** Connection pool in Admin Service. Key namespaces:
+- `stations:tile:{z}:{x}:{y}` — GIS tile cache
+- `stations:near:{lat}:{lng}:{radius}` — proximity cache
+- `idempotency:{key}` — idempotency store (see Sprint 6)
+
+**Invalidation:** Synchronous after `tx.commit()` in `admin_orchestrator.rs`. Same orchestration step as MV refresh.
+
+**MV refresh:** `REFRESH MATERIALIZED VIEW CONCURRENTLY` on `inventory.mv_stations_geo`, `inventory.mv_stations_summary`. Synchronously awaited in MVP-1 with a **2–5s soft timeout guard** — if the refresh exceeds the timeout, log a warning and proceed (stale data corrects on next write).
+
+**Failure policy:**
+- MV refresh timeout/failure → log warning, proceed. Stale data corrects on next write.
+- Redis bust failure → log structured warning (`level: "warn"`, `component: "redis_cache_bust"`, `error: ...`), increment `cache_bust_failures` counter (in-memory metric or log-based), set `X-Cache-Bust-Failed: true` on response. Do NOT roll back the DB transaction.
+
+### Sprint 5 — Analytics + Audit
+
+**analytics_db setup** (`source/infra/migrations/0002_analytics_audit.sql`):
+
+```sql
+CREATE TABLE audit_log (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    actor_id TEXT NOT NULL,             -- USR- prefix
+    action TEXT NOT NULL,               -- 'partner.create', 'station.update', 'charger.soft_delete'
+    target_type TEXT NOT NULL,          -- 'partner', 'station', 'charger'
+    target_id TEXT NOT NULL,            -- OPR- / STA- / CHG- prefix
+    before_snapshot JSONB,
+    after_snapshot JSONB,
+    payload JSONB,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX idx_audit_actor ON audit_log (actor_id);
+CREATE INDEX idx_audit_target ON audit_log (target_type, target_id);
+CREATE INDEX idx_audit_created ON audit_log (created_at DESC);
+```
+
+**Diff computation:** MUST be computed in `admin_orchestrator.rs` ONLY. The repository layer MUST be unaware of audit logic — it writes raw snapshots without knowing whether they'll be audited.
+
+**Behavior:**
+- BEFORE snapshot: fetched before mutation (NULL on CREATE)
+- AFTER snapshot: fetched after mutation (same transaction if possible, or immediately after)
+- Diff computed by comparing BEFORE/AFTER snapshots in orchestration layer
+- Failure → log error, proceed. Audit is observability, not transactional.
+
+### Sprint 6 — Idempotency + Hardening
+
+**Idempotency-Key store:** MUST be Redis (the `idempotency:{key}` namespace) with 24h TTL. Not in-memory — service restart must preserve deduplication guarantee.
+
+**Behavior:**
+- `POST /api/v1/admin/*` requires `Idempotency-Key: <UUID v4>` header
+- Redis check: if key exists → return stored response (200/201) + `Idempotency-Replayed: true`
+- Redis set: after successful mutation → store response with TTL 24h
+- Duplicate without key → `409 Conflict`
+- Key format: UUID v4
+
+**Partner scope restriction:** A partner (role:partner) MUST NOT be able to mutate stations/chargers owned by another partner. This is enforced in the service layer by querying `inventory.stations.partner_id` against the caller's USR- → OPR- mapping from `X-User-Id` header.
 
 ### Sprint 7 — Dashboard (`source/apps/dashboard/`)
 
@@ -348,7 +409,8 @@ interface ChargerDTO { id: string; stationId: string; status: string; /* ... */ 
 - [ ] Redis failure does not roll back DB (log warning, proceed)
 - [ ] MV refresh failure does not roll back DB (log warning, proceed)
 - [ ] Audit log failure does not roll back mutation (log error, proceed)
-- [ ] Diff computed in service layer (not repository, not DB trigger)
+- [ ] Diff computed in service layer (not repository, not DB trigger) — repository layer MUST be audit-unaware
+- [ ] Partner scope enforced: partner cannot mutate another partner's stations/chargers
 - [ ] Auth Service validates and propagates audience — does not mint tokens
 - [ ] JWT `aud` validated at Traefik against the calling client
 - [ ] JWT never stored in `localStorage` (in-memory only)
@@ -366,7 +428,11 @@ interface ChargerDTO { id: string; stationId: string; status: string; /* ... */ 
 - Keycloak token endpoint unreachable from outside Auth Service network
 - Duplicate Idempotency-Key returns original response (not 409)
 - All error contracts match the spec (401, 403, 409, 503, 410 per endpoint)
-- Redis failure returns 200 with `X-Cache-Bust-Failed: true` header (not 500)
+- Redis failure returns 200 with `X-Cache-Bust-Failed: true` header + structured warning log (not 500)
+- MV refresh with 2–5s soft timeout guard (timeout → log warning, proceed)
+- Idempotency-Key stored in Redis (not in-memory) — survives service restart
+- Partner cannot mutate another partner's stations/chargers (scope enforcement)
+- Repository layer is audit-unaware (diff computed ONLY in admin_orchestrator.rs)
 - Auth Service returns 503 when Keycloak is unreachable
 - MV refresh triggered synchronously after station/charger commit
 - DB role `driver_service_role` cannot write to `inventory` tables

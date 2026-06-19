@@ -78,4 +78,4 @@ Total: 36 tickets across 8 sprints. See `docs/sprint_backlog.md` for details.
 
 ## Known issues
 
-- None yet.
+- MV + Redis dual consistency lag: DB commit → MV refresh → Redis bust. If MV refresh is slow, Redis may be invalidated before MV is updated, causing brief Driver read inconsistency. Not fatal for MVP — documented for future concurrency optimization.
