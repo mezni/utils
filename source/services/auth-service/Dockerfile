@@ -1,11 +1,12 @@
 # Build stage
-FROM rust:1.83-slim-bullseye AS builder
+FROM rust:1.88-slim-bullseye AS builder
 
 WORKDIR /app
 
 # Install build dependencies
 RUN apt-get update && apt-get install -y \
     pkg-config \
+    make \
     libssl-dev \
     && rm -rf /var/lib/apt/lists/*
 
@@ -30,7 +31,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Create non-root user
-RUN useradd -m -u 1000 -s /bin/bash auth && \
+RUN useradd -m -u 1000 -s /usr/sbin/nologin auth && \
     mkdir -p /app /var/log/auth-service && \
     chown -R auth:auth /app /var/log/auth-service
 
@@ -41,11 +42,11 @@ COPY --from=builder /app/target/release/auth-service /app/
 USER auth
 
 # Create logs directory
-RUN mkdir -p /var/log/auth-service
+
 
 # Environment variables
 ENV RUST_LOG=auth_service=info \
-    DATABASE_URL=postgresql://localhost:5432/platform_db \
+
     PORT=3000
 
 # Expose port

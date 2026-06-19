@@ -10,6 +10,7 @@ const KEYCLOAK_REALM: &str = "bornemap";
 const KEYCLOAK_TOKEN_ENDPOINT: &str = "/realms/bornemap/protocol/openid-connect/token";
 
 /// Keycloak HTTP client for token operations.
+#[derive(Clone)]
 pub struct KeycloakClient {
     http_client: Client,
     base_url: String,
@@ -18,18 +19,12 @@ pub struct KeycloakClient {
 
 impl KeycloakClient {
     /// Create a new Keycloak client.
-    pub fn new(base_url: String) -> Self {
+    pub fn new(base_url: String, client_id: String) -> Self {
         Self {
             http_client: Client::new(),
             base_url,
-            client_id: "auth-service".to_string(),
+            client_id,
         }
-    }
-
-    /// Set the client ID (e.g., from environment variable).
-    pub fn with_client_id(mut self, client_id: String) -> Self {
-        self.client_id = client_id;
-        self
     }
 
     /// Authenticate with Keycloak using email and password.

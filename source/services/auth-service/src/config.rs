@@ -1,10 +1,12 @@
 /// Configuration for the Auth Service.
 ///
 /// This module loads configuration from environment variables.
+#[derive(Clone)]
 pub struct Config {
     pub database_url: String,
     pub keycloak_url: String,
     pub port: u16,
+    pub keycloak_client_id: String,
 }
 
 impl Config {
@@ -28,12 +30,19 @@ impl Config {
             .unwrap_or(3000)
     }
 
+    /// Get the Keycloak client ID from environment variables.
+    pub fn keycloak_client_id() -> String {
+        std::env::var("KEYCLOAK_CLIENT_ID")
+            .unwrap_or_else(|_| "auth-service".to_string())
+    }
+
     /// Create a new Config instance.
     pub fn new() -> Self {
         Self {
             database_url: Self::database_url(),
             keycloak_url: Self::keycloak_url(),
             port: Self::port(),
+            keycloak_client_id: Self::keycloak_client_id(),
         }
     }
 }
@@ -64,5 +73,17 @@ mod tests {
     fn test_config_port_custom() {
         std::env::set_var("PORT", "8080");
         assert_eq!(Config::port(), 8080);
+    }
+
+    #[test]
+    fn test_config_keycloak_client_id_default() {
+        std::env::remove_var("KEYCLOAK_CLIENT_ID");
+        assert_eq!(Config::keycloak_client_id(), "auth-service");
+    }
+
+    #[test]
+    fn test_config_keycloak_client_id_custom() {
+        std::env::set_var("KEYCLOAK_CLIENT_ID", "custom-client");
+        assert_eq!(Config::keycloak_client_id(), "custom-client");
     }
 }

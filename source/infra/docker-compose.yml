@@ -82,7 +82,7 @@ services:
 
   auth-service:
     build:
-      context: ../../services/auth-service
+      context: ../services/auth-service
       dockerfile: Dockerfile
     container_name: bornemap-auth-service
     ports:
