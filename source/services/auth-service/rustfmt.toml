@@ -1,0 +1,9 @@
+max_width = 100
+hard_tabs = false
+tab_spaces = 4
+newline_style = "Unix"
+use_small_heuristics = "Default"
+fn_call_width = 80
+struct_lit_width = 18
+struct_variant_width = 35
+enum_discrim_align_threshold = 20

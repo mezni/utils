@@ -23,9 +23,9 @@
 
 **Purpose**: Initialize the Cargo project and install dependencies
 
-- [ ] T001 Initialize Rust Cargo project at `source/services/auth-service/` with Actix-web, sqlx (postgres feature), reqwest, serde, jsonwebtoken, tokio, chrono, uuid dependencies
-- [ ] T002 [P] Add `rustfmt` and `clippy` configuration in `source/services/auth-service/rustfmt.toml` and `.cargo/config.toml`
-- [ ] T003 Create directory structure: `src/routes/`, `src/keycloak/`, `src/db/`, `src/models/`, `src/middleware/`, `src/validation/`, `tests/integration/`
+- [X] T001 Initialize Rust Cargo project at `source/services/auth-service/` with Actix-web, sqlx (postgres feature), reqwest, serde, jsonwebtoken, tokio, chrono, uuid dependencies
+- [X] T002 [P] Add `rustfmt` and `clippy` configuration in `source/services/auth-service/rustfmt.toml` and `.cargo/config.toml`
+- [X] T003 Create directory structure: `src/routes/`, `src/keycloak/`, `src/db/`, `src/models/`, `src/middleware/`, `src/validation/`, `tests/integration/`
 
 ---
 
@@ -35,18 +35,18 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T004 [P] Implement unified error enum `AuthError` with `ResponseError` trait in `source/services/auth-service/src/error.rs` covering all 4 error codes (400 validation_error, 401 invalid_credentials, 401 token_expired, 503 auth_unavailable)
-- [ ] [P] T004a Implement log redaction middleware in `source/services/auth-service/src/middleware/redaction.rs` — must never log `password`, `access_token`, or `refresh_token` fields (required by FR-001)
-- [ ] T005 [P] Define request/response types in `source/services/auth-service/src/models/auth.rs` (LoginRequest, RefreshRequest, LogoutRequest, LogoutResponse, TokenResponse with `refresh_expires_in`, ErrorResponse)
-- [ ] [P] T005a Define `LogoutResponse` struct with `message: String` in `source/services/auth-service/src/models/auth.rs`
-- [ ] T006 Define UserProfile struct and `UpsertUser` query type in `source/services/auth-service/src/models/user.rs`
-- [ ] [P] T006a Implement JWT claims parser in `source/services/auth-service/src/keycloak/claims.rs` — extract `sub`, `email`, `given_name`, `family_name`, `realm_access.roles`, and `aud` claims from the Keycloak token response
-- [ ] [P] T006b Create SQL migration at `source/infra/migrations/0003_users_profiles.sql` — `CREATE TABLE users.user_profiles`, indexes, and `updated_at` trigger
-- [ ] [P] T006c Implement refresh/logout token validation in `source/services/auth-service/src/validation/token.rs` — validate non-empty, expected JWT structure, max length; return 400 `validation_error` before any Keycloak call
-- [ ] T007 [P] Implement Keycloak HTTP client in `source/services/auth-service/src/keycloak/client.rs` with methods: `login(email, password)`, `refresh(refresh_token)`, `logout(refresh_token)` — each returning raw jsonwebtoken values or an `AuthError`
-- [ ] T008 [P] Implement DB users repository in `source/services/auth-service/src/db/users.rs` with `upsert_user` sqlx query that inserts or updates a USR- row keyed to `keycloak_sub`
-- [ ] T009 Set up Actix-web app entrypoint in `source/services/auth-service/src/main.rs` with router, JSON config, CORS, and a `GET /health` returning 200
-- [ ] [P] T009a Implement rate limiting middleware in `source/services/auth-service/src/middleware/rate_limit.rs` — 10 attempts/minute/IP, applies to `POST /login` only; refresh and logout exempt
+- [X] T004 [P] Implement unified error enum `AuthError` with `ResponseError` trait in `source/services/auth-service/src/error.rs` covering all 4 error codes (400 validation_error, 401 invalid_credentials, 401 token_expired, 503 auth_unavailable)
+- [X] [P] T004a Implement log redaction middleware in `source/services/auth-service/src/middleware/redaction.rs` — must never log `password`, `access_token`, or `refresh_token` fields (required by FR-001)
+- [X] T005 [P] Define request/response types in `source/services/auth-service/src/models/auth.rs` (LoginRequest, RefreshRequest, LogoutRequest, LogoutResponse, TokenResponse with `refresh_expires_in`, ErrorResponse)
+- [X] [P] T005a Define `LogoutResponse` struct with `message: String` in `source/services/auth-service/src/models/auth.rs`
+- [X] T006 Define UserProfile struct and `UpsertUser` query type in `source/services/auth-service/src/models/user.rs`
+- [X] [P] T006a Implement JWT claims parser in `source/services/auth-service/src/keycloak/claims.rs` — extract `sub`, `email`, `given_name`, `family_name`, `realm_access.roles`, and `aud` claims from the Keycloak token response
+- [X] [P] T006b Create SQL migration at `source/infra/migrations/0003_users_profiles.sql` — `CREATE TABLE users.user_profiles`, indexes, and `updated_at` trigger
+- [X] [P] T006c Implement refresh/logout token validation in `source/services/auth-service/src/validation/token.rs` — validate non-empty, expected JWT structure, max length; return 400 `validation_error` before any Keycloak call
+- [X] T007 [P] Implement Keycloak HTTP client in `source/services/auth-service/src/keycloak/client.rs` with methods: `login(email, password)`, `refresh(refresh_token)`, `logout(refresh_token)` — each returning raw jsonwebtoken values or an `AuthError`
+- [X] T008 [P] Implement DB users repository in `source/services/auth-service/src/db/users.rs` with `upsert_user` sqlx query that inserts or updates a USR- row keyed to `keycloak_sub`
+- [X] T009 Set up Actix-web app entrypoint in `source/services/auth-service/src/main.rs` with router, JSON config, CORS, and a `GET /health` returning 200
+- [X] [P] T009a Implement rate limiting middleware in `source/services/auth-service/src/middleware/rate_limit.rs` — 10 attempts/minute/IP, applies to `POST /login` only; refresh and logout exempt
 
 **Checkpoint**: Foundation ready — error handling, Keycloak client, JWT claims parser, token validation, DB users repo, and server scaffold all wired. US1/2/4/5 can begin.
 
@@ -60,10 +60,10 @@
 
 ### Implementation for User Story 1
 
-- [ ] T010 [US1] Implement login route handler in `source/services/auth-service/src/routes/login.rs` — validate request, call Keycloak client, upsert user profile, return `TokenResponse`
-- [ ] T011 [US1] Wire login route into router (`POST /api/v1/auth/login`) in `src/routes/mod.rs` and `src/main.rs`
-- [ ] T012 [US1] Write integration test in `tests/integration/login_test.rs` — send valid credentials, assert 200 with token fields; send bad password, assert 401 with `invalid_credentials`
-- [ ] T013 [US1] Add structured logging for login success/failure in `src/routes/login.rs`
+- [X] T010 [US1] Implement login route handler in `source/services/auth-service/src/routes/login.rs` — validate request, call Keycloak client, upsert user profile, return `TokenResponse`
+- [X] T011 [US1] Wire login route into router (`POST /api/v1/auth/login`) in `src/routes/mod.rs` and `src/main.rs`
+- [X] T012 [US1] Write integration test in `tests/integration/login_test.rs` — send valid credentials, assert 200 with token fields; send bad password, assert 401 with `invalid_credentials`
+- [X] T013 [US1] Add structured logging for login success/failure in `src/routes/login.rs`
 
 **Checkpoint**: Login endpoint fully functional. Token pair returned, user profile persisted in `platform_db.users`.
 
@@ -77,10 +77,10 @@
 
 ### Implementation for User Story 2
 
-- [ ] T014 [P] [US2] Implement refresh route handler in `source/services/auth-service/src/routes/refresh.rs` — validate request, call Keycloak client, upsert user profile, return `TokenResponse`
-- [ ] T015 [US2] Wire refresh route into router (`POST /api/v1/auth/refresh`) in `src/routes/mod.rs`
-- [ ] T016 [US2] Write integration test in `tests/integration/refresh_test.rs` — login first, then refresh, assert new tokens; use expired token, assert 401 `token_expired`
-- [ ] T017 [US2] Add structured logging for refresh success/failure
+- [X] T014 [P] [US2] Implement refresh route handler in `source/services/auth-service/src/routes/refresh.rs` — validate request, call Keycloak client, upsert user profile, return `TokenResponse`
+- [X] T015 [US2] Wire refresh route into router (`POST /api/v1/auth/refresh`) in `src/routes/mod.rs`
+- [X] T016 [US2] Write integration test in `tests/integration/refresh_test.rs` — login first, then refresh, assert new tokens; use expired token, assert 401 `token_expired`
+- [X] T017 [US2] Add structured logging for refresh success/failure
 
 **Checkpoint**: Refresh endpoint functional. Token rotation works without re-authentication.
 
@@ -94,10 +94,10 @@
 
 ### Implementation for User Story 4
 
-- [ ] T018 [P] [US4] Implement logout route handler in `source/services/auth-service/src/routes/logout.rs` — validate request, call Keycloak logout, return 200
-- [ ] T019 [US4] Wire logout route into router (`POST /api/v1/auth/logout`) in `src/routes/mod.rs`
-- [ ] T020 [US4] Write integration test in `tests/integration/logout_test.rs` — login, logout, assert 200; logout again with same token, assert 200 (idempotent)
-- [ ] T021 [US4] Add structured logging for logout success/failure
+- [X] T018 [P] [US4] Implement logout route handler in `source/services/auth-service/src/routes/logout.rs` — validate request, call Keycloak logout, return 200
+- [X] T019 [US4] Wire logout route into router (`POST /api/v1/auth/logout`) in `src/routes/mod.rs`
+- [X] T020 [US4] Write integration test in `tests/integration/logout_test.rs` — login, logout, assert 200; logout again with same token, assert 200 (idempotent)
+- [X] T021 [US4] Add structured logging for logout success/failure
 
 **Checkpoint**: Logout endpoint functional. Full auth lifecycle (login → refresh → logout) complete.
 
@@ -113,9 +113,9 @@
 
 ### Implementation for User Story 5
 
-- [ ] [P] T021a [US5] Implement `GET /api/v1/auth/me` route handler in `source/services/auth-service/src/routes/me.rs` — validate Bearer token, look up user profile by `sub`, return profile
-- [ ] T021b [US5] Wire `/me` route into router in `src/routes/mod.rs`
-- [ ] T021c [US5] Write integration test in `tests/integration/me_test.rs` — valid token returns profile; invalid token returns 401
+- [X] [P] T021a [US5] Implement `GET /api/v1/auth/me` route handler in `source/services/auth-service/src/routes/me.rs` — validate Bearer token, look up user profile by `sub`, return profile
+- [X] T021b [US5] Wire `/me` route into router in `src/routes/mod.rs`
+- [X] T021c [US5] Write integration test in `tests/integration/me_test.rs` — valid token returns profile; invalid token returns 401
 
 **Checkpoint**: Profile retrieval endpoint functional.
 
