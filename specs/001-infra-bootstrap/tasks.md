@@ -14,9 +14,9 @@
 
 **Purpose**: Project directory structure and environment configuration
 
-- [ ] T001 Create `source/infra/` directory structure per plan.md layout
-- [ ] T002 Create `source/infra/.env.example` with all documented environment variables (Postgres passwords, Keycloak creds, etc.)
-- [ ] T003 Add `source/infra/.env` to `.gitignore`
+- [x] T001 Create `source/infra/` directory structure per plan.md layout
+- [x] T002 Create `source/infra/.env.example` with all documented environment variables (Postgres passwords, Keycloak creds, etc.)
+- [x] T003 Add `source/infra/.env` to `.gitignore`
 
 ---
 
@@ -24,11 +24,11 @@
 
 **Purpose**: All configuration files and Docker Compose orchestration that must exist before any user story can be verified
 
-- [ ] T004 Create `source/infra/docker-compose.yml` with Postgres+PostGIS, Redis, Keycloak, Traefik, and stub services, including named volumes, single `bornemap-net` bridge network, health checks, and dependency ordering
-- [ ] T005 [P] Create Postgres init scripts in `source/infra/postgres/init/`: `01-create-dbs.sql` (platform_db, keycloak_db, analytics_db), `02-schemas-and-roles.sql` (gis, inventory, users schemas + 4 DB roles with schema-scoped grants), `03-initial-tables.sql` (partners, stations, chargers with ID prefix CHECK constraints)
-- [ ] T006 [P] Create Keycloak realm export at `source/infra/keycloak/realm-export/bornemap-realm.json` with `bornemap` realm, 3 clients (mobile-driver-app, web-driver-app, admin-dashboard), 3 roles (role:admin, role:partner, role:driver), and protocol mappers
-- [ ] T007 [P] Create Traefik configuration: `source/infra/traefik/traefik.yml` (static — entryPoints.web:80, file provider) and `source/infra/traefik/dynamic/routing.yml` (3 route rules + 404 catch-all)
-- [ ] T008 [P] Create stub HTTP containers for auth-service, admin-service, and driver-service under `source/infra/stubs/` — each returning a distinct JSON response on any path
+- [x] T004 Create `source/infra/docker-compose.yml` with Postgres+PostGIS, Redis, Keycloak, Traefik, and stub services, including named volumes, single `bornemap-net` bridge network, health checks, and dependency ordering
+- [x] T005 [P] Create Postgres init scripts in `source/infra/postgres/init/`: `01-create-dbs.sql` (platform_db, keycloak_db, analytics_db), `02-schemas-and-roles.sql` (gis, inventory, users schemas + 4 DB roles with schema-scoped grants), `03-initial-tables.sql` (partners, stations, chargers with ID prefix CHECK constraints)
+- [x] T006 [P] Create Keycloak realm export at `source/infra/keycloak/realm-export/bornemap-realm.json` with `bornemap` realm, 3 clients (mobile-driver-app, web-driver-app, admin-dashboard), 3 roles (role:admin, role:partner, role:driver), and protocol mappers
+- [x] T007 [P] Create Traefik configuration: `source/infra/traefik/traefik.yml` (static — entryPoints.web:80, file provider) and `source/infra/traefik/dynamic/routing.yml` (3 route rules + 404 catch-all)
+- [x] T008 [P] Create stub HTTP containers for auth-service, admin-service, and driver-service under `source/infra/stubs/` — each returning a distinct JSON response on any path
 
 **Checkpoint**: Foundation ready — Docker Compose starts all 7 containers with healthy status. User story implementation can begin.
 
