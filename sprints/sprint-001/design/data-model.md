@@ -1,95 +1,60 @@
-# Sprint 001 — Data Model
+# Sprint 001 — Design Document
 
-## Entity Relationship
+## 6-Story Architecture
 
 ```
-Partner (1) ──→ (N) Station (1) ──→ (N) Charger (1) ──→ (N) Connector
+Phase 1: Infrastructure (Docker + PostGIS)
+  ↓
+Phase 2: OSM Ingestion (fetch → parse → staging table)
+  ↓
+Phase 3: Inventory Schema (partners → stations → chargers → connectors)
+  ↓
+Phase 4: Sync + Nearby (staging → inventory + spatial queries)
+  ↓
+Phase 5: Driver API (health check + nearby endpoint)
+  ↓
+Phase 6: Web App (map view + markers)
 ```
 
-## Entities
+## Entity Hierarchy
 
-### Partner
-| Field | Type | Constraints |
-|-------|------|-------------|
-| id | VARCHAR(15) | PK, prefix `PAR-` + nanoid(12) |
-| name | VARCHAR(255) | NOT NULL |
-| type | ENUM | `INDIVIDUAL`, `COMPANY` |
-| verification_status | ENUM | `PENDING`, `VERIFIED`, `SUSPENDED` |
-| metadata | JSONB | DEFAULT '{}' |
-| created_at | TIMESTAMPTZ | NOT NULL, DEFAULT NOW() |
-| updated_at | TIMESTAMPTZ | NOT NULL, DEFAULT NOW() |
+```
+Partner (PAR-) ──→ Station (STA-) ──→ Charger (CHR-) ──→ Connector (CON-)
+```
 
-### Station
-| Field | Type | Constraints |
-|-------|------|-------------|
-| id | VARCHAR(15) | PK, prefix `STA-` + nanoid(12) |
-| partner_id | VARCHAR(15) | FK → Partner(id), NOT NULL |
-| name | VARCHAR(255) | NOT NULL |
-| location | GEOGRAPHY(POINT, 4326) | NOT NULL, GiST indexed |
-| address | TEXT | |
-| status | ENUM | `ACTIVE`, `MAINTENANCE`, `CLOSED` |
-| osm_id | BIGINT | nullable, for OSM linking |
-| data_source_id | INTEGER | FK → data_sources(id), nullable |
-| tags | HSTORE | |
-| is_test | BOOLEAN | DEFAULT FALSE |
-| created_at | TIMESTAMPTZ | NOT NULL, DEFAULT NOW() |
-| updated_at | TIMESTAMPTZ | NOT NULL, DEFAULT NOW() |
+All entities use typed nanoid(12) identifiers and have strict FK cascade:
 
-### Charger
-| Field | Type | Constraints |
-|-------|------|-------------|
-| id | VARCHAR(15) | PK, prefix `CHR-` + nanoid(12) |
-| station_id | VARCHAR(15) | FK → Station(id) ON DELETE CASCADE |
-| vendor | VARCHAR(255) | |
-| model | VARCHAR(255) | |
-| firmware_version | VARCHAR(50) | |
-| serial_number | VARCHAR(100) | |
-| max_power_kw | DECIMAL(6,2) | NOT NULL |
-| status | ENUM | `ACTIVE`, `OFFLINE`, `MAINTENANCE`, `RETIRED` |
-| created_at | TIMESTAMPTZ | NOT NULL, DEFAULT NOW() |
-| updated_at | TIMESTAMPTZ | NOT NULL, DEFAULT NOW() |
+- ON DELETE CASCADE on Station → Charger → Connector
+- No orphan records allowed (constitution principle IV)
 
-### Connector
-| Field | Type | Constraints |
-|-------|------|-------------|
-| id | VARCHAR(15) | PK, prefix `CON-` + nanoid(12) |
-| charger_id | VARCHAR(15) | FK → Charger(id) ON DELETE CASCADE |
-| connector_type | VARCHAR(50) | FK → connector_types(code) |
-| current_type | VARCHAR(10) | FK → current_types(code) |
-| max_power_kw | DECIMAL(6,2) | NOT NULL |
-| status | ENUM | `AVAILABLE`, `IN_USE`, `OUT_OF_SERVICE` |
-| available_count | INTEGER | DEFAULT 0 |
-| total_count | INTEGER | DEFAULT 1 |
-| created_at | TIMESTAMPTZ | NOT NULL, DEFAULT NOW() |
-| updated_at | TIMESTAMPTZ | NOT NULL, DEFAULT NOW() |
+## Spatial Query Pattern
 
-### Sync Job
-| Field | Type | Constraints |
-|-------|------|-------------|
-| id | VARCHAR(15) | PK, prefix `JOB-` + nanoid(12) |
-| source_type | VARCHAR(50) | e.g. 'osm', 'ocpi', 'manual' |
-| source_external_id | VARCHAR(255) | nullable |
-| status | ENUM | `PENDING`, `RUNNING`, `COMPLETED`, `FAILED` |
-| records_imported | INTEGER | DEFAULT 0 |
-| records_updated | INTEGER | DEFAULT 0 |
-| records_failed | INTEGER | DEFAULT 0 |
-| error_message | TEXT | nullable |
-| started_at | TIMESTAMPTZ | |
-| completed_at | TIMESTAMPTZ | |
-| created_at | TIMESTAMPTZ | NOT NULL, DEFAULT NOW() |
+```
+mv_stations_geo (read-only view)
+    ↓ ST_DWithin + ST_Distance
+find_nearby_stations(lat, lon, radius, limit)
+    ↓ called by driver-api
+GET /nearby API endpoint
+```
 
-## Lookup Tables
+**Design rule**: Never query base tables directly for location data (constitution principle II).
 
-### connector_types: CCS, CHAdeMO, TYPE2, TYPE1, GB_T
-### current_types: AC, DC
-### data_sources: id, name, description, is_active
+## Power Tier Classification
 
-## Materialized View: mv_stations_geo
+- `ultra_fast`: max_power_kw ≥ 150kW
+- `fast`: max_power_kw ≥ 50kW
+- `medium`: max_power_kw ≥ 22kW
+- `slow`: max_power_kw < 22kW
 
-Pre-joined read layer with computed power_tier and connector availability counts.
+Computed in `mv_stations_geo` as a computed column.
 
-### Power Tier Classification
-- `ultra_fast`: max_power_kw >= 150
-- `fast`: max_power_kw >= 50
-- `medium`: max_power_kw >= 22
-- `slow`: max_power_kw < 22
+## Idempotent Import Pattern
+
+```sql
+INSERT INTO stations (...) SELECT ... FROM staging
+ON CONFLICT (osm_id, ST_DWithin(...)...) DO UPDATE SET ...
+```
+
+Tracks each import in `sync_jobs` table with status, result counts, timestamps.
+
+See `specs/001-ev-charging-foundation/data-model.md` for full schemas.

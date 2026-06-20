@@ -1,113 +1,81 @@
 # Sprint 001 — Task Breakdown
 
-## Phase 1: Infrastructure & Database
+## Phase 1: Setup & Docker Compose
 
-| Task | ID | Owner | Est. | Depends On |
-|---|---|---|---|---|
-| Docker Compose setup (PostgreSQL 16 + PostGIS) | T-001 | — | 2h | — |
-| Redis service in Docker Compose | T-002 | — | 30m | — |
-| Database init scripts (postgis, hstore, pgcrypto) | T-003 | — | 1h | T-001 |
-| Internal Docker network configuration | T-004 | — | 30m | T-001 |
-| Service stubs (driver-api, sync-engine, ingestion) | T-005 | — | 1h | T-001 |
+- T001 Rust service scaffolds
+- T002 Node.js web app scaffold
+- T003 SQL migrations directory
+- T004 Docker Compose config
+- T005 Dockerfiles
+- T006 PostGIS init script
+- T007 Rust workspace
+- T008 nanoid utility
+- T009 DB connection pool
 
-## Phase 2: Domain Schema (Inventory)
+## Phase 2: OSM → GIS Ingestion
 
-| Task | ID | Owner | Est. | Depends On |
-|---|---|---|---|---|
-| Partner table (PAR- nanoid, type, verification, metadata JSONB) | T-101 | — | 1h | T-003 |
-| Station table (STA- nanoid, FK→partner, geography, status, hstore tags) | T-102 | — | 1.5h | T-101 |
-| Charger table (CHR- nanoid, FK→station, vendor/model, firmware, status) | T-103 | — | 1h | T-102 |
-| Connector table (CON- nanoid, FK→charger, type, current_type, power, availability) | T-104 | — | 1h | T-103 |
-| Status/type lookup tables | T-105 | — | 1h | T-003 |
-| Data sources registry | T-106 | — | 30m | T-003 |
-| ID generation utility (typed nanoid) | T-107 | — | 1h | — |
+- T010 OSM staging table
+- T011 OSM Overpass fetcher
+- T012 OSM parser
+- T013 import-osm.sh script
+- T014 import error handling
 
-## Phase 3: OSM Ingestion & Sync Engine
+## Phase 3: Inventory Schema
 
-| Task | ID | Owner | Est. | Depends On |
-|---|---|---|---|---|
-| OSM raw staging table in gis schema | T-201 | — | 1h | T-003 |
-| OSM import script (Overpass API → staging) | T-202 | — | 2h | T-201 |
-| sync_osm_charging_stations() function (map POIs→stations) | T-203 | — | 3h | T-102, T-201 |
-| Deduplication logic (osm_id + spatial proximity) | T-204 | — | 2h | T-203 |
-| sync_jobs table and tracking | T-205 | — | 1h | T-003 |
-| Idempotency verification (upsert + versioning) | T-206 | — | 1h | T-203 |
+- T015 Partners table
+- T016 Stations table
+- T017 Chargers table
+- T018 Connectors table
+- T019 Sync jobs table
+- T020 Lookup tables
+- T021 GiST index on location
+- T022 FK cascade enforcement
 
-## Phase 4: GIS Query Layer
+## Phase 4: Sync System + Nearby
 
-| Task | ID | Owner | Est. | Depends On |
-|---|---|---|---|---|
-| `mv_stations_geo` — metadata + geo + availability + power_tier | T-301 | — | 2h | T-102, T-103, T-104 |
-| Power tier logic (ultra_fast≥150kW, fast≥50kW, medium≥22kW, slow<22kW) | T-302 | — | 30m | T-301 |
-| `find_nearby_stations(lat, lon, radius, limit)` function | T-303 | — | 2h | T-301 |
-| GiST index on stations.location | T-304 | — | 30m | T-102 |
-| Query performance validation (<50ms urban radius) | T-305 | — | 1h | T-303 |
+- T023 mv_stations_geo materialized view
+- T024 find_nearby_stations function
+- T025 sync_pipeline module
+- T026 idempotent upsert logic
+- T027 sync_jobs audit trail
+- T028 refresh-mv.sh
+- T029 seed data script
+- T030 validate query performance
 
-## Phase 5: Driver API Service
+## Phase 5: Driver Service API
 
-| Task | ID | Owner | Est. | Depends On |
-|---|---|---|---|---|
-| Service scaffold (Rust, Axum/Actix) | T-401 | — | 1h | T-005 |
-| `GET /health` endpoint (DB connectivity, timestamp) | T-402 | — | 30m | T-401 |
-| `GET /nearby` endpoint (lat, lon, radius → stations) | T-403 | — | 2h | T-303, T-401 |
-| `GET /stations/:id` endpoint (full detail + chargers + connectors) | T-404 | — | 1.5h | T-102, T-103, T-104, T-401 |
-| Redis caching layer (optional) | T-405 | — | 1h | T-002, T-403 |
-| Latency tracking middleware | T-406 | — | 1h | T-401 |
-| Error handling + logging | T-407 | — | 1h | T-401 |
+- T031 GET /health endpoint
+- T032 GET /nearby endpoint
+- T033 latency tracking middleware
+- T034 error handling middleware
+- T035 API client service
+- T036 route handlers
+- T037 structured logging
+- T038 validate API SLA
 
-## Phase 6: Driver Web Application
+## Phase 6: Driver Web App
 
-| Task | ID | Owner | Est. | Depends On |
-|---|---|---|---|---|
-| Web app scaffold (Node.js, React/Leaflet) | T-501 | — | 1h | — |
-| Map view with user location tracking | T-502 | — | 2h | T-501 |
-| Station markers from /nearby API | T-503 | — | 1.5h | T-403, T-502 |
-| Distance indicators on markers | T-504 | — | 1h | T-503 |
-| Station list panel (sorted by proximity, availability, power tier badges) | T-505 | — | 2h | T-503 |
-| Station detail view (charger breakdown, connector types) | T-506 | — | 2h | T-404, T-501 |
-| Empty/low-coverage region graceful handling | T-507 | — | 1h | T-503 |
-| Error states and loading indicators | T-508 | — | 1h | T-501 |
+- T039 MapView component
+- T040 StationList component
+- T041 StationDetail component
+- T042 wire components in App.tsx
+- T043 handle empty/loading states
+- T044 handle 404 and no chargers
+- T045 distance indicators
+- T046 handle geolocation denial
+- T047 CORS configuration
+- T048 seed-dev.sh script
 
-## Phase 7: Cross-Cutting & Polish
+---
 
-| Task | ID | Owner | Est. | Depends On |
-|---|---|---|---|---|
-| Full integration test — Docker Compose up validates all services | T-601 | — | 1h | All phases |
-| OSM ingestion → station extraction → nearby query | T-602 | — | 1h | T-202, T-303 |
-| Performance validation (<150ms API, <50ms spatial query) | T-603 | — | 1h | T-403, T-303 |
-| Documentation — architecture, API, setup instructions | T-604 | — | 2h | All phases |
-| System state update | T-605 | — | 30m | All phases |
+## Summary
 
-## Dependency Graph
-
-```
-T-001 ──→ T-003 ──→ T-105, T-106, T-201
-                       │
-              ┌────────┴────────┐
-              │                 │
-           T-101              T-201 ──→ T-202
-              │                        │
-           T-102 ◄─────────────────────┘
-              │
-           T-103 ──→ T-104
-              │         │
-              └────┬────┘
-                   │
-                T-301 ──→ T-302 → T-303 → T-304 → T-305
-                   │
-              T-401 ──→ T-402 → T-403 → T-404
-                             │         │
-                          T-405     T-501 → T-502 → T-503 → T-505 → T-506
-                                              │         │
-                                           T-504     T-507, T-508
-```
-
-## Execution Order (Recommended)
-
-1. Phase 1: Infrastructure & Database
-2. Phase 2: Domain Schema (parallel with Phase 3)
-3. Phase 3: OSM Ingestion & Sync Engine (parallel with Phase 2)
-4. Phase 4: GIS Query Layer
-5. Phase 5: Driver API Service
-6. Phase 6: Driver Web Application
-7. Phase 7: Cross-Cutting & Polish
+| Phase | Tasks | Parallelizable |
+|-------|-------|----------------|
+| 1 | 9 | 8 |
+| 2 | 5 | 4 |
+| 3 | 8 | 5 |
+| 4 | 8 | 3 |
+| 5 | 8 | 4 |
+| 6 | 10 | 3 |
+| **Total** | **48** | **27** |

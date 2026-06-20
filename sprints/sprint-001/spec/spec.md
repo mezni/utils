@@ -6,39 +6,33 @@
 
 ## Goal
 
-Deliver a fully functional geospatial EV charging backbone including database foundation,
-OpenStreetMap ingestion, inventory domain model, sync engine, nearby query system,
-driver API service, and minimal driver web application.
-
-## User Stories
-
-### P1 — Driver finds nearby charging stations
-As a driver, I want to find EV charging stations near my current location so that
-I can quickly locate the closest place to charge my vehicle.
-
-### P2 — Partner manages charging station inventory
-As a charging station operator, I want to register and manage my stations, chargers,
-and connectors so that drivers can discover and use my infrastructure.
-
-### P3 — System operator imports geospatial data
-As a system operator, I want to import charging station data from public geospatial
-sources so that the platform can bootstrap its coverage.
-
-### P4 — Driver views station details
-As a driver, I want to see detailed information about a specific charging station
-so that I can determine whether it meets my vehicle's requirements before driving there.
-
-## Key Entities
-
-- Partner → Station → Charger → Connector (strict hierarchy)
-- Sync Job (audit trail for imports)
+Deliver a fully functional geospatial EV charging backbone including: database and Docker Compose infrastructure, OSM → GIS ingestion, inventory domain schema (Partners, Stations, Chargers, Connectors), sync engine with idempotent pipeline, spatial query function, driver REST API with health check and nearby endpoint, and a minimal driver web map application.
 
 ## Deliverables
 
-1. Database schema (EV inventory + GIS layer)
-2. OSM ingestion pipeline
-3. Sync engine foundation
-4. Nearby station query function
-5. Driver REST API
-6. Driver web map application
-7. Docker Compose infrastructure
+1. **Infrastructure**: Docker Compose with PostgreSQL 16 + PostGIS, service scaffolds, migrations, init scripts
+2. **OSM → GIS Ingestion**: OpenStreetMap fetcher, parser, staging table, idempotent import
+3. **Inventory Schema**: Partners (PAR-), Stations (STA-), Chargers (CHR-), Connectors (CON-), typed nanoid IDs, FK cascade
+4. **Sync System + Nearby**: Materialized view mv_stations_geo, find_nearby_stations function with power tier classification
+5. **Driver Service**: GET /health and GET /nearby REST endpoints
+6. **Driver Web App**: Map view with station markers, distance indicators, power tier badges
+
+## 6 User Stories
+
+### US1: Database + Docker Compose
+Provision PostGIS database and Docker Compose orchestration layer.
+
+### US2: Import OSM to GIS
+Ingest OSM charging station POIs into GIS staging table.
+
+### US3: Create Inventory Schema
+Build domain model with Partner → Station → Charger → Connector hierarchy.
+
+### US4: Sync System + Nearby Function
+Map staging → inventory and provide spatial query function.
+
+### US5: Driver Service API
+Expose GET /health and GET /nearby endpoints.
+
+### US6: Driver Web App
+Render stations on a map with location markers and details.

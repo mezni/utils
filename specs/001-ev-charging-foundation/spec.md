@@ -10,120 +10,150 @@
 
 ## User Scenarios & Testing
 
-### User Story 1 — Driver finds nearby charging stations (Priority: P1)
+### User Story 1 — Database + Docker Compose infrastructure (Priority: P1)
 
-As a driver, I want to find EV charging stations near my current location so that I can quickly locate the closest place to charge my vehicle.
+As a developer, I want to provision a PostGIS-enabled database and Docker Compose setup so that all services have a reproducible foundation to run on.
 
-**Why this priority**: Finding nearby stations is the core value proposition — without it the platform has no purpose for end users. It directly serves the primary user need and can be validated with pre-loaded data.
+**Why this priority**: Everything else depends on the database and orchestration layer — this is the absolute prerequisite.
 
-**Independent Test**: Can be fully tested by deploying with a pre-loaded station dataset containing known locations across a city. Querying from a known coordinate returns stations sorted by distance without any other feature enabled. The result can be verified manually on a map.
+**Independent Test**: Run `docker compose up` and verify PostGIS functions are available, all services connect via internal network, and data persists across restarts.
 
 **Acceptance Scenarios**:
 
-1. **Given** the system has 10 known charging stations distributed across a city at varying distances from my location, **When** I search for nearby stations from my current position, **Then** I receive a list of stations sorted by distance with the closest first, including power tier classification (ultra_fast ≥150kW, fast ≥50kW, medium ≥22kW, slow <22kW).
-2. **Given** my location has no charging stations within 100 km, **When** I search for nearby stations, **Then** the system returns an empty result with a clear message that no stations were found nearby.
-3. **Given** I am searching from the same location twice, **When** the station data has not changed between searches, **Then** I receive identical results both times.
+1. **Given** the Docker Compose environment is started, **When** I run `docker compose up`, **Then** PostgreSQL 16 with PostGIS, hstore, and pgcrypto extensions is available and all service containers start successfully.
+2. **Given** the database is running, **When** I execute `SELECT PostGIS_Version()`, **Then** it returns a valid PostGIS version string.
+3. **Given** data is inserted into the database, **When** I restart the Docker Compose stack, **Then** the data persists across restarts.
 
 ---
 
-### User Story 2 — Partner manages charging station inventory (Priority: P2)
+### User Story 2 — Import OSM to GIS (Priority: P2)
 
-As a charging station operator (partner), I want to register and manage my stations, chargers, and connectors so that drivers can discover and use my charging infrastructure on the platform.
+As a system operator, I want to import OpenStreetMap charging station data into the GIS layer so that station candidates are available for the inventory system.
 
-**Why this priority**: Without station inventory, there is no data for drivers to discover. This story is the prerequisite for populating the map. It enforces the constitution's Strict Entity Hierarchy principle.
+**Why this priority**: Geospatial data must be ingested before it can be transformed into the inventory model.
 
-**Independent Test**: Can be fully tested by registering a new partner, adding a station with multiple chargers and connectors, and verifying the station appears in nearby searches. No driver search feature is required to validate data integrity.
+**Independent Test**: Run the OSM import script with a known dataset and verify raw geometry data is stored in the GIS staging layer with correct coordinates.
 
 **Acceptance Scenarios**:
 
-1. **Given** I am a registered partner, **When** I add a new station with 2 chargers (each with 2 connectors of different types), **Then** all entities are created and linked correctly, and the station appears in search results.
-2. **Given** a station has 3 chargers under it, **When** I remove the station, **Then** all associated chargers and connectors are removed as well — no orphan records remain.
-3. **Given** an existing station, **When** I update its operational status from active to maintenance, **Then** the change is reflected in search results within a reasonable time.
+1. **Given** an OSM dataset containing charging station POIs, **When** I run the import process, **Then** all geometries are stored as GEOGRAPHY(Point, 4326) in the GIS staging table.
+2. **Given** the same OSM dataset has already been imported, **When** I run the import again, **Then** no duplicate records are created.
+3. **Given** an OSM import is running, **When** it encounters an error, **Then** the failure is logged and no partial data remains.
 
 ---
 
-### User Story 3 — System operator imports geospatial data (Priority: P3)
+### User Story 3 — Create inventory schema (Priority: P3)
 
-As a system operator, I want to import charging station data from public geospatial sources so that the platform can bootstrap its coverage without requiring every partner to manually enter their stations.
+As a platform engineer, I want to create the EV inventory schema (Partners, Stations, Chargers, Connectors) so that the platform has a structured domain model.
 
-**Why this priority**: Importing existing data accelerates time-to-value, providing station coverage even before partner onboarding begins. This story follows the constitution's Idempotent Data Operations principle.
+**Why this priority**: The inventory schema is the canonical data store that all other features read from and write to.
 
-**Independent Test**: Can be fully tested by running an import of a known geospatial dataset and verifying the resulting stations appear in nearby queries. Re-running the same import produces identical results without duplication. No partner management feature is needed.
+**Independent Test**: Run schema migrations and verify all tables exist with correct FKs, nanoid PKs, and typed prefix format.
 
 **Acceptance Scenarios**:
 
-1. **Given** an external geospatial dataset containing 50 charging station records, **When** I run the data import process, **Then** 50 station records are created and queryable via the nearby search.
-2. **Given** the same 50-station dataset has already been imported, **When** I run the import process again, **Then** no duplicate stations are created and the total station count remains 50.
-3. **Given** an import process encounters an error partway through, **When** the failure occurs, **Then** the system logs the error, the partial import is rolled back, and no incomplete data remains.
+1. **Given** the inventory schema migration has been applied, **When** I inspect the database, **Then** all tables (partners, stations, chargers, connectors) exist with typed nanoid primary keys.
+2. **Given** a station record exists, **When** I insert a charger referencing it, **Then** the FK constraint is enforced. **When** I insert a charger referencing a non-existent station, **Then** it is rejected.
+3. **Given** a station with chargers exists, **When** I delete the station, **Then** all associated chargers and connectors are cascade-deleted.
 
 ---
 
-### User Story 4 — Driver views station details (Priority: P4)
+### User Story 4 — Sync system and nearby SQL function (Priority: P4)
 
-As a driver, I want to see detailed information about a specific charging station — available chargers, connector types, power output, and operational status — so that I can determine whether the station meets my vehicle's charging requirements before driving there.
+As a platform engineer, I want to build the sync engine and spatial query function so that OSM data flows into the inventory and nearby searches can be executed.
 
-**Why this priority**: After finding nearby stations, drivers need to decide which one to use. Detail information enables informed decision-making and prevents wasted trips to incompatible stations.
+**Why this priority**: The sync pipeline connects ingestion to inventory, and the nearby function is the core spatial query that all driver features depend on.
 
-**Independent Test**: Can be fully tested with a single known station loaded with multiple chargers and connectors — no nearby search or partner management required. A driver can view the station's full breakdown by its identifier.
+**Independent Test**: Run the sync pipeline to map OSM staging data into inventory stations. Then execute `find_nearby_stations()` and verify stations sorted by distance.
 
 **Acceptance Scenarios**:
 
-1. **Given** a station with 4 chargers (2 CCS, 2 CHAdeMO) at varying power levels, **When** I view the station's detail page, **Then** I see each charger's connector type, power output, and operational status clearly displayed.
-2. **Given** a station that is temporarily out of service, **When** I view its detail page, **Then** the system clearly indicates the station is unavailable and shows which chargers (if any) are still operational.
-3. **Given** a station with no chargers configured, **When** I view its detail page, **Then** the system shows the station exists but indicates no charging equipment has been registered yet.
+1. **Given** OSM staging data exists, **When** I run the sync pipeline, **Then** stations are created in the inventory with correct geolocation and OSM source tracking.
+2. **Given** stations exist in the inventory, **When** I call `find_nearby_stations(lat, lon, radius)`, **Then** results are returned sorted by distance with power tier classification (ultra_fast ≥150kW, fast ≥50kW, medium ≥22kW, slow <22kW) and connector availability counts.
+3. **Given** the sync pipeline processes the same OSM data twice, **When** I run it again, **Then** no duplicate stations are created.
+
+---
+
+### User Story 5 — Driver service with health check and nearby endpoint (Priority: P5)
+
+As a driver, I want to query nearby charging stations through a REST API so that applications can discover stations programmatically.
+
+**Why this priority**: The API is the interface that frontends and third parties use to access spatial data.
+
+**Independent Test**: Start the driver service and call GET /health to verify connectivity, then call GET /nearby with coordinates to receive sorted station results.
+
+**Acceptance Scenarios**:
+
+1. **Given** the driver service is running, **When** I call GET /health, **Then** it returns status ok, database connected, and current timestamp.
+2. **Given** stations exist in the inventory, **When** I call GET /nearby?lat=X&lon=Y, **Then** I receive stations sorted by distance with power tier, availability, and location data.
+3. **Given** no stations exist near a coordinate, **When** I call GET /nearby, **Then** I receive an empty stations array with no errors.
+
+---
+
+### User Story 6 — Driver web app (Priority: P6)
+
+As a driver, I want to see nearby charging stations on a map so that I can visually find and navigate to the closest charging point.
+
+**Why this priority**: The web app is the end-user product that demonstrates the full stack working together.
+
+**Independent Test**: Open the web app, allow location access, and verify station markers appear on the map with distance indicators.
+
+**Acceptance Scenarios**:
+
+1. **Given** the web app is loaded and stations exist nearby, **When** the map renders, **Then** station markers appear at correct geographic locations with power tier badges and distance indicators.
+2. **Given** the web app is loaded with no stations nearby, **When** the map renders, **Then** a clear message is displayed that no stations were found nearby.
+3. **Given** a station marker is visible, **When** I click on it, **Then** I see station details including connector types, power output, and operational status.
 
 ### Edge Cases
 
-- What happens when a search location falls on an exact boundary — does it include stations at the same coordinate?
-- How does the system handle extremely large radius queries (e.g., 500 km) — is there a reasonable limit?
-- What happens when a partner updates a station's location after drivers have already discovered it?
-- How does the system behave when the external geospatial source changes its data format or becomes unavailable?
-- What happens when a charger is physically removed from a station — how is the inventory updated without leaving stale data?
-- How does a partner recover from accidentally deleting a station — is there any protection?
+- What happens when Docker Compose is started without a persistent volume — is data lost?
+- How does the system handle OSM data with missing or malformed geometry?
+- What happens when a connector type is not recognized from the lookup table?
+- How does the system handle extremely large radius queries (e.g., 500 km)?
+- What happens when the driver service starts but the database is not yet ready?
+- How does the web app handle a user denying geolocation permission?
 
 ## Requirements
 
 ### Functional Requirements
 
-- **FR-001**: Drivers MUST be able to search for charging stations near a specified geographic location and receive results sorted by distance.
-- **FR-002**: The system MUST return station details including available chargers, connector types, power output, and operational status.
-- **FR-003**: Partners MUST be able to create and manage a hierarchy of stations, chargers, and connectors under their organization.
-- **FR-004**: The system MUST enforce referential integrity — no charger or connector may exist without a parent station, and removing a station MUST cascade to remove all children.
-- **FR-005**: System operators MUST be able to import geospatial station data from external sources into the platform.
-- **FR-006**: Repeated imports of the same source data MUST produce identical state with zero duplicate records.
-- **FR-007**: Every data import operation MUST be recorded with source, status, timestamp, and result for audit purposes.
-- **FR-008**: The system MUST handle geographic areas with no station coverage gracefully, returning empty results with a clear message rather than an error.
-- **FR-009**: Partners MUST be able to update station operational status and have changes reflected in search results.
-- **FR-010**: The driver web interface MUST render station locations on a map view with distance indicators and availability information.
+- **FR-001**: The system MUST provision a PostgreSQL database with PostGIS, hstore, and pgcrypto extensions on startup.
+- **FR-002**: All services MUST connect via an internal Docker network and data MUST persist across container restarts.
+- **FR-003**: The system MUST import OSM charging station POIs into a GIS staging table with GEOGRAPHY(Point, 4326) geometry.
+- **FR-004**: OSM imports MUST be idempotent — re-running the same dataset MUST NOT create duplicate records.
+- **FR-005**: The system MUST enforce a Partner → Station → Charger → Connector hierarchy with typed nanoid primary keys (PAR-, STA-, CHR-, CON-).
+- **FR-006**: The system MUST enforce referential integrity — removing a station MUST cascade-delete all child chargers and connectors.
+- **FR-007**: The system MUST provide a sync pipeline that maps OSM staging data into inventory stations with source tracking.
+- **FR-008**: The system MUST provide a `find_nearby_stations` function that queries only a materialized view and returns results sorted by distance with power tier and availability.
+- **FR-009**: The system MUST expose GET /health returning service status, database connectivity, and timestamp.
+- **FR-010**: The system MUST expose GET /nearby accepting lat, lon, radius and returning stations sorted by distance.
+- **FR-011**: The driver web app MUST render station markers on a map with distance indicators, power tier badges, and availability information.
 
 ### Key Entities
 
-- **Partner**: An organization or individual that operates EV charging stations. Partners own and manage their station portfolio.
-- **Station**: A physical location with EV charging infrastructure. Stations are geolocated and belong to a single partner. Each station has an operational status.
-- **Charger**: A physical charging device installed at a station. Each charger has power output specifications and belongs to exactly one station.
-- **Connector**: A physical plug interface on a charger that connects to a vehicle. Connectors have a type (e.g., CCS, CHAdeMO, Type 2) and current type (AC/DC). Each connector belongs to exactly one charger.
-- **Sync Job**: A recorded operation that imports geospatial data from external sources. Each job tracks its source, status, duration, and result count for observability.
+- **Partner**: An organization or individual that operates EV charging stations.
+- **Station**: A physical geolocated EV charging location belonging to a partner.
+- **Charger**: A physical charging device at a station with power specifications.
+- **Connector**: A physical plug interface on a charger with type and current mode.
+- **Sync Job**: A recorded operation that imports geospatial data from external sources.
 
 ## Success Criteria
 
 ### Measurable Outcomes
 
-- **SC-001**: Drivers can find nearby stations and receive results sorted by distance in under 2 seconds from any populated area with station coverage.
-- **SC-002**: A partner can register a new station with 5 chargers (each with 2 connectors) in under 3 minutes with no data errors.
-- **SC-003**: Running the same geospatial import 3 consecutive times produces identical station records with zero duplicates on each run.
-- **SC-004**: The system maintains full referential integrity — no orphan chargers or connectors exist at any point after partner CRUD operations.
-- **SC-005**: Drivers in areas with no station coverage receive a clear empty-state message within 2 seconds — never an error or timeout.
-- **SC-006**: The driver map interface accurately renders station markers at their correct geographic positions for any query within a covered region.
-- **SC-007**: A system operator can view the status and results of every import operation, including failures, for at least the last 30 days.
+- **SC-001**: Docker Compose starts all services and PostGIS functions are verified available within 30 seconds.
+- **SC-002**: An OSM dataset with 50 stations can be imported end-to-end (ingestion → sync → inventory) without errors.
+- **SC-003**: Running the same import 3 times produces zero duplicate stations.
+- **SC-004**: The inventory schema enforces FK integrity — deleting a station cascades to all children with no orphan records.
+- **SC-005**: The `find_nearby_stations` function returns results in under 2 seconds for a typical urban search radius.
+- **SC-006**: The GET /nearby API endpoint responds within 150ms for a typical query.
+- **SC-007**: The web app renders station markers accurately on a map for any query within a covered region.
 
 ## Assumptions
 
-- Drivers access the platform via a modern web browser with geolocation capabilities (GPS or IP-based).
-- Partners have reliable internet connectivity and basic technical literacy to manage station inventory through a web interface.
-- External geospatial data sources follow consistent conventions for representing charging station locations and attributes.
-- The platform is initially deployed for a single geographic region with plans for expansion to additional regions.
-- Partners are responsible for keeping their station and charger information up to date.
-- External data imports are initiated by system operators and are not fully automated in this sprint.
-- Station data is read far more frequently than it is written — read performance is prioritized.
-- The system does not require driver authentication for browsing and searching stations in this sprint.
-- Partner authentication is out of scope for this sprint — partners are pre-seeded by system operators with authentication defined in a later sprint.
+- All services run via Docker Compose for local development.
+- OSM is the primary geospatial data source for this sprint.
+- The platform is initially deployed for a single geographic region.
+- No driver or partner authentication is implemented in this sprint.
+- External data imports are initiated manually by system operators.
+- Read performance is prioritized over write performance.

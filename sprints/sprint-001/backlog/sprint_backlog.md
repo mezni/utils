@@ -1,52 +1,20 @@
 # Sprint 001 — Backlog
 
 ## Sprint Goal
-Deliver geospatial EV charging platform foundation: database, ingestion, inventory, sync engine, nearby search, driver API, and web map.
 
-## Stories
+Deliver geospatial EV charging platform: database + Docker Compose, OSM ingestion, inventory schema, sync engine, nearby queries, driver API, and web map.
 
-| ID | Priority | Story | Effort | Status |
-|---|---|---|---|---|
-| S-001 | P1 | Driver finds nearby charging stations | L | Pending |
-| S-002 | P2 | Partner manages station inventory | XL | Pending |
-| S-003 | P3 | System operator imports geospatial data | M | Pending |
-| S-004 | P4 | Driver views station details | M | Pending |
+## 6 User Stories
 
-## Tasks by Story
+| ID | Story | Tasks | Status |
+|---|---|---|---|
+| S-001 | Docker + Docker Compose | 9 | Pending |
+| S-002 | Import OSM to GIS | 5 | Pending |
+| S-003 | Create inventory schema | 8 | Pending |
+| S-004 | Sync system + nearby function | 8 | Pending |
+| S-005 | Driver service API | 8 | Pending |
+| S-006 | Driver web app | 10 | Pending |
 
-### S-001 — Nearby station search (P1)
-- [ ] Database schema — setup PostGIS + inventory tables
-- [ ] Create `mv_stations_geo` materialized view with power tier + availability
-- [ ] Implement `find_nearby_stations` spatial function
-- [ ] Driver API endpoint: `GET /nearby`
-- [ ] Driver web app — map view with station markers
-- [ ] GiST index creation on spatial columns
+## Task Breakdown
 
-### S-002 — Partner inventory management (P2)
-- [ ] Partner entity schema + nanoid generation
-- [ ] Station entity schema with geolocation
-- [ ] Charger entity schema
-- [ ] Connector entity schema
-- [ ] Status lookup tables, connector types, current types
-- [ ] API endpoint: create/read/update/delete stations
-- [ ] Cascading delete enforcement
-- [ ] Partner web interface (minimal)
-
-### S-003 — Geospatial data ingestion (P3)
-- [ ] OSM ingestion pipeline (raw staging table)
-- [ ] Sync engine — map external POIs to stations
-- [ ] Idempotency — upsert + deduplication by osm_id + spatial proximity
-- [ ] `sync_jobs` audit trail
-- [ ] Data sources registry
-
-### S-004 — Station detail view (P4)
-- [ ] Driver API endpoint: `GET /stations/:id`
-- [ ] Driver web app — station detail page with charger/connector breakdown
-- [ ] Availability indicator rendering
-
-### Cross-cutting
-- [ ] Docker Compose with PostGIS + Redis + services
-- [ ] Health endpoint for all services
-- [ ] Error handling and graceful empty states
-- [ ] Sync latency tracking
-- [ ] Documentation update
+(See task_breakdown.md for detailed breakdown)
