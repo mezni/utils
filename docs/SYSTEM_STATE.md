@@ -37,12 +37,12 @@
 
 | Artifact | Status |
 |---|---|
-| `sprints/sprint-001/spec/spec.md` | Pending |
-| `sprints/sprint-001/spec/scope.md` | Pending |
-| `sprints/sprint-001/spec/non_scope.md` | Pending |
-| `sprints/sprint-001/spec/assumptions.md` | Pending |
-| `sprints/sprint-001/backlog/sprint_backlog.md` | Pending |
-| `sprints/sprint-001/backlog/task_breakdown.md` | Pending |
+| `sprints/sprint-001/spec/spec.md` | Complete |
+| `sprints/sprint-001/spec/scope.md` | Complete |
+| `sprints/sprint-001/spec/non_scope.md` | Complete |
+| `sprints/sprint-001/spec/assumptions.md` | Complete |
+| `sprints/sprint-001/backlog/sprint_backlog.md` | Complete |
+| `sprints/sprint-001/backlog/task_breakdown.md` | Complete |
 
 ---
 
