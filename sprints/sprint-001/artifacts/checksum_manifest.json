@@ -1,0 +1,82 @@
+{
+  "constitution/constitution.md": {
+    "checksum": "b4069bfd005accc3b5c317b7008ab1e364c0a4a65ea4820141b8501bec132ddb",
+    "registered_at": "2026-06-20T18:45:29Z"
+  },
+  "constitution/guardrails.md": {
+    "checksum": "ff288f977ed18942fed9f3a35648c0b59e0cfc6340622faafeb225bbc7d62f33",
+    "registered_at": "2026-06-20T18:45:29Z"
+  },
+  "constitution/capabilities.md": {
+    "checksum": "0e47c301459c0a43e9a9d0b64e0bf08fbde72f9d166bbb4608f12a8bacab13c0",
+    "registered_at": "2026-06-20T18:45:30Z"
+  },
+  "constitution/file_structure.md": {
+    "checksum": "ac35274ef75b90e08b16a2a757d20bcadc713635fea6bb44d35a0a222fed38bc",
+    "registered_at": "2026-06-20T18:45:30Z"
+  },
+  "constitution/delivery_os.md": {
+    "checksum": "0bd3e711e94e61fb9a758356dbd9a1badd88433dedac666f0a9c0d31a8477b7f",
+    "registered_at": "2026-06-20T18:45:30Z"
+  },
+  "constitution/sdec_master_prompt.md": {
+    "checksum": "f9e04dd0b7b4bc67f42ee0640ed71f6af0e357db2be4594b7b363696d2ee3a6a",
+    "registered_at": "2026-06-20T18:45:31Z"
+  },
+  "docs/architecture.md": {
+    "checksum": "c966e9e4c2eca277d549471ecf1f3bea38af05f2a5a72fed804316635f2840a1",
+    "registered_at": "2026-06-20T18:45:31Z"
+  },
+  "docs/auth-flow.md": {
+    "checksum": "24742ce90e2da30b29243ac800c796cf59d28621a5d3640b75e6a53b726966e4",
+    "registered_at": "2026-06-20T18:45:31Z"
+  },
+  "docs/api-contracts.md": {
+    "checksum": "970d6fe730689625ea5c7f28cba508e60561a1c581d47808249e3a4ec647ac1b",
+    "registered_at": "2026-06-20T18:45:32Z"
+  },
+  "docs/SYSTEM_STATE.md": {
+    "checksum": "2e04ba8df0cd27860e66423a240e2c120465a3421aa8783e75494f476c4acef8",
+    "registered_at": "2026-06-20T18:45:32Z"
+  },
+  "docs/roadmap_status.md": {
+    "checksum": "4c41a6b5979e358ece5a1e68c80ff62a03df553e0d897e603c688d85c2bc83d5",
+    "registered_at": "2026-06-20T18:45:32Z"
+  },
+  "docs/adr/0001-system-overview.md": {
+    "checksum": "609c61467f03824b17f713eb6fcdeaa93d7a420a759ec73bc1bb78a5215f9f0e",
+    "registered_at": "2026-06-20T18:45:33Z"
+  },
+  "docs/adr/0002-service-boundaries.md": {
+    "checksum": "23463659f66f139455f8415db751ad3826ec2cdb6f38101d73ffe8d86f7b9a4e",
+    "registered_at": "2026-06-20T18:45:33Z"
+  },
+  "docs/adr/0003-data-isolation.md": {
+    "checksum": "301f7036b141ff3043a97f28674cd20dd1f28e5e6303d12b1259a2e261d4e2e2",
+    "registered_at": "2026-06-20T18:45:33Z"
+  },
+  "tools/sprint_engine.sh": {
+    "checksum": "e0b6856b1dacd68ea822ac19e074e82b2442e583688ba6876247e0381ad0db07",
+    "registered_at": "2026-06-20T18:45:34Z"
+  },
+  "tools/reconcile.sh": {
+    "checksum": "a01fc71608755e71a3c6a5839c27d9a731aa13b38687305d5a1115aa92f55c2e",
+    "registered_at": "2026-06-20T18:45:34Z"
+  },
+  "tools/ci_guard.sh": {
+    "checksum": "2b3091910c52fb2f185a2d0f4663843cb15d1f587add91f033fc4f31b2b38c43",
+    "registered_at": "2026-06-20T18:45:35Z"
+  },
+  "tools/validate.sh": {
+    "checksum": "8eb63cc851f2b02b2099b13d4cd6b454cac5315eb13e1e9c86e9b72bcb5fa810",
+    "registered_at": "2026-06-20T18:45:35Z"
+  },
+  "tools/sync.sh": {
+    "checksum": "d707c404f9e3c5bad9a9b8dfff95483557ed8423203d679830fbf75b6032ecbe",
+    "registered_at": "2026-06-20T18:45:35Z"
+  },
+  "tools/test_runner.sh": {
+    "checksum": "621964439aa3db2bb2b417f004c3f3fef5a906d08443f6a0017de0db3b97b0c3",
+    "registered_at": "2026-06-20T18:45:36Z"
+  }
+}

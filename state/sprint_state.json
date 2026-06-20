@@ -1,0 +1,23 @@
+{
+  "sprint_id": "sprint-001",
+  "current_phase": "INGESTION",
+  "entities": {
+    "epics_total": 0,
+    "features_total": 0,
+    "stories_total": 0,
+    "completed_stories": 0
+  },
+  "execution": {
+    "active_story": null,
+    "blocked": [],
+    "in_progress": []
+  },
+  "sync": {
+    "last_github_sync": null,
+    "last_validation": "2026-06-20T18:45:23Z"
+  },
+  "integrity": {
+    "checksum": null,
+    "drift_detected": false
+  }
+}
