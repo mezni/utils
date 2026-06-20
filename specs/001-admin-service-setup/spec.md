@@ -124,7 +124,7 @@ Operators verify the admin service is running and responsive via the health chec
 
 ### Measurable Outcomes
 
-- **SC-001**: Admin can complete partner creation in under 3 seconds from request submission to confirmation
+- **SC-001**: Admin can complete partner creation in under 3 seconds (p95, single admin-service instance, <10 concurrent requests, measured from request receipt at HTTP handler to JSON response)
 - **SC-002**: Station creation with spatial coordinates is validated at insert time with geographic accuracy
 - **SC-003**: All entity IDs conform to the deterministic nanoid(12) format with collision probability acceptable for platform scale
 - **SC-004**: The OpenAPI specification is the single source of truth with all endpoints documented and no undocumented endpoints exist

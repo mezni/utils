@@ -79,7 +79,7 @@ All entity identifiers MUST follow the canonical format: `<ENTITY_PREFIX>-nanoid
 - IDs generated via shared nanoid(12) utility only
 - Manual ID assignment is forbidden
 - IDs are opaque (no business logic parsing of prefix)
-- Database enforces format: `CHECK (id ~ '^(OPR|STA|CHG)-[A-Za-z0-9_-]{12}$')`
+- Database enforces format: `CHECK (id ~ '^(OPR|STA|CHG)-[A-Za-z0-9_]{12}$')`
 - No hardcoded entity IDs in codebase
 - Frontend must validate ID format on client side
 
@@ -133,7 +133,7 @@ System architecture MUST maintain rigid service boundaries with zero cross-conta
 - **Schemas:** gis, inventory, users (strict ownership)
 - **Spatial:** GEOGRAPHY(Point, 4326) for stations only
 - **Indexing:** GIST required for spatial data
-- **Migrations:** SQLx macro-based (no manual migration files)
+- **Migrations:** SQLx `migrate!()` macro using `.sql` files in a `migrations/` directory — no migration scripts run outside SQLx framework. All `.sql` files are embedded at compile time.
 
 ### Cache
 - **Redis:** Driver Service exclusive responsibility

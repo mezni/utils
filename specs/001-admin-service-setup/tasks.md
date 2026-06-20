@@ -42,7 +42,7 @@ description: "Task list for Sprint 1.1 — Admin Service Setup"
 - [ ] T006 [P] Create `infrastructure/docker/env/.env.dev` with DATABASE_URL, port configs
 - [ ] T007 [P] Create `infrastructure/traefik/traefik.yml` with entrypoints, providers
 - [ ] T008 [P] Create `infrastructure/traefik/dynamic/routers.yml` with admin-service route rules
-- [ ] T009 [P] Create `infrastructure/traefik/dynamic/middlewares.yml` with JWT validation stub
+- [ ] T009 [P] Create `infrastructure/traefik/dynamic/middlewares.yml` with CORS and rate-limiting stubs (auth middleware deferred to Auth Service sprint)
 - [ ] T010 [P] Create `infrastructure/postgres/init/01-platform.sql` with CREATE EXTENSION postgis, CREATE SCHEMA inventory
 
 ---
@@ -63,6 +63,7 @@ description: "Task list for Sprint 1.1 — Admin Service Setup"
 - [ ] T018 Create `services/admin-service/src/main.rs` with Actix-web server setup, config loading, route mounting
 - [ ] T019 [P] Create `services/admin-service/src/config.rs` with environment configuration struct
 - [ ] T020 [P] Create `services/admin-service/src/error.rs` with AppError enum, HTTP response mapping
+- [ ] T020b [P] Extend `services/admin-service/src/error.rs` with database-connection error → HTTP 503 mapping, middleware for graceful pool exhaustion
 - [ ] T021 Create `services/admin-service/src/models/mod.rs` with model module re-exports
 - [ ] T022 Create `services/admin-service/src/db/mod.rs` with database pool initialization
 - [ ] T023 [P] Create `speckit/speckit-lint/src/main.rs` with CLI scaffolding, rule registry, file walking
