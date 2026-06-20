@@ -1,0 +1,6 @@
+http:
+  middlewares:
+    cors-stripprefix:
+      stripPrefix:
+        prefixes:
+          - "/api/v1"

@@ -1,0 +1,538 @@
+openapi: "3.0.3"
+info:
+  title: Admin Service API
+  description: BorneMap admin-service for partner, station, and charger management
+  version: 0.1.0
+
+servers:
+  - url: /api/v1
+    description: Admin API v1
+
+paths:
+  /health:
+    get:
+      operationId: healthCheck
+      summary: Service health check
+      responses:
+        "200":
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+
+  /partners:
+    get:
+      operationId: listPartners
+      summary: List all non-deleted partners
+      responses:
+        "200":
+          description: Partner list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Partner"
+    post:
+      operationId: createPartner
+      summary: Create a new partner
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePartnerRequest"
+      responses:
+        "201":
+          description: Partner created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Partner"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /partners/{id}:
+    get:
+      operationId: getPartner
+      summary: Get a partner by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Partner details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Partner"
+        "404":
+          description: Not found
+    patch:
+      operationId: updatePartner
+      summary: Partial update of a partner
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdatePartnerRequest"
+      responses:
+        "200":
+          description: Partner updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Partner"
+        "400":
+          description: Validation error
+        "404":
+          description: Not found
+    delete:
+      operationId: deletePartner
+      summary: Soft-delete a partner
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Partner soft-deleted
+        "404":
+          description: Not found
+
+  /stations:
+    get:
+      operationId: listStations
+      summary: List all non-deleted stations
+      responses:
+        "200":
+          description: Station list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Station"
+    post:
+      operationId: createStation
+      summary: Create a new station
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateStationRequest"
+      responses:
+        "201":
+          description: Station created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Station"
+        "400":
+          description: Validation error
+
+  /stations/{id}:
+    get:
+      operationId: getStation
+      summary: Get a station by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Station details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Station"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateStation
+      summary: Partial update of a station
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateStationRequest"
+      responses:
+        "200":
+          description: Station updated
+        "400":
+          description: Validation error
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteStation
+      summary: Soft-delete a station
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Station soft-deleted
+        "404":
+          description: Not found
+
+  /chargers:
+    get:
+      operationId: listChargers
+      summary: List all non-deleted chargers
+      parameters:
+        - name: station_id
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Charger list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Charger"
+    post:
+      operationId: createCharger
+      summary: Create a new charger
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateChargerRequest"
+      responses:
+        "201":
+          description: Charger created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Charger"
+        "400":
+          description: Validation error
+
+  /chargers/{id}:
+    get:
+      operationId: getCharger
+      summary: Get a charger by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Charger details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Charger"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateCharger
+      summary: Partial update of a charger
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateChargerRequest"
+      responses:
+        "200":
+          description: Charger updated
+        "400":
+          description: Validation error
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteCharger
+      summary: Soft-delete a charger
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Charger soft-deleted
+        "404":
+          description: Not found
+
+components:
+  schemas:
+    HealthResponse:
+      type: object
+      required: [status, service, version]
+      properties:
+        status:
+          type: string
+          enum: [healthy]
+        service:
+          type: string
+        version:
+          type: string
+
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+
+    Partner:
+      type: object
+      required: [id, name, network_type]
+      properties:
+        id:
+          type: string
+          pattern: "^OPR-[A-Za-z0-9_-]{12}$"
+        name:
+          type: string
+        network_type:
+          type: string
+          enum: [INDIVIDUAL, COMPANY]
+        support_phone:
+          type: string
+          nullable: true
+        support_email:
+          type: string
+          nullable: true
+        is_verified:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    CreatePartnerRequest:
+      type: object
+      required: [name, network_type]
+      properties:
+        name:
+          type: string
+          maxLength: 255
+        network_type:
+          type: string
+          enum: [INDIVIDUAL, COMPANY]
+        support_phone:
+          type: string
+          maxLength: 50
+        support_email:
+          type: string
+          format: email
+
+    UpdatePartnerRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 255
+        network_type:
+          type: string
+          enum: [INDIVIDUAL, COMPANY]
+        support_phone:
+          type: string
+          nullable: true
+          maxLength: 50
+        support_email:
+          type: string
+          nullable: true
+          format: email
+        is_verified:
+          type: boolean
+
+    Station:
+      type: object
+      required: [id, name, partner_id, location]
+      properties:
+        id:
+          type: string
+          pattern: "^STA-[A-Za-z0-9_-]{12}$"
+        partner_id:
+          type: string
+          nullable: true
+          pattern: "^OPR-[A-Za-z0-9_-]{12}$"
+        name:
+          type: string
+        address:
+          type: string
+          nullable: true
+        latitude:
+          type: number
+          format: float
+        longitude:
+          type: number
+          format: float
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    CreateStationRequest:
+      type: object
+      required: [name, partner_id, latitude, longitude]
+      properties:
+        partner_id:
+          type: string
+          pattern: "^OPR-[A-Za-z0-9_-]{12}$"
+        name:
+          type: string
+          maxLength: 255
+        address:
+          type: string
+        latitude:
+          type: number
+          minimum: -90
+          maximum: 90
+        longitude:
+          type: number
+          minimum: -180
+          maximum: 180
+
+    UpdateStationRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 255
+        address:
+          type: string
+          nullable: true
+        latitude:
+          type: number
+          minimum: -90
+          maximum: 90
+        longitude:
+          type: number
+          minimum: -180
+          maximum: 180
+
+    Charger:
+      type: object
+      required: [id, station_id, connector_type_id, current_type_id, status_id]
+      properties:
+        id:
+          type: string
+          pattern: "^CHG-[A-Za-z0-9_-]{12}$"
+        station_id:
+          type: string
+          pattern: "^STA-[A-Za-z0-9_-]{12}$"
+        connector_type_id:
+          type: integer
+        current_type_id:
+          type: integer
+        status_id:
+          type: integer
+        power_kw:
+          type: number
+          nullable: true
+        voltage:
+          type: integer
+          nullable: true
+        amperage:
+          type: integer
+          nullable: true
+        count_available:
+          type: integer
+        count_total:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    CreateChargerRequest:
+      type: object
+      required: [station_id, connector_type_id, current_type_id, status_id]
+      properties:
+        station_id:
+          type: string
+          pattern: "^STA-[A-Za-z0-9_-]{12}$"
+        connector_type_id:
+          type: integer
+        current_type_id:
+          type: integer
+        status_id:
+          type: integer
+        power_kw:
+          type: number
+        voltage:
+          type: integer
+        amperage:
+          type: integer
+        count_available:
+          type: integer
+          default: 1
+        count_total:
+          type: integer
+          default: 1
+
+    UpdateChargerRequest:
+      type: object
+      properties:
+        connector_type_id:
+          type: integer
+        current_type_id:
+          type: integer
+        status_id:
+          type: integer
+        power_kw:
+          type: number
+          nullable: true
+        voltage:
+          type: integer
+          nullable: true
+        amperage:
+          type: integer
+          nullable: true
+        count_available:
+          type: integer
+        count_total:
+          type: integer

@@ -34,16 +34,16 @@ description: "Task list for Sprint 1.1 — Admin Service Setup"
 
 **Purpose**: Project initialization and basic structure
 
-- [ ] T001 Create Rust workspace root `Cargo.toml` at repo root with admin-service member
-- [ ] T002 [P] Create `services/admin-service/Cargo.toml` with actix-web, sqlx, tokio, serde, nanoid, chrono dependencies
-- [ ] T003 [P] Create `apps/dashboard/package.json` with React 18, shadcn/ui, Tailwind CSS, react-router dependencies
-- [ ] T004 [P] Create `speckit/speckit-lint/Cargo.toml` with clap, regex dependencies
-- [ ] T005 [P] Create `infrastructure/docker/docker-compose.dev.yml` with postgres:16-alpine + postgis, admin-service build
-- [ ] T006 [P] Create `infrastructure/docker/env/.env.dev` with DATABASE_URL, port configs
-- [ ] T007 [P] Create `infrastructure/traefik/traefik.yml` with entrypoints, providers
-- [ ] T008 [P] Create `infrastructure/traefik/dynamic/routers.yml` with admin-service route rules
-- [ ] T009 [P] Create `infrastructure/traefik/dynamic/middlewares.yml` with CORS and rate-limiting stubs (auth middleware deferred to Auth Service sprint)
-- [ ] T010 [P] Create `infrastructure/postgres/init/01-platform.sql` with CREATE EXTENSION postgis, CREATE SCHEMA inventory
+- [X] T001 Create Rust workspace root `Cargo.toml` at repo root with admin-service member
+- [X] T002 [P] Create `services/admin-service/Cargo.toml` with actix-web, sqlx, tokio, serde, nanoid, chrono dependencies
+- [X] T003 [P] Create `apps/dashboard/package.json` with React 18, shadcn/ui, Tailwind CSS, react-router dependencies
+- [X] T004 [P] Create `speckit/speckit-lint/Cargo.toml` with clap, regex dependencies
+- [X] T005 [P] Create `infrastructure/docker/docker-compose.dev.yml` with postgres:16-alpine + postgis, admin-service build
+- [X] T006 [P] Create `infrastructure/docker/env/.env.dev` with DATABASE_URL, port configs
+- [X] T007 [P] Create `infrastructure/traefik/traefik.yml` with entrypoints, providers
+- [X] T008 [P] Create `infrastructure/traefik/dynamic/routers.yml` with admin-service route rules
+- [X] T009 [P] Create `infrastructure/traefik/dynamic/middlewares.yml` with CORS and rate-limiting stubs (auth middleware deferred to Auth Service sprint)
+- [X] T010 [P] Create `infrastructure/postgres/init/01-platform.sql` with CREATE EXTENSION postgis, CREATE SCHEMA inventory
 
 ---
 
@@ -53,28 +53,28 @@ description: "Task list for Sprint 1.1 — Admin Service Setup"
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T011 Create `api/openapi/admin.yaml` with OpenAPI 3.0 spec: /health, /partners, /stations, /chargers endpoints, DTOs, error schemas
-- [ ] T012 [P] Create `services/admin-service/migrations/001_inventory_schema.sql` with inventory schema creation
-- [ ] T013 [P] Create `services/admin-service/migrations/002_lookup_tables.sql` with access_types, data_sources, connector_types, current_types, connector_statuses
-- [ ] T014 [P] Create `services/admin-service/migrations/006_seed_data.sql` with lookup table seed values
-- [ ] T015 [P] Create `services/admin-service/migrations/003_partners.sql` with partners table (OPR-* nanoid, CHECK constraint, deleted_at, timestamps)
-- [ ] T016 [P] Create `services/admin-service/migrations/004_stations.sql` with stations table (STA-* nanoid, GEOGRAPHY Point 4326, GIST index, FK to partners, deleted_at)
-- [ ] T017 [P] Create `services/admin-service/migrations/005_chargers.sql` with chargers table (CHG-* nanoid, FK to stations ON DELETE CASCADE, unique constraint, deleted_at)
-- [ ] T018 Create `services/admin-service/src/main.rs` with Actix-web server setup, config loading, route mounting
-- [ ] T019 [P] Create `services/admin-service/src/config.rs` with environment configuration struct
-- [ ] T020 [P] Create `services/admin-service/src/error.rs` with AppError enum, HTTP response mapping
-- [ ] T020b [P] Extend `services/admin-service/src/error.rs` with database-connection error → HTTP 503 mapping, middleware for graceful pool exhaustion
-- [ ] T021 Create `services/admin-service/src/models/mod.rs` with model module re-exports
-- [ ] T022 Create `services/admin-service/src/db/mod.rs` with database pool initialization
-- [ ] T023 [P] Create `speckit/speckit-lint/src/main.rs` with CLI scaffolding, rule registry, file walking
-- [ ] T024 [P] Create `speckit/speckit-lint/src/rules/mod.rs` with rule trait and module registry
-- [ ] T025 [P] Create `speckit/speckit-lint/src/rules/service_topology.rs` with service topology validation
-- [ ] T026 [P] Create `speckit/speckit-lint/src/rules/schema_isolation.rs` with schema isolation validation
-- [ ] T027 [P] Create `speckit/speckit-lint/src/rules/naming.rs` with nanoid format validation
-- [ ] T028 [P] Create `speckit/speckit-lint/src/rules/openapi_first.rs` with OpenAPI-first enforcement
-- [ ] T029 [P] Create `speckit/speckit-lint/src/rules/sqlx_safety.rs` with raw SQL detection
-- [ ] T030 [P] Create `speckit/speckit-lint/src/rules/frontend_boundary.rs` with frontend API client enforcement
-- [ ] T031 [P] Create `speckit/speckit-lint/src/rules/migration_validation.rs` with migration integrity checks
+- [X] T011 Create `api/openapi/admin.yaml` with OpenAPI 3.0 spec: /health, /partners, /stations, /chargers endpoints, DTOs, error schemas
+- [X] T012 [P] Create `services/admin-service/migrations/001_inventory_schema.sql` with inventory schema creation
+- [X] T013 [P] Create `services/admin-service/migrations/002_lookup_tables.sql` with access_types, data_sources, connector_types, current_types, connector_statuses
+- [X] T014 [P] Create `services/admin-service/migrations/006_seed_data.sql` with lookup table seed values
+- [X] T015 [P] Create `services/admin-service/migrations/003_partners.sql` with partners table (OPR-* nanoid, CHECK constraint, deleted_at, timestamps)
+- [X] T016 [P] Create `services/admin-service/migrations/004_stations.sql` with stations table (STA-* nanoid, GEOGRAPHY Point 4326, GIST index, FK to partners, deleted_at)
+- [X] T017 [P] Create `services/admin-service/migrations/005_chargers.sql` with chargers table (CHG-* nanoid, FK to stations REFERENCES, UNIQUE(station_id, connector_type_id) for active chargers, deleted_at)
+- [X] T018 Create `services/admin-service/src/main.rs` with Actix-web server setup, config loading, route mounting
+- [X] T019 [P] Create `services/admin-service/src/config.rs` with environment configuration struct
+- [X] T020 [P] Create `services/admin-service/src/error.rs` with AppError enum, HTTP response mapping
+- [X] T020b [P] Extend `services/admin-service/src/error.rs` with database-connection error → HTTP 503 mapping, middleware for graceful pool exhaustion
+- [X] T021 Create `services/admin-service/src/models/mod.rs` with model module re-exports
+- [X] T022 Create `services/admin-service/src/db/mod.rs` with database pool initialization
+- [X] T023 [P] Create `speckit/speckit-lint/src/main.rs` with CLI scaffolding, rule registry, file walking
+- [X] T024 [P] Create `speckit/speckit-lint/src/rules/mod.rs` with rule trait and module registry
+- [X] T025 [P] Create `speckit/speckit-lint/src/rules/service_topology.rs` with service topology validation
+- [X] T026 [P] Create `speckit/speckit-lint/src/rules/schema_isolation.rs` with schema isolation validation
+- [X] T027 [P] Create `speckit/speckit-lint/src/rules/naming.rs` with nanoid format validation
+- [X] T028 [P] Create `speckit/speckit-lint/src/rules/openapi_first.rs` with OpenAPI-first enforcement
+- [X] T029 [P] Create `speckit/speckit-lint/src/rules/sqlx_safety.rs` with raw SQL detection
+- [X] T030 [P] Create `speckit/speckit-lint/src/rules/frontend_boundary.rs` with frontend API client enforcement
+- [X] T031 [P] Create `speckit/speckit-lint/src/rules/migration_validation.rs` with migration integrity checks
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -88,9 +88,9 @@ description: "Task list for Sprint 1.1 — Admin Service Setup"
 
 ### Implementation for User Story 4
 
-- [ ] T032 [P] [US4] Create `services/admin-service/src/routes/mod.rs` with route module re-exports
-- [ ] T033 [P] [US4] Create `services/admin-service/src/routes/health.rs` with GET /health handler returning service status JSON
-- [ ] T034 [US4] Mount health route in `services/admin-service/src/main.rs` with Actix-web app configuration
+- [X] T032 [P] [US4] Create `services/admin-service/src/routes/mod.rs` with route module re-exports
+- [X] T033 [P] [US4] Create `services/admin-service/src/routes/health.rs` with GET /health handler returning service status JSON
+- [X] T034 [US4] Mount health route in `services/admin-service/src/main.rs` with Actix-web app configuration
 
 **Checkpoint**: Health endpoint responds with correct JSON — administrative monitoring works
 
@@ -104,15 +104,15 @@ description: "Task list for Sprint 1.1 — Admin Service Setup"
 
 ### Implementation for User Story 1
 
-- [ ] T035 [P] [US1] Create `services/admin-service/src/models/partner.rs` with Partner struct, CreatePartnerRequest, UpdatePartnerRequest, PartnerResponse DTOs
-- [ ] T036 [P] [US1] Create `services/admin-service/src/db/partners.rs` with SQLx compile-time queries: insert, select_all, select_by_id, update, soft_delete
-- [ ] T037 [P] [US1] Create `services/admin-service/src/routes/partners.rs` with POST /partners, GET /partners, GET /partners/{id}, PATCH /partners/{id}, DELETE /partners/{id} handlers
-- [ ] T038 [US1] Mount partner routes in `services/admin-service/src/main.rs`
-- [ ] T039 [US1] Add partner request validation in `services/admin-service/src/models/partner.rs` (name required, network_type enum, OPR-* ID format)
-- [ ] T040 [P] [US1] Create `apps/dashboard/src/lib/api-client.ts` with generated OpenAPI client for partner endpoints
-- [ ] T041 [P] [US1] Create `apps/dashboard/src/pages/Partners.tsx` with partner list view, create/edit form, delete confirmation
-- [ ] T042 [P] [US1] Create `apps/dashboard/src/components/partners/PartnerTable.tsx` with shadcn/ui table component
-- [ ] T043 [P] [US1] Create `apps/dashboard/src/components/partners/PartnerForm.tsx` with shadcn/ui form for create/edit
+- [X] T035 [P] [US1] Create `services/admin-service/src/models/partner.rs` with Partner struct, CreatePartnerRequest, UpdatePartnerRequest, PartnerResponse DTOs
+- [X] T036 [P] [US1] Create `services/admin-service/src/db/partners.rs` with SQLx compile-time queries: insert, select_all, select_by_id, update, soft_delete
+- [X] T037 [P] [US1] Create `services/admin-service/src/routes/partners.rs` with POST /partners, GET /partners, GET /partners/{id}, PATCH /partners/{id}, DELETE /partners/{id} handlers
+- [X] T038 [US1] Mount partner routes in `services/admin-service/src/main.rs`
+- [X] T039 [US1] Add partner request validation in `services/admin-service/src/models/partner.rs` (name required, network_type enum, OPR-* ID format)
+- [X] T040 [P] [US1] Create `apps/dashboard/src/lib/api-client.ts` with generated OpenAPI client for partner endpoints
+- [X] T041 [P] [US1] Create `apps/dashboard/src/pages/Partners.tsx` with partner list view, create/edit form, delete confirmation
+- [X] T042 [P] [US1] Create `apps/dashboard/src/components/partners/PartnerTable.tsx` with shadcn/ui table component
+- [X] T043 [P] [US1] Create `apps/dashboard/src/components/partners/PartnerForm.tsx` with shadcn/ui form for create/edit
 
 **Checkpoint**: Partner CRUD works end-to-end — backend API + dashboard UI functional
 
@@ -126,14 +126,14 @@ description: "Task list for Sprint 1.1 — Admin Service Setup"
 
 ### Implementation for User Story 2
 
-- [ ] T044 [P] [US2] Create `services/admin-service/src/models/station.rs` with Station struct, CreateStationRequest, UpdateStationRequest, StationResponse DTOs (location as lat/lon pair)
-- [ ] T045 [P] [US2] Create `services/admin-service/src/db/stations.rs` with SQLx compile-time queries: insert with ST_GeogFromText, select_all, select_by_id, update, soft_delete
-- [ ] T046 [P] [US2] Create `services/admin-service/src/routes/stations.rs` with POST /stations, GET /stations, GET /stations/{id}, PATCH /stations/{id}, DELETE /stations/{id} handlers
-- [ ] T047 [US2] Mount station routes in `services/admin-service/src/main.rs`
-- [ ] T048 [US2] Add station spatial validation in `services/admin-service/src/models/station.rs` (lat -90 to 90, lon -180 to 180, partner_id OPR-* format check)
-- [ ] T049 [P] [US2] Create `apps/dashboard/src/pages/Stations.tsx` with station list view, create/edit form
-- [ ] T050 [P] [US2] Create `apps/dashboard/src/components/stations/StationTable.tsx` with shadcn/ui table
-- [ ] T051 [P] [US2] Create `apps/dashboard/src/components/stations/StationForm.tsx` with lat/lon coordinate inputs
+- [X] T044 [P] [US2] Create `services/admin-service/src/models/station.rs` with Station struct, CreateStationRequest, UpdateStationRequest, StationResponse DTOs (location as lat/lon pair)
+- [X] T045 [P] [US2] Create `services/admin-service/src/db/stations.rs` with SQLx compile-time queries: insert with ST_GeogFromText, select_all, select_by_id, update, soft_delete
+- [X] T046 [P] [US2] Create `services/admin-service/src/routes/stations.rs` with POST /stations, GET /stations, GET /stations/{id}, PATCH /stations/{id}, DELETE /stations/{id} handlers
+- [X] T047 [US2] Mount station routes in `services/admin-service/src/main.rs`
+- [X] T048 [US2] Add station spatial validation in `services/admin-service/src/models/station.rs` (lat -90 to 90, lon -180 to 180, partner_id OPR-* format check)
+- [X] T049 [P] [US2] Create `apps/dashboard/src/pages/Stations.tsx` with station list view, create/edit form
+- [X] T050 [P] [US2] Create `apps/dashboard/src/components/stations/StationTable.tsx` with shadcn/ui table
+- [X] T051 [P] [US2] Create `apps/dashboard/src/components/stations/StationForm.tsx` with lat/lon coordinate inputs
 
 **Checkpoint**: Station CRUD works end-to-end — spatial data validated, partner FK enforced
 
@@ -147,14 +147,14 @@ description: "Task list for Sprint 1.1 — Admin Service Setup"
 
 ### Implementation for User Story 3
 
-- [ ] T052 [P] [US3] Create `services/admin-service/src/models/charger.rs` with Charger struct, CreateChargerRequest, UpdateChargerRequest, ChargerResponse DTOs
-- [ ] T053 [P] [US3] Create `services/admin-service/src/db/chargers.rs` with SQLx compile-time queries: insert, select_all (with station_id filter), select_by_id, update, soft_delete
-- [ ] T054 [P] [US3] Create `services/admin-service/src/routes/chargers.rs` with POST /chargers, GET /chargers, GET /chargers/{id}, PATCH /chargers/{id}, DELETE /chargers/{id} handlers
-- [ ] T055 [US3] Mount charger routes in `services/admin-service/src/main.rs`
-- [ ] T056 [US3] Add charger validation: station_id STA-* format check, connector_type/current_type FK validation, unique constraint enforcement
-- [ ] T057 [P] [US3] Create `apps/dashboard/src/pages/Chargers.tsx` with charger list view, create/edit form
-- [ ] T058 [P] [US3] Create `apps/dashboard/src/components/chargers/ChargerTable.tsx` with shadcn/ui table
-- [ ] T059 [P] [US3] Create `apps/dashboard/src/components/chargers/ChargerForm.tsx` with connector type/power inputs
+- [X] T052 [P] [US3] Create `services/admin-service/src/models/charger.rs` with Charger struct, CreateChargerRequest, UpdateChargerRequest, ChargerResponse DTOs
+- [X] T053 [P] [US3] Create `services/admin-service/src/db/chargers.rs` with SQLx compile-time queries: insert, select_all (with station_id filter), select_by_id, update, soft_delete
+- [X] T054 [P] [US3] Create `services/admin-service/src/routes/chargers.rs` with POST /chargers, GET /chargers, GET /chargers/{id}, PATCH /chargers/{id}, DELETE /chargers/{id} handlers
+- [X] T055 [US3] Mount charger routes in `services/admin-service/src/main.rs`
+- [X] T056 [US3] Add charger validation: station_id STA-* format check, connector_type/current_type FK validation, UNIQUE(station_id, connector_type_id) enforcement
+- [X] T057 [P] [US3] Create `apps/dashboard/src/pages/Chargers.tsx` with charger list view, create/edit form
+- [X] T058 [P] [US3] Create `apps/dashboard/src/components/chargers/ChargerTable.tsx` with shadcn/ui table
+- [X] T059 [P] [US3] Create `apps/dashboard/src/components/chargers/ChargerForm.tsx` with connector type/power inputs
 
 **Checkpoint**: Charger CRUD works end-to-end — cascade soft-delete from station confirmed
 
@@ -164,19 +164,19 @@ description: "Task list for Sprint 1.1 — Admin Service Setup"
 
 **Purpose**: Improvements that affect multiple user stories, testing, and sprint documentation
 
-- [ ] T060 Implement unit tests for partner model validation in `services/admin-service/src/models/partner.rs`
-- [ ] T061 [P] Implement unit tests for station spatial validation in `services/admin-service/src/models/station.rs`
-- [ ] T062 [P] Implement unit tests for charger uniqueness constraint in `services/admin-service/src/models/charger.rs`
-- [ ] T063 [P] Implement integration tests in `services/admin-service/tests/` for partner CRUD flow
-- [ ] T064 [P] Implement integration tests in `services/admin-service/tests/` for station spatial CRUD flow
-- [ ] T065 [P] Implement integration tests in `services/admin-service/tests/` for charger CRUD with cascade
-- [ ] T066 [P] Create `apps/dashboard/src/App.tsx` with React Router setup, page routing, layout shell
-- [ ] T067 [P] Create `apps/dashboard/src/main.tsx` with React DOM entry point
-- [ ] T068 Create `apps/dashboard/tailwind.config.ts` with shadcn/ui theme configuration
-- [ ] T069 Run speckit-lint validation against project: `cargo run -- --path ../../ --verbose`
-- [ ] T070 Generate docs/SYSTEM_STATE.md with sprint 1.1 architecture state
-- [ ] T071 Generate docs/roadmap_status.md with sprint 1.1 progress
-- [ ] T072 Generate docs/sprint_backlog.md with remaining items and deferred work
+- [X] T060 Implement unit tests for partner model validation in `services/admin-service/src/models/partner.rs`
+- [X] T061 [P] Implement unit tests for station spatial validation in `services/admin-service/src/models/station.rs`
+- [X] T062 [P] Implement unit tests for charger uniqueness constraint in `services/admin-service/src/models/charger.rs`
+- [X] T063 [P] Implement integration tests in `services/admin-service/tests/` for partner CRUD flow
+- [X] T064 [P] Implement integration tests in `services/admin-service/tests/` for station spatial CRUD flow
+- [X] T065 [P] Implement integration tests in `services/admin-service/tests/` for charger CRUD with cascade
+- [X] T066 [P] Create `apps/dashboard/src/App.tsx` with React Router setup, page routing, layout shell
+- [X] T067 [P] Create `apps/dashboard/src/main.tsx` with React DOM entry point
+- [X] T068 Create `apps/dashboard/tailwind.config.ts` with shadcn/ui theme configuration
+- [X] T069 Run speckit-lint validation against project: `cargo run -- --path ../../ --verbose`
+- [X] T070 Generate docs/SYSTEM_STATE.md with sprint 1.1 architecture state
+- [X] T071 Generate docs/roadmap_status.md with sprint 1.1 progress
+- [X] T072 Generate docs/sprint_backlog.md with remaining items and deferred work
 
 ---
 

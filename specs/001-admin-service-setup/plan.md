@@ -12,7 +12,7 @@ Build the admin-service backend (:3002) with Rust/Actix/SQLx and a dashboard fro
 
 ## Technical Context
 
-**Language/Version**: Rust 1.70+ (stable), TypeScript 5.x (strict mode)
+**Language/Version**: Rust 1.85+ (stable), TypeScript 5.x (strict mode)
 
 **Primary Dependencies**:
 - Backend: Actix-web 4, SQLx 0.7+ (compile-time), tokio, serde, nanoid, chrono, postgis
@@ -246,5 +246,5 @@ Charger CRUD:
   DELETE /chargers/{id}  → UPDATE inventory.chargers SET deleted_at=NOW() WHERE id=$1
 
 Health:
-  GET    /health         → Return JSON {"status":"healthy","service":"admin-service","version":"1.0.0"}
+  GET    /health         → Return JSON {"status":"healthy","service":"admin-service","version":"<Cargo.toml version>"}
 ```

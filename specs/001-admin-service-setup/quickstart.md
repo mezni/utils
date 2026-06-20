@@ -5,7 +5,7 @@
 ## Prerequisites
 
 - Docker & Docker Compose
-- Rust toolchain (stable, 1.70+)
+- Rust toolchain (stable, 1.85+)
 - Node.js 18+ & pnpm
 - PostgreSQL 16 with PostGIS extension (provided via docker-compose)
 

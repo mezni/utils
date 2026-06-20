@@ -1,0 +1,13 @@
+http:
+  routers:
+    admin-api:
+      rule: "PathPrefix(`/api/v1/`)"
+      service: admin-service
+      middlewares:
+        - cors-stripprefix
+
+  services:
+    admin-service:
+      loadBalancer:
+        servers:
+          - url: "http://admin-service:3002"

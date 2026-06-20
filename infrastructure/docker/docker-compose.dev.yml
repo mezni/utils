@@ -1,0 +1,48 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgis/postgis:16-3.4-alpine
+    environment:
+      POSTGRES_DB: platform_db
+      POSTGRES_USER: bornemap
+      POSTGRES_PASSWORD: bornemap_dev
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ../postgres/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bornemap -d platform_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  admin-service:
+    build:
+      context: ../../
+      dockerfile: services/admin-service/Dockerfile
+    environment:
+      DATABASE_URL: postgres://bornemap:bornemap_dev@postgres:5432/platform_db
+      ADMIN_SERVICE_HOST: 0.0.0.0
+      ADMIN_SERVICE_PORT: 3002
+      SQLX_OFFLINE: "true"
+    ports:
+      - "3002:3002"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  traefik:
+    image: traefik:v3.0
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - ../traefik/traefik.yml:/etc/traefik/traefik.yml
+      - ../traefik/dynamic:/etc/traefik/dynamic
+    depends_on:
+      - admin-service
+
+volumes:
+  postgres_data:

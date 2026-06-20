@@ -1,0 +1,6 @@
+[workspace]
+members = [
+    "services/admin-service",
+    "speckit/speckit-lint",
+]
+resolver = "2"

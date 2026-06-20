@@ -10,8 +10,7 @@
 │   (OPR-*)   │       │   (STA-*)   │       │   (CHG-*)   │
 └─────────────┘       └─────────────┘       └─────────────┘
      │                      │                      │
-     │ ON DELETE SET NULL   │ ON DELETE CASCADE    │
-     │ (soft: partner_id    │ (soft: propagate     │
+      │ (soft: partner_id    │ (soft: propagate     │
      │  remains, partner    │  deleted_at to       │
      │  hidden via          │  chargers when       │
      │  deleted_at)         │  station deleted)    │
@@ -46,7 +45,7 @@ connector_statuses ─ chargers (via status_id)
 | Column | Type | Constraints | Description |
 |--------|------|-------------|-------------|
 | id | VARCHAR(32) | PRIMARY KEY, CHECK(~'^STA-[A-Za-z0-9_-]{12}$') | Canonical nanoid identifier |
-| partner_id | VARCHAR(32) | NULLABLE, REFERENCES partners(id) ON DELETE SET NULL | Owning partner |
+| partner_id | VARCHAR(32) | NULLABLE, REFERENCES partners(id) | Owning partner |
 | name | VARCHAR(255) | NOT NULL | Station name |
 | address | TEXT | NULLABLE | Physical address |
 | location | GEOGRAPHY(Point, 4326) | NOT NULL | Spatial location (GIST index) |
@@ -61,7 +60,7 @@ connector_statuses ─ chargers (via status_id)
 | Column | Type | Constraints | Description |
 |--------|------|-------------|-------------|
 | id | VARCHAR(32) | PRIMARY KEY, CHECK(~'^CHG-[A-Za-z0-9_-]{12}$') | Canonical nanoid identifier |
-| station_id | VARCHAR(32) | NOT NULL, REFERENCES stations(id) ON DELETE CASCADE | Parent station |
+| station_id | VARCHAR(32) | NOT NULL, REFERENCES stations(id) | Parent station |
 | connector_type_id | BIGINT | NOT NULL, REFERENCES connector_types(id) | Connector standard (Type2/CCS/CHAdeMO) |
 | current_type_id | BIGINT | NOT NULL, REFERENCES current_types(id) | Current type (AC/DC) |
 | status_id | BIGINT | NOT NULL, REFERENCES connector_statuses(id) | Operational status |
@@ -76,7 +75,7 @@ connector_statuses ─ chargers (via status_id)
 | created_by | VARCHAR(36) | NULLABLE | User who created |
 | updated_by | VARCHAR(36) | NULLABLE | User who last updated |
 
-**Unique Constraint**: (station_id, connector_type_id, current_type_id) — one charger type per station per current type.
+**Unique Constraint**: UNIQUE(station_id, connector_type_id) WHERE deleted_at IS NULL — prevents duplicate connector types per station for active chargers.
 
 ## Lookup Tables (Seed Only)
 
