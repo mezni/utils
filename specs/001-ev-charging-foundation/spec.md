@@ -20,7 +20,7 @@ As a driver, I want to find EV charging stations near my current location so tha
 
 **Acceptance Scenarios**:
 
-1. **Given** the system has 10 known charging stations distributed across a city at varying distances from my location, **When** I search for nearby stations from my current position, **Then** I receive a list of stations sorted by distance with the closest first.
+1. **Given** the system has 10 known charging stations distributed across a city at varying distances from my location, **When** I search for nearby stations from my current position, **Then** I receive a list of stations sorted by distance with the closest first, including power tier classification (ultra_fast ≥150kW, fast ≥50kW, medium ≥22kW, slow <22kW).
 2. **Given** my location has no charging stations within 100 km, **When** I search for nearby stations, **Then** the system returns an empty result with a clear message that no stations were found nearby.
 3. **Given** I am searching from the same location twice, **When** the station data has not changed between searches, **Then** I receive identical results both times.
 
@@ -126,3 +126,4 @@ As a driver, I want to see detailed information about a specific charging statio
 - External data imports are initiated by system operators and are not fully automated in this sprint.
 - Station data is read far more frequently than it is written — read performance is prioritized.
 - The system does not require driver authentication for browsing and searching stations in this sprint.
+- Partner authentication is out of scope for this sprint — partners are pre-seeded by system operators with authentication defined in a later sprint.
