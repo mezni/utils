@@ -11,8 +11,8 @@
 #   2. Backend Validation (cargo check, test, sqlx)
 #   3. Schema Isolation (cross-schema access check)
 #   4. Identity Validation (nanoid format)
-#   5. Architecture Compliance (no forbidden infra)
-#   6. Security (JWT middleware, role checks)
+#   5. Architecture Compliance (no forbidden infra, exactly 3 services)
+#   6. Security + Known Bug Guards (KNOWN-001 through KNOWN-004)
 #   7. Test Coverage (domain 100%, api >=90%)
 #   8. Doc Drift (architecture.md freshness)
 # =============================================================================
@@ -120,19 +120,22 @@ for keyword in "${FORBIDDEN[@]}"; do
   fi
 done
 
-# Check service count
-SERVICE_COUNT=$(find "$ROOT/services" -mindepth 1 -maxdepth 1 -type d | wc -l)
+# Check service count (shared-services-config is shared config, not a service)
+SERVICE_DIRS=$(find "$ROOT/services" -mindepth 1 -maxdepth 1 -type d -not -name "shared-services-config" | sort)
+SERVICE_COUNT=$(echo "$SERVICE_DIRS" | wc -l)
 if [[ "$SERVICE_COUNT" -gt 3 ]]; then
   fail "More than 3 services detected: $SERVICE_COUNT"
 else
   ok "Service topology: $SERVICE_COUNT service(s) (max 3)"
+  echo "  Services: $(echo "$SERVICE_DIRS" | xargs -I{} basename {} | tr '\n' ' ')"
 fi
 echo ""
 
-# ── Gate 6: Security ─────────────────────────────────────────────────────────
+# ── Gate 6: Security + Known Bugs ─────────────────────────────────────────────
 
-echo "─── Gate 6: Security Checks ───"
-# Check for KNOWN-001: test station leakage in driver-service
+echo "─── Gate 6: Security + Known Bug Guards ───"
+
+# KNOWN-001: test station leakage in driver-service
 DRIVER_STATION_QUERIES=$(grep -rn "FROM.*stations" "$ROOT/services/driver-service/" 2>/dev/null || true)
 if [[ -n "$DRIVER_STATION_QUERIES" ]]; then
   MISSING_FILTER=$(echo "$DRIVER_STATION_QUERIES" | grep -v "is_test\s*=\s*FALSE" | grep -v "\.md\|\.txt\|#" || true)
@@ -145,6 +148,43 @@ if [[ -n "$DRIVER_STATION_QUERIES" ]]; then
 else
   ok "No station queries found in driver-service yet"
 fi
+
+# KNOWN-002: partner_profiles must have deleted_at column
+FOUND_PARTNER_MIGRATIONS=$(find "$ROOT/services" -path "*/migrations/*.sql" -exec grep -l "partner_profiles" {} \; 2>/dev/null || true)
+if [[ -n "$FOUND_PARTNER_MIGRATIONS" ]]; then
+  MISSING_DELETED_AT=$(grep -L "deleted_at" $FOUND_PARTNER_MIGRATIONS 2>/dev/null || true)
+  if [[ -n "$MISSING_DELETED_AT" ]]; then
+    fail "KNOWN-002: partner_profiles table missing deleted_at TIMESTAMPTZ column"
+    echo "  Migrations missing deleted_at: $MISSING_DELETED_AT"
+  else
+    ok "KNOWN-002 guard: partner_profiles has deleted_at column"
+  fi
+else
+  ok "No partner_profiles migrations found yet"
+fi
+
+# KNOWN-003: no duplicate /api/v1/nearby endpoints across services
+FOUND_NEARBY=$(grep -rn "/nearby" "$ROOT/services/" "$ROOT/api/" 2>/dev/null | grep -v "\.md" || true)
+NEARBY_COUNT=$(echo "$FOUND_NEARBY" | grep -c . || true)
+if [[ "$NEARBY_COUNT" -gt 1 ]]; then
+  echo "$FOUND_NEARBY"
+  fail "KNOWN-003: duplicate /api/v1/nearby endpoint — must be single endpoint in driver-service only"
+else
+  ok "KNOWN-003 guard: no duplicate /nearby endpoints"
+fi
+
+# KNOWN-004: grep -E flag must be used instead of BRE alternation ( \| )
+# Check sibling tool scripts only (exclude self to avoid self-match)
+FOUND_GREP_BRE=$(grep -rn 'grep.*\\|' "$ROOT/tools/" 2>/dev/null \
+  | grep -v "$ROOT/tools/ci_guard.sh" \
+  | grep -vE 'grep -(E|rE|rnE|oE|P|rP)' | grep -v '\.md\|#' || true)
+if [[ -n "$FOUND_GREP_BRE" ]]; then
+  warn "KNOWN-004: grep uses BRE alternation ( \| ) instead of -E flag"
+  echo "$FOUND_GREP_BRE"
+else
+  ok "KNOWN-004 guard: no grep using BRE alternation without -E"
+fi
+
 echo ""
 
 # ── Gate 7: Test Coverage ────────────────────────────────────────────────────

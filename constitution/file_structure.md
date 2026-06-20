@@ -246,4 +246,4 @@ bornemap/
 5. `scripts/import-osm.sh` is the only authorized OSM data ingestion path.
 6. All sprint directories follow the `sprint-NNN` naming pattern (e.g. `sprint-001`).
 7. `sprints/<id>/api/openapi.yaml` becomes immutable once IMPLEMENTATION phase opens.
-8. `services/` has exactly three subdirectories — no additions permitted.
+8. `services/` has exactly three *service* subdirectories (`auth-service`, `driver-service`, `admin-service`). `shared-services-config` is a shared config utility, not a 4th service.

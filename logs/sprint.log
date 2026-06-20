@@ -20,3 +20,6 @@
 [2026-06-20T18:45:35Z] OK: Artifact registered: tools/validate.sh (sha256: 8eb63cc851f2...)
 [2026-06-20T18:45:35Z] OK: Artifact registered: tools/sync.sh (sha256: d707c404f9e3...)
 [2026-06-20T18:45:36Z] OK: Artifact registered: tools/test_runner.sh (sha256: 621964439aa3...)
+[2026-06-20T18:54:08Z] OK: Artifact registered: state/phase_registry.json (sha256: 82a131be3a1a...)
+[2026-06-20T18:55:38Z] OK: Artifact registered: tools/ci_guard.sh (sha256: e8fcb274abe5...)
+[2026-06-20T18:55:39Z] OK: Artifact registered: constitution/file_structure.md (sha256: 5eaca7c3d874...)

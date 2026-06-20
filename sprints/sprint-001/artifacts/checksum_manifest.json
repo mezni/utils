@@ -12,8 +12,8 @@
     "registered_at": "2026-06-20T18:45:30Z"
   },
   "constitution/file_structure.md": {
-    "checksum": "ac35274ef75b90e08b16a2a757d20bcadc713635fea6bb44d35a0a222fed38bc",
-    "registered_at": "2026-06-20T18:45:30Z"
+    "checksum": "5eaca7c3d874dd8dffc880d335ef0ddff10d194858564980d29e4a18b88b4ef7",
+    "registered_at": "2026-06-20T18:55:39Z"
   },
   "constitution/delivery_os.md": {
     "checksum": "0bd3e711e94e61fb9a758356dbd9a1badd88433dedac666f0a9c0d31a8477b7f",
@@ -64,8 +64,8 @@
     "registered_at": "2026-06-20T18:45:34Z"
   },
   "tools/ci_guard.sh": {
-    "checksum": "2b3091910c52fb2f185a2d0f4663843cb15d1f587add91f033fc4f31b2b38c43",
-    "registered_at": "2026-06-20T18:45:35Z"
+    "checksum": "e8fcb274abe50db766a86f14f60f4d3113d7100032773771f32a28a4f0bd0034",
+    "registered_at": "2026-06-20T18:55:38Z"
   },
   "tools/validate.sh": {
     "checksum": "8eb63cc851f2b02b2099b13d4cd6b454cac5315eb13e1e9c86e9b72bcb5fa810",
@@ -78,5 +78,9 @@
   "tools/test_runner.sh": {
     "checksum": "621964439aa3db2bb2b417f004c3f3fef5a906d08443f6a0017de0db3b97b0c3",
     "registered_at": "2026-06-20T18:45:36Z"
+  },
+  "state/phase_registry.json": {
+    "checksum": "82a131be3a1a0736b9949a65d961ac7d2e4e114adc992b2a053d48f31628bf9b",
+    "registered_at": "2026-06-20T18:54:07Z"
   }
 }

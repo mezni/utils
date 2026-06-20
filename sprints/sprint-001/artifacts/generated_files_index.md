@@ -23,3 +23,6 @@ _Updated automatically. Do not edit manually._
 | `tools/validate.sh` | INGESTION | governance | 2026-06-20T18:45:35Z |
 | `tools/sync.sh` | INGESTION | governance | 2026-06-20T18:45:35Z |
 | `tools/test_runner.sh` | INGESTION | governance | 2026-06-20T18:45:36Z |
+| `state/phase_registry.json` | INGESTION | governance | 2026-06-20T18:54:07Z |
+| `tools/ci_guard.sh` | INGESTION | governance | 2026-06-20T18:55:38Z |
+| `constitution/file_structure.md` | INGESTION | governance | 2026-06-20T18:55:39Z |

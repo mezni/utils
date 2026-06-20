@@ -1,0 +1,13 @@
+{
+  "phases": [
+    {
+      "phase": "INGESTION",
+      "sprint_id": "sprint-001",
+      "entered_at": "2026-06-20T18:45:23Z"
+    }
+  ],
+  "current": {
+    "sprint_id": "sprint-001",
+    "phase": "INGESTION"
+  }
+}
