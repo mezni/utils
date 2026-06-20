@@ -44,7 +44,7 @@ An administrator adds a new charging station to the system, linked to an existin
 
 ### User Story 3 - Admin Manages Chargers at a Station (Priority: P3)
 
-An administrator adds, updates, and removes chargers at an existing station. Each charger has a connector type, current type, power rating, and availability status.
+An administrator adds, updates, and removes (soft delete via deleted_at) chargers at an existing station. Each charger has a connector type, current type, power rating, and availability status.
 
 **Why this priority**: Chargers complete the infrastructure hierarchy (partner → station → charger) and enable detailed infrastructure management.
 
@@ -53,7 +53,7 @@ An administrator adds, updates, and removes chargers at an existing station. Eac
 **Acceptance Scenarios**:
 
 1. **Given** a valid charger creation request with station ID, connector type, power rating, **When** the admin submits it, **Then** the system creates the charger with a unique CHG-* identifier
-2. **Given** a charger linked to a station, **When** the station is deleted, **Then** the charger is also deleted (ON DELETE CASCADE)
+2. **Given** a charger linked to a station, **When** the station is soft-deleted (deleted_at set), **Then** the charger is also soft-deleted via logical cascade (deleted_at timestamp propagated)
 3. **Given** a charger with duplicate connector type at the same station, **When** the admin attempts creation, **Then** the system rejects it with a uniqueness constraint error
 
 ---
@@ -68,13 +68,13 @@ Operators verify the admin service is running and responsive via the health chec
 
 **Acceptance Scenarios**:
 
-1. **Given** the admin service is running, **When** a health check request is sent, **Then** the system returns HTTP 200 with status information
+1. **Given** the admin service is running, **When** a health check request is sent, **Then** the system returns HTTP 200 with a JSON body: `{"status": "healthy", "service": "admin-service", "version": "1.0.0"}`
 
 ---
 
 ### Edge Cases
 
-- What happens when a partner with referenced stations is deleted? → ON DELETE SET NULL on stations.partner_id preserves station records
+- What happens when a partner with referenced stations is deleted? → Soft delete sets deleted_at on partner; stations remain visible with partner_id intact (no cascade of partner deletion to stations)
 - How does the system handle duplicate partner slugs/names? → Uniqueness constraints at database level
 - What happens when geographic coordinates are outside expected ranges? → Insert-time validation rejects invalid coordinates
 - How does the system respond to malformed entity IDs? → CHECK constraint validation rejects invalid nanoid format
@@ -91,19 +91,22 @@ Operators verify the admin service is running and responsive via the health chec
 - **FR-005**: System MUST validate and enforce the canonical nanoid(12) format at the database level via CHECK constraints
 - **FR-006**: System MUST enforce spatial data validation for station locations (GEOGRAPHY Point, 4326 with GIST index)
 - **FR-007**: System MUST enforce relational constraints: stations.partner_id → partners.id (ON DELETE SET NULL), chargers.station_id → stations.id (ON DELETE CASCADE)
-- **FR-008**: System MUST provide a health check endpoint returning service status
+- **FR-008**: System MUST provide a health check endpoint returning `{"status": "healthy", "service": "admin-service", "version": "1.0.0"}`
 - **FR-009**: System MUST expose an OpenAPI-defined API with endpoints for /health, /partners, /stations, /chargers
 - **FR-010**: System MUST validate all inputs before persistence with descriptive error responses
 - **FR-011**: System MUST reject requests with invalid or malformed entity IDs
 - **FR-012**: System MUST enforce ENUM-style constraints via lookup tables (access_types, data_sources, connector_types, current_types, connector_statuses)
 - **FR-013**: System MUST enforce that no raw SQL or dynamic SQL is used (SQLx compile-time queries only)
 - **FR-014**: System MUST run a deterministic CI pipeline (speckit-lint) that validates architecture, schema isolation, nanoid format, OpenAPI compliance, SQLx safety, frontend boundaries, and migration integrity
+- **FR-015**: Lookup tables (access_types, connector_types, current_types, connector_statuses, data_sources) MUST be seeded with initial values via migration: current_types (AC, DC), connector_types (Type2, CCS, CHAdeMO), access_types (public, restricted, private), data_sources (manual, osm, partner), connector_statuses (available, occupied, offline, unknown)
+- **FR-016**: Infrastructure entities (partners, stations, chargers) MUST use soft deletion. DELETE operations set a `deleted_at` timestamp. All read queries MUST filter `WHERE deleted_at IS NULL`. Hard deletion is not available via API.
+- **FR-017**: Sprint completion MUST generate three tracking documents: SYSTEM_STATE.md (architecture & service status), roadmap_status.md (sprint progress & completed vs pending features), sprint_backlog.md (remaining bugs & deferred work)
 
 ### Key Entities *(include if feature involves data)*
 
 - **Partner**: An operator or company managing charging stations. Attributes include name, network type, contact information, verification status. Linked to stations.
 - **Station**: A physical charging location with geographic coordinates (GEOGRAPHY Point, 4326). Belongs to a partner. Contains one or more chargers.
-- **Charger**: An individual charging unit at a station. Has connector type, current type, power rating, availability status. Cascading deletion with station.
+- **Charger**: An individual charging unit at a station. Has connector type, current type, power rating, availability status. Soft-deleted via logical cascade when station is soft-deleted.
 - **Access Type**: Lookup ENUM describing station access (e.g., public, restricted, private).
 - **Data Source**: Lookup ENUM describing how station data was sourced.
 - **Connector Type**: Lookup ENUM describing charger connector standards (e.g., Type 2, CCS, CHAdeMO).
@@ -116,9 +119,9 @@ Operators verify the admin service is running and responsive via the health chec
 
 - **SC-001**: Admin can complete partner creation in under 3 seconds from request submission to confirmation
 - **SC-002**: Station creation with spatial coordinates is validated at insert time with geographic accuracy
-- **SC-003**: All entity IDs conform to the deterministic nanoid(12) format with zero collision risk
+- **SC-003**: All entity IDs conform to the deterministic nanoid(12) format with collision probability acceptable for platform scale
 - **SC-004**: The OpenAPI specification is the single source of truth with all endpoints documented and no undocumented endpoints exist
-- **SC-005**: The speckit-lint CI pipeline runs all 7 validation modules (service_topology, schema_isolation, naming, openapi_first, sqlx_safety, frontend_boundary, migration_validation) and produces deterministic pass/fail results
+- **SC-005**: The speckit-lint CI pipeline runs all mandatory validation modules registered in speckit-lint (service_topology, schema_isolation, naming, openapi_first, sqlx_safety, frontend_boundary, migration_validation) and produces deterministic pass/fail results
 - **SC-006**: Zero raw SQL or dynamic SQL construction detected in the codebase via lint validation
 - **SC-007**: All database integrity rules (foreign keys, CHECK constraints, unique constraints, spatial validation) are enforceable at the database level
 
