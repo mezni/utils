@@ -12,17 +12,17 @@
 
 ### User Story 1 - Admin Creates a Partner Account (Priority: P1)
 
-An administrator creates a new partner/operator in the BorneMap system to begin managing charging infrastructure. The system validates all inputs, generates a unique partner ID (PRT-*), and persists the record to the inventory database.
+An administrator creates a new partner/operator in the BorneMap system to begin managing charging infrastructure. The system validates all inputs, generates a unique partner ID (OPR-*), and persists the record to the inventory database.
 
 **Why this priority**: Partner creation is the foundational operation upon which all station and charger management depends. Without partners, there can be no stations or chargers.
 
-**Independent Test**: An admin can submit a partner creation request and receive a confirmed partner ID (PRT-* format) with all associated details, operating independently of station or charger functionality.
+**Independent Test**: An admin can submit a partner creation request and receive a confirmed partner ID (OPR-* format) with all associated details, operating independently of station or charger functionality.
 
 **Acceptance Scenarios**:
 
-1. **Given** a valid partner creation request with name, network type, contact info, **When** the admin submits it, **Then** the system creates the partner, returns a unique PRT-* identifier, and confirms the record persists
+1. **Given** a valid partner creation request with name, network type, contact info, **When** the admin submits it, **Then** the system creates the partner, returns a unique OPR-* identifier, and confirms the record persists
 2. **Given** a partner creation request with missing required fields, **When** the admin submits it, **Then** the system rejects it with validation errors identifying the missing fields
-3. **Given** a partner creation request from a user without admin role, **When** the request is attempted, **Then** the system returns a 403 Forbidden response
+3. **Given** a partner creation request, **When** submitted via the OpenAPI contract, **Then** the system validates input and creates the entity (authorization enforcement deferred until Auth Service sprint)
 
 ---
 
@@ -36,7 +36,7 @@ An administrator adds a new charging station to the system, linked to an existin
 
 **Acceptance Scenarios**:
 
-1. **Given** a valid station creation request with name, partner ID, geographic coordinates, **When** the admin submits it, **Then** the system creates the station with a unique STN-* identifier and validates the location format
+1. **Given** a valid station creation request with name, partner ID, geographic coordinates, **When** the admin submits it, **Then** the system creates the station with a unique STA-* identifier and validates the location format
 2. **Given** a station creation request with invalid coordinates (lat out of range), **When** the admin submits it, **Then** the system rejects it with a spatial validation error
 3. **Given** a station creation request referencing a non-existent partner ID, **When** the admin submits it, **Then** the system rejects it with a foreign key constraint error
 
@@ -84,10 +84,10 @@ Operators verify the admin service is running and responsive via the health chec
 
 ### Functional Requirements
 
-- **FR-001**: System MUST allow authorized admin users to create, read, update, and delete partner records
-- **FR-002**: System MUST allow authorized admin users to create, read, update, and delete station records with spatial location data
-- **FR-003**: System MUST allow authorized admin users to create, read, update, and delete charger records
-- **FR-004**: System MUST generate unique entity IDs in the format PRT-*, STN-*, and CHG-* using nanoid(12)
+- **FR-001**: System MUST expose partner CRUD endpoints (create, read, update, delete) as defined in the OpenAPI contract
+- **FR-002**: System MUST expose station CRUD endpoints (create, read, update, delete) with spatial location data as defined in the OpenAPI contract
+- **FR-003**: System MUST expose charger CRUD endpoints (create, read, update, delete) as defined in the OpenAPI contract
+- **FR-004**: System MUST generate unique entity IDs in the format OPR-*, STA-*, and CHG-* using nanoid(12)
 - **FR-005**: System MUST validate and enforce the canonical nanoid(12) format at the database level via CHECK constraints
 - **FR-006**: System MUST enforce spatial data validation for station locations (GEOGRAPHY Point, 4326 with GIST index)
 - **FR-007**: System MUST enforce relational constraints: stations.partner_id → partners.id (ON DELETE SET NULL), chargers.station_id → stations.id (ON DELETE CASCADE)
@@ -125,7 +125,7 @@ Operators verify the admin service is running and responsive via the health chec
 ## Assumptions
 
 - The admin-service is the only backend service in this sprint (auth-service and driver-service are out of scope)
-- Authentication and authorization are handled by a separate auth-service (not implemented in this sprint)
+- Authentication and authorization are handled by a separate auth-service (not implemented in this sprint); all authorization behavior including 403 responses is deferred until the Auth Service sprint
 - The dashboard frontend is a UI shell only with no persistence or domain logic
 - The OpenAPI-generated client is the exclusive API access mechanism for the frontend
 - PostgreSQL 16 with PostGIS extension is provisioned and available

@@ -71,15 +71,15 @@ Nothing may be implemented before OpenAPI contracts are complete. This is a non-
 All entity identifiers MUST follow the canonical format: `<ENTITY_PREFIX>-nanoid(12)`
 
 **Entity Prefixes:**
-- partners: PRT
-- stations: STN
+- operators: OPR
+- stations: STA
 - chargers: CHG
 
 **Rules:**
 - IDs generated via shared nanoid(12) utility only
 - Manual ID assignment is forbidden
 - IDs are opaque (no business logic parsing of prefix)
-- Database enforces format: `CHECK (id ~ '^(PRT|STN|CHG)-[A-Za-z0-9_-]{12}$')`
+- Database enforces format: `CHECK (id ~ '^(OPR|STA|CHG)-[A-Za-z0-9_-]{12}$')`
 - No hardcoded entity IDs in codebase
 - Frontend must validate ID format on client side
 
