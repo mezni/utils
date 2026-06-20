@@ -1,50 +1,102 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!--
+  Sync Impact Report
+  Version change: (template) → 1.0.0
+  Modified principles: N/A (initial fill from template)
+  Added sections: Core Principles (5 principles), Technology Stack & Constraints,
+    Development Workflow, Governance
+  Removed sections: None
+  Templates requiring updates:
+    - .specify/templates/spec-template.md: ✅ no changes needed
+    - .specify/templates/plan-template.md: ⚠ plan-template has "Constitution Check"
+      gate — ensure it cross-references principles by name
+    - .specify/templates/tasks-template.md: ✅ no changes needed
+  Follow-up TODOs: None
+-->
+
+# BorneMap Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. Service Ownership & Data Isolation
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+Every service owns exactly one database schema. No service may write directly to
+another service's schema. Cross-service reads are permitted only via dedicated
+read-only database roles and exclusively against materialized views. The
+three-service topology (auth-service, driver-service, admin-service) is frozen —
+no fourth service may be added during the validation phase.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+**Rationale**: Schema-level isolation prevents accidental data corruption across
+service boundaries and keeps each service independently deployable.
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+### II. Spatial-First Design
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+All geospatial queries MUST target materialized views, never base tables. GiST
+indexing is mandatory on all spatial columns. PostGIS is the single source of
+truth for all location data. The materialized view refresh strategy must
+guarantee read consistency without blocking concurrent queries.
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+**Rationale**: EV charging discovery is fundamentally a spatial problem. Every
+architectural decision starts from the geospatial access pattern.
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+### III. Idempotent Data Operations
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+All data ingestion and synchronization operations MUST be idempotent. Running
+the same import twice MUST produce identical state with zero duplicate records.
+Updates MUST overwrite safely via versioning or upsert patterns. Every sync
+operation MUST be recorded in a sync_jobs audit trail.
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+**Rationale**: External geospatial sources (OSM, OCPI, etc.) may be re-imported
+multiple times. Non-idempotent ingestion would corrupt the inventory over time.
+
+### IV. Strict Entity Hierarchy
+
+Partner → Station → Charger → Connector hierarchy is non-negotiable. Foreign key
+enforcement MUST be strict across every level of the hierarchy. No dangling
+connectors or chargers may exist. All record identifiers MUST use the typed
+prefix + nanoid(12) format (e.g., PAR-, STA-, CHR-, CON-).
+
+**Rationale**: EV charging infrastructure follows a clear physical hierarchy.
+Enforcing it at the database level prevents orphan records and guarantees data
+integrity.
+
+### V. Observability & Audit
+
+All ingestion and sync operations MUST be logged via sync_jobs. Query latency
+tracking is required for the driver-service. Error capture is mandatory for all
+ingestion failures. Structured logging MUST be used across all services. No
+observability data may be treated as optional or best-effort.
+
+**Rationale**: A geospatial platform without observability is blind to
+performance degradation and data quality issues that directly impact user
+experience.
+
+## Technology Stack & Constraints
+
+PostgreSQL 16 with PostGIS is mandatory for the primary database. Redis is
+optional for caching (owned by driver-service). Backend services MUST use Rust
+1.85+. Frontend applications MUST use Node.js 22+. Keycloak 25+ is required for
+identity and access management. Traefik 3+ is the API gateway. All local
+development MUST use Docker Compose with deterministic schema initialization on
+startup. No dependency on external users schema — the identity model is
+self-contained.
+
+## Development Workflow
+
+Features follow a spec-first workflow: specification → plan → tasks →
+implementation. All pull requests MUST reference the originating spec
+requirements. Tests MUST be written and confirmed failing before implementation
+code is written. Commits MUST occur after each logical group of changes. The
+constitution, ADRs, and architecture docs MUST be kept in sync with any
+principle-altering decisions.
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+This constitution supersedes all other development practices. Amendments require
+an Architecture Decision Record (ADR) and team approval. Versioning follows
+semantic versioning (MAJOR.MINOR.PATCH). A compliance review MUST be performed
+at the end of each sprint to verify all principles are upheld. Violations of
+non-negotiable principles (Service Ownership, Spatial-First, Idempotent
+Operations, Strict Hierarchy) require immediate remediation before the next
+sprint begins.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+**Version**: 1.0.0 | **Ratified**: 2026-06-20 | **Last Amended**: 2026-06-20
