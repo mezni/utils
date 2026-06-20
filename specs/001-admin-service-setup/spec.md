@@ -8,6 +8,13 @@
 
 **Input**: User description: "SpecKit Implementation Manifest — Sprint 1.1 (BorneMap) v2"
 
+## Clarifications
+
+### Session 2026-06-19
+
+- Q: Should update operations use PUT (full replacement) or PATCH (partial update)? → A: PATCH — partial updates. Clients send only changed fields.
+- Q: Should soft-deleted entities support a restore endpoint? → A: No restore endpoint. Recovery requires database-level intervention.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Admin Creates a Partner Account (Priority: P1)
@@ -84,9 +91,9 @@ Operators verify the admin service is running and responsive via the health chec
 
 ### Functional Requirements
 
-- **FR-001**: System MUST expose partner CRUD endpoints (create, read, update, delete) as defined in the OpenAPI contract
-- **FR-002**: System MUST expose station CRUD endpoints (create, read, update, delete) with spatial location data as defined in the OpenAPI contract
-- **FR-003**: System MUST expose charger CRUD endpoints (create, read, update, delete) as defined in the OpenAPI contract
+- **FR-001**: System MUST expose partner CRUD endpoints (create, read, update via PATCH, delete via soft-delete) as defined in the OpenAPI contract
+- **FR-002**: System MUST expose station CRUD endpoints (create, read, update via PATCH, delete via soft-delete) with spatial location data as defined in the OpenAPI contract
+- **FR-003**: System MUST expose charger CRUD endpoints (create, read, update via PATCH, delete via soft-delete) as defined in the OpenAPI contract
 - **FR-004**: System MUST generate unique entity IDs in the format OPR-*, STA-*, and CHG-* using nanoid(12)
 - **FR-005**: System MUST validate and enforce the canonical nanoid(12) format at the database level via CHECK constraints
 - **FR-006**: System MUST enforce spatial data validation for station locations (GEOGRAPHY Point, 4326 with GIST index)
@@ -99,7 +106,7 @@ Operators verify the admin service is running and responsive via the health chec
 - **FR-013**: System MUST enforce that no raw SQL or dynamic SQL is used (SQLx compile-time queries only)
 - **FR-014**: System MUST run a deterministic CI pipeline (speckit-lint) that validates architecture, schema isolation, nanoid format, OpenAPI compliance, SQLx safety, frontend boundaries, and migration integrity
 - **FR-015**: Lookup tables (access_types, connector_types, current_types, connector_statuses, data_sources) MUST be seeded with initial values via migration: current_types (AC, DC), connector_types (Type2, CCS, CHAdeMO), access_types (public, restricted, private), data_sources (manual, osm, partner), connector_statuses (available, occupied, offline, unknown)
-- **FR-016**: Infrastructure entities (partners, stations, chargers) MUST use soft deletion. DELETE operations set a `deleted_at` timestamp. All read queries MUST filter `WHERE deleted_at IS NULL`. Hard deletion is not available via API.
+- **FR-016**: Infrastructure entities (partners, stations, chargers) MUST use soft deletion. DELETE operations set a `deleted_at` timestamp. All read queries MUST filter `WHERE deleted_at IS NULL`. No restore endpoint is provided; recovery requires database-level intervention. Hard deletion is not available via API.
 - **FR-017**: Sprint completion MUST generate three tracking documents: SYSTEM_STATE.md (architecture & service status), roadmap_status.md (sprint progress & completed vs pending features), sprint_backlog.md (remaining bugs & deferred work)
 
 ### Key Entities *(include if feature involves data)*
