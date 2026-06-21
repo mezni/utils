@@ -1,0 +1,114 @@
+openapi: "3.0.3"
+info:
+  title: BorneMap Driver API
+  version: "0.1.0"
+  description: Driver-facing spatial queries
+servers:
+  - url: /api/v1/driver
+
+paths:
+  /nearby:
+    get:
+      summary: Find nearby charging stations
+      description: Returns charging stations within a given radius of a point, sorted by distance
+      parameters:
+        - name: lat
+          in: query
+          required: true
+          schema:
+            type: number
+            format: double
+            minimum: -90
+            maximum: 90
+          description: Latitude in decimal degrees
+        - name: lng
+          in: query
+          required: true
+          schema:
+            type: number
+            format: double
+            minimum: -180
+            maximum: 180
+          description: Longitude in decimal degrees
+        - name: radius
+          in: query
+          required: true
+          schema:
+            type: number
+            format: double
+            minimum: 1
+            maximum: 200000
+          description: Search radius in meters
+      responses:
+        "200":
+          description: List of nearby stations sorted by distance
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/NearbyStation"
+        "400":
+          description: Invalid query parameters
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: Database unavailable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /health:
+    get:
+      summary: Health check
+      description: Returns service and database connectivity status
+      responses:
+        "200":
+          description: Service healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+        "503":
+          description: Service unhealthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+
+components:
+  schemas:
+    NearbyStation:
+      type: object
+      properties:
+        station_id:
+          type: string
+          example: STA-abc123def456
+        name:
+          type: string
+          example: Station Centrale
+        distance_meters:
+          type: number
+          format: double
+          example: 1250.5
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "latitude -91.0 out of range [-90, 90]"
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [ok, error]
+        db:
+          type: string
+          enum: [connected, disconnected]
+        timestamp:
+          type: string
+          format: date-time

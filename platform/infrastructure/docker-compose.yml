@@ -1,0 +1,36 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgis/postgis:16-3.4
+    container_name: bornemap-db
+    environment:
+      POSTGRES_DB: platform_db
+      POSTGRES_USER: bornemap
+      POSTGRES_PASSWORD: bornemap_dev
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./docker-compose/postgres/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bornemap -d platform_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  traefik:
+    image: traefik:v3.1
+    container_name: bornemap-gateway
+    command:
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--api.dashboard=false"
+    ports:
+      - "80:80"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+volumes:
+  pgdata:

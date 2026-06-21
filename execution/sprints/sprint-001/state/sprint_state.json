@@ -1,22 +1,12 @@
 {
   "sprint_id": "sprint-001",
-  "phase": "SPECKIT",
+  "phase": "REVIEW",
   "epics": ["EPIC-001", "EPIC-002", "EPIC-003", "EPIC-004"],
-  "phase_gates": {
-    "spec_complete": true,
-    "plan_complete": true,
-    "tasks_complete": true,
-    "speckit_validated": true
-  },
-  "speckit": {
-    "pass": 27,
-    "warn": 1,
-    "fail": 0
-  },
-  "tasks": {
-    "total": 30,
-    "blocked": 0,
-    "in_progress": 0,
-    "completed": 0
+  "tasks": { "total": 30, "completed": 30 },
+  "review": {
+    "status": "pending",
+    "bugs_found": 0,
+    "debt_logged": 7,
+    "changes_requested": []
   }
 }
