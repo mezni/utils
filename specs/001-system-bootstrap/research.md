@@ -219,7 +219,32 @@
 
 ---
 
-### 10. Redis Configuration (Optional)
+### 10. Enforcement Kernel Design
+
+**Decision**: Implement 9-stage CI pipeline with executable enforcement specifications
+
+**Rationale**:
+- Constitution requires strict enforcement, not just documentation
+- Each CI stage must have executable specifications (input, algorithm, output)
+- Hard-stop on any failure is mandatory
+- Deterministic exit codes for CI integration
+- Artifact passing ensures state continuity between stages
+
+**Alternatives Considered**:
+- Loose CI pipeline: Rejected — Violates constitution's hard-stop requirement
+- No CI enforcement: Rejected — Cannot ensure architectural integrity
+- Variable enforcement: Rejected — Determinism is required for CI reliability
+
+**Implementation Notes**:
+- 9 stages: format_check → type_check → dependency_graph_validation → identity_validation → schema_validation → sqlx_compile_check → analytics_write_gate → integration_tests → build_success
+- Each stage produces JSON artifact on success, consumed by next stage
+- AST-based dependency validation using syn library for Rust
+- SQLx offline mode with metadata caching for compile-time verification
+- PostgreSQL role-based permissions for database-level ownership enforcement
+
+---
+
+### 11. Redis Configuration (Optional)
 
 **Decision**: Set up minimal Redis configuration for future use
 

@@ -17,6 +17,48 @@ This document defines the data model for the system bootstrap phase. Since Sprin
 
 Owned by: auth-service
 
+**PostgreSQL Role**: `bornemap_auth`
+
+**Permissions**: READ/WRITE (exclusive)
+
+**Schema Ownership**:
+```sql
+CREATE SCHEMA auth;
+GRANT ALL PRIVILEGES ON SCHEMA auth TO bornemap_auth;
+GRANT USAGE ON SCHEMA auth TO bornemap_driver; -- limited read access if needed
+GRANT USAGE ON SCHEMA auth TO bornemap_admin;  -- limited read access if needed
+```
+
+#### Schema: gis
+
+Owned by: driver-service
+
+**PostgreSQL Role**: `bornemap_driver`
+
+**Permissions**: READ/WRITE (exclusive)
+
+**Schema Ownership**:
+```sql
+CREATE SCHEMA gis;
+GRANT ALL PRIVILEGES ON SCHEMA gis TO bornemap_driver;
+GRANT USAGE ON SCHEMA gis TO bornemap_admin; -- admin-service needs to query GIS for dashboards
+```
+
+#### Schema: inventory
+
+Owned by: admin-service
+
+**PostgreSQL Role**: `bornemap_admin`
+
+**Permissions**: READ/WRITE (exclusive)
+
+**Schema Ownership**:
+```sql
+CREATE SCHEMA inventory;
+GRANT ALL PRIVILEGES ON SCHEMA inventory TO bornemap_admin;
+GRANT USAGE ON SCHEMA inventory TO bornemap_driver; -- driver-service needs to query inventory for nearby search
+```
+
 #### Schema: users
 
 Purpose: Store user profiles and authentication data
@@ -114,6 +156,42 @@ Owned by: admin-service
 ### analytics_db
 
 Owned by: driver-service (write), admin-service (read-only)
+
+**PostgreSQL Roles**:
+- `bornemap_analytics_writer` (driver-service)
+- `bornemap_analytics_reader` (admin-service)
+
+**Permissions**:
+- bornemap_analytics_writer: ALL PRIVILEGES on telemetry_events, analytics_events, system_events
+- bornemap_analytics_reader: SELECT only on telemetry_events, analytics_events, system_events
+
+**Schema Ownership**:
+```sql
+CREATE SCHEMA telemetry;
+CREATE SCHEMA analytics;
+CREATE SCHEMA system;
+
+-- Writer role (driver-service)
+GRANT ALL PRIVILEGES ON SCHEMA telemetry TO bornemap_analytics_writer;
+GRANT ALL PRIVILEGES ON SCHEMA analytics TO bornemap_analytics_writer;
+GRANT ALL PRIVILEGES ON SCHEMA system TO bornemap_analytics_writer;
+
+-- Reader role (admin-service)
+GRANT USAGE ON SCHEMA telemetry TO bornemap_analytics_reader;
+GRANT SELECT ON ALL TABLES IN SCHEMA telemetry TO bornemap_analytics_reader;
+
+GRANT USAGE ON SCHEMA analytics TO bornemap_analytics_reader;
+GRANT SELECT ON ALL TABLES IN SCHEMA analytics TO bornemap_analytics_reader;
+
+GRANT USAGE ON SCHEMA system TO bornemap_analytics_reader;
+GRANT SELECT ON ALL TABLES IN SCHEMA system TO bornemap_analytics_reader;
+```
+
+**Analytics Write Gate Enforcement**:
+- CI gate 03_validate_analytics_gate.sh enforces static analysis
+- Database-level roles enforce runtime write permissions
+- No service can write to analytics_db except driver-service
+- admin-service can only read from analytics_db
 
 #### Schema: telemetry_events
 
