@@ -268,14 +268,40 @@ GRANT ALL PRIVILEGES ON SCHEMA inventory TO bornemap_admin;
 GRANT USAGE ON SCHEMA inventory TO bornemap_driver; -- driver-service needs to query inventory for nearby search
 ```
 
-**Purpose**: Contains all persistent business entities and lookup data
+**Purpose**: Business overlay layer containing all persistent business entities
+
+**Critical Architecture Rule**: "Inventory ↔ GIS sync on CRUD"
+
+Inventory is the business source of truth. Every CRUD operation on inventory tables must emit events to trigger synchronization with the GIS schema. The sync ensures spatial consistency between business entities and the GIS spatial truth layer.
 
 **Tables**:
-- OSM staging data (temporary, for imports)
-- Stations (canonical domain model - only persistent business entity)
-- Connectors (normalized domain data)
+- Partners (business organizations)
+- Stations (business entities linked to GIS or manually created)
+- Chargers (domain data)
 - Reference tables (lookup data)
-- Partners, operators, etc.
+
+---
+
+**Event Mechanism for Sync**:
+
+**Trigger Events**:
+- `inventory.station.created` - emitted when station is created
+- `inventory.station.updated` - emitted when station is updated
+- `inventory.station.deleted` - emitted when station is deleted
+- `inventory.charger.created` - emitted when charger is created
+- `inventory.charger.updated` - emitted when charger is updated
+- `inventory.charger.deleted` - emitted when charger is deleted
+
+**Event Consumers**:
+- GIS Worker Service (driver-service)
+- Consumes events from inventory schema
+- Updates GIS tables in `gis` schema
+- Maintains spatial consistency
+
+**Event Bus**:
+- PostgreSQL LISTEN/NOTIFY or external message queue
+- Synchronous trigger-based sync for MVP
+- Asynchronous event bus for production
 
 ---
 
@@ -325,9 +351,9 @@ GRANT USAGE ON SCHEMA inventory TO bornemap_driver; -- driver-service needs to q
 
 **Table: stations**
 
-**Purpose**: The ONLY persistent business entity in the database (canonical domain model)
+**Purpose**: Business overlay layer - single source of truth for station data
 
-**Note**: All data flows through this table as the single source of truth
+**Note**: Every station must have station_id stored in tags for GIS sync. Inventory emits events on CRUD that trigger GIS sync.
 
 | Column | Type | Constraints | Description |
 |--------|------|-------------|-------------|
@@ -337,7 +363,7 @@ GRANT USAGE ON SCHEMA inventory TO bornemap_driver; -- driver-service needs to q
 | address | TEXT | NULL | Physical address |
 | location | GEOGRAPHY(Point, 4326) | NOT NULL | GPS coordinates |
 | status | VARCHAR(20) | NOT NULL, DEFAULT 'active' | Station status (active|inactive|removed) |
-| tags | HSTORE | DEFAULT ''::hstore | Additional metadata in key-value format |
+| tags | HSTORE | DEFAULT ''::hstore | Additional metadata in key-value format (includes station_id for GIS sync) |
 | created_by | VARCHAR(32) | NULL | User ID who created the station |
 | created_at | TIMESTAMPTZ | DEFAULT NOW() | Creation timestamp |
 | updated_by | VARCHAR(32) | NULL | User ID who last updated the station |
@@ -354,9 +380,13 @@ GRANT USAGE ON SCHEMA inventory TO bornemap_driver; -- driver-service needs to q
 - Referenced by: connectors.station_id, partners.stations (via foreign keys)
 
 **Notes**:
-- Only persistent business entity in database
-- All data flows through this table
-- ON DELETE CASCADE defined for connectors reference
+- Business source of truth for station data
+- Every station MUST have `tags->>'station_id' = station_id` constraint (enforced in application layer)
+- On CREATE: Emit inventory.station.created event → GIS worker updates gis.osm_charging_stations
+- On UPDATE: Emit inventory.station.updated event → GIS worker updates gis.osm_charging_stations
+- On DELETE: Emit inventory.station.deleted event → GIS worker marks gis.osm_charging_stations as removed
+- Tags stored as HSTORE for flexibility
+- Tags MUST include: station_id (for GIS sync), osm_id (if from OSM)
 
 ---
 
@@ -364,7 +394,7 @@ GRANT USAGE ON SCHEMA inventory TO bornemap_driver; -- driver-service needs to q
 
 **Purpose**: Domain-owned connector data (normalized, no OSM logic)
 
-**Note**: This table contains the normalized connector details that are domain-specific. All OSM parsing logic happens in the import process before data reaches this table
+**Note**: This table contains the normalized connector details that are domain-specific. All OSM parsing logic happens in the import process before data reaches this table. On CRUD, emit events for GIS sync.
 
 | Column | Type | Constraints | Description |
 |--------|------|-------------|-------------|
@@ -390,16 +420,24 @@ GRANT USAGE ON SCHEMA inventory TO bornemap_driver; -- driver-service needs to q
 
 **Relationships**:
 - Referenced by: No external references (only queried)
+- joined to gis queries via station_id
+
+**Event Mechanism for Sync**:
+- On CREATE: Emit inventory.charger.created event → GIS worker updates gis tables
+- On UPDATE: Emit inventory.charger.updated event → GIS worker updates gis tables
+- On DELETE: Emit inventory.charger.deleted event → GIS worker updates gis tables
 
 **Notes**:
 - Domain-owned connector data
 - No OSM parsing logic in this table
 - All OSM data flows through import process and validation
 - ON DELETE CASCADE ensures connectors are removed when station is removed
+- count_total and count_available tracked per connector type per station
+- Used by GIS queries to show connector availability at nearby stations
 
 ---
 
-#### Schema: gis (driver-service)
+#### Schema: gis (driver-service) - Hybrid Spatial Layer
 
 Owned by: driver-service
 
@@ -414,15 +452,104 @@ GRANT ALL PRIVILEGES ON SCHEMA gis TO bornemap_driver;
 GRANT USAGE ON SCHEMA gis TO bornemap_admin; -- admin-service needs to query GIS for dashboards
 ```
 
-**Purpose**: Spatial queries and analysis functions
+**Purpose**: Hybrid spatial layer combining raw OSM data, curated spatial truth, and spatial computation functions
 
-**Important Note**: This schema contains functions and analysis logic, but the data (stations, connectors, partners) is stored in the inventory schema. The gis schema functions query the inventory schema.
+**Critical Architecture**: GIS is BOTH a dataset + spatial query engine
+
+**Layers in GIS Schema**:
+
+**Layer 1: Raw OSM Ingestion (Staging)**
+- osm_charging_stations_temp
+- Temporary staging table for OSM data
+- Not authoritative - must be validated before use
+- Managed by import process
+
+**Layer 2: Curated Spatial Truth (Canonical)**
+- osm_charging_stations
+- Cleaned and normalized OSM data
+- Authoritative spatial data source
+- Populated via sync from inventory events
+- Used by spatial functions
+
+**Layer 3: Spatial Computation**
+- nearby_* functions
+- Proximity queries
+- Routing support functions
+- Spatial analysis queries
+
+---
+
+**Table: osm_charging_stations_temp**
+
+**Purpose**: Temporary staging table for OpenStreetMap data imports
+
+**Note**: Not authoritative - data must be validated before use
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| osm_id | BIGINT | PRIMARY KEY | OpenStreetMap ID |
+| name | VARCHAR(255) | NULL | Station name from OSM |
+| address | TEXT | NULL | Physical address from OSM |
+| longitude | DOUBLE PRECISION | NOT NULL | GPS longitude |
+| latitude | DOUBLE PRECISION | NOT NULL | GPS latitude |
+| operator | VARCHAR(255) | NULL | Operating company from OSM tags |
+| opening_hours | TEXT | NULL | Operating hours from OSM |
+| capacity | INTEGER | NULL | Station capacity from OSM |
+| fee | TEXT | NULL | Payment fee info from OSM |
+| parking_fee | TEXT | NULL | Parking fee info from OSM |
+| access | TEXT | NULL | Access type from OSM |
+| socket_type2 | INTEGER | NULL | Number of Type 2 sockets |
+| socket_ccs | INTEGER | NULL | Number of CCS sockets |
+| socket_chademo | INTEGER | NULL | Number of CHAdeMO sockets |
+| socket_type2_output | DECIMAL(5,2) | NULL | Type 2 max output in kW |
+| socket_ccs_output | DECIMAL(5,2) | NULL | CCS max output in kW |
+| socket_chademo_output | DECIMAL(5,2) | NULL | CHAdeMO max output in kW |
+| tags | HSTORE | DEFAULT ''::hstore | Additional OSM tags |
+| geom | GEOMETRY(Point, 4326) | NOT NULL | Geometry for spatial queries |
+| imported_at | TIMESTAMPTZ | DEFAULT NOW() | Import timestamp |
+
+**Indexes**:
+- `idx_osm_temp_geom` (USING GIST, mandatory)
+- `idx_osm_temp_osm_id` on (osm_id)
+
+---
+
+**Table: osm_charging_stations**
+
+**Purpose**: Curated spatial truth layer - authoritative OSM data
+
+**Note**: Populated via sync from inventory.station events. Contains cleaned and normalized OSM data.
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| osm_id | BIGINT | PRIMARY KEY | OpenStreetMap ID |
+| name | VARCHAR(255) | NOT NULL | Station name (normalized) |
+| address | TEXT | NULL | Physical address (normalized) |
+| location | GEOGRAPHY(Point, 4326) | NOT NULL | GPS coordinates |
+| operator | VARCHAR(255) | NULL | Operating company |
+| opening_hours | TEXT | NULL | Operating hours (normalized) |
+| capacity | INTEGER | NULL | Station capacity |
+| fee | TEXT | NULL | Payment fee info (normalized) |
+| parking_fee | TEXT | NULL | Parking fee info (normalized) |
+| access | TEXT | NULL | Access type (normalized) |
+| status | VARCHAR(20) | DEFAULT 'active' | Data status (active|removed) |
+| created_at | TIMESTAMPTZ | DEFAULT NOW() | Creation timestamp |
+| updated_at | TIMESTAMPTZ | DEFAULT NOW() | Last update timestamp |
+
+**Indexes**:
+- `idx_osm_cur_location` (USING GIST, mandatory)
+- `idx_osm_cur_status` on (status)
+
+**Relationships**:
+- Populated via sync from inventory.station.created/updated events
+- `inventory.station_id` is stored in tags as hstore key
+- No foreign keys - independent authoritative layer
 
 ---
 
 **Function: get_nearby_stations**
 
-**Purpose**: SQL function for nearby station search using spatial indexes
+**Purpose**: Spatial function for nearby station search using curated spatial truth
 
 **Signature**:
 ```sql
@@ -432,25 +559,28 @@ CREATE OR REPLACE FUNCTION get_nearby_stations(
     radius_km DOUBLE PRECISION DEFAULT 10.0
 )
 RETURNS TABLE (
-    station_id VARCHAR(32),
+    osm_id BIGINT,
     station_name VARCHAR(255),
     latitude DOUBLE PRECISION,
     longitude DOUBLE PRECISION,
-    distance_km DOUBLE PRECISION
+    distance_km DOUBLE PRECISION,
+    station_data JSONB
 ) AS $$
 BEGIN
     RETURN QUERY
     SELECT
-        s.station_id,
+        s.osm_id,
         s.name,
         ST_Y(s.location)::DOUBLE PRECISION AS latitude,
         ST_X(s.location)::DOUBLE PRECISION AS longitude,
         ST_DistanceSphere(
             ST_MakePoint(longitude, latitude)::GEOGRAPHY(Point, 4326),
             s.location
-        ) / 1000 AS distance_km
-    FROM inventory.stations s
-    WHERE ST_DistanceSphere(
+        ) / 1000 AS distance_km,
+        ROW_TO_JSON(s) AS station_data
+    FROM gis.osm_charging_stations s
+    WHERE s.status = 'active'
+      AND ST_DistanceSphere(
             ST_MakePoint(longitude, latitude)::GEOGRAPHY(Point, 4326),
             s.location
         ) <= radius_km * 1000
@@ -460,16 +590,85 @@ $$ LANGUAGE plpgsql;
 ```
 
 **Notes**:
-- Uses spatial indexes on inventory.stations.location for performance
+- Uses spatial indexes on gis.osm_charging_stations.location (mandatory)
 - Returns stations within specified radius (km)
-- Distance calculated in kilometers using ST_DistanceSphere
+- Distance calculated using ST_DistanceSphere
 - Queryed by driver-service for nearby search API
-- Admin-service can also query this function for dashboard
+- Uses curated spatial truth (osm_charging_stations) not inventory
+- Admin-service can also query for dashboard
 
 **Performance**:
-- Uses GIST index on inventory.stations.location (mandatory)
-- ST_DistanceSphere is optimized for Earth's radius
-- Returns only distance and station info (not full station data)
+- Uses GIST index on gis.osm_charging_stations.location (mandatory)
+- ST_DistanceSphere optimized for Earth's radius
+- Returns OSM ID, name, coordinates, distance, and full station data as JSON
+
+---
+
+**Function: get_nearby_stations_with_chargers**
+
+**Purpose**: Extended nearby search including connector information from inventory
+
+**Signature**:
+```sql
+CREATE OR REPLACE FUNCTION get_nearby_stations_with_chargers(
+    latitude DOUBLE PRECISION,
+    longitude DOUBLE PRECISION,
+    radius_km DOUBLE PRECISION DEFAULT 10.0
+)
+RETURNS TABLE (
+    osm_id BIGINT,
+    station_name VARCHAR(255),
+    latitude DOUBLE PRECISION,
+    longitude DOUBLE PRECISION,
+    distance_km DOUBLE PRECISION,
+    connector_count INTEGER,
+    available_count INTEGER,
+    connector_types JSONB
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT
+        s.osm_id,
+        s.name,
+        ST_Y(s.location)::DOUBLE PRECISION AS latitude,
+        ST_X(s.location)::DOUBLE PRECISION AS longitude,
+        ST_DistanceSphere(
+            ST_MakePoint(longitude, latitude)::GEOGRAPHY(Point, 4326),
+            s.location
+        ) / 1000 AS distance_km,
+        c.total_count,
+        c.available_count,
+        c.connector_types
+    FROM gis.osm_charging_stations s
+    JOIN (
+        SELECT
+            cs.station_id,
+            SUM(cs.count_total) AS total_count,
+            SUM(cs.count_available) AS available_count,
+            JSONB_AGG(
+                JSONB_BUILD_OBJECT(
+                    'type', cs.connector_type,
+                    'count', cs.count_total,
+                    'available', cs.count_available
+                )
+            ) AS connector_types
+        FROM inventory.chargers cs
+        GROUP BY cs.station_id
+    ) c ON s.tags->>'station_id' = c.station_id
+    WHERE s.status = 'active'
+      AND ST_DistanceSphere(
+            ST_MakePoint(longitude, latitude)::GEOGRAPHY(Point, 4326),
+            s.location
+        ) <= radius_km * 1000
+    ORDER BY distance_km ASC;
+END;
+$$ LANGUAGE plpgsql;
+```
+
+**Notes**:
+- Combines curated spatial truth with business overlay (connectors from inventory)
+- Shows connector counts and availability
+- Uses tags->>'station_id' to join inventory.chargers to gis.osm_charging_stations
 
 ---
 
