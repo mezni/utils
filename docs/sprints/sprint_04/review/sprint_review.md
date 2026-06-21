@@ -1,4 +1,4 @@
-# Sprint 5 Review — Analytics Read Layer (Admin Visibility)
+# Sprint 4 Review — Analytics Read Layer (Admin Visibility)
 
 **Status**: NOT_STARTED
 **Constitution Version**: 1.15.2
@@ -7,7 +7,7 @@
 
 ## Summary
 
-Sprint 5 builds a controlled analytics consumption system. admin-service can read analytics data, driver-service remains the ONLY writer, and aggregated insights are introduced without violating data ownership rules.
+Sprint 4 builds a controlled analytics consumption system. admin-service can read analytics data, driver-service remains the ONLY writer, and aggregated insights are introduced without violating data ownership rules.
 
 ---
 
@@ -19,7 +19,7 @@ Sprint 5 builds a controlled analytics consumption system. admin-service can rea
 
 ## Blockers
 
-*Pending Sprint 4 completion (telemetry pipeline).*
+*Pending Sprint 3 completion (telemetry pipeline).*
 
 ---
 

@@ -1,4 +1,4 @@
-# Sprint 9 Review — Production Release & Operational Readiness Layer
+# Sprint 8 Review — Production Release & Operational Readiness Layer
 
 **Status**: NOT_STARTED
 **Constitution Version**: 1.15.2
@@ -7,7 +7,7 @@
 
 ## Summary
 
-Sprint 9 transitions BorneMap from a hardened system into a production-ready, deployable, and operable platform: deployment repeatability, environment parity, rollback safety, operational runbooks, and release governance.
+Sprint 8 transitions BorneMap from a hardened system into a production-ready, deployable, and operable platform: deployment repeatability, environment parity, rollback safety, operational runbooks, and release governance.
 
 ---
 
@@ -19,7 +19,7 @@ Sprint 9 transitions BorneMap from a hardened system into a production-ready, de
 
 ## Blockers
 
-*Pending Sprint 8 completion (security hardening).*
+*Pending Sprint 7 completion (security hardening).*
 
 ---
 

@@ -1,4 +1,4 @@
-# Sprint 5 — Analytics Read Layer (Admin Visibility)
+# Sprint 4 — Analytics Read Layer (Admin Visibility)
 
 **Status**: NOT_STARTED
 **Constitution Version**: 1.15.2

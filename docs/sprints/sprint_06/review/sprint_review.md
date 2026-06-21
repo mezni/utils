@@ -1,4 +1,4 @@
-# Sprint 7 Review — System Hardening & Reliability Layer
+# Sprint 6 Review — System Hardening & Reliability Layer
 
 **Status**: NOT_STARTED
 **Constitution Version**: 1.15.2
@@ -7,7 +7,7 @@
 
 ## Summary
 
-Sprint 7 turns BorneMap into a failure-resistant production system: resilience under partial failure, deterministic behavior under load, data consistency guarantees, and operational safety.
+Sprint 6 turns BorneMap into a failure-resistant production system: resilience under partial failure, deterministic behavior under load, data consistency guarantees, and operational safety.
 
 ---
 
@@ -19,7 +19,7 @@ Sprint 7 turns BorneMap into a failure-resistant production system: resilience u
 
 ## Blockers
 
-*Pending Sprint 6 completion (UX layer).*
+*Pending Sprint 5 completion (UX layer).*
 
 ---
 

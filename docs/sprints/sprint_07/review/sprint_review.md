@@ -1,4 +1,4 @@
-# Sprint 8 Review — Security Hardening & Compliance Lockdown
+# Sprint 7 Review — Security Hardening & Compliance Lockdown
 
 **Status**: NOT_STARTED
 **Constitution Version**: 1.15.2
@@ -7,7 +7,7 @@
 
 ## Summary
 
-Sprint 8 moves BorneMap into a security-first production posture: strict authorization boundaries beyond RBAC, API abuse prevention, data exfiltration resistance, auditability of all sensitive operations, and CI-level security enforcement.
+Sprint 7 moves BorneMap into a security-first production posture: strict authorization boundaries beyond RBAC, API abuse prevention, data exfiltration resistance, auditability of all sensitive operations, and CI-level security enforcement.
 
 ---
 
@@ -19,7 +19,7 @@ Sprint 8 moves BorneMap into a security-first production posture: strict authori
 
 ## Blockers
 
-*Pending Sprint 7 completion (reliability hardening).*
+*Pending Sprint 6 completion (reliability hardening).*
 
 ---
 

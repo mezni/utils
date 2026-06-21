@@ -1,4 +1,4 @@
-# Sprint 4 Review — Telemetry Ingestion Core
+# Sprint 3 Review — Telemetry Ingestion Core
 
 **Status**: NOT_STARTED
 **Constitution Version**: 1.15.2
@@ -7,7 +7,7 @@
 
 ## Summary
 
-Sprint 4 establishes a fully controlled analytics pipeline where all frontend interaction data flows into a single ingestion endpoint, driver-service is the only writer to analytics_db, and events are validated, normalized, deduplicated, and versioned.
+Sprint 3 establishes a fully controlled analytics pipeline where all frontend interaction data flows into a single ingestion endpoint, driver-service is the only writer to analytics_db, and events are validated, normalized, deduplicated, and versioned.
 
 ---
 
@@ -19,7 +19,7 @@ Sprint 4 establishes a fully controlled analytics pipeline where all frontend in
 
 ## Blockers
 
-*Pending Sprint 3 completion (inventory system).*
+*Pending Sprint 2 completion (GIS system).*
 
 ---
 

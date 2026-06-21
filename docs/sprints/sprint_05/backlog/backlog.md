@@ -1,4 +1,4 @@
-# Sprint 6 — Driver Experience Layer (UX + Product Polish)
+# Sprint 5 — Driver Experience Layer (UX + Product Polish)
 
 **Status**: NOT_STARTED
 **Constitution Version**: 1.15.2

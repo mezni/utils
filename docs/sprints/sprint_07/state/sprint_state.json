@@ -1,9 +1,9 @@
 {
-  "sprint": 8,
+  "sprint": 7,
   "title": "Security Hardening & Compliance Lockdown",
   "status": "not_started",
   "constitution_version": "1.15.2",
-  "dependencies": ["Sprint 7"],
+  "dependencies": ["Sprint 6"],
   "deliverables": {
     "api_security_hardening": "not_started",
     "fine_grained_authorization": "not_started",
@@ -30,5 +30,5 @@
     "authz_coverage_passes": false,
     "jwt_security_validated": false
   },
-  "blockers": ["Sprint 7 must complete first"]
+  "blockers": ["Sprint 6 must complete first"]
 }

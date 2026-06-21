@@ -1,4 +1,4 @@
-# Sprint 6 Review — Driver Experience Layer (UX + Product Polish)
+# Sprint 5 Review — Driver Experience Layer (UX + Product Polish)
 
 **Status**: NOT_STARTED
 **Constitution Version**: 1.15.2
@@ -7,7 +7,7 @@
 
 ## Summary
 
-Sprint 6 delivers a high-performance, production-grade driver experience: map usability becomes fast and offline-resilient, personalization is introduced (favorites, preferences), and frontend becomes polished while remaining strictly data-consumer only.
+Sprint 5 delivers a high-performance, production-grade driver experience: map usability becomes fast and offline-resilient, personalization is introduced (favorites, preferences), and frontend becomes polished while remaining strictly data-consumer only.
 
 ---
 
@@ -19,7 +19,7 @@ Sprint 6 delivers a high-performance, production-grade driver experience: map us
 
 ## Blockers
 
-*Pending Sprint 5 completion (analytics read layer).*
+*Pending Sprint 4 completion (analytics read layer).*
 
 ---
 

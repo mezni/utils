@@ -1,9 +1,9 @@
 {
-  "sprint": 7,
+  "sprint": 6,
   "title": "System Hardening & Reliability Layer",
   "status": "not_started",
   "constitution_version": "1.15.2",
-  "dependencies": ["Sprint 6"],
+  "dependencies": ["Sprint 5"],
   "deliverables": {
     "service_resilience_layer": "not_started",
     "postgis_query_safety": "not_started",
@@ -31,5 +31,5 @@
     "geo_queries_bounded": false,
     "all_gates_pass": false
   },
-  "blockers": ["Sprint 6 must complete first"]
+  "blockers": ["Sprint 5 must complete first"]
 }

@@ -1,9 +1,9 @@
 {
-  "sprint": 6,
+  "sprint": 5,
   "title": "Driver Experience Layer (UX + Product Polish)",
   "status": "not_started",
   "constitution_version": "1.15.2",
-  "dependencies": ["Sprint 5"],
+  "dependencies": ["Sprint 4"],
   "deliverables": {
     "favorites_system": "not_started",
     "user_preferences_system": "not_started",
@@ -29,5 +29,5 @@
     "no_spatial_regression": false,
     "ui_rules_pass": false
   },
-  "blockers": ["Sprint 5 must complete first"]
+  "blockers": ["Sprint 4 must complete first"]
 }

@@ -1,9 +1,9 @@
 {
-  "sprint": 4,
+  "sprint": 3,
   "title": "Telemetry Ingestion Core",
   "status": "not_started",
   "constitution_version": "1.15.2",
-  "dependencies": ["Sprint 3"],
+  "dependencies": ["Sprint 2"],
   "deliverables": {
     "telemetry_ingestion_api": "not_started",
     "event_validation_layer": "not_started",
@@ -29,5 +29,5 @@
     "analytics_gate_passes": false,
     "telemetry_routing_enforced": false
   },
-  "blockers": ["Sprint 3 must complete first"]
+  "blockers": ["Sprint 2 must complete first"]
 }

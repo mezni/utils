@@ -1,4 +1,4 @@
-# Sprint 4 — Telemetry Ingestion Core
+# Sprint 3 — Telemetry Ingestion Core
 
 **Status**: NOT_STARTED
 **Constitution Version**: 1.15.2

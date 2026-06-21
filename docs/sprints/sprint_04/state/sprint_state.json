@@ -1,9 +1,9 @@
 {
-  "sprint": 5,
+  "sprint": 4,
   "title": "Analytics Read Layer (Admin Visibility)",
   "status": "not_started",
   "constitution_version": "1.15.2",
-  "dependencies": ["Sprint 4"],
+  "dependencies": ["Sprint 3"],
   "deliverables": {
     "analytics_read_api": "not_started",
     "analytics_query_layer": "not_started",
@@ -29,5 +29,5 @@
     "read_only_enforcement_passes": false,
     "query_safety_validated": false
   },
-  "blockers": ["Sprint 4 must complete first"]
+  "blockers": ["Sprint 3 must complete first"]
 }

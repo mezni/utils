@@ -1,9 +1,9 @@
 {
-  "sprint": 9,
+  "sprint": 8,
   "title": "Production Release & Operational Readiness Layer",
   "status": "not_started",
   "constitution_version": "1.15.2",
-  "dependencies": ["Sprint 8"],
+  "dependencies": ["Sprint 7"],
   "deliverables": {
     "environment_parity_system": "not_started",
     "deployment_pipeline": "not_started",
@@ -29,5 +29,5 @@
     "health_endpoints_functional": false,
     "deployment_gates_pass": false
   },
-  "blockers": ["Sprint 8 must complete first"]
+  "blockers": ["Sprint 7 must complete first"]
 }
