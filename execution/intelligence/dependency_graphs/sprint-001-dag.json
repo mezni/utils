@@ -1,27 +1,48 @@
 {
   "sprint": "sprint-001",
   "graph": [
-    { "feature": "Feature 1", "name": "Platform Database", "depends_on": [] },
-    { "feature": "Feature 2", "name": "GIS + Inventory Schema", "depends_on": ["Feature 1"] },
-    { "feature": "Feature 3", "name": "OSM Tunisia Import", "depends_on": ["Feature 2"] },
-    { "feature": "Feature 4", "name": "Station Normalization", "depends_on": ["Feature 2", "Feature 3"] },
-    { "feature": "Feature 5", "name": "Nearby Stations SQL Function", "depends_on": ["Feature 2", "Feature 4"] },
-    { "feature": "Feature 6", "name": "Driver API Service", "depends_on": ["Feature 1", "Feature 5"] },
-    { "feature": "Feature 7", "name": "Health Check Endpoint", "depends_on": ["Feature 1", "Feature 6"] },
-    { "feature": "Feature 8", "name": "Driver Map Web UI", "depends_on": ["Feature 6"] }
+    { "id": "T001", "depends_on": [] },
+    { "id": "T002", "depends_on": ["T001"] },
+    { "id": "T003", "depends_on": ["T002"] },
+    { "id": "T004", "depends_on": ["T003"] },
+    { "id": "T005", "depends_on": ["T003"] },
+    { "id": "T006", "depends_on": ["T005"] },
+    { "id": "T007", "depends_on": ["T005"] },
+    { "id": "T008", "depends_on": ["T007"] },
+    { "id": "T009", "depends_on": ["T008"] },
+    { "id": "T010", "depends_on": ["T002"] },
+    { "id": "T011", "depends_on": ["T010"] },
+    { "id": "T012", "depends_on": ["T007", "T010"] },
+    { "id": "T013", "depends_on": ["T011", "T012"] },
+    { "id": "T014", "depends_on": ["T007"] },
+    { "id": "T015", "depends_on": ["T001"] },
+    { "id": "T016", "depends_on": ["T015"] },
+    { "id": "T017", "depends_on": ["T016", "T014"] },
+    { "id": "T018", "depends_on": ["T017"] },
+    { "id": "T019", "depends_on": ["T018"] },
+    { "id": "T020", "depends_on": ["T019"] },
+    { "id": "T021", "depends_on": ["T015"] },
+    { "id": "T022", "depends_on": ["T021"] },
+    { "id": "T023", "depends_on": [] },
+    { "id": "T024", "depends_on": ["T023"] },
+    { "id": "T025", "depends_on": ["T024"] },
+    { "id": "T026", "depends_on": ["T025", "T019"] },
+    { "id": "T027", "depends_on": ["T026"] },
+    { "id": "T028", "depends_on": ["T022", "T027"] },
+    { "id": "T029", "depends_on": ["T028"] },
+    { "id": "T030", "depends_on": ["T028"] }
   ],
   "validation": {
     "acyclic": true,
     "all_dependencies_satisfied": true,
-    "execution_order": [
-      "Feature 1",
-      "Feature 2",
-      "Feature 3",
-      "Feature 4",
-      "Feature 5",
-      "Feature 6",
-      "Feature 7",
-      "Feature 8"
-    ]
+    "parallel_groups": [
+      ["T001", "T023"],
+      ["T003", "T010", "T015"],
+      ["T005", "T011"],
+      ["T016", "T021"],
+      ["T019", "T024"],
+      ["T029", "T030"]
+    ],
+    "execution_order": ["T001","T023","T002","T003","T010","T015","T004","T005","T011","T016","T021","T006","T007","T024","T012","T017","T014","T022","T008","T013","T018","T025","T009","T019","T020","T026","T027","T028","T029","T030"]
   }
 }
