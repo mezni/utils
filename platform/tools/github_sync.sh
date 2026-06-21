@@ -39,20 +39,26 @@ for issue in "${issues[@]}"; do
   if [ -z "$gh_id" ] || [ "$gh_id" = "null" ]; then
     args=("--repo" "$REPO" "--title" "$title" "--body" "$body")
     if [ -n "$labels" ] && [ "$labels" != "null" ]; then
-      args+=("--label" "$labels")
+      IFS=',' read -ra label_arr <<< "$labels"
+      for l in "${label_arr[@]}"; do
+        args+=("--label" "$l")
+      done
     fi
-    gh issue create "${args[@]}" --output json 2>/dev/null | \
-      jq -r '.number' | while read -r num; do
-        echo "[github_sync] CREATED issue #$num: $title"
-        tmp=$(mktemp)
-        jq "( .issues[] | select(.title == \"$title\") | .gh_id ) |= \"$num\"" "$MAPPING_FILE" > "$tmp"
-        mv "$tmp" "$MAPPING_FILE"
-    done
-    ((CREATED++))
+    if gh_url=$(gh issue create "${args[@]}" 2>/dev/null); then
+      num=$(echo "$gh_url" | grep -oE '[0-9]+$')
+      echo "[github_sync] CREATED issue #$num: $title"
+      tmp=$(mktemp /tmp/github_sync.XXXXXX)
+      jq --arg t "$title" --arg n "$num" \
+        '( .issues[] | select(.title == $t) | .gh_id ) |= $n' \
+        "$MAPPING_FILE" > "$tmp" 2>/dev/null && mv "$tmp" "$MAPPING_FILE" 2>/dev/null || true
+    else
+      echo "[github_sync] WARNING: failed to create issue for \"$title\"" >&2
+    fi
+    CREATED=$((CREATED+1))
   else
     gh issue edit "$gh_id" --repo "$REPO" --title "$title" --body "$body" 2>/dev/null || \
       echo "[github_sync] WARNING: failed to update issue #$gh_id"
-    ((UPDATED++))
+    UPDATED=$((UPDATED+1))
   fi
 done
 

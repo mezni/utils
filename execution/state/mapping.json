@@ -1,6 +1,229 @@
 {
-  "sprints": {},
-  "issues": {},
-  "last_sync": null,
-  "sync_hash": null
+  "sprints": {
+    "sprint-001": {
+      "name": "End-to-End Spatial Flow",
+      "branch": "feat/sprint-001-spatial-flow",
+      "status": "active",
+      "epics": [
+        "EPIC-001",
+        "EPIC-002",
+        "EPIC-003",
+        "EPIC-004"
+      ]
+    }
+  },
+  "issues": [
+    {
+      "title": "T001 - Create docker-compose.yml with PostgreSQL 16 + PostGIS",
+      "body": "**Epic:** EPIC-001\n**User Story:** US1\n**File:** platform/infrastructure/docker/docker-compose.yml\n**Phase:** 1\n**Depends On:** none\n**Description:** Create Docker Compose configuration that starts PostgreSQL 16 with PostGIS extension enabled.",
+      "labels": "EPIC-001,US1,phase-1",
+      "sprint": "sprint-001",
+      "gh_id": "237"
+    },
+    {
+      "title": "T002 - Create init SQL with extensions (postgis, hstore, pgcrypto)",
+      "body": "**Epic:** EPIC-001\n**User Story:** US1\n**File:** platform/infrastructure/postgres/init/01-extensions.sql\n**Phase:** 1\n**Depends On:** T001\n**Description:** Create initialization SQL script that runs CREATE EXTENSION IF NOT EXISTS for postgis, hstore, and pgcrypto.",
+      "labels": "EPIC-001,US1,phase-1",
+      "sprint": "sprint-001",
+      "gh_id": "238"
+    },
+    {
+      "title": "T003 - Create lookup table migrations",
+      "body": "**Epic:** EPIC-001\n**User Story:** US2\n**File:** platform/infrastructure/postgres/migrations/02-lookup-tables.sql\n**Phase:** 1\n**Depends On:** T002\n**Description:** Create migration for access_types, data_sources, connector_types, current_types, connector_statuses, station_statuses, charger_statuses.",
+      "labels": "EPIC-001,US2,phase-1",
+      "sprint": "sprint-001",
+      "gh_id": "239"
+    },
+    {
+      "title": "T004 - Seed lookup tables with initial data",
+      "body": "**Epic:** EPIC-001\n**User Story:** US2\n**File:** platform/infrastructure/postgres/seeds/03-lookup-seeds.sql\n**Phase:** 1\n**Depends On:** T003\n**Description:** Seed lookup tables: osm/manual/partner sources, active/inactive statuses, AC/DC current types, Type2/CCS/CHAdeMO connector types.",
+      "labels": "EPIC-001,US2,phase-1",
+      "sprint": "sprint-001",
+      "gh_id": "240"
+    },
+    {
+      "title": "T005 - Create partners table (PAR- nanoid, soft-delete)",
+      "body": "**Epic:** EPIC-001\n**User Story:** US3\n**File:** platform/infrastructure/postgres/migrations/04-partners.sql\n**Phase:** 1\n**Depends On:** T003\n**Description:** Create partners table with PAR-nanoid(12) PK, name, type, support contact, soft-delete, audit columns.",
+      "labels": "EPIC-001,US3,phase-1",
+      "sprint": "sprint-001",
+      "gh_id": "241"
+    },
+    {
+      "title": "T006 - Create partner_users join table",
+      "body": "**Epic:** EPIC-001\n**User Story:** US3\n**File:** platform/infrastructure/postgres/migrations/04-partners.sql\n**Phase:** 1\n**Depends On:** T005\n**Description:** Create partner_users join table linking partners to Keycloak user IDs with access type FK.",
+      "labels": "EPIC-001,US3,phase-1",
+      "sprint": "sprint-001",
+      "gh_id": "242"
+    },
+    {
+      "title": "T007 - Create stations table (STA- nanoid, GEOGRAPHY, HSTORE)",
+      "body": "**Epic:** EPIC-001\n**User Story:** US3\n**File:** platform/infrastructure/postgres/migrations/05-stations.sql\n**Phase:** 1\n**Depends On:** T005\n**Description:** Create stations table with STA-nanoid(12) PK, location GEOGRAPHY(Point,4326), tags HSTORE, is_test, soft-delete, version, FK to partners.",
+      "labels": "EPIC-001,US3,phase-1",
+      "sprint": "sprint-001",
+      "gh_id": "243"
+    },
+    {
+      "title": "T008 - Create chargers table (CHR- nanoid)",
+      "body": "**Epic:** EPIC-001\n**User Story:** US3\n**File:** platform/infrastructure/postgres/migrations/06-chargers.sql\n**Phase:** 1\n**Depends On:** T007\n**Description:** Create chargers table with CHR-nanoid(12) PK, serial, vendor, model, firmware, FK to stations, soft-delete.",
+      "labels": "EPIC-001,US3,phase-1",
+      "sprint": "sprint-001",
+      "gh_id": "244"
+    },
+    {
+      "title": "T009 - Create connectors table (CON- nanoid)",
+      "body": "**Epic:** EPIC-001\n**User Story:** US3\n**File:** platform/infrastructure/postgres/migrations/07-connectors.sql\n**Phase:** 1\n**Depends On:** T008\n**Description:** Create connectors table with CON-nanoid(12) PK, power/voltage/amperage specs, availability, UNIQUE(charger,type,current), soft-delete.",
+      "labels": "EPIC-001,US3,phase-1",
+      "sprint": "sprint-001",
+      "gh_id": "245"
+    },
+    {
+      "title": "T010 - Create gis.osm_charging_stations_temp staging table",
+      "body": "**Epic:** EPIC-001\n**User Story:** US3\n**File:** platform/infrastructure/postgres/migrations/08-osm-staging.sql\n**Phase:** 1\n**Depends On:** T002\n**Description:** Create staging table in gis schema for raw OSM import: osm_id, raw_tags HSTORE, lat, lng, fetched_at.",
+      "labels": "EPIC-001,US3,phase-1",
+      "sprint": "sprint-001",
+      "gh_id": "246"
+    },
+    {
+      "title": "T011 - Create OSM import script (Overpass API, Tunisia bbox)",
+      "body": "**Epic:** EPIC-002\n**User Story:** US4\n**File:** platform/scripts/import.sh\n**Phase:** 2\n**Depends On:** T010\n**Description:** Create bash script querying Overpass API for node[amenity=charging_station] in Tunisia bbox (7-12E, 30-38N), parsing JSON, inserting into gis.osm_charging_stations_temp with ON CONFLICT DO NOTHING.",
+      "labels": "EPIC-002,US4,phase-2",
+      "sprint": "sprint-001",
+      "gh_id": "247"
+    },
+    {
+      "title": "T012 - Create sync_osm_charging_stations() normalization function",
+      "body": "**Epic:** EPIC-002\n**User Story:** US5\n**File:** platform/infrastructure/postgres/functions/10-sync-osm-stations.sql\n**Phase:** 2\n**Depends On:** T007, T010\n**Description:** Create PL/pgSQL function that reads gis.osm_charging_stations_temp and inserts into inventory.stations with generated STA-nanoid, GEOGRAPHY from lat/lng, HSTORE of OSM tags, source='osm', is_test=FALSE.",
+      "labels": "EPIC-002,US5,phase-2",
+      "sprint": "sprint-001",
+      "gh_id": "248"
+    },
+    {
+      "title": "T013 - Run OSM import + sync, verify stations populated",
+      "body": "**Epic:** EPIC-002\n**User Story:** US5\n**Phase:** 2\n**Depends On:** T011, T012\n**Description:** Execute import.sh then sync_osm_charging_stations(). Verify SELECT COUNT(*) FROM inventory.stations WHERE source='osm' returns > 0 with valid STA-nanoid IDs and GEOGRAPHY points.",
+      "labels": "EPIC-002,US5,phase-2",
+      "sprint": "sprint-001",
+      "gh_id": "249"
+    },
+    {
+      "title": "T014 - Create find_nearby_stations() spatial function",
+      "body": "**Epic:** EPIC-003\n**User Story:** US6\n**File:** platform/infrastructure/postgres/functions/11-find-nearby-stations.sql\n**Phase:** 3\n**Depends On:** T007\n**Description:** Create PL/pgSQL function find_nearby_stations(lat, lng, radius_meters) using ST_DWithin with GEOGRAPHY, filtering is_test=FALSE and is_deleted=FALSE, returning station_id, name, distance_meters sorted ascending.",
+      "labels": "EPIC-003,US6,phase-3",
+      "sprint": "sprint-001",
+      "gh_id": "250"
+    },
+    {
+      "title": "T015 - Initialize driver-service Rust crate",
+      "body": "**Epic:** EPIC-003\n**User Story:** US7\n**File:** source/services/driver-service/Cargo.toml\n**Phase:** 3\n**Depends On:** T001\n**Description:** Initialize Rust crate with Actix-web, SQLx, serde, tokio, tracing dependencies. Set up cargo workspace member in root Cargo.toml.",
+      "labels": "EPIC-003,US7,phase-3",
+      "sprint": "sprint-001",
+      "gh_id": "251"
+    },
+    {
+      "title": "T016 - Create domain layer (Station, NearbyQuery, NearbyResult)",
+      "body": "**Epic:** EPIC-003\n**User Story:** US7\n**File:** source/services/driver-service/domain/\n**Phase:** 3\n**Depends On:** T015\n**Description:** Create pure domain models: Station struct, NearbyQuery value object with lat/lng/radius bounds validation, NearbyResult. Zero external dependencies.",
+      "labels": "EPIC-003,US7,phase-3",
+      "sprint": "sprint-001",
+      "gh_id": "252"
+    },
+    {
+      "title": "T017 - Create infrastructure DB adapter (SQLx query)",
+      "body": "**Epic:** EPIC-003\n**User Story:** US7\n**File:** source/services/driver-service/infrastructure/\n**Phase:** 3\n**Depends On:** T016, T014\n**Description:** Implement SQLx compile-time query calling find_nearby_stations(). Map raw rows to domain Station model. Use query_as! macro.",
+      "labels": "EPIC-003,US7,phase-3",
+      "sprint": "sprint-001",
+      "gh_id": "253"
+    },
+    {
+      "title": "T018 - Create NearbyStations use-case (application layer)",
+      "body": "**Epic:** EPIC-003\n**User Story:** US7\n**File:** source/services/driver-service/application/\n**Phase:** 3\n**Depends On:** T017\n**Description:** Implement NearbyStationsService orchestrating DB call, response mapping, and error handling.",
+      "labels": "EPIC-003,US7,phase-3",
+      "sprint": "sprint-001",
+      "gh_id": "254"
+    },
+    {
+      "title": "T019 - Create API handler for GET /api/v1/driver/nearby",
+      "body": "**Epic:** EPIC-003\n**User Story:** US7\n**File:** source/services/driver-service/api/\n**Phase:** 3\n**Depends On:** T018\n**Description:** Create Actix-web handler for GET /api/v1/driver/nearby?lat&lng&radius. Validate params (lat ±90, lng ±180, radius > 0), return JSON array. JWT placeholder (not enforced in sprint 1).",
+      "labels": "EPIC-003,US7,phase-3",
+      "sprint": "sprint-001",
+      "gh_id": "255"
+    },
+    {
+      "title": "T020 - Create OpenAPI spec for nearby endpoint",
+      "body": "**Epic:** EPIC-003\n**User Story:** US7\n**File:** sprints/sprint-001/api/openapi.yaml\n**Phase:** 3\n**Depends On:** T019\n**Description:** Write OpenAPI 3.0 spec for GET /api/v1/driver/nearby with query params, response schema, error codes.",
+      "labels": "EPIC-003,US7,phase-3",
+      "sprint": "sprint-001",
+      "gh_id": "256"
+    },
+    {
+      "title": "T021 - Create health check handler GET /api/v1/driver/health",
+      "body": "**Epic:** EPIC-004\n**User Story:** US8\n**File:** source/services/driver-service/api/health.rs\n**Phase:** 4\n**Depends On:** T015\n**Description:** Create Actix-web handler for GET /api/v1/driver/health. Check DB connectivity (SELECT 1). Return JSON: {status, db, timestamp}. Return 503 if DB unreachable.",
+      "labels": "EPIC-004,US8,phase-4",
+      "sprint": "sprint-001",
+      "gh_id": "257"
+    },
+    {
+      "title": "T022 - Create Traefik dynamic config",
+      "body": "**Epic:** EPIC-004\n**User Story:** US8\n**File:** platform/infrastructure/traefik/dynamic.yml\n**Phase:** 4\n**Depends On:** T021\n**Description:** Configure Traefik to route /api/v1/driver/* → driver-service:3001. Add health check route.",
+      "labels": "EPIC-004,US8,phase-4",
+      "sprint": "sprint-001",
+      "gh_id": "258"
+    },
+    {
+      "title": "T023 - Initialize web app (React + Tailwind + Leaflet)",
+      "body": "**Epic:** EPIC-004\n**User Story:** US9\n**File:** source/apps/web/\n**Phase:** 4\n**Depends On:** none\n**Description:** Initialize React 18 app with Vite, Tailwind CSS, Leaflet, react-leaflet. Set up package.json, tsconfig, vite config.",
+      "labels": "EPIC-004,US9,phase-4",
+      "sprint": "sprint-001",
+      "gh_id": "259"
+    },
+    {
+      "title": "T024 - Create MapView component (Leaflet)",
+      "body": "**Epic:** EPIC-004\n**User Story:** US9\n**File:** source/apps/web/src/components/MapView.tsx\n**Phase:** 4\n**Depends On:** T023\n**Description:** Create Leaflet map component centered on Tunisia (34.0, 9.5), zoom 7, OpenStreetMap tiles. Accept station markers as props.",
+      "labels": "EPIC-004,US9,phase-4",
+      "sprint": "sprint-001",
+      "gh_id": "260"
+    },
+    {
+      "title": "T025 - Create useNearbyStations hook",
+      "body": "**Epic:** EPIC-004\n**User Story:** US9\n**File:** source/apps/web/src/hooks/useNearbyStations.ts\n**Phase:** 4\n**Depends On:** T024\n**Description:** Create React hook fetching GET /api/v1/driver/nearby. Return {stations, loading, error}. Handle retry logic.",
+      "labels": "EPIC-004,US9,phase-4",
+      "sprint": "sprint-001",
+      "gh_id": "261"
+    },
+    {
+      "title": "T026 - Create Home page (map + markers + states)",
+      "body": "**Epic:** EPIC-004\n**User Story:** US9\n**File:** source/apps/web/src/pages/Home.tsx\n**Phase:** 4\n**Depends On:** T025, T019\n**Description:** Create Home page integrating MapView + useNearbyStations. Render markers for each station. Handle loading spinner, error with retry, empty state message.",
+      "labels": "EPIC-004,US9,phase-4",
+      "sprint": "sprint-001",
+      "gh_id": "262"
+    },
+    {
+      "title": "T027 - Create App entry point with router",
+      "body": "**Epic:** EPIC-004\n**User Story:** US9\n**File:** source/apps/web/src/App.tsx\n**Phase:** 4\n**Depends On:** T026\n**Description:** Create App.tsx entry point, mount Home page, configure React Router if needed.",
+      "labels": "EPIC-004,US9,phase-4",
+      "sprint": "sprint-001",
+      "gh_id": "263"
+    },
+    {
+      "title": "T028 - Full stack end-to-end verification",
+      "body": "**Epic:** ALL\n**User Story:** ALL\n**Phase:** 5\n**Depends On:** T022, T027\n**Description:** Run full stack: Docker → Traefik → driver-service → DB → API → Leaflet map. Verify all success criteria. Document results.",
+      "labels": "verification,phase-5",
+      "sprint": "sprint-001",
+      "gh_id": "264"
+    },
+    {
+      "title": "T029 - Update docs/SYSTEM_STATE.md",
+      "body": "**Epic:** ALL\n**User Story:** ALL\n**File:** docs/SYSTEM_STATE.md\n**Phase:** 5\n**Depends On:** T028\n**Description:** Update SYSTEM_STATE.md with sprint-001 deployment state, service endpoints, schema version.",
+      "labels": "verification,phase-5",
+      "sprint": "sprint-001",
+      "gh_id": "265"
+    },
+    {
+      "title": "T030 - Create sprint review document",
+      "body": "**Epic:** ALL\n**User Story:** ALL\n**File:** execution/sprints/sprint-001/review/sprint_review.md\n**Phase:** 5\n**Depends On:** T028\n**Description:** Create sprint review documenting completed work, deviations, known issues, follow-up items.",
+      "labels": "verification,phase-5",
+      "sprint": "sprint-001",
+      "gh_id": "266"
+    }
+  ],
+  "last_sync": "2026-06-21T01:40:39Z",
+  "sync_hash": "a58209b636ebe95ee73fa3a1f0f8f99ab6737c065b17b370069d0838ab2cc73f"
 }

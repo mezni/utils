@@ -1,0 +1,19 @@
+http:
+  routers:
+    driver-api:
+      rule: "PathPrefix(`/api/v1/driver`)"
+      service: driver-service
+      middlewares:
+        - strip-driver-prefix
+
+  services:
+    driver-service:
+      loadBalancer:
+        servers:
+          - url: "http://driver-service:3001"
+
+  middlewares:
+    strip-driver-prefix:
+      stripPrefix:
+        prefixes:
+          - "/api/v1/driver"
