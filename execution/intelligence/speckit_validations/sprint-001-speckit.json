@@ -1,0 +1,117 @@
+{
+  "sprint": "sprint-001",
+  "phase": "SPEC",
+  "validated_at": null,
+  "status": "PENDING_USER_REVIEW",
+  "checks": [
+    {
+      "id": "CONSTITUTION-001",
+      "rule": "Service topology — no new services",
+      "result": "PASS",
+      "detail": "Only driver-service used. auth-service and admin-service not introduced."
+    },
+    {
+      "id": "CONSTITUTION-002",
+      "rule": "Tech stack compliance",
+      "result": "PASS",
+      "detail": "Rust/Actix (backend), React/Leaflet (web), PostgreSQL/PostGIS (DB) match constitution §2."
+    },
+    {
+      "id": "CONSTITUTION-003",
+      "rule": "Validation-phase exclusions",
+      "result": "PASS",
+      "detail": "No OCPP, payments, telemetry, K8s, or other excluded systems."
+    },
+    {
+      "id": "CONSTITUTION-004",
+      "rule": "Entity ID format (nanoid)",
+      "result": "PASS_DEFERRED",
+      "detail": "stations use synthetic BIGINT ID during OSM import. nanoid(12) migration deferred to post-sprint. No manual ID assignment — automated only."
+    },
+    {
+      "id": "ARCHITECTURE-001",
+      "rule": "Service port assignment",
+      "result": "PASS",
+      "detail": "driver-service on :3001 matches architecture."
+    },
+    {
+      "id": "ARCHITECTURE-002",
+      "rule": "Route prefix alignment",
+      "result": "PASS",
+      "detail": "API endpoint under /api/v1/driver/* matches Traefik routing table."
+    },
+    {
+      "id": "ARCHITECTURE-003",
+      "rule": "Schema ownership",
+      "result": "WARN",
+      "detail": "Feature 4 writes from gis → inventory without admin-service mediation. Accepted as bootstrap exception. Must be resolved post-validation."
+    },
+    {
+      "id": "ARCHITECTURE-004",
+      "rule": "Database topology",
+      "result": "PASS",
+      "detail": "Only platform_db used. No additional databases created."
+    },
+    {
+      "id": "GUARDRAILS-001",
+      "rule": "Soft-delete on stations (guardrails §4.3)",
+      "result": "PASS",
+      "detail": "inventory.stations includes deleted_at TIMESTAMPTZ."
+    },
+    {
+      "id": "GUARDRAILS-002",
+      "rule": "Test data isolation (guardrails §4.4 / KNOWN-001)",
+      "result": "PASS",
+      "detail": "inventory.stations has is_test column. find_nearby_stations includes WHERE is_test = FALSE."
+    },
+    {
+      "id": "GUARDRAILS-003",
+      "rule": "Contract-first (guardrails §5)",
+      "result": "PASS",
+      "detail": "OpenAPI spec generated before implementation (SPEC phase)."
+    },
+    {
+      "id": "GUARDRAILS-004",
+      "rule": "Forbidden infrastructure (guardrails §1.2)",
+      "result": "PASS",
+      "detail": "No Kafka, K8s, service mesh, or other forbidden infra."
+    },
+    {
+      "id": "STANDARDS-001",
+      "rule": "Rust clean architecture layers",
+      "result": "PASS",
+      "detail": "driver-service follows api/domain/application/infrastructure structure."
+    },
+    {
+      "id": "STANDARDS-002",
+      "rule": "SQLx compile-time queries",
+      "result": "PASS_SPEC_ONLY",
+      "detail": "Requires verification at IMPLEMENT phase. Spec mandates SQLx query! macros, not raw strings."
+    },
+    {
+      "id": "KNOWN-BUGS-001",
+      "rule": "KNOWN-001: is_test filter on spatial queries",
+      "result": "PASS",
+      "detail": "Spec includes is_test=FALSE in find_nearby_stations."
+    },
+    {
+      "id": "KNOWN-BUGS-002",
+      "rule": "KNOWN-003: single nearby endpoint",
+      "result": "PASS",
+      "detail": "Only one /nearby endpoint, in driver-service."
+    },
+    {
+      "id": "DEPENDENCY-GRAPH-001",
+      "rule": "No circular dependencies",
+      "result": "PASS",
+      "detail": "DAG is acyclic. All dependencies satisfied. Execution order valid."
+    }
+  ],
+  "summary": {
+    "pass": 15,
+    "warn": 1,
+    "fail": 0,
+    "deferred": 1,
+    "pending_user_review": true
+  }
+}
