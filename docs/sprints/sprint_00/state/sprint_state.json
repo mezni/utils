@@ -1,0 +1,63 @@
+{
+  "sprint": 0,
+  "title": "System Bootstrap & Enforcement Kernel",
+  "status": "in_progress",
+  "constitution_version": "1.15.2",
+  "started": null,
+  "completed": null,
+  "deliverables": {
+    "monorepo_bootstrap": "not_started",
+    "speckit_enforcement_layer": "completed",
+    "ci_kernel": "not_started",
+    "service_topology_lock": "not_started",
+    "database_bootstrap": "not_started",
+    "identity_system_init": "not_started",
+    "dependency_graph_validator": "not_started",
+    "sqlx_enforcement": "not_started",
+    "frontend_package_scaffold": "not_started",
+    "analytics_write_gate": "not_started",
+    "identity_validators": "not_started",
+    "service_skeletons": "not_started"
+  },
+  "ci_stages": {
+    "format_check": "not_implemented",
+    "type_check": "not_implemented",
+    "sqlx_compile_check": "not_implemented",
+    "schema_validation": "not_implemented",
+    "identity_validation": "not_implemented",
+    "dependency_graph_validation": "not_implemented",
+    "analytics_write_gate": "not_implemented",
+    "integration_test_smoke": "not_implemented"
+  },
+  "exit_criteria": {
+    "three_services_exist": false,
+    "ci_guard_passes": false,
+    "all_schemas_created": false,
+    "uuid_nanoid_separated": false,
+    "analytics_write_enforced": false,
+    "no_illegal_imports": false
+  },
+  "blockers": [],
+  "known_issues": [
+    {
+      "id": "KNOWN-001",
+      "description": "Test stations leaking - must filter is_test = FALSE",
+      "severity": "medium"
+    },
+    {
+      "id": "KNOWN-002",
+      "description": "Missing deleted_at field - required for soft delete",
+      "severity": "medium"
+    },
+    {
+      "id": "KNOWN-003",
+      "description": "Duplicate nearby endpoint - driver-service owns",
+      "severity": "low"
+    },
+    {
+      "id": "KNOWN-004",
+      "description": "CI grep brittle - needs regex-safe enforcement",
+      "severity": "low"
+    }
+  ]
+}

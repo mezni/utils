@@ -1,4 +1,4 @@
-# Sprint 2 Review — GIS Engine Foundation
+# Sprint 4 Review — Telemetry Ingestion Core
 
 **Status**: NOT_STARTED
 **Constitution Version**: 1.15.2
@@ -7,7 +7,7 @@
 
 ## Summary
 
-Sprint 2 builds the core spatial intelligence layer: OpenStreetMap ingestion, PostGIS query engine, Redis spatial caching, and map-ready APIs for mobile and web clients.
+Sprint 4 establishes a fully controlled analytics pipeline where all frontend interaction data flows into a single ingestion endpoint, driver-service is the only writer to analytics_db, and events are validated, normalized, deduplicated, and versioned.
 
 ---
 
@@ -19,35 +19,32 @@ Sprint 2 builds the core spatial intelligence layer: OpenStreetMap ingestion, Po
 
 ## Blockers
 
-*Pending Sprint 1 completion (identity system).*
+*Pending Sprint 3 completion (inventory system).*
 
 ---
 
 ## Architectural Guarantees (Target)
 
 After completion:
-- [ ] Spatial system is fully isolated (driver-service owns all GIS logic)
-- [ ] No distributed complexity introduced (no Kafka, no stream processing)
-- [ ] Fully reproducible ingestion pipeline (OSM → PostGIS deterministic)
-- [ ] Performance layer established (Redis + materialized views)
-- [ ] Frontend is purely consumer layer (no spatial logic leakage)
+- [ ] Full event pipeline exists: Frontend → driver-service → analytics_db
+- [ ] Single ingestion authority enforced (no distributed telemetry writes)
+- [ ] Replay-safe analytics system (idempotent ingestion guaranteed)
+- [ ] Clean separation of concerns: frontend emits events only, driver-service processes everything, analytics_db is write-locked
 
 ---
 
 ## System Architecture (Target)
 
 ```
-OSM
- ↓
-driver-service ingestion
- ↓
-platform_db.gis (PostGIS)
- ↓
-materialized views
- ↓
-driver-service API
- ↓
-Redis cache
- ↓
-frontend (mobile + web)
+Frontend (mobile + web)
+        ↓
+Telemetry SDK (client-core)
+        ↓
+Traefik Gateway
+        ↓
+driver-service (ingestion + normalization)
+        ↓
+analytics pipeline
+        ↓
+analytics_db (write-only)
 ```

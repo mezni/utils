@@ -1,4 +1,4 @@
-# Sprint 3 Review — Inventory System (Admin Domain)
+# Sprint 5 Review — Analytics Read Layer (Admin Visibility)
 
 **Status**: NOT_STARTED
 **Constitution Version**: 1.15.2
@@ -7,7 +7,7 @@
 
 ## Summary
 
-Sprint 3 implements the station/operator management layer: partner onboarding, station + charger inventory, admin-controlled infrastructure integrity, and audit-safe CRUD operations.
+Sprint 5 builds a controlled analytics consumption system. admin-service can read analytics data, driver-service remains the ONLY writer, and aggregated insights are introduced without violating data ownership rules.
 
 ---
 
@@ -19,33 +19,30 @@ Sprint 3 implements the station/operator management layer: partner onboarding, s
 
 ## Blockers
 
-*Pending Sprint 2 completion (GIS system).*
+*Pending Sprint 4 completion (telemetry pipeline).*
 
 ---
 
 ## Architectural Guarantees (Target)
 
 After completion:
-- [ ] Full inventory control plane exists (partners, stations, chargers fully managed)
-- [ ] Strict ownership boundaries enforced (admin-service ONLY writer for inventory)
-- [ ] Clean separation from GIS system (GIS remains driver-service domain)
-- [ ] Auditability introduced (all changes traceable via event pipeline)
-- [ ] No analytics coupling introduced (strictly routed via driver-service)
+- [ ] Analytics becomes usable (not just stored data) — dashboards and KPIs operational
+- [ ] Strict write isolation preserved (driver-service remains only writer)
+- [ ] admin-service becomes intelligence layer (no mutation authority)
+- [ ] System gains observability without breaking rules (controlled read projections only)
 
 ---
 
 ## System Architecture (Target)
 
 ```
-admin-dashboard
-      ↓
-admin-service
-      ↓
-platform_db.inventory
-      ↓
-audit events
-      ↓
-driver-service ingestion
-      ↓
-analytics_db (write only driver-service)
+frontend dashboards
+        ↓
+admin-service (analytics API)
+        ↓
+analytics_db (READ ONLY)
+        ↑
+driver-service (ONLY WRITER)
+        ↓
+telemetry ingestion pipeline
 ```

@@ -1,33 +1,33 @@
 {
-  "sprint": 3,
-  "title": "Inventory System (Admin Domain)",
+  "sprint": 5,
+  "title": "Analytics Read Layer (Admin Visibility)",
   "status": "not_started",
   "constitution_version": "1.15.2",
-  "dependencies": ["Sprint 2"],
+  "dependencies": ["Sprint 4"],
   "deliverables": {
-    "partner_management": "not_started",
-    "station_management": "not_started",
-    "charger_management": "not_started",
-    "inventory_api_layer": "not_started",
-    "materialized_view_sync": "not_started",
-    "audit_logging_pipeline": "not_started",
-    "referential_integrity": "not_started",
-    "admin_dashboard_ui": "not_started"
+    "analytics_read_api": "not_started",
+    "analytics_query_layer": "not_started",
+    "kpi_aggregation_engine": "not_started",
+    "materialized_analytics_views": "not_started",
+    "partner_dashboard_ui": "not_started",
+    "station_intelligence_api": "not_started",
+    "analytics_read_isolation": "not_started",
+    "cached_analytics_layer": "not_started"
   },
   "ci_additions": {
-    "inventory_ownership_gate": "not_implemented",
-    "entity_identity_gate": "not_implemented",
-    "referential_integrity_gate": "not_implemented",
-    "soft_delete_enforcement_gate": "not_implemented",
-    "audit_pipeline_gate": "not_implemented"
+    "read_only_analytics_gate": "not_implemented",
+    "query_safety_gate": "not_implemented",
+    "kpi_integrity_gate": "not_implemented",
+    "view_ownership_gate": "not_implemented",
+    "cache_consistency_gate": "not_implemented"
   },
   "exit_criteria": {
-    "full_crud_working": false,
-    "referential_integrity_enforced": false,
-    "prefix_enforcement_validated": false,
-    "audit_events_generated": false,
-    "ownership_gates_pass": false,
-    "soft_delete_enforced": false
+    "admin_can_read_analytics_safely": false,
+    "no_write_paths_outside_driver": false,
+    "all_kpis_from_validated_events": false,
+    "cached_analytics_operational": false,
+    "read_only_enforcement_passes": false,
+    "query_safety_validated": false
   },
-  "blockers": ["Sprint 2 must complete first"]
+  "blockers": ["Sprint 4 must complete first"]
 }

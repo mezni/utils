@@ -1,4 +1,4 @@
-# Sprint 1 Review — Identity & Security Core
+# Sprint 2 Review — GIS Engine Foundation
 
 **Status**: NOT_STARTED
 **Constitution Version**: 1.15.2
@@ -7,7 +7,7 @@
 
 ## Summary
 
-Sprint 1 establishes the foundational identity and security layer. Keycloak becomes the sole identity authority, auth-service handles JIT user projection, and all services enforce JWT validation + RBAC.
+Sprint 2 builds the core spatial intelligence layer: OpenStreetMap ingestion, PostGIS query engine, Redis spatial caching, and map-ready APIs for mobile and web clients.
 
 ---
 
@@ -19,30 +19,35 @@ Sprint 1 establishes the foundational identity and security layer. Keycloak beco
 
 ## Blockers
 
-*Pending Sprint 0 completion (CI pipeline, service skeletons, DB bootstrap).*
+*Pending Sprint 1 completion (identity system).*
 
 ---
 
-## Security Guarantees (Target)
+## Architectural Guarantees (Target)
 
 After completion:
-- [ ] Identity is fully unified: Keycloak = source of truth, platform_db = projection only
-- [ ] No unauthorized identity creation paths: JIT controlled strictly by auth-service
-- [ ] Full RBAC enforcement at gateway + service level
-- [ ] Zero-trust enforcement active: no internal service trust assumptions
+- [ ] Spatial system is fully isolated (driver-service owns all GIS logic)
+- [ ] No distributed complexity introduced (no Kafka, no stream processing)
+- [ ] Fully reproducible ingestion pipeline (OSM → PostGIS deterministic)
+- [ ] Performance layer established (Redis + materialized views)
+- [ ] Frontend is purely consumer layer (no spatial logic leakage)
 
 ---
 
-## Identity Layer Stack (Target)
+## System Architecture (Target)
 
 ```
-Keycloak
-   ↓
-Traefik (JWT validation)
-   ↓
-auth-service (JIT + projection)
-   ↓
-platform_db.users
-   ↓
-RBAC enforced services
+OSM
+ ↓
+driver-service ingestion
+ ↓
+platform_db.gis (PostGIS)
+ ↓
+materialized views
+ ↓
+driver-service API
+ ↓
+Redis cache
+ ↓
+frontend (mobile + web)
 ```

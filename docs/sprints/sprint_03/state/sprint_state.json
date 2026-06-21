@@ -1,34 +1,33 @@
 {
-  "sprint": 2,
-  "title": "GIS Engine Foundation",
+  "sprint": 4,
+  "title": "Telemetry Ingestion Core",
   "status": "not_started",
   "constitution_version": "1.15.2",
-  "dependencies": ["Sprint 1"],
+  "dependencies": ["Sprint 3"],
   "deliverables": {
-    "osm_ingestion_pipeline": "not_started",
-    "gis_schema_creation": "not_started",
-    "postgis_query_engine": "not_started",
-    "redis_spatial_cache": "not_started",
-    "map_rendering_api": "not_started",
-    "materialized_views": "not_started",
-    "spatial_normalization_layer": "not_started",
-    "frontend_map_integration": "not_started"
+    "telemetry_ingestion_api": "not_started",
+    "event_validation_layer": "not_started",
+    "event_normalization_pipeline": "not_started",
+    "analytics_db_writer": "not_started",
+    "frontend_telemetry_sdk": "not_started",
+    "event_schema_registry": "not_started",
+    "idempotency_system": "not_started",
+    "gateway_telemetry_routing": "not_started"
   },
   "ci_additions": {
-    "gis_ownership_gate": "not_implemented",
-    "spatial_query_safety_gate": "not_implemented",
-    "redis_access_gate": "not_implemented",
-    "osm_reproducibility_gate": "not_implemented",
-    "map_api_contract_gate": "not_implemented"
+    "analytics_write_gate": "not_implemented",
+    "event_schema_validation_gate": "not_implemented",
+    "idempotency_gate": "not_implemented",
+    "telemetry_routing_gate": "not_implemented",
+    "payload_structure_gate": "not_implemented"
   },
   "exit_criteria": {
-    "osm_ingestion_deterministic": false,
-    "postgis_queries_correct": false,
-    "nearby_endpoint_functional": false,
-    "redis_cache_operational": false,
-    "gis_ownership_passes": false,
-    "spatial_safety_enforced": false,
-    "ingestion_reproducibility_verified": false
+    "events_flow_through_driver": false,
+    "no_external_analytics_writes": false,
+    "schema_validation_enforced": false,
+    "idempotency_guaranteed": false,
+    "analytics_gate_passes": false,
+    "telemetry_routing_enforced": false
   },
-  "blockers": ["Sprint 1 must complete first"]
+  "blockers": ["Sprint 3 must complete first"]
 }

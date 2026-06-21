@@ -1,8 +1,8 @@
-# Sprint 1 — Identity & Security Core
+# Sprint 2 — GIS Engine Foundation
 
 **Status**: NOT_STARTED
 **Constitution Version**: 1.15.2
-**Dependencies**: Sprint 0 (CI pipeline, service skeletons, DB bootstrap)
+**Dependencies**: Sprint 1 (identity system live, JWT validation working)
 
 ---
 
@@ -10,58 +10,58 @@
 
 | ID | Task | Owner | Status |
 |----|------|-------|--------|
-| S1-001 | Configure Keycloak realm `bornemap` | team | NOT_STARTED |
-| S1-002 | Create Keycloak clients (mobile-driver, web-driver, admin-dashboard) | team | NOT_STARTED |
-| S1-003 | Define hard-coded roles (driver, partner, admin) | team | NOT_STARTED |
-| S1-004 | Implement JWT validation middleware (shared-infra/jwt.rs) | team | NOT_STARTED |
-| S1-005 | Implement shared JWT module with Keycloak JWKS verification | team | NOT_STARTED |
-| S1-006 | Implement JWT validation in auth-service middleware | team | NOT_STARTED |
-| S1-007 | Implement JWT validation in driver-service middleware | team | NOT_STARTED |
-| S1-008 | Implement JWT validation in admin-service middleware | team | NOT_STARTED |
-| S1-009 | Create `users.user_profiles` table (UUID PK, role, preferences, timestamps) | team | NOT_STARTED |
-| S1-010 | Implement JIT provisioning (upsert user on first valid JWT) | team | NOT_STARTED |
-| S1-011 | Implement Traefik forward-auth JWT validation | team | NOT_STARTED |
-| S1-012 | Configure gateway route protection by role | team | NOT_STARTED |
-| S1-013 | Implement RBAC middleware (role extraction + route guard) | team | NOT_STARTED |
-| S1-014 | Implement resource ownership checks (ABAC layer) | team | NOT_STARTED |
-| S1-015 | Implement auth-service Keycloak sync endpoint | team | NOT_STARTED |
-| S1-016 | Implement audit logging for login success/failure, token rejection | team | NOT_STARTED |
+| S2-001 | Implement OSM ingestion pipeline in driver-service (batch import, idempotent) | team | NOT_STARTED |
+| S2-002 | Create `gis.osm_charging_stations_temp` table (staging) | team | NOT_STARTED |
+| S2-003 | Create `gis.osm_charging_stations` table (curated) | team | NOT_STARTED |
+| S2-004 | Implement staging → curated ETL pipeline | team | NOT_STARTED |
+| S2-005 | Implement PostGIS spatial query engine (nearby, bounding box, radius) | team | NOT_STARTED |
+| S2-006 | Implement `GET /api/v1/driver/nearby` endpoint | team | NOT_STARTED |
+| S2-007 | Implement `GET /api/v1/driver/station/:id` endpoint | team | NOT_STARTED |
+| S2-008 | Create materialized views (mv_stations_geo, mv_stations_summary) | team | NOT_STARTED |
+| S2-009 | Set up Redis cache layer (geo:radius, geo:tile keys) | team | NOT_STARTED |
+| S2-010 | Implement Redis spatial cache read/write in driver-service | team | NOT_STARTED |
+| S2-011 | Implement map rendering API contract (domain-types DTOs) | team | NOT_STARTED |
+| S2-012 | Implement GIS data normalization layer (OSM tag → internal schema) | team | NOT_STARTED |
+| S2-013 | Implement station clustering support in spatial queries | team | NOT_STARTED |
 
 ## Should Have
 
 | ID | Task | Owner | Status |
 |----|------|-------|--------|
-| S1-017 | Create integration tests for JWT validation | team | NOT_STARTED |
-| S1-018 | Create integration tests for JIT provisioning | team | NOT_STARTED |
-| S1-019 | Create CI identity validation gate (UUID detection) | team | NOT_STARTED |
-| S1-020 | Create CI Keycloak dependency gate | team | NOT_STARTED |
-| S1-021 | Create CI RBAC coverage check | team | NOT_STARTED |
-| S1-022 | Create CI session consistency check | team | NOT_STARTED |
+| S2-014 | Create mobile map view (Expo SDK 54 + markers + clustering) | team | NOT_STARTED |
+| S2-015 | Create web map view (React + Leaflet + station popups) | team | NOT_STARTED |
+| S2-016 | Implement user location pin on mobile | team | NOT_STARTED |
+| S2-017 | Create CI GIS ownership gate | team | NOT_STARTED |
+| S2-018 | Create CI spatial query safety gate | team | NOT_STARTED |
+| S2-019 | Create CI Redis access gate | team | NOT_STARTED |
+| S2-020 | Create CI OSM reproducibility gate | team | NOT_STARTED |
+| S2-021 | Create CI map API contract gate | team | NOT_STARTED |
 
 ## Nice to Have
 
 | ID | Task | Owner | Status |
 |----|------|-------|--------|
-| S1-023 | Create Keycloak realm export (infrastructure/keycloak/realm-bornemap.json) | team | NOT_STARTED |
-| S1-024 | Add token blacklist support (logout enforcement) | team | NOT_STARTED |
-| S1-025 | Add token replay detection (jti tracking) | team | NOT_STARTED |
+| S2-022 | Create `tools/import_osm.sh` reproducibility script | team | NOT_STARTED |
+| S2-023 | Add station filtering UI (web + mobile) | team | NOT_STARTED |
+| S2-024 | Add basic distance-to-user indicator | team | NOT_STARTED |
 
-## CI Additions (Sprint 1)
+## CI Additions (Sprint 2)
 
 | ID | Gate | Rule |
 |----|------|------|
-| CI-1.1 | Identity Validation Gate | FAIL if users schema contains non-UUID IDs or nanoid in auth tables |
-| CI-1.2 | Keycloak Dependency Gate | FAIL if any service other than auth-service calls Keycloak Admin API |
-| CI-1.3 | RBAC Coverage Check | FAIL if any endpoint missing role guard |
-| CI-1.4 | Session Consistency Check | FAIL if JWT role != platform_db role mapping |
+| CI-2.1 | GIS Ownership Gate | FAIL if any service other than driver-service writes to gis schema |
+| CI-2.2 | Spatial Query Safety Gate | FAIL if raw SQL string used in spatial queries or non-SQLx queries in driver-service |
+| CI-2.3 | Redis Access Gate | FAIL if Redis accessed outside driver-service |
+| CI-2.4 | OSM Reproducibility Gate | FAIL if ingestion pipeline is non-deterministic or missing idempotency key |
+| CI-2.5 | Map API Contract Gate | FAIL if API response deviates from domain-types contract |
 
 ## Exit Criteria
 
-Sprint 1 is COMPLETE ONLY IF:
-- [ ] Keycloak fully integrated with realm `bornemap`
-- [ ] JWT validation working across all 3 services
-- [ ] `user_profiles` synchronized correctly (JIT provisioning)
-- [ ] RBAC enforced everywhere (no bypass routes exist)
-- [ ] Identity validation CI gate passes
-- [ ] Keycloak gate enforced
-- [ ] Session consistency verified
+Sprint 2 is COMPLETE ONLY IF:
+- [ ] OSM ingestion works deterministically (batch, idempotent)
+- [ ] PostGIS queries return correct spatial results
+- [ ] `/nearby` endpoint fully functional with contract enforced
+- [ ] Redis caching operational and isolated to driver-service
+- [ ] GIS ownership gate passes
+- [ ] Spatial query safety enforced
+- [ ] Ingestion reproducibility verified

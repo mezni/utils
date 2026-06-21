@@ -1,7 +1,8 @@
-# Sprint 0 Backlog — System Bootstrap & Enforcement Kernel
+# Sprint 1 — Identity & Security Core
 
-**Status**: Current
-**Priority**: Critical (foundational)
+**Status**: NOT_STARTED
+**Constitution Version**: 1.15.2
+**Dependencies**: Sprint 0 (CI pipeline, service skeletons, DB bootstrap)
 
 ---
 
@@ -9,56 +10,58 @@
 
 | ID | Task | Owner | Status |
 |----|------|-------|--------|
-| S0-001 | Initialize monorepo directory structure | team | NOT_STARTED |
-| S0-002 | Create docs/constitution/speckit_enforcement.md | team | ✅ DONE |
-| S0-003 | Implement tools/ci_guard.sh (all 9 stages) | team | NOT_STARTED |
-| S0-004 | Create tools/01_validate_identity.sh | team | NOT_STARTED |
-| S0-005 | Create tools/02_validate_deps.sh | team | NOT_STARTED |
-| S0-006 | Create tools/03_validate_analytics_gate.sh | team | NOT_STARTED |
-| S0-007 | Create tools/04_validate_schema.sh | team | NOT_STARTED |
-| S0-008 | Create tools/05_sqlx_policy_check.sh | team | NOT_STARTED |
-| S0-009 | Create tools/06_ci_guard_final.sh | team | NOT_STARTED |
-| S0-010 | Bootstrap platform_db (users, gis, inventory schemas) | team | NOT_STARTED |
-| S0-011 | Bootstrap analytics_db | team | NOT_STARTED |
-| S0-012 | Bootstrap keycloak_db | team | NOT_STARTED |
-| S0-013 | Create auth-service skeleton with health endpoint | team | NOT_STARTED |
-| S0-014 | Create driver-service skeleton with health endpoint | team | NOT_STARTED |
-| S0-015 | Create admin-service skeleton with health endpoint | team | NOT_STARTED |
-| S0-016 | Scaffold apps/packages/ui-kit | team | NOT_STARTED |
-| S0-017 | Scaffold apps/packages/domain-types | team | NOT_STARTED |
-| S0-018 | Scaffold apps/packages/client-core | team | NOT_STARTED |
-| S0-019 | Create .github/workflows/ci.yml | team | NOT_STARTED |
-| S0-020 | Implement SQLx offline verification | team | NOT_STARTED |
-
----
+| S1-001 | Configure Keycloak realm `bornemap` | team | NOT_STARTED |
+| S1-002 | Create Keycloak clients (mobile-driver, web-driver, admin-dashboard) | team | NOT_STARTED |
+| S1-003 | Define hard-coded roles (driver, partner, admin) | team | NOT_STARTED |
+| S1-004 | Implement JWT validation middleware (shared-infra/jwt.rs) | team | NOT_STARTED |
+| S1-005 | Implement shared JWT module with Keycloak JWKS verification | team | NOT_STARTED |
+| S1-006 | Implement JWT validation in auth-service middleware | team | NOT_STARTED |
+| S1-007 | Implement JWT validation in driver-service middleware | team | NOT_STARTED |
+| S1-008 | Implement JWT validation in admin-service middleware | team | NOT_STARTED |
+| S1-009 | Create `users.user_profiles` table (UUID PK, role, preferences, timestamps) | team | NOT_STARTED |
+| S1-010 | Implement JIT provisioning (upsert user on first valid JWT) | team | NOT_STARTED |
+| S1-011 | Implement Traefik forward-auth JWT validation | team | NOT_STARTED |
+| S1-012 | Configure gateway route protection by role | team | NOT_STARTED |
+| S1-013 | Implement RBAC middleware (role extraction + route guard) | team | NOT_STARTED |
+| S1-014 | Implement resource ownership checks (ABAC layer) | team | NOT_STARTED |
+| S1-015 | Implement auth-service Keycloak sync endpoint | team | NOT_STARTED |
+| S1-016 | Implement audit logging for login success/failure, token rejection | team | NOT_STARTED |
 
 ## Should Have
 
 | ID | Task | Owner | Status |
 |----|------|-------|--------|
-| S0-021 | Create infrastructure/docker-compose/local.yml | team | NOT_STARTED |
-| S0-022 | Create infrastructure/traefik/traefik.toml | team | NOT_STARTED |
-| S0-023 | Create infrastructure/scripts/provision_db.sh | team | NOT_STARTED |
-| S0-024 | Create infrastructure/scripts/deploy.sh | team | NOT_STARTED |
-| S0-025 | Create infrastructure/scripts/migrate.sh | team | NOT_STARTED |
-
----
+| S1-017 | Create integration tests for JWT validation | team | NOT_STARTED |
+| S1-018 | Create integration tests for JIT provisioning | team | NOT_STARTED |
+| S1-019 | Create CI identity validation gate (UUID detection) | team | NOT_STARTED |
+| S1-020 | Create CI Keycloak dependency gate | team | NOT_STARTED |
+| S1-021 | Create CI RBAC coverage check | team | NOT_STARTED |
+| S1-022 | Create CI session consistency check | team | NOT_STARTED |
 
 ## Nice to Have
 
 | ID | Task | Owner | Status |
 |----|------|-------|--------|
-| S0-026 | Create Keycloak realm export (realm-bornemap.json) | team | NOT_STARTED |
-| S0-027 | Set up Redis configuration | team | NOT_STARTED |
-| S0-028 | Create SPEC.md for SpecKit compliance | team | NOT_STARTED |
+| S1-023 | Create Keycloak realm export (infrastructure/keycloak/realm-bornemap.json) | team | NOT_STARTED |
+| S1-024 | Add token blacklist support (logout enforcement) | team | NOT_STARTED |
+| S1-025 | Add token replay detection (jti tracking) | team | NOT_STARTED |
 
----
+## CI Additions (Sprint 1)
 
-## Known Bugs (Carried Forward)
+| ID | Gate | Rule |
+|----|------|------|
+| CI-1.1 | Identity Validation Gate | FAIL if users schema contains non-UUID IDs or nanoid in auth tables |
+| CI-1.2 | Keycloak Dependency Gate | FAIL if any service other than auth-service calls Keycloak Admin API |
+| CI-1.3 | RBAC Coverage Check | FAIL if any endpoint missing role guard |
+| CI-1.4 | Session Consistency Check | FAIL if JWT role != platform_db role mapping |
 
-| ID | Issue | Priority |
-|----|-------|----------|
-| KNOWN-001 | Test stations leaking — filter is_test = FALSE | MEDIUM |
-| KNOWN-002 | Missing deleted_at field | MEDIUM |
-| KNOWN-003 | Duplicate nearby endpoint — driver-service owns | LOW |
-| KNOWN-004 | CI grep brittle — regex-safe enforcement | LOW |
+## Exit Criteria
+
+Sprint 1 is COMPLETE ONLY IF:
+- [ ] Keycloak fully integrated with realm `bornemap`
+- [ ] JWT validation working across all 3 services
+- [ ] `user_profiles` synchronized correctly (JIT provisioning)
+- [ ] RBAC enforced everywhere (no bypass routes exist)
+- [ ] Identity validation CI gate passes
+- [ ] Keycloak gate enforced
+- [ ] Session consistency verified
