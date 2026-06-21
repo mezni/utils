@@ -1,0 +1,33 @@
+{
+  "sprint": 3,
+  "title": "Inventory System (Admin Domain)",
+  "status": "not_started",
+  "constitution_version": "1.15.2",
+  "dependencies": ["Sprint 2"],
+  "deliverables": {
+    "partner_management": "not_started",
+    "station_management": "not_started",
+    "charger_management": "not_started",
+    "inventory_api_layer": "not_started",
+    "materialized_view_sync": "not_started",
+    "audit_logging_pipeline": "not_started",
+    "referential_integrity": "not_started",
+    "admin_dashboard_ui": "not_started"
+  },
+  "ci_additions": {
+    "inventory_ownership_gate": "not_implemented",
+    "entity_identity_gate": "not_implemented",
+    "referential_integrity_gate": "not_implemented",
+    "soft_delete_enforcement_gate": "not_implemented",
+    "audit_pipeline_gate": "not_implemented"
+  },
+  "exit_criteria": {
+    "full_crud_working": false,
+    "referential_integrity_enforced": false,
+    "prefix_enforcement_validated": false,
+    "audit_events_generated": false,
+    "ownership_gates_pass": false,
+    "soft_delete_enforced": false
+  },
+  "blockers": ["Sprint 2 must complete first"]
+}

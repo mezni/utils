@@ -1,0 +1,33 @@
+{
+  "sprint": 4,
+  "title": "Telemetry Ingestion Core",
+  "status": "not_started",
+  "constitution_version": "1.15.2",
+  "dependencies": ["Sprint 3"],
+  "deliverables": {
+    "telemetry_ingestion_api": "not_started",
+    "event_validation_layer": "not_started",
+    "event_normalization_pipeline": "not_started",
+    "analytics_db_writer": "not_started",
+    "frontend_telemetry_sdk": "not_started",
+    "event_schema_registry": "not_started",
+    "idempotency_system": "not_started",
+    "gateway_telemetry_routing": "not_started"
+  },
+  "ci_additions": {
+    "analytics_write_gate": "not_implemented",
+    "event_schema_validation_gate": "not_implemented",
+    "idempotency_gate": "not_implemented",
+    "telemetry_routing_gate": "not_implemented",
+    "payload_structure_gate": "not_implemented"
+  },
+  "exit_criteria": {
+    "events_flow_through_driver": false,
+    "no_external_analytics_writes": false,
+    "schema_validation_enforced": false,
+    "idempotency_guaranteed": false,
+    "analytics_gate_passes": false,
+    "telemetry_routing_enforced": false
+  },
+  "blockers": ["Sprint 3 must complete first"]
+}

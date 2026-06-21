@@ -1,0 +1,35 @@
+{
+  "sprint": 7,
+  "title": "System Hardening & Reliability Layer",
+  "status": "not_started",
+  "constitution_version": "1.15.2",
+  "dependencies": ["Sprint 6"],
+  "deliverables": {
+    "service_resilience_layer": "not_started",
+    "postgis_query_safety": "not_started",
+    "analytics_write_safety": "not_started",
+    "transaction_integrity": "not_started",
+    "read_write_separation": "not_started",
+    "caching_consistency": "not_started",
+    "failure_mode_standardization": "not_started",
+    "health_monitoring": "not_started",
+    "load_stability_tests": "not_started"
+  },
+  "ci_additions": {
+    "query_safety_gate": "not_implemented",
+    "transaction_safety_gate": "not_implemented",
+    "retry_safety_gate": "not_implemented",
+    "cache_invalidation_gate": "not_implemented",
+    "error_contract_gate": "not_implemented",
+    "cross_schema_mutation_gate": "not_implemented"
+  },
+  "exit_criteria": {
+    "services_handle_failure_safely": false,
+    "no_cascading_failures": false,
+    "transaction_rollback_verified": false,
+    "no_partial_writes": false,
+    "geo_queries_bounded": false,
+    "all_gates_pass": false
+  },
+  "blockers": ["Sprint 6 must complete first"]
+}

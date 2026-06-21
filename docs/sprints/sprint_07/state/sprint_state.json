@@ -1,0 +1,33 @@
+{
+  "sprint": 6,
+  "title": "Driver Experience Layer (UX + Product Polish)",
+  "status": "not_started",
+  "constitution_version": "1.15.2",
+  "dependencies": ["Sprint 5"],
+  "deliverables": {
+    "favorites_system": "not_started",
+    "user_preferences_system": "not_started",
+    "offline_cache_layer": "not_started",
+    "map_ux_upgrade": "not_started",
+    "search_experience": "not_started",
+    "performance_optimization": "not_started",
+    "ui_ux_stabilization": "not_started",
+    "session_continuity": "not_started"
+  },
+  "ci_additions": {
+    "preferences_isolation_gate": "not_implemented",
+    "offline_storage_gate": "not_implemented",
+    "search_safety_gate": "not_implemented",
+    "ui_boundary_gate": "not_implemented",
+    "performance_regression_gate": "not_implemented"
+  },
+  "exit_criteria": {
+    "map_fast_and_stable": false,
+    "favorites_operational": false,
+    "preferences_in_existing_schema": false,
+    "caching_optimized": false,
+    "no_spatial_regression": false,
+    "ui_rules_pass": false
+  },
+  "blockers": ["Sprint 5 must complete first"]
+}

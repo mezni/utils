@@ -1,0 +1,33 @@
+{
+  "sprint": 1,
+  "title": "Identity & Security Core",
+  "status": "not_started",
+  "constitution_version": "1.15.2",
+  "dependencies": ["Sprint 0"],
+  "deliverables": {
+    "keycloak_realm_setup": "not_started",
+    "jwt_validation_pipeline": "not_started",
+    "user_profile_projection": "not_started",
+    "auth_service_core": "not_started",
+    "gateway_security_enforcement": "not_started",
+    "rbac_enforcement_layer": "not_started",
+    "identity_sync_contract": "not_started",
+    "security_middleware_library": "not_started",
+    "audit_logging": "not_started"
+  },
+  "ci_additions": {
+    "identity_validation_gate": "not_implemented",
+    "keycloak_dependency_gate": "not_implemented",
+    "rbac_coverage_check": "not_implemented",
+    "session_consistency_check": "not_implemented"
+  },
+  "exit_criteria": {
+    "keycloak_integrated": false,
+    "jwt_validation_all_services": false,
+    "user_profiles_synced": false,
+    "rbac_enforced_everywhere": false,
+    "no_bypass_routes": false,
+    "identity_ci_passes": false
+  },
+  "blockers": ["Sprint 0 must complete first"]
+}

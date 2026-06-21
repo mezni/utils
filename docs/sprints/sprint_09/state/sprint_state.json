@@ -1,0 +1,34 @@
+{
+  "sprint": 8,
+  "title": "Security Hardening & Compliance Lockdown",
+  "status": "not_started",
+  "constitution_version": "1.15.2",
+  "dependencies": ["Sprint 7"],
+  "deliverables": {
+    "api_security_hardening": "not_started",
+    "fine_grained_authorization": "not_started",
+    "audit_trail_expansion": "not_started",
+    "data_exfiltration_protection": "not_started",
+    "jwt_security_upgrade": "not_started",
+    "secure_logging_system": "not_started",
+    "rate_limiting_system": "not_started",
+    "security_boundary_reinforcement": "not_started"
+  },
+  "ci_additions": {
+    "authorization_coverage_gate": "not_implemented",
+    "rate_limit_gate": "not_implemented",
+    "payload_safety_gate": "not_implemented",
+    "security_logging_gate": "not_implemented",
+    "token_security_gate": "not_implemented",
+    "privilege_escalation_gate": "not_implemented"
+  },
+  "exit_criteria": {
+    "all_endpoints_enforce_ownership": false,
+    "rate_limiting_active_everywhere": false,
+    "no_sensitive_data_in_logs": false,
+    "no_privilege_escalation_possible": false,
+    "authz_coverage_passes": false,
+    "jwt_security_validated": false
+  },
+  "blockers": ["Sprint 7 must complete first"]
+}
