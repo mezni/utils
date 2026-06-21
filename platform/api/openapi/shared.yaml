@@ -1,0 +1,7 @@
+openapi: "3.0.3"
+info:
+  title: BorneMap Shared Components
+  version: "0.1.0"
+  description: Reusable schemas and components shared across API specs
+components:
+  schemas: {}

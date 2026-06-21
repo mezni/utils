@@ -1,0 +1,10 @@
+{
+  "phase": "PRE-INIT",
+  "active_sprint": null,
+  "sprints_completed": [],
+  "current_phase_started_at": null,
+  "speckit_last_pass": null,
+  "graph_valid": false,
+  "github_synced": false,
+  "system_valid": false
+}

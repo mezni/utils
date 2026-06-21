@@ -1,0 +1,8 @@
+openapi: "3.0.3"
+info:
+  title: BorneMap Admin API
+  version: "0.1.0"
+  description: Partner and admin endpoints — routed via /api/v1/admin/*
+servers:
+  - url: /api/v1/admin
+paths: {}

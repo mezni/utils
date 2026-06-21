@@ -1,0 +1,13 @@
+[workspace]
+resolver = "2"
+members = [
+    "source/services/auth-service",
+    "source/services/driver-service",
+    "source/services/admin-service",
+    "source/shared/auth-core",
+    "source/shared/db-models",
+    "source/shared/geo",
+    "source/shared/validation",
+    "source/shared/error",
+    "source/shared/utils",
+]

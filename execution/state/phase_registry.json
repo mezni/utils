@@ -1,0 +1,26 @@
+{
+  "phases": [
+    "PRE-INIT",
+    "SPEC",
+    "PLAN",
+    "TASKS",
+    "SPECKIT",
+    "GITHUB_SYNC",
+    "WAIT",
+    "IMPLEMENT",
+    "REVIEW",
+    "ITERATE"
+  ],
+  "transitions": {
+    "PRE-INIT": ["SPEC"],
+    "SPEC": ["PLAN"],
+    "PLAN": ["TASKS"],
+    "TASKS": ["SPECKIT"],
+    "SPECKIT": ["GITHUB_SYNC"],
+    "GITHUB_SYNC": ["WAIT"],
+    "WAIT": ["IMPLEMENT"],
+    "IMPLEMENT": ["REVIEW"],
+    "REVIEW": ["ITERATE"],
+    "ITERATE": ["SPEC"]
+  }
+}

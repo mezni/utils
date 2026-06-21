@@ -1,0 +1,3 @@
+packages:
+  - "source/apps/*"
+  - "source/packages/*"
