@@ -1,0 +1,27 @@
+{
+  "sprint": "sprint-001",
+  "graph": [
+    { "feature": "Feature 1", "name": "Platform Database", "depends_on": [] },
+    { "feature": "Feature 2", "name": "GIS + Inventory Schema", "depends_on": ["Feature 1"] },
+    { "feature": "Feature 3", "name": "OSM Tunisia Import", "depends_on": ["Feature 2"] },
+    { "feature": "Feature 4", "name": "Station Normalization", "depends_on": ["Feature 2", "Feature 3"] },
+    { "feature": "Feature 5", "name": "Nearby Stations SQL Function", "depends_on": ["Feature 2", "Feature 4"] },
+    { "feature": "Feature 6", "name": "Driver API Service", "depends_on": ["Feature 1", "Feature 5"] },
+    { "feature": "Feature 7", "name": "Health Check Endpoint", "depends_on": ["Feature 1", "Feature 6"] },
+    { "feature": "Feature 8", "name": "Driver Map Web UI", "depends_on": ["Feature 6"] }
+  ],
+  "validation": {
+    "acyclic": true,
+    "all_dependencies_satisfied": true,
+    "execution_order": [
+      "Feature 1",
+      "Feature 2",
+      "Feature 3",
+      "Feature 4",
+      "Feature 5",
+      "Feature 6",
+      "Feature 7",
+      "Feature 8"
+    ]
+  }
+}
