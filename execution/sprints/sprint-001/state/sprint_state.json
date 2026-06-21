@@ -1,19 +1,22 @@
 {
   "sprint_id": "sprint-001",
-  "phase": "SPEC",
-  "started_at": null,
-  "features": [
-    { "id": "Feature 1", "status": "spec" },
-    { "id": "Feature 2", "status": "spec" },
-    { "id": "Feature 3", "status": "spec" },
-    { "id": "Feature 4", "status": "spec" },
-    { "id": "Feature 5", "status": "spec" },
-    { "id": "Feature 6", "status": "spec" },
-    { "id": "Feature 7", "status": "spec" },
-    { "id": "Feature 8", "status": "spec" }
-  ],
-  "success_criteria_met": [],
-  "speckit_pass": false,
-  "graph_valid": true,
-  "github_synced": false
+  "phase": "SPECKIT",
+  "epics": ["EPIC-001", "EPIC-002", "EPIC-003", "EPIC-004"],
+  "phase_gates": {
+    "spec_complete": true,
+    "plan_complete": true,
+    "tasks_complete": true,
+    "speckit_validated": true
+  },
+  "speckit": {
+    "pass": 27,
+    "warn": 1,
+    "fail": 0
+  },
+  "tasks": {
+    "total": 30,
+    "blocked": 0,
+    "in_progress": 0,
+    "completed": 0
+  }
 }

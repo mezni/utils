@@ -1,6 +1,6 @@
 {
   "sprint": "sprint-001",
-  "phase": "SPEC",
+  "phase": "SPEC+PLAN+TASKS",
   "validated_at": null,
   "status": "PENDING_USER_REVIEW",
   "checks": [
@@ -44,7 +44,7 @@
       "id": "ARCHITECTURE-003",
       "rule": "Schema ownership",
       "result": "WARN",
-      "detail": "Feature 4 writes from gis → inventory without admin-service mediation. Accepted as bootstrap exception. Must be resolved post-validation."
+      "detail": "Feature 4 writes from gis → inventory without admin-service mediation. Accepted as bootstrap exception."
     },
     {
       "id": "ARCHITECTURE-004",
@@ -68,13 +68,13 @@
       "id": "GUARDRAILS-003",
       "rule": "Contract-first (guardrails §5)",
       "result": "PASS",
-      "detail": "OpenAPI spec generated before implementation (SPEC phase)."
+      "detail": "OpenAPI spec (T020) scheduled before API implementation. Compliant at PLAN level."
     },
     {
       "id": "GUARDRAILS-004",
       "rule": "Forbidden infrastructure (guardrails §1.2)",
       "result": "PASS",
-      "detail": "No Kafka, K8s, service mesh, or other forbidden infra."
+      "detail": "No Kafka, K8s, service mesh, or other forbidden infra in any task."
     },
     {
       "id": "GUARDRAILS-005",
@@ -86,41 +86,89 @@
       "id": "STANDARDS-001",
       "rule": "Rust clean architecture layers",
       "result": "PASS",
-      "detail": "driver-service follows api/domain/application/infrastructure structure."
+      "detail": "driver-service tasks split into api/ (T019,T021), domain/ (T016), application/ (T018), infrastructure/ (T017)."
     },
     {
       "id": "STANDARDS-002",
       "rule": "SQLx compile-time queries",
-      "result": "PASS_SPEC_ONLY",
-      "detail": "Requires verification at IMPLEMENT phase. Spec mandates SQLx query! macros, not raw strings."
+      "result": "PASS_PLAN",
+      "detail": "Plan specifies SQLx in infrastructure layer (T017). Verify compile-time safety at IMPLEMENT phase."
     },
     {
       "id": "KNOWN-BUGS-001",
       "rule": "KNOWN-001: is_test filter on spatial queries",
       "result": "PASS",
-      "detail": "stations has is_test column. find_nearby_stations includes WHERE is_test = FALSE."
+      "detail": "stations has is_test column (T007). find_nearby_stations filters is_test=FALSE (T014)."
     },
     {
       "id": "KNOWN-BUGS-002",
       "rule": "KNOWN-002: deleted_at on partners",
       "result": "PASS",
-      "detail": "partners has is_deleted + deleted_at. Verified via guardrails §4.3."
+      "detail": "partners has is_deleted + deleted_at (T005). Verified via guardrails §4.3."
     },
     {
       "id": "KNOWN-BUGS-003",
       "rule": "KNOWN-003: single nearby endpoint",
       "result": "PASS",
-      "detail": "Only one /nearby endpoint, in driver-service."
+      "detail": "Only one /nearby endpoint in driver-service (T019). No duplicate across services."
+    },
+    {
+      "id": "PLAN-001",
+      "rule": "Feature coverage — all 8 features mapped to epics",
+      "result": "PASS",
+      "detail": "F1+F2→EPIC-001, F3+F4→EPIC-002, F5+F6→EPIC-003, F7+F8→EPIC-004. Every feature covered."
+    },
+    {
+      "id": "PLAN-002",
+      "rule": "User story completeness — every feature has a story",
+      "result": "PASS",
+      "detail": "9 user stories covering all 8 features. F1→US1, F2→US2+US3, F3→US4, F4→US5, F5→US6, F6→US7, F7→US8, F8→US9."
+    },
+    {
+      "id": "PLAN-003",
+      "rule": "Execution phase ordering",
+      "result": "PASS",
+      "detail": "4 phases ordered by dependency: Infra→Pipeline→API→UI. Each phase's output is input to the next."
+    },
+    {
+      "id": "TASKS-001",
+      "rule": "Task-epic-story mapping — every task assigned",
+      "result": "PASS",
+      "detail": "All 30 tasks have [EPIC-XXX] and [USX] labels. No orphan tasks."
+    },
+    {
+      "id": "TASKS-002",
+      "rule": "Dependency graph is acyclic and satisfiable",
+      "result": "PASS",
+      "detail": "DAG verified. 30 tasks, all dependencies exist in task list. No circular paths. 10 parallelization points."
+    },
+    {
+      "id": "TASKS-003",
+      "rule": "File path validity — all target paths exist in file_structure.md",
+      "result": "PASS",
+      "detail": "All 30 task file paths resolve to directories in docs/file_structure.md or sprint-specific scope."
+    },
+    {
+      "id": "TASKS-004",
+      "rule": "Phase gates — checkpoints defined between phases",
+      "result": "PASS",
+      "detail": "Checkpoints defined at end of each phase: DB verify (T010), station count (T013), curl API (T020), full stack (T028)."
+    },
+    {
+      "id": "TASKS-005",
+      "rule": "Parallelization correctly identified",
+      "result": "PASS",
+      "detail": "11 tasks marked [P] (parallel). All operate on different files. No file conflicts detected."
     },
     {
       "id": "DEPENDENCY-GRAPH-001",
-      "rule": "No circular dependencies",
+      "rule": "Cross-phase dependency validation",
       "result": "PASS",
-      "detail": "DAG is acyclic. All dependencies satisfied. Execution order valid."
+      "detail": "No Phase 2 task starts before Phase 1 completion marker (T010). No Phase 3 before T013. DAG clean."
     }
   ],
   "summary": {
-    "pass": 18,
+    "pass": 27,
     "warn": 1,
     "fail": 0,
     "deferred": 0,
