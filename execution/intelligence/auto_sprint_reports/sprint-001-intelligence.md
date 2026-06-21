@@ -84,7 +84,6 @@
 
 | Item | Reason | Target |
 |---|---|---|
-| nanoid(12) entity IDs on stations | OSM import uses synthetic IDs; nanoid migration needed post-import | Post-sprint cleanup |
 | JWT auth on `/nearby` | Sprint 1 is unauthenticated per architecture (public for browse) | Sprint 002+ |
 | Materialized views for geo reads | Sprint 1 queries raw table | Sprint 003+ |
 | Redis cache for spatial queries | Not needed at current scale | Sprint 003+ |
