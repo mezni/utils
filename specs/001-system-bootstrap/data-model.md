@@ -61,22 +61,180 @@ GRANT USAGE ON SCHEMA inventory TO bornemap_driver; -- driver-service needs to q
 
 #### Schema: users
 
-Purpose: Store user profiles and authentication data
+Owned by: auth-service
 
-**Table: users**
+**PostgreSQL Role**: `bornemap_auth`
+
+**Permissions**: READ/WRITE (exclusive)
+
+**Schema Ownership**:
+```sql
+CREATE SCHEMA users;
+GRANT ALL PRIVILEGES ON SCHEMA users TO bornemap_auth;
+```
+
+**Purpose**: Comprehensive user management system with identity integration and role-based profiles
+
+---
+
+**Table: users.user_profiles**
 
 | Column | Type | Constraints | Description |
 |--------|------|-------------|-------------|
-| id | UUID | PRIMARY KEY, NOT NULL | User identifier (Keycloak sub) |
-| created_at | TIMESTAMP | NOT NULL | Account creation timestamp |
-| updated_at | TIMESTAMP | NOT NULL | Last update timestamp |
-| email | VARCHAR(255) | UNIQUE, NOT NULL | User email address |
-| name | VARCHAR(255) | NOT NULL | User display name |
+| id | UUID | PRIMARY KEY, NOT NULL, DEFAULT gen_random_uuid() | User identifier (UUID) |
+| keycloak_sub | VARCHAR(128) | UNIQUE, NOT NULL | Link to Keycloak (OIDC subject) |
+| email | VARCHAR(255) | UNIQUE | User email address |
+| phone | VARCHAR(32) | NULL | User phone number |
+| first_name | VARCHAR(100) | NULL | User first name |
+| last_name | VARCHAR(100) | NULL | User last name |
+| display_name | VARCHAR(150) | NULL | User display name |
+| avatar_url | TEXT | NULL | User avatar image URL |
+| locale | VARCHAR(10) | DEFAULT 'en' | User locale preference |
+| timezone | VARCHAR(50) | DEFAULT 'America/Toronto' | User timezone |
+| status | VARCHAR(20) | NOT NULL, DEFAULT 'active' | User account status (active|suspended|deleted|pending_verification) |
+| email_verified | BOOLEAN | DEFAULT FALSE | Email verification status |
+| phone_verified | BOOLEAN | DEFAULT FALSE | Phone verification status |
+| last_login_at | TIMESTAMPTZ | NULL | Last login timestamp |
+| created_at | TIMESTAMPTZ | NOT NULL, DEFAULT now() | Account creation timestamp |
+| updated_at | TIMESTAMPTZ | NOT NULL, DEFAULT now() | Last update timestamp |
 
 **Indexes**:
-- `idx_users_email` on (email)
+- `idx_users_profiles_email` on (email)
+- `idx_users_profiles_keycloak_sub` on (keycloak_sub)
+- `idx_users_profiles_status` on (status)
 
 **Identity**: UUID (per constitution)
+
+---
+
+**Table: users.driver_profiles**
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| id | UUID | PRIMARY KEY, NOT NULL, DEFAULT gen_random_uuid() | Driver profile ID |
+| user_id | UUID | UNIQUE, NOT NULL | Reference to user_profiles.id |
+| driver_license_number | VARCHAR(100) | NULL | Driver license number |
+| license_country | VARCHAR(2) | NULL | License country code |
+| license_verified | BOOLEAN | DEFAULT FALSE | License verification status |
+| rating_avg | NUMERIC(3,2) | DEFAULT 0.00 | Average driver rating (0-5) |
+| rating_count | INT | DEFAULT 0 | Number of rating events |
+| preferred_charge_speed | VARCHAR(20) | NULL | Preferred charging speed (slow|fast|ultra_fast|any) |
+| home_location_lat | DOUBLE PRECISION | NULL | Home location latitude |
+| home_location_lng | DOUBLE PRECISION | NULL | Home location longitude |
+| created_at | TIMESTAMPTZ | DEFAULT now() | Creation timestamp |
+| updated_at | TIMESTAMPTZ | DEFAULT now() | Last update timestamp |
+
+**Foreign Keys**:
+- user_id → users.user_profiles(id) ON DELETE CASCADE
+
+**Indexes**:
+- `idx_users_driver_profiles_user` on (user_id)
+- `idx_users_driver_profiles_rating` on (rating_avg DESC, rating_count DESC)
+
+**Identity**: UUID
+
+**Purpose**: Driver-specific attributes separated from core identity
+
+---
+
+**Table: users.partner_profiles**
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| id | UUID | PRIMARY KEY, NOT NULL, DEFAULT gen_random_uuid() | Partner profile ID |
+| user_id | UUID | UNIQUE, NOT NULL | Reference to user_profiles.id |
+| organization_name | VARCHAR(255) | NOT NULL | Organization name |
+| organization_type | VARCHAR(50) | NULL | Organization type (utility|fleet|municipality|private_operator) |
+| business_registration_number | VARCHAR(100) | NULL | Business registration number |
+| support_email | VARCHAR(255) | NULL | Support email address |
+| support_phone | VARCHAR(32) | NULL | Support phone number |
+| billing_account_id | VARCHAR(100) | NULL | Billing account identifier |
+| created_at | TIMESTAMPTZ | DEFAULT now() | Creation timestamp |
+| updated_at | TIMESTAMPTZ | DEFAULT now() | Last update timestamp |
+
+**Foreign Keys**:
+- user_id → users.user_profiles(id) ON DELETE CASCADE
+
+**Indexes**:
+- `idx_users_partner_profiles_user` on (user_id)
+- `idx_users_partner_profiles_org_type` on (organization_type)
+
+**Identity**: UUID
+
+**Purpose**: Partner/Operator organization profiles for stations management
+
+---
+
+**Table: users.admin_profiles**
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| id | UUID | PRIMARY KEY, NOT NULL, DEFAULT gen_random_uuid() | Admin profile ID |
+| user_id | UUID | UNIQUE, NOT NULL | Reference to user_profiles.id |
+| admin_level | VARCHAR(20) | DEFAULT 'standard' | Admin privilege level (standard|super|security|ops) |
+| permissions | JSONB | DEFAULT '{}'::jsonb | Admin permissions in JSONB format |
+| last_admin_action_at | TIMESTAMPTZ | NULL | Last admin action timestamp |
+| created_at | TIMESTAMPTZ | DEFAULT now() | Creation timestamp |
+| updated_at | TIMESTAMPTZ | DEFAULT now() | Last update timestamp |
+
+**Foreign Keys**:
+- user_id → users.user_profiles(id) ON DELETE CASCADE
+
+**Indexes**:
+- `idx_users_admin_profiles_user` on (user_id)
+- `idx_users_admin_profiles_level` on (admin_level)
+
+**Identity**: UUID
+
+**Purpose**: Admin metadata for auditing and privilege management
+
+---
+
+**Table: users.user_preferences**
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| id | UUID | PRIMARY KEY, NOT NULL, DEFAULT gen_random_uuid() | Preference profile ID |
+| user_id | UUID | UNIQUE, NOT NULL | Reference to user_profiles.id |
+| charging_preferences | JSONB | DEFAULT '{}'::jsonb | Charging preferences (min_kw, connector_types) |
+| map_preferences | JSONB | DEFAULT '{}'::jsonb | Map preferences (default_zoom, traffic_layer) |
+| notification_preferences | JSONB | DEFAULT '{}'::jsonb | Notification preferences (email, push, sms) |
+| privacy_settings | JSONB | DEFAULT '{}'::jsonb | Privacy settings |
+| created_at | TIMESTAMPTZ | DEFAULT now() | Creation timestamp |
+| updated_at | TIMESTAMPTZ | DEFAULT now() | Last update timestamp |
+
+**Foreign Keys**:
+- user_id → users.user_profiles(id) ON DELETE CASCADE
+
+**Indexes**:
+- `idx_users_preferences_user` on (user_id)
+
+**Identity**: UUID
+
+**Purpose**: User preferences for product and GIS behavior customization
+
+**Example JSONB Content**:
+```json
+{
+  "charging_preferences": {
+    "min_kw": 50,
+    "connector_types": ["CCS", "CHAdeMO"]
+  },
+  "map_preferences": {
+    "default_zoom": 12,
+    "traffic_layer": true
+  },
+  "notification_preferences": {
+    "email": true,
+    "push": true,
+    "sms": false
+  },
+  "privacy_settings": {
+    "show_location": true,
+    "allow_analytics": true
+  }
+}
+```
 
 ---
 
@@ -585,9 +743,26 @@ Purpose: SpecKit configuration and enforcement
 
 ### Users (auth-service)
 
-- **Format**: UUID (Keycloak sub)
-- **Table**: `platform_db.users.id`
-- **Validation**: SHA-256 of email and timestamp
+**Core Identity**: UUID with Keycloak integration
+
+- **Format**: UUID (generated by PostgreSQL)
+- **Tables**:
+  - `users.user_profiles` - Core user profile with Keycloak integration
+  - `users.driver_profiles` - Driver-specific attributes
+  - `users.partner_profiles` - Partner/Operator organization profiles
+  - `users.admin_profiles` - Admin metadata and permissions
+  - `users.user_preferences` - User preferences (charging, map, notifications, privacy)
+
+**Keycloak Integration**:
+- `keycloak_sub` - UUID from Keycloak (OIDC subject)
+- Direct database query only for profile data
+- No direct database access to keycloak_db
+
+**Validation**:
+- Keycloak sub: Must be UUID format
+- Email: Must be valid email format, unique across users
+- Phone: Must be valid phone number format
+- Status: Must be one of (active|suspended|deleted|pending_verification)
 
 ### Entities (driver-service, admin-service)
 
@@ -608,7 +783,7 @@ Purpose: SpecKit configuration and enforcement
 ## Validation Rules
 
 1. **UUID Usage**:
-   - Users MUST use UUID only (Keycloak sub)
+   - Users MUST use UUID only (generated by PostgreSQL, Keycloak sub)
    - No UUID in entity identifiers (STA/CHR/CON/PRT/EVT)
    - No UUID in analytics events (use UUID but check for proper format)
 
@@ -618,9 +793,9 @@ Purpose: SpecKit configuration and enforcement
    - No nanoid in user identifiers
 
 3. **Data Ownership**:
-   - platform_db.users → auth-service (READ/WRITE)
-   - platform_db.gis → driver-service (READ/WRITE)
-   - platform_db.inventory → admin-service (READ/WRITE)
+   - platform_db.users → auth-service (READ/WRITE, exclusive)
+   - platform_db.gis → driver-service (READ/WRITE, exclusive)
+   - platform_db.inventory → admin-service (READ/WRITE, exclusive)
    - analytics_db → driver-service (WRITE), admin-service (READ ONLY)
 
 4. **Cross-Service Writes**:
@@ -639,6 +814,17 @@ Purpose: SpecKit configuration and enforcement
    - Connector types and statuses use lookup tables (connector_types, current_types, charger_statuses, connector_statuses)
    - Status IDs reference lookup tables rather than storing raw values
    - Partner information managed separately from station data
+   - User profiles separated into core identity, driver-specific, partner-specific, admin-specific, and preference categories
+
+7. **JSONB Usage**:
+   - user_preferences table uses JSONB for flexible preference storage
+   - admin_permissions table uses JSONB for flexible permission management
+   - All JSONB fields have default empty object values
+
+8. **Keycloak Sub Validation**:
+   - Must be unique across all users
+   - Must be 128 characters max
+   - Must follow UUID format: 8-4-4-4-12 hex digits separated by hyphens
 
 5. **Schema Migration**:
    - Each service has isolated migration files
