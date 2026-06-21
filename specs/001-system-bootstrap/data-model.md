@@ -268,7 +268,210 @@ GRANT ALL PRIVILEGES ON SCHEMA inventory TO bornemap_admin;
 GRANT USAGE ON SCHEMA inventory TO bornemap_driver; -- driver-service needs to query inventory for nearby search
 ```
 
-#### Reference Tables (Lookup Domain Model)
+**Purpose**: Contains all persistent business entities and lookup data
+
+**Tables**:
+- OSM staging data (temporary, for imports)
+- Stations (canonical domain model - only persistent business entity)
+- Connectors (normalized domain data)
+- Reference tables (lookup data)
+- Partners, operators, etc.
+
+---
+
+**Table: osm_charging_stations_temp**
+
+**Purpose**: Temporary staging table for OpenStreetMap data imports before validation and insertion into canonical tables
+
+**Note**: This table is managed by the import process and data is NOT considered authoritative until validated and migrated to stations table
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| osm_id | BIGINT | PRIMARY KEY | OpenStreetMap ID |
+| name | VARCHAR(255) | NULL | Station name from OSM |
+| address | TEXT | NULL | Physical address from OSM |
+| longitude | DOUBLE PRECISION | NOT NULL | GPS longitude |
+| latitude | DOUBLE PRECISION | NOT NULL | GPS latitude |
+| operator | VARCHAR(255) | NULL | Operating company from OSM tags |
+| opening_hours | TEXT | NULL | Operating hours from OSM |
+| capacity | INTEGER | NULL | Station capacity from OSM |
+| fee | TEXT | NULL | Payment fee info from OSM |
+| parking_fee | TEXT | NULL | Parking fee info from OSM |
+| access | TEXT | NULL | Access type from OSM |
+| socket_type2 | INTEGER | NULL | Number of Type 2 sockets |
+| socket_ccs | INTEGER | NULL | Number of CCS sockets |
+| socket_chademo | INTEGER | NULL | Number of CHAdeMO sockets |
+| socket_type2_output | DECIMAL(5,2) | NULL | Type 2 max output in kW |
+| socket_ccs_output | DECIMAL(5,2) | NULL | CCS max output in kW |
+| socket_chademo_output | DECIMAL(5,2) | NULL | CHAdeMO max output in kW |
+| tags | HSTORE | DEFAULT ''::hstore | Additional OSM tags in key-value format |
+| geom | GEOMETRY(Point, 4326) | NOT NULL | Geometry for spatial queries |
+| imported_at | TIMESTAMPTZ | DEFAULT NOW() | Import timestamp |
+
+**Indexes**:
+- `idx_osm_temp_geom` (USING GIST, mandatory for spatial queries)
+- `idx_osm_temp_osm_id` on (osm_id)
+
+**Notes**:
+- Purpose: Temporary staging for OSM data imports
+- Not authoritative - data must be validated before use
+- Managed by import process only
+- ON DELETE CASCADE NOT defined - allows manual cleanup
+
+**Relationships**:
+- No foreign keys (import process handles data validation before insertion)
+
+---
+
+**Table: stations**
+
+**Purpose**: The ONLY persistent business entity in the database (canonical domain model)
+
+**Note**: All data flows through this table as the single source of truth
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| station_id | VARCHAR(32) | PRIMARY KEY | Station identifier (nanoid(32)) |
+| osm_id | BIGINT | UNIQUE, NULL | OpenStreetMap ID (optional, for tracking) |
+| name | VARCHAR(255) | NOT NULL | Station name |
+| address | TEXT | NULL | Physical address |
+| location | GEOGRAPHY(Point, 4326) | NOT NULL | GPS coordinates |
+| status | VARCHAR(20) | NOT NULL, DEFAULT 'active' | Station status (active|inactive|removed) |
+| tags | HSTORE | DEFAULT ''::hstore | Additional metadata in key-value format |
+| created_by | VARCHAR(32) | NULL | User ID who created the station |
+| created_at | TIMESTAMPTZ | DEFAULT NOW() | Creation timestamp |
+| updated_by | VARCHAR(32) | NULL | User ID who last updated the station |
+| updated_at | TIMESTAMPTZ | DEFAULT NOW() | Last update timestamp |
+
+**Indexes**:
+- `idx_stations_location` (USING GIST, mandatory for spatial queries)
+- `idx_stations_osm_id` on (osm_id)
+- `idx_stations_status` on (status)
+
+**Identity**: nanoid(32) with PREFIX (not specified, use STA- prefix for clarity)
+
+**Relationships**:
+- Referenced by: connectors.station_id, partners.stations (via foreign keys)
+
+**Notes**:
+- Only persistent business entity in database
+- All data flows through this table
+- ON DELETE CASCADE defined for connectors reference
+
+---
+
+**Table: connectors**
+
+**Purpose**: Domain-owned connector data (normalized, no OSM logic)
+
+**Note**: This table contains the normalized connector details that are domain-specific. All OSM parsing logic happens in the import process before data reaches this table
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| connector_id | VARCHAR(40) | PRIMARY KEY | Connector identifier (nanoid(40)) |
+| station_id | VARCHAR(32) | NOT NULL, FOREIGN KEY | Reference to stations.station_id |
+| connector_type | VARCHAR(20) | NOT NULL | Connector type (type2|ccs|chademo) |
+| current_type | VARCHAR(10) | NOT NULL | Current type (AC|DC) |
+| power_kw | DECIMAL(5,2) | NULL | Maximum power in kW |
+| count_total | INTEGER | NOT NULL, DEFAULT 1 | Total number of this connector type at station |
+| count_available | INTEGER | NOT NULL, DEFAULT 1 | Currently available count |
+| status | VARCHAR(20) | DEFAULT 'available' | Connector status (available|limited|unavailable) |
+| created_by | VARCHAR(32) | NULL | User ID who created the connector |
+| created_at | TIMESTAMPTZ | DEFAULT NOW() | Creation timestamp |
+
+**Indexes**:
+- `idx_connectors_station` on (station_id)
+- `idx_connectors_type` on (connector_type)
+
+**Foreign Keys**:
+- station_id → stations.station_id ON DELETE CASCADE
+
+**Identity**: nanoid(40) with PREFIX (not specified, use CON- prefix for clarity)
+
+**Relationships**:
+- Referenced by: No external references (only queried)
+
+**Notes**:
+- Domain-owned connector data
+- No OSM parsing logic in this table
+- All OSM data flows through import process and validation
+- ON DELETE CASCADE ensures connectors are removed when station is removed
+
+---
+
+#### Schema: gis (driver-service)
+
+Owned by: driver-service
+
+**PostgreSQL Role**: `bornemap_driver`
+
+**Permissions**: READ/WRITE (exclusive)
+
+**Schema Ownership**:
+```sql
+CREATE SCHEMA gis;
+GRANT ALL PRIVILEGES ON SCHEMA gis TO bornemap_driver;
+GRANT USAGE ON SCHEMA gis TO bornemap_admin; -- admin-service needs to query GIS for dashboards
+```
+
+**Purpose**: Spatial queries and analysis functions
+
+**Important Note**: This schema contains functions and analysis logic, but the data (stations, connectors, partners) is stored in the inventory schema. The gis schema functions query the inventory schema.
+
+---
+
+**Function: get_nearby_stations**
+
+**Purpose**: SQL function for nearby station search using spatial indexes
+
+**Signature**:
+```sql
+CREATE OR REPLACE FUNCTION get_nearby_stations(
+    latitude DOUBLE PRECISION,
+    longitude DOUBLE PRECISION,
+    radius_km DOUBLE PRECISION DEFAULT 10.0
+)
+RETURNS TABLE (
+    station_id VARCHAR(32),
+    station_name VARCHAR(255),
+    latitude DOUBLE PRECISION,
+    longitude DOUBLE PRECISION,
+    distance_km DOUBLE PRECISION
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT
+        s.station_id,
+        s.name,
+        ST_Y(s.location)::DOUBLE PRECISION AS latitude,
+        ST_X(s.location)::DOUBLE PRECISION AS longitude,
+        ST_DistanceSphere(
+            ST_MakePoint(longitude, latitude)::GEOGRAPHY(Point, 4326),
+            s.location
+        ) / 1000 AS distance_km
+    FROM inventory.stations s
+    WHERE ST_DistanceSphere(
+            ST_MakePoint(longitude, latitude)::GEOGRAPHY(Point, 4326),
+            s.location
+        ) <= radius_km * 1000
+    ORDER BY distance_km ASC;
+END;
+$$ LANGUAGE plpgsql;
+```
+
+**Notes**:
+- Uses spatial indexes on inventory.stations.location for performance
+- Returns stations within specified radius (km)
+- Distance calculated in kilometers using ST_DistanceSphere
+- Queryed by driver-service for nearby search API
+- Admin-service can also query this function for dashboard
+
+**Performance**:
+- Uses GIST index on inventory.stations.location (mandatory)
+- ST_DistanceSphere is optimized for Earth's radius
+- Returns only distance and station info (not full station data)
+
+---
 
 **Table: connector_types**
 
