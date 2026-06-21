@@ -133,7 +133,7 @@ The LLM signals readiness with "Ready for transition validation." It does not tr
 
 All IDs MUST match: `<PREFIX>-<nanoid(12)>`
 
-Allowed prefixes: `USR`, `OPR`, `STA`, `CHG`
+Allowed prefixes: `USR`, `PAR`, `STA`, `CHR`, `CON`
 
 Hard rules:
 - Generated only via shared nanoid(12) utility

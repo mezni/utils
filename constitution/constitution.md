@@ -113,9 +113,10 @@ All entity identifiers MUST follow:
 | Entity | Prefix | Example |
 |---|---|---|
 | Users | `USR` | `USR-k8F3aZ91LmQx` |
-| Operators/Partners | `OPR` | `OPR-9xQa2Lp0VmZk` |
+| Partners | `PAR` | `PAR-9xQa2Lp0VmZk` |
 | Stations | `STA` | `STA-pL91xZk8Qa2m` |
-| Chargers | `CHG` | `CHG-mZ3kLx09PqRt` |
+| Chargers | `CHR` | `CHR-mZ3kLx09PqRt` |
+| Connectors | `CON` | `CON-aB3dEfGhIjKl` |
 
 **Rules:**
 - IDs generated only via shared nanoid(12) utility

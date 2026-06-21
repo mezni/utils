@@ -1,5 +1,5 @@
 # Sprint 001 — End-to-End Spatial Flow
-**Version:** 1.0
+**Version:** 1.1
 **Date:** June 2026
 **Phase:** SPEC (draft — pending validation)
 
@@ -29,31 +29,83 @@ OSM Tunisia → PostGIS → nearby query → API → map
 
 ---
 
-## Feature 2 — Minimal GIS + Inventory Schema
+## Feature 2 — Full Inventory Schema
 
-**User Story:** As the system, I need tables to store EV charging station locations.
+**User Story:** As the system, I need tables to store EV charging station locations, partners, and charging equipment.
 
 **Scope:**
 
-Schema: `gis`
-- `gis.osm_charging_stations_temp` — raw OSM staging
+```sql
+CREATE EXTENSION IF NOT EXISTS postgis;
+CREATE EXTENSION IF NOT EXISTS hstore;
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+-- Lookup tables
+CREATE TABLE inventory.access_types ( ... );
+CREATE TABLE inventory.data_sources ( ... );
+CREATE TABLE inventory.connector_types ( ... );
+CREATE TABLE inventory.current_types ( ... );
+CREATE TABLE inventory.connector_statuses ( ... );
+CREATE TABLE inventory.station_statuses ( ... );
+CREATE TABLE inventory.charger_statuses ( ... );
+```
 
 Schema: `inventory`
-- `inventory.stations`:
-  - `id` BIGINT GENERATED ALWAYS AS IDENTITY — internal synthetic ID for import (nanoid migration deferred)
-  - `bornemap_id` TEXT UNIQUE — `STA-<nanoid(12)>` once entity ID system is applied
-  - `osm_id` BIGINT — source OSM node ID
-  - `name` TEXT NOT NULL
-  - `geom` GEOMETRY(POINT, 4326) NOT NULL
-  - `source` TEXT NOT NULL DEFAULT 'osm'
-  - `is_test` BOOLEAN NOT NULL DEFAULT FALSE — KNOWN-001 compliance
-  - `deleted_at` TIMESTAMPTZ — guardrails §4.3
-  - `created_at` TIMESTAMPTZ NOT NULL DEFAULT now()
-  - `updated_at` TIMESTAMPTZ NOT NULL DEFAULT now()
+
+**Lookup tables:**
+- `access_types` — partner user access levels
+- `data_sources` — source system enumeration (`osm`, `manual`, `partner`)
+- `connector_types`, `current_types`, `connector_statuses`, `station_statuses`, `charger_statuses`
+
+**Entity tables:**
+
+`inventory.partners`:
+- `partner_id` VARCHAR(32) PK — `PAR-<nanoid(12)>` with regex check
+- `name`, `partner_type` (INDIVIDUAL|COMPANY), `support_phone`, `support_email`
+- `is_verified`, `metadata` JSONB
+- Soft-delete: `is_deleted`, `deleted_at`, `deleted_by`
+- Audit: `created_by`, `updated_by`
+
+`inventory.partner_users` — join table (partner_id, user_id, access_type_id)
+
+`inventory.stations`:
+- `station_id` VARCHAR(32) PK — `STA-<nanoid(12)>` with regex check
+- `partner_id` FK → partners
+- `osm_id` BIGINT UNIQUE — source OSM node ID
+- `name` TEXT NOT NULL
+- `address` TEXT
+- `location` GEOGRAPHY(Point, 4326) NOT NULL — PostGIS spatial column
+- `tags` HSTORE — raw OSM key/value tags
+- `status_id` FK → station_statuses
+- `source_id` FK → data_sources, `source_external_id`
+- `is_test` BOOLEAN NOT NULL DEFAULT FALSE — KNOWN-001 compliance
+- `metadata` JSONB
+- `version` BIGINT DEFAULT 1 — optimistic locking
+- Soft-delete: `is_deleted`, `deleted_at`, `deleted_by`
+- Audit: `created_by`, `updated_by`
+
+`inventory.chargers`:
+- `charger_id` VARCHAR(32) PK — `CHR-<nanoid(12)>` with regex check
+- `station_id` FK → stations
+- `serial_number`, `vendor`, `model`, `firmware_version`
+- Soft-delete + audit columns
+
+`inventory.connectors`:
+- `connector_id` VARCHAR(32) PK — `CON-<nanoid(12)>` with regex check
+- `charger_id` FK → chargers
+- `connector_type_id`, `current_type_id`, `status_id` — FK to lookup tables
+- `max_power_kw`, `min_voltage`, `max_voltage`, `min_amperage`, `max_amperage`
+- `count_available`, `count_total`
+- UNIQUE(charger_id, connector_type_id, current_type_id)
+- Soft-delete + audit columns
+
+ID format enforced via CHECK constraint: `CHECK (id ~ '^(STA|PAR|CHR|CON)-[A-Za-z0-9_-]{12}$')`
 
 **Done When:**
-- Tables exist and accept inserts
-- Geometry column works with PostGIS functions
+- All extensions, lookup tables, and entity tables exist in `inventory` schema
+- Entity IDs validate against nanoid(12) regex
+- `location` GEOGRAPHY column passes PostGIS ST_DWithin queries
+- Seed data for lookup tables populated
 
 ---
 
@@ -80,18 +132,19 @@ Schema: `inventory`
 **Scope:**
 - Transform `gis.osm_charging_stations_temp` → `inventory.stations`
 - Extract:
+  - `station_id` = `'STA-' || nanoid(12)` — generated via pgcrypto
   - `name` from OSM tags
-  - `geom` from node lat/lng → ST_SetSRID(ST_MakePoint(lng, lat), 4326)
-  - `source` = 'osm'
+  - `location` from node lat/lng → ST_SetSRID(ST_MakePoint(lng, lat), 4326)::GEOGRAPHY
+  - `tags` = hstore of all OSM tags
+  - `source_id` = lookup value for 'osm'
   - `is_test` = FALSE
-  - `bornemap_id` = NULL (deferred — handled by post-import migration)
 - Postgres function: `sync_osm_charging_stations()`
 - Called by `platform/scripts/import.sh`
 
 **Cross-schema note:** This function writes from `gis` to `inventory`. Accepted as validation-phase exception — the function runs with elevated DB privileges via `platform/scripts/import.sh`, not through a service. A future sprint will route this through admin-service for proper service mediation.
 
 **Done When:**
-- `inventory.stations` contains valid geometries with SRID 4326
+- `inventory.stations` contains rows with valid `STA-<nanoid(12)>` IDs and GEOGRAPHY(Point, 4326) locations
 
 ---
 
@@ -104,10 +157,10 @@ Schema: `inventory`
   ```sql
   find_nearby_stations(lat DOUBLE PRECISION, lng DOUBLE PRECISION, radius_meters DOUBLE PRECISION)
   ```
-- Uses `ST_DWithin(geom, ST_SetSRID(ST_MakePoint(lng, lat), 4326), radius_meters)`
-- Returns: `id`, `name`, `distance` (via `ST_Distance`)
+- Uses `ST_DWithin(location, ST_SetSRID(ST_MakePoint(lng, lat), 4326)::GEOGRAPHY, radius_meters)`
+- Returns: `station_id`, `name`, `distance` (via `ST_Distance(location, ...)`)
 - Includes `WHERE is_test = FALSE` (KNOWN-001)
-- Excludes soft-deleted rows: `WHERE deleted_at IS NULL`
+- Excludes soft-deleted rows: `WHERE is_deleted = FALSE`
 - Sorted by distance ascending
 - Returns empty array, never null/error for no results
 
@@ -127,7 +180,7 @@ Schema: `inventory`
 - Rust clean architecture: `api/` handlers, `application/` use-cases, `domain/` models, `infrastructure/` DB
 - Endpoint: `GET /api/v1/driver/nearby?lat={lat}&lng={lng}&radius={meters}`
 - Calls `find_nearby_stations()` SQL function via SQLx
-- Returns JSON array: `[{id, name, distance}]`
+- Returns JSON array: `[{station_id, name, distance}]`
 - Query params validated: lat ±90, lng ±180, radius > 0
 - JWT middleware placeholder (auth not enforced yet in Sprint 1 — tech debt logged)
 - OpenAPI spec: `sprints/sprint-001/api/openapi.yaml`
@@ -195,7 +248,7 @@ Sprint is DONE only if:
 
 1. Docker stack (PostgreSQL 16 + PostGIS + driver-service + Traefik) runs clean
 2. OSM Tunisia data is loaded into `gis.osm_charging_stations_temp`
-3. Stations normalized into `inventory.stations` with valid PostGIS geometry (SRID 4326)
+3. Stations normalized into `inventory.stations` with valid `STA-<nanoid(12)>` IDs and PostGIS GEOGRAPHY(Point, 4326)
 4. `find_nearby_stations()` function returns sorted results
 5. `GET /api/v1/driver/nearby` returns real station data
 6. `GET /api/v1/driver/health` returns OK

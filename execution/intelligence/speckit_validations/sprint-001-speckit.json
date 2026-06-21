@@ -24,9 +24,9 @@
     },
     {
       "id": "CONSTITUTION-004",
-      "rule": "Entity ID format (nanoid)",
-      "result": "PASS_DEFERRED",
-      "detail": "stations use synthetic BIGINT ID during OSM import. nanoid(12) migration deferred to post-sprint. No manual ID assignment — automated only."
+      "rule": "Entity ID format (nanoid 12)",
+      "result": "PASS",
+      "detail": "STA-, PAR-, CHR-, CON- prefixes with CHECK regex enforcing [A-Za-z0-9_-]{12}. Matches constitution §4."
     },
     {
       "id": "ARCHITECTURE-001",
@@ -54,9 +54,9 @@
     },
     {
       "id": "GUARDRAILS-001",
-      "rule": "Soft-delete on stations (guardrails §4.3)",
+      "rule": "Soft-delete on entity tables (guardrails §4.3)",
       "result": "PASS",
-      "detail": "inventory.stations includes deleted_at TIMESTAMPTZ."
+      "detail": "partners, stations, chargers, connectors all have is_deleted + deleted_at + deleted_by."
     },
     {
       "id": "GUARDRAILS-002",
@@ -77,6 +77,12 @@
       "detail": "No Kafka, K8s, service mesh, or other forbidden infra."
     },
     {
+      "id": "GUARDRAILS-005",
+      "rule": "Entity prefix alignment (guardrails §4.1)",
+      "result": "PASS",
+      "detail": "USR, PAR, STA, CHR, CON — matches updated constitution."
+    },
+    {
       "id": "STANDARDS-001",
       "rule": "Rust clean architecture layers",
       "result": "PASS",
@@ -92,10 +98,16 @@
       "id": "KNOWN-BUGS-001",
       "rule": "KNOWN-001: is_test filter on spatial queries",
       "result": "PASS",
-      "detail": "Spec includes is_test=FALSE in find_nearby_stations."
+      "detail": "stations has is_test column. find_nearby_stations includes WHERE is_test = FALSE."
     },
     {
       "id": "KNOWN-BUGS-002",
+      "rule": "KNOWN-002: deleted_at on partners",
+      "result": "PASS",
+      "detail": "partners has is_deleted + deleted_at. Verified via guardrails §4.3."
+    },
+    {
+      "id": "KNOWN-BUGS-003",
       "rule": "KNOWN-003: single nearby endpoint",
       "result": "PASS",
       "detail": "Only one /nearby endpoint, in driver-service."
@@ -108,10 +120,10 @@
     }
   ],
   "summary": {
-    "pass": 15,
+    "pass": 18,
     "warn": 1,
     "fail": 0,
-    "deferred": 1,
+    "deferred": 0,
     "pending_user_review": true
   }
 }

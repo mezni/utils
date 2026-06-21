@@ -46,9 +46,9 @@ flowchart TB
         OSM_REF["osm_charging_stations_temp\nRaw OSM import"]
       end
       subgraph INV["inventory schema"]
-        PARTNER["partners (OPR_)"]
+        PARTNER["partners (PAR_)"]
         STATION["stations (STA_)"]
-        CHARGER["chargers (CHG_)"]
+        CHARGER["chargers (CHR_)"]
         MVIEWS["Materialized Views\nmv_stations_geo\nmv_stations_summary\nmv_stations_reviews"]
         STATION & CHARGER --> MVIEWS
       end
