@@ -411,6 +411,204 @@ GRANT USAGE ON SCHEMA telemetry TO bornemap_analytics_reader;
 
 ---
 
+### Runtime Topology Enforcement (CI)
+
+**Purpose**: Enforce strict service boundaries and prevent architectural violations
+
+**HTTP Server Constraint**:
+
+```rust
+// Any worker crate MUST NOT depend on actix-web or web frameworks
+// Only HTTP clients for inter-service communication
+
+// ✅ CORRECT: Worker crate
+Cargo.toml dependencies:
+  - reqwest (client only)
+
+// ❌ INCORRECT: Worker crate with HTTP server
+Cargo.toml dependencies:
+  - actix-web (server)
+  - tokio (async runtime)
+```
+
+**Service Spawning in Tests**:
+
+```bash
+# Any test MUST NOT spawn services
+# Use mocking instead
+
+# ✅ CORRECT: Test uses mocking
+#[test]
+fn test_inventory_handler() {
+    let mock_db = MockDatabase::new();
+    // Test against mock, not real service
+}
+
+// ❌ INCORRECT: Test spawns service
+#[test]
+fn test_inventory_api() {
+    spawn_service("admin-service");
+    // Test against real service
+}
+```
+
+**Port Binding Enforcement**:
+
+```yaml
+# docker-compose.yml - STRICT PORT LOCKING
+services:
+  auth-service:
+    ports:
+      - "3000:3000"  # MANDATORY - NO drift
+
+  driver-service:
+    ports:
+      - "3001:3001"  # MANDATORY - NO drift
+
+  admin-service:
+    ports:
+      - "3002:3002"  # MANDATORY - NO drift
+```
+
+**CI Validation Tool**: `08_runtime_topology_check.sh`
+
+---
+
+### Migration Drift Detection & Schema Hash Validation (CI)
+
+**Purpose**: Detect divergence between migration files and compiled schemas
+
+**Algorithm**:
+
+```bash
+# 06_migration_drift_check.sh
+#!/bin/bash
+set -e
+
+# 1. Generate schema hash from compiled migrations
+cargo sqlx prepare --all -- --database-url "$DB_URL"
+cargo sqlx prepare --check --all -- --database-url "$DB_URL"
+SQLX_STATE=$(cat .sqlx/default.sqlite3.sh || echo "")
+
+# 2. Generate schema hash from migration files
+SCHEMA_HASH=$(grep -h "^-- Migration" migrations/*.up.sql | sort | md5sum | cut -d' ' -f1)
+
+# 3. Compare hashes
+if [ "$SQLX_STATE" != "$SCHEMA_HASH" ]; then
+  echo "Migration drift detected!"
+  echo "Compiled schema does not match migration files"
+  exit 1
+fi
+```
+
+**Output**: JSON
+```json
+{
+  "status": "passed"|"failed",
+  "exit_code": 0,
+  "migration_hash": "abc123...",
+  "compiled_schema_hash": "abc123...",
+  "summary": "Migration files match compiled schema"
+}
+```
+
+**Failure Signature**: Exit code 1 with mismatch details
+
+**CI Integration**:
+- Run as stage 6 in CI pipeline (after sqlx_compile_check)
+- Requires `.sqlx/` directory exists (from sqlx prepare)
+- Fails if migration files don't match compiled queries
+
+---
+
+### Identity Location Rules (CI)
+
+**Purpose**: Enforce UUID/nanoid placement per entity table
+
+**Constraint Definition**:
+
+```rust
+// domain-types/src/identity.rs
+pub const TABLE_USERS_UUID: &str = "users";
+pub const TABLE_ENTITIES_NANOID: &str = "inventory.stations,inventory.chargers,inventory.connectors,inventory.partners";
+
+// ✅ CORRECT: UUID only in users table
+users {
+  user_id UUID PK
+  name TEXT
+  email TEXT
+}
+
+// ❌ INCORRECT: UUID in entity table
+stations {
+  station_id UUID  // WRONG - should be STA-nanoid(12)
+  name TEXT
+}
+
+// ✅ CORRECT: Entity table uses nanoid(12) with PREFIX
+stations {
+  station_id VARCHAR(15) CHECK (station_id ~ '^STA[a-zA-Z0-9]{11}$')  // STA + 12 chars
+  name TEXT
+}
+```
+
+**Validation Tool**: `01_validate_identity.sh`
+
+**Algorithm**:
+
+```bash
+# Scan all Rust source files and SQL migrations
+# Detect UUID usage in non-users tables
+# Detect nanoid usage in users table
+
+# ✅ CORRECT: UUID in users table
+"users.user_id" -> UUID
+
+# ❌ INCORRECT: UUID in entity table
+"stations.station_id" -> UUID (FAIL)
+"chargers.charger_id" -> UUID (FAIL)
+
+# ✅ CORRECT: Entity table uses nanoid(12)
+"stations.station_id" -> "STA[a-zA-Z0-9]{11}"
+
+# ❌ INCORRECT: Entity table uses nanoid(12) without PREFIX
+"stations.station_id" -> "[a-zA-Z0-9]{12}" (FAIL)
+```
+
+**Output**: JSON
+```json
+{
+  "status": "passed"|"failed",
+  "exit_code": 0,
+  "violations": []
+}
+```
+
+**Failure Signature**: Exit code 1 with specific violations
+```json
+{
+  "status": "failed",
+  "exit_code": 1,
+  "violations": [
+    {
+      "file": "services/admin-service/src/db/stations.rs",
+      "line": 25,
+      "table": "stations",
+      "field": "station_id",
+      "issue": "UUID found in entity table - must use STA-nanoid(12)"
+    }
+  ]
+}
+```
+
+**Verification**:
+- Scan Rust source files for entity field definitions
+- Scan SQL migrations for table schemas
+- Check against allowlist: UUID in users table only
+- Check against requirelist: nanoid(12) with PREFIX in entity tables
+
+---
+
 ### Identity Validation Implementation
 
 **Prefix Registry**:
@@ -458,7 +656,10 @@ pub fn validate_mixed_identity(content: &str) -> Vec<Violation> {
 
 **Justification**: The plan creates exactly three services as mandated. No additional services or topology changes are planned in Sprint 0. This is the foundational setup that establishes the required topology.
 
-**Verification**: Directory structure creates `services/auth-service`, `services/driver-service`, `services/admin-service`. Configuration files will specify ports 3000, 3001, 3002.
+**Verification**:
+- Directory structure creates `services/auth-service`, `services/driver-service`, `services/admin-service`
+- Configuration files specify ports 3000, 3001, 3002
+- CI runtime topology enforcement (08_runtime_topology_check.sh) will validate port locking
 
 ---
 
@@ -470,7 +671,11 @@ pub fn validate_mixed_identity(content: &str) -> Vec<Violation> {
 
 **Justification**: The plan includes database schemas for platform_db (users table with UUID, gis, inventory tables with nanoid(12) PREFIX) and creates infrastructure for Keycloak. The identity validation tools (01_validate_identity.sh) will enforce this separation.
 
-**Verification**: Schema definitions will use UUID for users, PREFIX-nanoid(12) for STA/CHG/OPR/EVT entities. Validation scripts will check identity format.
+**Verification**:
+- Schema definitions use UUID for users, PREFIX-nanoid(12) for STA/CHG/OPR/EVT entities
+- CI includes identity validation stage
+- Runtime topology enforcement prevents service spawning in tests
+- Migration drift detection prevents schema divergence
 
 ---
 
@@ -482,7 +687,11 @@ pub fn validate_mixed_identity(content: &str) -> Vec<Violation> {
 
 **Justification**: The plan defines database ownership: platform_db users (auth-service), gis (driver-service), inventory (admin-service), analytics_db (driver-service with admin read-only). This establishes the single-writer rule.
 
-**Verification**: Database schemas will have proper ownership. CI analytics gate validation tool (03_validate_analytics_gate.sh) will enforce write permissions. Migrations will be isolated by service.
+**Verification**:
+- Database schemas have proper ownership
+- CI analytics gate validation tool (03_validate_analytics_gate.sh) enforces write permissions
+- Migrations are isolated by service
+- Runtime topology enforcement prevents accidental service spawning in tests
 
 ---
 
@@ -494,7 +703,11 @@ pub fn validate_mixed_identity(content: &str) -> Vec<Violation> {
 
 **Justification**: The plan creates `apps/packages/domain-types` as a contracts-only package. Service skeletons will use this as dependency. Sprint 0 sets up the foundation; actual contracts will be defined in later sprints, following the proper order.
 
-**Verification**: Domain-types package will be a contracts-only Rust package with DTOs and event schemas. Services will depend on it. No runtime logic in domain-types.
+**Verification**:
+- Domain-types package will be a contracts-only Rust package with DTOs and event schemas
+- Services will depend on it
+- No runtime logic in domain-types
+- CI dependency validation (02_validate_deps.sh) ensures proper ordering
 
 ---
 
@@ -506,7 +719,11 @@ pub fn validate_mixed_identity(content: &str) -> Vec<Violation> {
 
 **Justification**: The plan includes SQLx offline verification (S0-020) and a validation tool (05_sqlx_policy_check.sh) to enforce this. All SQL queries will use compile-time verified SQLx types.
 
-**Verification**: CI pipeline includes sqlx_compile_check stage. Validation script checks for raw SQL strings. Cargo.toml will configure SQLx for offline verification.
+**Verification**:
+- CI pipeline includes sqlx_compile_check stage
+- Validation script checks for raw SQL strings
+- Migration drift detection (06_migration_drift_check.sh) ensures migration files match compiled schemas
+- Cargo.toml configures SQLx for offline verification
 
 ---
 
@@ -518,7 +735,11 @@ pub fn validate_mixed_identity(content: &str) -> Vec<Violation> {
 
 **Justification**: The plan creates a complete CI pipeline with all 9 stages: format_check, type_check, dependency_graph_validation, identity_validation, schema_validation, sqlx_compile_check, analytics_write_gate, integration_tests, build_success. Each stage has hard-stop enforcement.
 
-**Verification**: `.github/workflows/ci.yml` will implement all 9 stages. Tools/ci_guard.sh will provide enforcement. 06_ci_guard_final.sh will be the final gate.
+**Verification**:
+- `.github/workflows/ci.yml` implements all 9 stages
+- Tools/ci_guard.sh provides enforcement
+- 08_runtime_topology_check.sh validates HTTP server constraints, service spawning, and port binding
+- Migration drift detection (06_migration_drift_check.sh) and schema hash validation (07_schema_hash_validation.sh) are included
 
 ---
 
@@ -530,7 +751,11 @@ pub fn validate_mixed_identity(content: &str) -> Vec<Violation> {
 
 **Justification**: The plan establishes proper dependency chains: services → shared-domain → shared-infra, ui-kit → domain-types → client-core. No forbidden edges exist in the planned structure.
 
-**Verification**: Directory structure enforces separation. Dependency validation tool (02_validate_deps.sh) will check for forbidden edges. CI will include dependency_graph_validation stage.
+**Verification**:
+- Directory structure enforces separation
+- Dependency validation tool (02_validate_deps.sh) checks for forbidden edges
+- CI includes dependency_graph_validation stage
+- Domain-types isolation enforcement (FR-015) ensures no backend framework dependencies
 
 ---
 
@@ -573,11 +798,13 @@ tools/
 ├── 03_validate_analytics_gate.sh
 ├── 04_validate_schema.sh
 ├── 05_sqlx_policy_check.sh
-└── 06_ci_guard_final.sh
+├── 06_migration_drift_check.sh
+├── 07_schema_hash_validation.sh
+└── 08_ci_guard_final.sh
 
 infrastructure/
 ├── docker-compose/
-│   └── local.yml        — Local development environment
+│   └── local.yml        — Local development environment (ports locked: 3000/3001/3002)
 ├── traefik/
 │   └── traefik.toml     — Reverse proxy configuration
 ├── scripts/
@@ -594,67 +821,6 @@ docs/
 ├── memory/              — Project state memory
 ├── extensions/          — Extensions and hooks
 └── templates/           — SpecKit templates
-```
-
-## Project Structure
-
-### Documentation (this feature)
-
-```text
-specs/001-system-bootstrap/
-├── spec.md              # Feature specification
-├── plan.md              # This file (/speckit.plan command output)
-├── research.md          # Phase 0 output (/speckit.plan command)
-├── data-model.md        # Phase 1 output (/speckit.plan command)
-├── quickstart.md        # Phase 1 output (/speckit.plan command)
-├── contracts/           # Phase 1 output (/speckit.plan command)
-│   ├── auth-service.md
-│   ├── driver-service.md
-│   └── admin-service.md
-└── tasks.md             # Phase 2 output (/speckit.tasks command - NOT created by /speckit.plan)
-```
-
-### Source Code (repository root)
-
-```text
-apps/packages/          # Frontend packages
-├── ui-kit/             # UI components only
-├── domain-types/       # Contracts only (DTOs, event schemas)
-└── client-core/        # Transport only (API clients, auth, mappers)
-
-services/               # Backend microservices
-├── auth-service/       # Port 3000
-├── driver-service/     # Port 3001
-└── admin-service/      # Port 3002
-
-tools/                  # CI enforcement scripts
-├── ci_guard.sh
-├── 01_validate_identity.sh
-├── 02_validate_deps.sh
-├── 03_validate_analytics_gate.sh
-├── 04_validate_schema.sh
-├── 05_sqlx_policy_check.sh
-└── 06_ci_guard_final.sh
-
-infrastructure/         # DevOps configuration
-├── docker-compose/
-│   └── local.yml
-├── traefik/
-│   └── traefik.toml
-└── scripts/
-    ├── provision_db.sh
-    ├── deploy.sh
-    └── migrate.sh
-
-docs/                   # Project documentation
-├── constitution/
-├── sprints/
-└── spec/
-
-.specify/               # SpecKit configuration
-├── memory/
-├── extensions/
-└── templates/
 ```
 
 **Structure Decision**: Monorepo with cargo workspace containing 6 crates (3 frontend packages + 3 backend services)

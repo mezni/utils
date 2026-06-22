@@ -33,7 +33,7 @@ The CI pipeline executes 9 mandatory stages with hard-stop on any failure, enfor
 
 **Why this priority**: CI enforcement is critical for maintaining architectural integrity and preventing violations of the constitution.
 
-**Independent Test**: Run `make ci` and verify all 9 stages pass without any failures.
+**Independent Test**: Run `make ci` or `./tools/ci_guard.sh` and verify all 9 stages pass without any failures.
 
 **Acceptance Scenarios**:
 
@@ -54,10 +54,13 @@ All three databases (platform_db, analytics_db, keycloak_db) are initialized wit
 
 **Acceptance Scenarios**:
 
-1. **Given** a database connection to platform_db, **When** running schema verification, **Then** tables exist: users, gis, inventory
-2. **Given** a database connection to analytics_db, **When** running schema verification, **Then** tables exist: telemetry_events, analytics_events, system_events
-3. **Given** a database connection to keycloak_db, **When** inspecting the database, **Then** it contains Keycloak tables (not application data)
+1. **Given** a database connection to platform_db, **When** running schema verification, **Then** tables exist: users, gis, inventory (inventory is a schema within platform_db owned by admin-service)
+2. **Given** a database connection to analytics_db, **When** running schema verification, **Then** tables exist: raw_events (append-only event log as primary model), with optional derived tables
+3. **Given** a database connection to keycloak_db, **When** inspecting the database, **Then** it contains Keycloak tables (not application data), and auth-service cannot write directly to keycloak_db schema
 4. **Given** a schema verification script, **When** executed, **Then** it reports all tables created successfully
+5. **Given** an inventory CRUD operation, **When** a station is created/updated/deleted, **Then** an event is emitted to trigger GIS sync via event bus
+6. **Given** a migration file, **When** checking schema consistency, **Then** migration hash matches compiled schema to prevent drift
+7. **Given** a users table row, **When** inspecting the UUID column, **Then** UUID MUST be the only identifier in users table (no other entity tables use UUID)
 
 ---
 
@@ -71,10 +74,11 @@ Three microservices (auth-service, driver-service, admin-service) are created wi
 
 **Acceptance Scenarios**:
 
-1. **Given** the auth-service skeleton, **When** running `cargo run --bin auth-service`, **Then** it responds to GET /health with status 200
-2. **Given** the driver-service skeleton, **When** running `cargo run --bin driver-service`, **Then** it responds to GET /health with status 200
-3. **Given** the admin-service skeleton, **When** running `cargo run --bin admin-service`, **Then** it responds to GET /health with status 200
+1. **Given** the auth-service skeleton, **When** running `cargo run --bin auth-service`, **Then** it responds to GET /health with status 200 and JSON body { "status": "ok", "timestamp": "2026-06-21T12:00:00Z", "service": "auth-service" }
+2. **Given** the driver-service skeleton, **When** running `cargo run --bin driver-service`, **Then** it responds to GET /health with status 200 and JSON body { "status": "ok", "timestamp": "2026-06-21T12:00:00Z", "service": "driver-service" }
+3. **Given** the admin-service skeleton, **When** running `cargo run --bin admin-service`, **Then** it responds to GET /health with status 200 and JSON body { "status": "ok", "timestamp": "2026-06-21T12:00:00Z", "service": "admin-service" }
 4. **Given** any service skeleton, **When** inspecting the directory, **Then** it contains Cargo.toml, main.rs, and configuration files
+5. **Given** any service, **When** checking configuration, **Then** it has hard-coded port binding: auth-service on 3000, driver-service on 3001, admin-service on 3002
 
 ---
 
@@ -92,6 +96,12 @@ All documentation follows SpecKit standards with proper enforcement layers, plan
 2. **Given** any implementation plan, **When** inspecting the file, **Then** it contains the constitution check gate
 3. **Given** any plan document, **When** checking compliance, **Then** all mandatory sections are present
 4. **Given** the project configuration, **When** inspecting `.specify/extensions.yml`, **Then** all hooks are properly configured
+5. **Given** the Rust workspace configuration, **When** inspecting root Cargo.toml, **Then** it explicitly maps all services and packages (ui-kit, domain-types, client-core, auth-service, driver-service, admin-service)
+6. **Given** any Rust package, **When** inspecting domain-types, **Then** it contains only serde types, event schemas, and no backend framework dependencies (actix-web, sqlx, tokio), no service imports, and no HTTP clients
+7. **Given** an inventory CRUD operation, **When** inspecting the implementation, **Then** it emits events to trigger GIS sync via event bus (NOT synchronous triggers)
+8. **Given** any Rust worker crate, **When** inspecting Cargo.toml, **Then** it has NO HTTP server dependencies (only HTTP clients for service communication)
+9. **Given** any test file, **When** inspecting Cargo.toml, **Then** it has NO service spawning configuration (only mocking)
+10. **Given** a docker-compose configuration, **When** inspecting port bindings, **Then** ports are locked to auth:3000, driver:3001, admin:3002 (NO drift allowed)
 
 ## Requirements *(mandatory)*
 
@@ -110,14 +120,36 @@ All documentation follows SpecKit standards with proper enforcement layers, plan
 - **FR-011**: System MUST create infrastructure scripts: provision_db.sh, deploy.sh, migrate.sh
 - **FR-012**: System MUST create a Keycloak realm export file for future use
 - **FR-013**: System MUST set up Redis configuration
+- **FR-014**: System MUST define a Rust workspace root Cargo.toml mapping all services and packages explicitly
+- **FR-015**: System MUST enforce domain-types isolation rule: domain-types MUST NOT depend on any backend framework (actix-web, sqlx, tokio), service imports, or HTTP clients. domain-types MUST only contain serde types, event schemas, and entity ID definitions.
+- **FR-016**: System MUST provide deterministic CI entrypoint via `make ci` or `./tools/ci_guard.sh`
+- **FR-017**: System MUST enforce inventory data domain separation: inventory is a schema within platform_db owned by admin-service, not a standalone service
+- **FR-018**: System MUST enforce analytics write gate: admin-service can only read from analytics_db, must go through BUS → GIS worker → events for writes
+- **FR-019**: System MUST define CI stage outputs with JSON schema validation requirement
+- **FR-020**: System MUST enforce health endpoint schema: GET /health MUST return JSON { "status": "ok", "timestamp": ISO8601, "service": "service-name" }
+- **FR-021**: System MUST enforce port binding: auth-service MUST bind to port 3000, driver-service to 3001, admin-service to 3002, hard-coded in configuration files
+- **FR-022**: System MUST define event propagation model: inventory CRUD → emits event → event bus → GIS worker → updates GIS schema (event-driven, NOT synchronous triggers)
+- **FR-023**: System MUST enforce analytics_db schema consistency: analytics_db MUST contain raw_events (append-only event log) as primary model, with derived tables optional
+- **FR-024**: System MUST enforce keycloak_db ownership: auth-service MUST NOT directly write to keycloak_db schema, only via Keycloak admin API
+- **FR-025**: System MUST enforce runtime topology: NO extra HTTP servers in worker crates, NO service spawning in tests, NO port drift in docker-compose
+- **FR-026**: System MUST enforce migration drift detection and schema hash validation: CI MUST verify migration files match compiled schemas to prevent divergence
+- **FR-027**: System MUST enforce identity location rules: UUID MUST ONLY appear in users table and Keycloak mapping layer, MUST NOT appear in any other entity tables
 
 ### Key Entities *(include if feature involves data)*
 
 - **Repository Structure**: Directory tree containing packages, services, tools, infrastructure, docs, and spec directories
 - **CI Pipeline**: 9-stage workflow with hard-stop on failure
-- **Database Schemas**: Platform DB (users, gis, inventory), Analytics DB (telemetry_events, analytics_events, system_events), Keycloak DB (Keycloak tables)
-- **Service Skeletons**: Three Rust microservices with health endpoints
-- **Validation Tools**: Shell scripts for identity validation, dependency validation, analytics gate validation, schema validation, SQLx policy check
+- **Database Schemas**: Platform DB (users, gis, inventory - inventory is a schema within platform_db owned by admin-service), Analytics DB (raw_events append-only event log as primary model, with optional derived tables), Keycloak DB (Keycloak tables, auth-service cannot write directly)
+- **Service Skeletons**: Three Rust microservices with health endpoints returning JSON { "status": "ok", "timestamp": ISO8601, "service": "service-name" }
+- **Validation Tools**: Shell scripts for identity validation, dependency validation, analytics gate validation, schema validation, SQLx policy check, migration drift detection, schema hash validation
+- **Rust Workspace**: Explicit Cargo.toml root workspace mapping all services and packages
+- **Domain-Types Isolation**: Shared contracts package with only serde types, event schemas, and entity ID definitions (NO backend frameworks, NO service imports, NO HTTP clients)
+- **Event Propagation Model**: Inventory CRUD → event emission → event bus → GIS worker → GIS schema updates (event-driven, not synchronous triggers)
+- **CI Entrypoint**: Deterministic entrypoint via `make ci` or `./tools/ci_guard.sh`
+- **Port Binding**: Hard-coded port assignments (auth: 3000, driver: 3001, admin: 3002)
+- **Runtime Topology Enforcement**: No extra HTTP servers in worker crates, no service spawning in tests, no port drift in docker-compose
+- **Identity Location Rules**: UUID only appears in users table and Keycloak mapping layer (MUST NOT appear in any other entity tables)
+- **Migration Consistency**: Migration files must match compiled schemas to prevent divergence
 
 ## Success Criteria *(mandatory)*
 
