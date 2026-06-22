@@ -27,6 +27,7 @@ sqlx = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 chrono = { workspace = true }
+chrono-tz = { workspace = true }
 
 # Validation
 validator = { workspace = true }
@@ -52,5 +53,11 @@ uuid = { workspace = true }
 # Error handling
 anyhow = "1.0"
 thiserror = "1.0"
+
+# GIS dependencies
+postgis = "0.9"
+geo-types = "0.7"
+redis = { workspace = true }
+postgres = { workspace = true }
 
 [dev-dependencies]

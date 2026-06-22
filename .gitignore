@@ -54,3 +54,16 @@ out/
 # Temporary files
 *.tmp
 *.temp
+
+# Redis
+dump.rdb
+appendonly.aof
+
+# Docker
+*.log*
+
+# GIS
+*.shp
+*.shx
+*.dbf
+*.prj

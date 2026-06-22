@@ -391,6 +391,201 @@ After completing the quickstart, continue with:
 - **Overpass API**: https://overpass-api.de/DE/api/Overpass
 - **GIS Best Practices**: https://developers.google.com/maps/documentation/geojson
 
+## Monitoring & Debugging
+
+### Check Cache Status
+
+```bash
+# Get Redis connection manager for testing (requires Redis)
+redis-cli
+
+# List all spatial cache keys
+KEYS geo:radius:*
+
+# Get cache key statistics
+SCAN 0 MATCH geo:radius:* COUNT 100
+
+# Get cache TTL
+TTL geo:radius:40.7829:-73.9654:1000
+```
+
+### Check Database Schema
+
+```bash
+# Connect to PostgreSQL
+psql postgresql://borne_map_admin:borne_map_password@localhost:5432/borne_map
+
+# Check GIS schema
+\dn gis
+
+# Check tables
+\dt gis.*
+
+# Check indexes
+\d gis.osm_charging_stations
+
+# Check materialized views
+\d gis.mv_*
+
+# Query staging data
+SELECT COUNT(*) FROM gis.osm_charging_stations_temp;
+SELECT COUNT(*) FROM gis.osm_charging_stations_temp WHERE processed = TRUE;
+```
+
+### Check Materialized View Refresh
+
+```bash
+# Check pg_cron schedule
+SELECT * FROM cron.job WHERE jobname = 'refresh-gis-views';
+
+# Manually refresh materialized views
+SELECT gis.refresh_gis_materialized_views();
+
+# Check view freshness
+SELECT relname, pg_size_pretty(pg_total_relation_size(relid)) AS size
+FROM pg_matviews
+WHERE schemaname = 'gis';
+```
+
+### Check Ingestion Status
+
+```bash
+# Check ingestion statistics
+curl -H "Authorization: Bearer $JWT_TOKEN" \
+  "http://localhost:3001/api/v1/gis/ingest/stats"
+
+# Check unprocessed records
+curl -H "Authorization: Bearer $ADMIN_TOKEN" \
+  "http://localhost:3001/api/v1/gis/ingest/records/unprocessed"
+
+# Check ETL status
+curl -H "Authorization: Bearer $ADMIN_TOKEN" \
+  "http://localhost:3001/api/v1/gis/etl/status"
+```
+
+### Debug Spatial Queries
+
+```bash
+# Test spatial query directly
+psql postgresql://borne_map_admin:borne_map_password@localhost:5432/borne_map
+
+-- Test radius query
+SELECT COUNT(*) FROM gis.osm_charging_stations
+WHERE is_available = TRUE
+  AND ST_DWithin(
+    ST_MakePoint(longitude, latitude)::geography,
+    ST_MakePoint(-73.9654, 40.7829)::geography,
+    1000
+  );
+
+-- Test bounding box query
+SELECT COUNT(*) FROM gis.osm_charging_stations
+WHERE is_available = TRUE
+  AND ST_MakeBox2D(
+    ST_MakePoint(longitude, latitude)::geography,
+    ST_MakePoint(longitude, latitude)::geography
+  ) && ST_MakeBox2D(
+    ST_MakePoint(-74.0, 40.0)::geography,
+    ST_MakePoint(-73.0, 41.0)::geography
+  );
+
+-- Check query performance
+EXPLAIN ANALYZE
+SELECT * FROM gis.osm_charging_stations
+WHERE is_available = TRUE
+  AND ST_DWithin(
+    ST_MakePoint(longitude, latitude)::geography,
+    ST_MakePoint(-73.9654, 40.7829)::geography,
+    1000
+  );
+```
+
+### Debug Redis Cache
+
+```bash
+# Check Redis connection
+redis-cli ping
+
+# Get cache statistics
+INFO stats
+
+# Get Redis memory usage
+INFO memory
+
+# Check slow queries
+SLOWLOG GET 10
+
+# Monitor cache operations
+MONITOR
+```
+
+### View Application Logs
+
+```bash
+# Check driver-service logs
+journalctl -u driver-service -f
+
+# Check for GIS-specific logs
+grep "gis" /var/log/borne-map/driver-service.log
+
+# Check for cache logs
+grep "cache" /var/log/borne-map/driver-service.log
+
+# Check for ingestion logs
+grep "ingestion" /var/log/borne-map/driver-service.log
+```
+
+### Common Issues & Solutions
+
+#### Issue: Query Performance Slow
+
+**Symptoms**: Spatial queries taking > 500ms
+
+**Solutions**:
+1. Check if cache is being used
+2. Verify GiST index exists
+3. Check if materialized views are up-to-date
+4. Monitor query execution plan
+
+#### Issue: Redis Cache Not Working
+
+**Symptoms**: Queries always hitting database
+
+**Solutions**:
+1. Verify Redis connection
+2. Check cache key pattern
+3. Verify cache TTL is set
+4. Check Redis access permissions
+
+#### Issue: OSM Ingestion Failing
+
+**Symptoms**: Ingestion job returns error
+
+**Solutions**:
+1. Check ingestion logs
+2. Verify OSM API connectivity
+3. Check database permissions
+4. Validate OSM XML format
+
+#### Issue: Duplicate Stations
+
+**Symptoms**: Same station appears multiple times
+
+**Solutions**:
+1. Check deduplication logic
+2. Validate osm_id uniqueness
+3. Review staging table constraints
+
+#### Issue: Materialized Views Stale
+
+**Symptoms**: Queries using old data
+
+**Solutions**:
+1. Manually refresh materialized views
+2. Check pg_cron schedule
+3. Verify database permissions
+4. Monitor refresh status
+
 ## Support
 
 For issues or questions:

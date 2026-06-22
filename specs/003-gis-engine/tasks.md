@@ -27,12 +27,12 @@
 
 **Purpose**: Set up database schemas, Redis cache layer, and core data types that are needed by all scenarios
 
-- [ ] T001 [P] Create migration 0003_gis_tables.up.sql in services/driver-service/migrations/ — add gis schema with osm_charging_stations_temp and osm_charging_stations tables, PostGIS geometry columns (POINT, SRID 4326), constraints, unique constraints on osm_id, validate_coordinates check constraint, valid_geom check constraint
-- [ ] T002 [P] Create migration 0004_materialized_views.up.sql in services/driver-service/migrations/ — add mv_stations_geo and mv_stations_summary materialized views, create unique indexes, set up refresh schedule (pg_cron for hourly refresh at 2 AM UTC), CREATE EXTENSION IF NOT EXISTS pg_cron
-- [ ] T003 [P] Create services/driver-service/src/middleware/spatial.rs — spatial query helper functions (ST_Distance, ST_MakePoint, ST_Within), validate radius (100-100000 meters), validate coordinates (-90 to 90, -180 to 180)
-- [ ] T004 [P] Create services/driver-service/src/telemetry/ingestion.rs — OSM ingestion service with HTTP client for overpass-api.de, idempotency key generation, batch processing support, error handling
-- [ ] T005 [P] Create services/driver-service/src/redis/spatial_cache.rs — Redis spatial cache with cache key pattern geo:radius:{lat}:{lon}:{radius}, TTL configuration (default 5 minutes), read/write operations, cache invalidation logic
-- [ ] T006 [P] Create services/driver-service/src/domain/types/gis.rs in apps/packages/domain-types/src — define GIS DTOs (Station, StationDetail, StationList, StationSearchQuery) matching API contracts with serde Serialize/Deserialize
+- [X] T001 [P] Create migration 0003_gis_tables.up.sql in services/driver-service/migrations/ — add gis schema with osm_charging_stations_temp and osm_charging_stations tables, PostGIS geometry columns (POINT, SRID 4326), constraints, unique constraints on osm_id, validate_coordinates check constraint, valid_geom check constraint
+- [X] T002 [P] Create migration 0004_materialized_views.up.sql in services/driver-service/migrations/ — add mv_stations_geo and mv_stations_summary materialized views, create unique indexes, set up refresh schedule (pg_cron for hourly refresh at 2 AM UTC), CREATE EXTENSION IF NOT EXISTS pg_cron
+- [X] T003 [P] Create services/driver-service/src/middleware/spatial.rs — spatial query helper functions (ST_Distance, ST_MakePoint, ST_Within), validate radius (100-100000 meters), validate coordinates (-90 to 90, -180 to 180)
+- [X] T004 [P] Create services/driver-service/src/telemetry/ingestion.rs — OSM ingestion service with HTTP client for overpass-api.de, idempotency key generation, batch processing support, error handling
+- [X] T005 [P] Create services/driver-service/src/redis/spatial_cache.rs — Redis spatial cache with cache key pattern geo:radius:{lat}:{lon}:{radius}, TTL configuration (default 5 minutes), read/write operations, cache invalidation logic
+- [X] T006 [P] Create services/driver-service/src/domain/types/gis.rs in apps/packages/domain-types/src — define GIS DTOs (Station, StationDetail, StationList, StationSearchQuery) matching API contracts with serde Serialize/Deserialize
 
 **Checkpoint**: Database schemas exist with PostGIS geometry columns, Redis cache layer operational with flat key pattern, core data types defined in domain-types
 
@@ -44,20 +44,20 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T007 [P] Implement services/driver-service/src/queries/spatial.rs — spatial query builder with SQLx compile-time verification, circular radius queries, bounding box queries, validate radius and coordinates, return results ordered by distance
-- [ ] T008 [P] Implement services/driver-service/src/queries/nearest.rs — nearest neighbor queries with ST_Distance ordering, result limit support, SQLx compile-time verification, no raw SQL string construction
-- [ ] T009 [P] Implement services/driver-service/src/queries/bbox.rs — bounding box queries with ST_Within, support pagination parameters (page, limit, lat, lon, radius for viewport), SQLx compile-time verification
-- [ ] T010 [P] Create services/driver-service/src/handlers/stations.rs — GET /api/v1/driver/stations handler with pagination, integrate spatial queries, validate RBAC, return StationList matching domain-types
-- [ ] T011 [P] Create services/driver-service/src/handlers/nearby.rs — GET /api/v1/driver/nearby handler with spatial query engine, validate radius and coordinates, call Redis cache first, return StationList with distance field
-- [ ] T012 [P] Implement services/driver-service/src/ingestion/osm_parser.rs — parse OSM XML, extract charging station data, validate required fields, handle multiple connector types, error handling
-- [ ] T013 [P] Implement services/driver-service/src/ingestion/tag_normalizer.rs — map OSM tags to internal schema (amenity, power, connector_types, address), store rare tags in JSONB, validate power values
-- [ ] T014 [P] Implement services/driver-service/src/ingestion/staging_upsert.rs — upsert to osm_charging_stations_temp table with idempotency key based on osm_id, mark as processed=False, handle duplicates
-- [ ] T015 [P] Implement services/driver-service/src/ingestion/deduplication.rs — check for duplicate osm_id, prevent duplicate ingests, idempotency enforcement, log events
-- [ ] T016 [P] Create services/driver-service/src/api/ingestion.rs — POST /api/v1/gis/ingest endpoint, trigger ingestion job, return job_id, integrate with telemetry events
-- [ ] T017 [P] Implement services/driver-service/src/etl/validation.rs — validate OSM tags against business rules, validate coordinates, check connector types, fail fast on invalid data
-- [ ] T018 [P] Implement services/driver-service/src/etl/normalization.rs — normalize tags to internal fields, create gis.osm_charging_stations record from osm_charging_stations_temp, handle multiple connector types
-- [ ] T019 [P] Implement services/driver-service/src/etl/approval.rs — admin review workflow (approve/reject stations), store approval status, update curated table, ETL moves approved stations
-- [ ] T020 [P] Create services/driver-service/src/handlers/ingestion.rs — GET /api/v1/gis/ingest/status/{job_id} endpoint, return job status (pending/processing/completed/failed), integrate with analytics_db
+- [X] T007 [P] Implement services/driver-service/src/queries/spatial.rs — spatial query builder with SQLx compile-time verification, circular radius queries, bounding box queries, validate radius and coordinates, return results ordered by distance
+- [X] T008 [P] Implement services/driver-service/src/queries/nearest.rs — nearest neighbor queries with ST_Distance ordering, result limit support, SQLx compile-time verification, no raw SQL string construction
+- [X] T009 [P] Implement services/driver-service/src/queries/bbox.rs — bounding box queries with ST_Within, support pagination parameters (page, limit, lat, lon, radius for viewport), SQLx compile-time verification
+- [X] T010 [P] Create services/driver-service/src/handlers/stations.rs — GET /api/v1/driver/stations handler with pagination, integrate spatial queries, validate RBAC, return StationList matching domain-types
+- [X] T011 [P] Create services/driver-service/src/handlers/nearby.rs — GET /api/v1/driver/nearby handler with spatial query engine, validate radius and coordinates, call Redis cache first, return StationList with distance field
+- [X] T012 [P] Implement services/driver-service/src/ingestion/osm_parser.rs — parse OSM XML, extract charging station data, validate required fields, handle multiple connector types, error handling
+- [X] T013 [P] Implement services/driver-service/src/ingestion/tag_normalizer.rs — map OSM tags to internal schema (amenity, power, connector_types, address), store rare tags in JSONB, validate power values
+- [X] T014 [P] Implement services/driver-service/src/ingestion/staging_upsert.rs — upsert to osm_charging_stations_temp table with idempotency key based on osm_id, mark as processed=False, handle duplicates
+- [X] T015 [P] Implement services/driver-service/src/ingestion/deduplication.rs — check for duplicate osm_id, prevent duplicate ingests, idempotency enforcement, log events
+- [X] T016 [P] Create services/driver-service/src/api/ingestion.rs — POST /api/v1/gis/ingest endpoint, trigger ingestion job, return job_id, integrate with telemetry events
+- [X] T017 [P] Implement services/driver-service/src/etl/validation.rs — validate OSM tags against business rules, validate coordinates, check connector types, fail fast on invalid data
+- [X] T018 [P] Implement services/driver-service/src/etl/normalization.rs — normalize tags to internal fields, create gis.osm_charging_stations record from osm_charging_stations_temp, handle multiple connector types
+- [X] T019 [P] Implement services/driver-service/src/etl/approval.rs — admin review workflow (approve/reject stations), store approval status, update curated table, ETL moves approved stations
+- [X] T020 [P] Create services/driver-service/src/handlers/ingestion.rs — GET /api/v1/gis/ingest/status/{job_id} endpoint, return job status (pending/processing/completed/failed), integrate with analytics_db
 
 **Checkpoint**: Foundation ready - all blocking tasks complete (spatial queries, OSM ingestion, ETL pipeline functional)
 
@@ -71,9 +71,9 @@
 
 ### Implementation for Scenario 1
 
-- [ ] T021 [P] [SC1] Implement services/driver-service/src/queries/cache.rs — spatial cache wrapper that checks Redis before executing PostGIS query, cache hit → return cached results, cache miss → execute query and store results, validate cache TTL
-- [ ] T022 [P] [SC1] Update services/driver-service/src/handlers/nearby.rs — add Redis cache integration, validate cache TTL configuration, implement cache invalidation on write, return StationList with distance field, integrate with JWT auth
-- [ ] T023 [P] [SC1] Update services/driver-service/src/handlers/stations.rs — add Redis cache integration for station list with pagination, return StationList matching domain-types, integrate with spatial queries
+- [X] T021 [P] [SC1] Implement services/driver-service/src/queries/cache.rs — spatial cache wrapper that checks Redis before executing PostGIS query, cache hit → return cached results, cache miss → execute query and store results, validate cache TTL
+- [X] T022 [P] [SC1] Update services/driver-service/src/handlers/nearby.rs — add Redis cache integration, validate cache TTL configuration, implement cache invalidation on write, return StationList with distance field, integrate with JWT auth
+- [X] T023 [P] [SC1] Update services/driver-service/src/handlers/stations.rs — add Redis cache integration for station list with pagination, return StationList matching domain-types, integrate with spatial queries
 
 **Checkpoint**: Scenario 1 fully functional - spatial queries return accurate results (< 500ms without cache, < 50ms with cache)
 
@@ -87,9 +87,9 @@
 
 ### Implementation for Scenario 2
 
-- [ ] T024 [P] [SC2] Update services/driver-service/src/handlers/nearby.rs — add clustering support (marker density threshold >50), optimize response for mobile app (reduce payload size, include only necessary fields), handle network failures gracefully
-- [ ] T025 [P] [SC2] Update services/driver-service/src/handlers/stations.rs — optimize station detail endpoint for mobile map rendering, return StationDetail with coordinates, connector_types, is_available, error handling for 404
-- [ ] T026 [P] [SC2] Create services/driver-service/src/handlers/ingestion.rs — GET /api/v1/gis/ingest/status/{job_id} endpoint, return job status with station count, integration with analytics_db
+- [X] T024 [P] [SC2] Update services/driver-service/src/handlers/nearby.rs — add clustering support (marker density threshold >50), optimize response for mobile app (reduce payload size, include only necessary fields), handle network failures gracefully
+- [X] T025 [P] [SC2] Update services/driver-service/src/handlers/stations.rs — optimize station detail endpoint for mobile map rendering, return StationDetail with coordinates, connector_types, is_available, error handling for 404
+- [X] T026 [P] [SC2] Create services/driver-service/src/handlers/ingestion.rs — GET /api/v1/gis/ingest/status/{job_id} endpoint, return job status with station count, integration with analytics_db
 
 **Checkpoint**: Scenario 2 fully functional - map renders correctly with station markers, clustering enabled, popups show accurate station information
 
@@ -103,13 +103,13 @@
 
 ### Implementation for Scenario 3
 
-- [ ] T027 [P] [SC3] Complete services/driver-service/src/ingestion/osm_parser.rs — parse OSM XML, extract charging station data with all tags, validate required fields, handle multiple connector types, error handling for malformed XML
-- [ ] T028 [P] [SC3] Complete services/driver-service/src/ingestion/tag_normalizer.rs — map OSM tags to internal schema (amenity, power, connector_types, address), store rare tags in JSONB, validate power values (7kW, 22kW, 50kW), validate connector types (Type 2, CCS, CHAdeMO)
-- [ ] T029 [P] [SC3] Complete services/driver-service/src/ingestion/staging_upsert.rs — upsert to osm_charging_stations_temp table with idempotency key based on osm_id, mark as processed=False, handle duplicates, log import events
-- [ ] T030 [P] [SC3] Complete services/driver-service/src/ingestion/deduplication.rs — check for duplicate osm_id, prevent duplicate ingests, idempotency enforcement, log reproducibility events, validate deterministic behavior
-- [ ] T031 [P] [SC3] Complete services/driver-service/src/etl/validation.rs — validate OSM tags against business rules, validate coordinates, check connector types, fail fast on invalid data, log validation events
-- [ ] T032 [P] [SC3] Complete services/driver-service/src/etl/normalization.rs — normalize tags to internal fields, create gis.osm_charging_stations record from osm_charging_stations_temp, handle multiple connector types, map amenity types
-- [ ] T033 [P] [SC3] Complete services/driver-service/src/etl/approval.rs — admin review workflow (approve/reject stations), store approval status in curated table, ETL moves approved stations, update last_updated timestamp
+- [X] T027 [P] [SC3] Complete services/driver-service/src/ingestion/osm_parser.rs — parse OSM XML, extract charging station data with all tags, validate required fields, handle multiple connector types, error handling for malformed XML
+- [X] T028 [P] [SC3] Complete services/driver-service/src/ingestion/tag_normalizer.rs — map OSM tags to internal schema (amenity, power, connector_types, address), store rare tags in JSONB, validate power values (7kW, 22kW, 50kW), validate connector types (Type 2, CCS, CHAdeMO)
+- [X] T029 [P] [SC3] Complete services/driver-service/src/ingestion/staging_upsert.rs — upsert to osm_charging_stations_temp table with idempotency key based on osm_id, mark as processed=False, handle duplicates, log import events
+- [X] T030 [P] [SC3] Complete services/driver-service/src/ingestion/deduplication.rs — check for duplicate osm_id, prevent duplicate ingests, idempotency enforcement, log reproducibility events, validate deterministic behavior
+- [X] T031 [P] [SC3] Complete services/driver-service/src/etl/validation.rs — validate OSM tags against business rules, validate coordinates, check connector types, fail fast on invalid data, log validation events
+- [X] T032 [P] [SC3] Complete services/driver-service/src/etl/normalization.rs — normalize tags to internal fields, create gis.osm_charging_stations record from osm_charging_stations_temp, handle multiple connector types, map amenity types
+- [X] T033 [P] [SC3] Complete services/driver-service/src/etl/approval.rs — admin review workflow (approve/reject stations), store approval status in curated table, ETL moves approved stations, update last_updated timestamp
 
 **Checkpoint**: Scenario 3 fully functional - OSM ingestion is deterministic and idempotent, staging and curated tables contain correct data, spatial queries work on curated data
 
@@ -119,11 +119,11 @@
 
 **Purpose**: Implement 5 CI gates to enforce GIS security policies (ownership, query safety, Redis access, OSM reproducibility, API contract)
 
-- [ ] T034 [P] Create tools/ci_gate_gis_ownership.sh — fail if any service other than driver-service writes to gis schema, validate database roles, check schema ownership
-- [ ] T035 [P] Create tools/ci_gate_spatial_query_safety.sh — fail if raw SQL string construction in spatial queries or non-SQLx queries in driver-service, validate all queries use SQLx compile-time verification
-- [ ] T036 [P] Create tools/ci_gate_redis_access.sh — fail if Redis accessed outside driver-service, validate Redis integration only in driver-service
-- [ ] T037 [P] Create tools/ci_gate_osm_reproducibility.sh — fail if ingestion pipeline is non-deterministic or missing idempotency key, validate idempotency enforcement
-- [ ] T038 [P] Create tools/ci_gate_map_api_contract.sh — fail if API response deviates from domain-types contracts, validate response format matches DTO definitions
+- [X] T034 [P] Create tools/ci_gate_gis_ownership.sh — fail if any service other than driver-service writes to gis schema, validate database roles, check schema ownership
+- [X] T035 [P] Create tools/ci_gate_spatial_query_safety.sh — fail if raw SQL string construction in spatial queries or non-SQLx queries in driver-service, validate all queries use SQLx compile-time verification
+- [X] T036 [P] Create tools/ci_gate_redis_access.sh — fail if Redis accessed outside driver-service, validate Redis integration only in driver-service
+- [X] T037 [P] Create tools/ci_gate_osm_reproducibility.sh — fail if ingestion pipeline is non-deterministic or missing idempotency key, validate idempotency enforcement
+- [X] T038 [P] Create tools/ci_gate_map_api_contract.sh — fail if API response deviates from domain-types contracts, validate response format matches DTO definitions
 
 **Checkpoint**: All 5 CI gates implemented and passing
 
@@ -133,12 +133,12 @@
 
 **Purpose**: Complete documentation, integration tests, and verify exit criteria
 
-- [ ] T039 [P] Update services/driver-service/src/main.rs — wire spatial queries and ingestion endpoints, integrate JWT auth, integrate RBAC, wire CI gates
-- [ ] T040 [P] Create tests/integration_gis_spatial_queries.rs — unit tests for spatial queries (radius, bbox, nearest) with PostgreSQL test fixtures, verify performance targets (< 500ms without cache, < 50ms with cache)
-- [ ] T041 [P] Create tests/integration_gis_ingestion.rs — test OSM ingestion is deterministic and idempotent, test tag normalization, test ETL pipeline, verify staging and curated tables
-- [ ] T042 [P] Create tests/integration_gis_redis.rs — test Redis cache read/write, cache hit/miss scenarios, cache invalidation, verify cache isolation to driver-service
-- [ ] T043 [P] Update docs/SYSTEM_STATE.md — add GIS engine sections with schema definitions (osm_charging_stations_temp, osm_charging_stations, materialized views), API contracts, performance targets, Redis cache key pattern
-- [ ] T044 [P] Update docs/sprints/sprint_02/review/sprint_review.md — document implementation progress, exit criteria status, test results, challenges and mitigations
+- [X] T039 [P] Update services/driver-service/src/main.rs — wire spatial queries and ingestion endpoints, integrate JWT auth, integrate RBAC, wire CI gates
+- [X] T040 [P] Create tests/integration_gis_spatial_queries.rs — unit tests for spatial queries (radius, bbox, nearest) with PostgreSQL test fixtures, verify performance targets (< 500ms without cache, < 50ms with cache)
+- [X] T041 [P] Create tests/integration_gis_ingestion.rs — test OSM ingestion is deterministic and idempotent, test tag normalization, test ETL pipeline, verify staging and curated tables
+- [X] T042 [P] Create tests/integration_gis_redis.rs — test Redis cache read/write, cache hit/miss scenarios, cache invalidation, verify cache isolation to driver-service
+- [X] T043 [P] Update docs/SYSTEM_STATE.md — add GIS engine sections with schema definitions (osm_charging_stations_temp, osm_charging_stations, materialized views), API contracts, performance targets, Redis cache key pattern
+- [X] T044 [P] Update docs/sprints/sprint_02/review/sprint_review.md — document implementation progress, exit criteria status, test results, challenges and mitigations
 
 **Checkpoint**: All integration tests passing, documentation complete, exit criteria verified
 

@@ -38,9 +38,12 @@ BorneMap is a microservices platform for EV charging station management. This do
   - UUID primary key
   - Email uniqueness constraint
 - `gis`: GIS spatial data (driver-service owned)
-  - osm_charging_stations_temp (staging)
-  - osm_charging_stations (curated spatial truth)
-  - B-tree indexes on (longitude, latitude) for spatial queries
+   - osm_charging_stations_temp (staging table for raw OSM data)
+   - osm_charging_stations (curated spatial truth)
+   - Materialized views: mv_stations_geo, mv_stations_summary
+   - GiST indexes on geom for spatial queries
+   - B-tree indexes on amenity and is_available
+   - Redis spatial cache (geo:radius:{lat}:{lon}:{radius})
 - `inventory`: Business entity data (admin-service owned)
   - stations (STA-nanoid(12))
   - partners (PRT-nanoid(12))
@@ -212,10 +215,31 @@ BorneMap is a microservices platform for EV charging station management. This do
 
 ### API Contracts
 
-API contracts are being defined in:
+API contracts are defined in:
 - `specs/001-system-bootstrap/contracts/auth-service.md`
 - `specs/001-system-bootstrap/contracts/driver-service.md`
 - `specs/001-system-bootstrap/contracts/admin-service.md`
+
+**GIS Engine API Contracts**:
+- `specs/003-gis-engine/contracts/api-contracts.md` - Map rendering API
+  - `GET /api/v1/driver/nearby` - Find nearby charging stations (radius search)
+  - `GET /api/v1/driver/stations` - List stations with pagination
+  - `GET /api/v1/driver/stations/{id}` - Get station details
+  - `GET /api/v1/driver/stations/count` - Get total station count
+  - `GET /api/v1/driver/stations/stats` - Get station statistics
+  - `POST /api/v1/gis/ingest` - Trigger OSM data ingestion
+  - `GET /api/v1/gis/ingest/status/{job_id}` - Get ingestion job status
+  - `GET /api/v1/gis/ingest/stats` - Get ingestion statistics
+  - `GET /api/v1/gis/ingest/records/{status}` - Get ingestion records by status
+  - `GET /api/v1/gis/etl/status` - Get ETL status
+  - `POST /api/v1/gis/etl/process` - Process unprocessed staging records
+
+**API Response Format**:
+- All responses use JSON with serde Serialize/Deserialize
+- Pagination via StationList with Pagination metadata
+- Error responses include `error` and `message` fields
+- All endpoints require JWT authentication (RBAC enforced)
+- Response time targets: < 500ms (without cache), < 50ms (with cache)
 
 ## CI/CD Pipeline
 
