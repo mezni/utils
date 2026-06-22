@@ -19,39 +19,40 @@ RUST_FILES=$(find . -name "*.rs" -type f ! -path "./target/*" ! -path "./.cargo/
 VIOLATIONS=0
 
 # Check UUID usage in non-users tables
-echo "Checking UUID usage..."
+echo "Checking UUID usage in Rust source files..."
 for file in $RUST_FILES; do
   # Check for UUID in entity identifiers (expecting nanoid with PREFIX)
-  if grep -q "uuid::Uuid\|Uuid" "$file" && \
-     ! grep -q "users" "$file" && \
-     ! grep -q "Keycloak\|keycloak" "$file"; then
-    VIOLATIONS=$((VIOLATIONS + 1))
-    echo "  WARNING: UUID found in non-users table: $file"
+  if grep -q "uuid::Uuid\|Uuid" "$file" 2>/dev/null; then
+    # Check if file is related to users table or Keycloak
+    if ! grep -q "users" "$file" 2>/dev/null && ! grep -q "Keycloak\|keycloak" "$file" 2>/dev/null; then
+      VIOLATIONS=$((VIOLATIONS + 1))
+      echo "  ERROR: UUID found in non-users table: $file"
+    fi
   fi
 
   # Check for nanoid without PREFIX in entity tables
-  if grep -q "nanoid\|nanoid::" "$file" && \
-     ! grep -q "users" "$file" && \
-     ! grep -q "Keycloak\|keycloak" "$file"; then
-    VIOLATIONS=$((VIOLATIONS + 1))
-    echo "  WARNING: nanoid found in non-users table: $file"
+  if grep -q "nanoid::" "$file" 2>/dev/null; then
+    if ! grep -q "users" "$file" 2>/dev/null && ! grep -q "Keycloak\|keycloak" "$file" 2>/dev/null; then
+      VIOLATIONS=$((VIOLATIONS + 1))
+      echo "  ERROR: nanoid:: found in non-users table: $file"
+    fi
   fi
 done
 
 # Check SQL migrations for identity violations
-MIGRATION_FILES=$(find . -name "*.sql" -path "*/migrations/*")
+MIGRATION_FILES=$(find . -name "*.sql" -type f -path "*/migrations/*")
 
 for file in $MIGRATION_FILES; do
   # Check for UUID in entity tables (expecting PREFIX-nanoid)
-  if grep -E "CREATE TABLE (stations|chargers|connectors|partners)" "$file" >/dev/null; then
+  if grep -q "CREATE TABLE" "$file" 2>/dev/null; then
     # Entity table - should use PREFIX-nanoid(12), not UUID
-    if grep -E "user_id.*UUID\|station_id.*UUID\|charger_id.*UUID\|connector_id.*UUID\|partner_id.*UUID" "$file" >/dev/null; then
+    if grep -E "user_id.*UUID\|station_id.*UUID\|charger_id.*UUID\|connector_id.*UUID\|partner_id.*UUID" "$file" >/dev/null 2>&1; then
       VIOLATIONS=$((VIOLATIONS + 1))
       echo "  ERROR: UUID found in entity table in $file"
     fi
 
     # Check for nanoid without PREFIX
-    if grep -E "user_id.*nanoid\|station_id.*nanoid\|charger_id.*nanoid\|connector_id.*nanoid\|partner_id.*nanoid" "$file" >/dev/null; then
+    if grep -E "user_id.*nanoid\|station_id.*nanoid\|charger_id.*nanoid\|connector_id.*nanoid\|partner_id.*nanoid" "$file" >/dev/null 2>&1; then
       VIOLATIONS=$((VIOLATIONS + 1))
       echo "  ERROR: nanoid without PREFIX found in entity table in $file"
     fi

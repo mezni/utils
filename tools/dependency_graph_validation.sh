@@ -16,7 +16,7 @@ OUTPUT=$(cargo tree --all 2>&1)
 # circular dependencies
 
 # Check for forbidden dependencies using cargo metadata
-FORBIDDEN_COUNT=$(cargo metadata --format-version 1 --no-deps --quiet | jq -r '
+FORBIDDEN_COUNT=$(cargo metadata --format-version 1 --no-deps --quiet 2>/dev/null | jq -r '
   .workspace_members as $members |
   .packages | to_entries[] as $pkg |
   select($pkg.value.name != "ui-kit" and $pkg.value.name != "domain-types" and $pkg.value.name != "client-core") |
@@ -27,6 +27,7 @@ FORBIDDEN_COUNT=$(cargo metadata --format-version 1 --no-deps --quiet | jq -r '
 
 if [ "$FORBIDDEN_COUNT" != "0" ]; then
   echo "dependency_graph_validation FAILED: Found forbidden dependencies"
+  FORBIDDEN_COUNT=$(echo $FORBIDDEN_COUNT | tr -d '\r')
   echo '{"status":"failed","exit_code":1,"forbidden_count":'$FORBIDDEN_COUNT',"summary":"Forbidden dependencies found"}' > .specify/ci-artifacts/dependency_graph.json
   exit 1
 else

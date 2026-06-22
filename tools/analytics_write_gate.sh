@@ -13,11 +13,11 @@ VIOLATIONS=0
 # Check Rust source files
 for file in $(find . -name "*.rs" -type f ! -path "./target/*"); do
   # Check for INSERT/UPDATE/DELETE/CREATE TABLE operations
-  if grep -E "(INSERT INTO|UPDATE|DELETE FROM|CREATE TABLE|TRUNCATE)" "$file" >/dev/null; then
+  if grep -qE "(INSERT INTO|UPDATE|DELETE FROM|CREATE TABLE|TRUNCATE)" "$file" 2>/dev/null; then
     # This is a write operation, check which service owns it
-    if grep -E "driver-service|driver_service|DriverService" "$file" >/dev/null; then
+    if grep -qE "driver-service|driver_service|DriverService" "$file" 2>/dev/null; then
       WRITE_OPERATIONS=$((WRITE_OPERATIONS + 1))
-    elif grep -E "admin-service|admin_service|AdminService" "$file" >/dev/null; then
+    elif grep -qE "admin-service|admin_service|AdminService" "$file" 2>/dev/null; then
       VIOLATIONS=$((VIOLATIONS + 1))
       echo "  ERROR: Admin-service attempting write to analytics_db in $file"
     fi
@@ -25,14 +25,14 @@ for file in $(find . -name "*.rs" -type f ! -path "./target/*"); do
 done
 
 # Check SQL migrations
-for file in $(find . -name "*.sql" -path "*/migrations/*"); do
+for file in $(find . -name "*.sql" -type f -path "*/migrations/*"); do
   # Check for write operations
-  if grep -E "(INSERT INTO|UPDATE|DELETE FROM|CREATE TABLE|TRUNCATE)" "$file" >/dev/null; then
+  if grep -qE "(INSERT INTO|UPDATE|DELETE FROM|CREATE TABLE|TRUNCATE)" "$file" 2>/dev/null; then
     # Check if this migration is for analytics_db
-    if grep -q "analytics" "$file"; then
-      if grep -E "driver-service|driver_service|DriverService" "$file" >/dev/null; then
+    if grep -q "analytics" "$file" 2>/dev/null; then
+      if grep -qE "driver-service|driver_service|DriverService" "$file" 2>/dev/null; then
         WRITE_OPERATIONS=$((WRITE_OPERATIONS + 1))
-      elif grep -E "admin-service|admin_service|AdminService" "$file" >/dev/null; then
+      elif grep -qE "admin-service|admin_service|AdminService" "$file" 2>/dev/null; then
         VIOLATIONS=$((VIOLATIONS + 1))
         echo "  ERROR: Admin-service attempting write to analytics_db in $file"
       fi

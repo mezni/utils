@@ -123,18 +123,18 @@ description: "Task list for Sprint 0: System Bootstrap & Enforcement Kernel"
 
 ### Implementation for User Story 2
 
-- [ ] T062 [P] [US2] Create tools/format_check.sh in tools/ci_guard.sh stage 1
-- [ ] T063 [P] [US2] Create tools/type_check.sh in tools/ci_guard.sh stage 2
-- [ ] T064 [P] [US2] Create tools/dependency_graph_validation.sh in tools/ci_guard.sh stage 3
-- [ ] T065 [P] [US2] Create tools/identity_validation.sh in tools/ci_guard.sh stage 4
-- [ ] T066 [P] [US2] Create tools/schema_validation.sh in tools/ci_guard.sh stage 5
-- [ ] T067 [P] [US2] Create tools/sqlx_compile_check.sh in tools/ci_guard.sh stage 6
-- [ ] T068 [P] [US2] Create tools/analytics_write_gate.sh in tools/ci_guard.sh stage 7
-- [ ] T069 [P] [US2] Create tools/integration_tests.sh in tools/ci_guard.sh stage 8
-- [ ] T070 [P] [US2] Create tools/build_success.sh in tools/ci_guard.sh stage 9
-- [ ] T071 [US2] Integrate all 9 stages into tools/ci_guard.sh with hard-stop enforcement
-- [ ] T072 [US2] Create Makefile with ci target that runs tools/ci_guard.sh
-- [ ] T073 [US2] Create .github/workflows/ci.yml with all 9 CI stages
+- [X] T062 [P] [US2] Create tools/format_check.sh in tools/ci_guard.sh stage 1
+- [X] T063 [P] [US2] Create tools/type_check.sh in tools/ci_guard.sh stage 2
+- [X] T064 [P] [US2] Create tools/dependency_graph_validation.sh in tools/ci_guard.sh stage 3
+- [X] T065 [P] [US2] Create tools/identity_validation.sh in tools/ci_guard.sh stage 4
+- [X] T066 [P] [US2] Create tools/schema_validation.sh in tools/ci_guard.sh stage 5
+- [X] T067 [P] [US2] Create tools/sqlx_compile_check.sh in tools/ci_guard.sh stage 6
+- [X] T068 [P] [US2] Create tools/analytics_write_gate.sh in tools/ci_guard.sh stage 7
+- [X] T069 [P] [US2] Create tools/integration_tests.sh in tools/ci_guard.sh stage 8
+- [X] T070 [P] [US2] Create tools/build_success.sh in tools/ci_guard.sh stage 9
+- [X] T071 [US2] Integrate all 9 stages into tools/ci_guard.sh with hard-stop enforcement
+- [X] T072 [US2] Create Makefile with ci target that runs tools/ci_guard.sh
+- [X] T073 [US2] Create .github/workflows/ci.yml with all 9 CI stages
 
 **Checkpoint**: At this point, User Story 2 should be fully functional and testable independently
 
