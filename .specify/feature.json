@@ -1,1 +1,3 @@
-{"feature_directory":"specs/004-telemetry-ingestion"}
+{
+  "feature_directory": "specs/005-admin-analytics"
+}
