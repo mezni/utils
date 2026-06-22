@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # PostgreSQL for platform_db (users, gis, inventory)
   platform-db:
@@ -54,6 +52,63 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - bornemap-network
+
+  # Auth service (port 3000)
+  auth-service:
+    build:
+      context: ../../
+      dockerfile: services/auth-service/Dockerfile
+    container_name: bornemap_auth_service
+    ports:
+      - "3000:3000"
+    depends_on:
+      platform-db:
+        condition: service_healthy
+    environment:
+      - RUST_LOG=info
+      - APP_SERVER_PORT=3000
+      - APP_DATABASE_URL=postgres://bornemap_admin:bornemap_password@platform-db:5432/platform_db
+    networks:
+      - bornemap-network
+
+  # Driver service (port 3001)
+  driver-service:
+    build:
+      context: ../../
+      dockerfile: services/driver-service/Dockerfile
+    container_name: bornemap_driver_service
+    ports:
+      - "3001:3001"
+    depends_on:
+      platform-db:
+        condition: service_healthy
+      analytics-db:
+        condition: service_healthy
+    environment:
+      - RUST_LOG=info
+      - APP_SERVER_PORT=3001
+      - APP_DATABASE_URL=postgres://bornemap_driver:bornemap_password@platform-db:5432/platform_db
+      - APP_ANALYTICS_DATABASE_URL=postgres://bornemap_analytics_writer:bornemap_password@analytics-db:5432/analytics_db
+    networks:
+      - bornemap-network
+
+  # Admin service (port 3002)
+  admin-service:
+    build:
+      context: ../../
+      dockerfile: services/admin-service/Dockerfile
+    container_name: bornemap_admin_service
+    ports:
+      - "3002:3002"
+    depends_on:
+      platform-db:
+        condition: service_healthy
+    environment:
+      - RUST_LOG=info
+      - APP_SERVER_PORT=3002
+      - APP_DATABASE_URL=postgres://bornemap_admin:bornemap_password@platform-db:5432/platform_db
     networks:
       - bornemap-network
 
