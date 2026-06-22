@@ -48,7 +48,7 @@ domain-types = { path = "../../apps/packages/domain-types" }
 # JWT validation
 jsonwebtoken = { workspace = true }
 reqwest = { workspace = true }
-uuid = { workspace = true }
+uuid = { workspace = true, features = ["v7", "serde"] }
 
 # Error handling
 anyhow = "1.0"

@@ -5,6 +5,7 @@ use actix_web::{web, App, HttpResponse, HttpServer, Responder};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 
+use admin_service::handlers::analytics::configure_routes;
 use admin_service::identity::sync::{identity_sync_middleware, SyncMiddleware};
 use admin_service::middleware::correlation::correlation_middleware;
 use admin_service::middleware::jwt::{jwt_middleware, JwtConfig, JwtMiddleware};
@@ -79,6 +80,7 @@ async fn main() -> anyhow::Result<()> {
             .wrap(actix_web::middleware::from_fn(jwt_guard))
             .wrap(actix_web::middleware::from_fn(identity_sync_middleware))
             .route("/health", web::get().to(health))
+            .configure(configure_routes)
     })
     .bind(("0.0.0.0", port))?
     .run()

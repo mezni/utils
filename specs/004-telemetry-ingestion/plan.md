@@ -6,7 +6,7 @@
 
 ## Summary
 
-Implement telemetry ingestion core with event validation, normalization, idempotency, and integration with analytics database. Ensure single-writer analytics enforcement (driver-service only) through database roles and CI gates. Features: event schema registry, frontend telemetry SDK, automatic enrichment, duplicate detection, dead-letter logging, and CI gates for telemetry rules enforcement.
+Implement telemetry ingestion core with event validation, normalization, idempotency, and integration with analytics database. Ensure single-writer analytics enforcement (driver-service only) through database roles and CI gates. Features: event schema registry, event type governance (fixed enum), UUID v7 idempotency, location provenance, 30-day schema deprecation, dead-letter store, admin-service read-only API, and CI gates for telemetry rules enforcement.
 
 ## Technical Context
 
@@ -16,20 +16,21 @@ Implement telemetry ingestion core with event validation, normalization, idempot
 - serde (serialization), serde_json
 - sqlx (compile-time verification)
 - actix-web (REST API)
-- uuid (UUID validation)
+- uuid (UUID v7 for idempotency)
 - thiserror (error types)
 - chrono (timestamp handling)
-- hashbrown (idempotency key hashing)
+- rust_decimal (decimal precision for location data)
 
 **Storage**: 
 - PostgreSQL 16+ for analytics database
-- analytics_db schema with analytics_events table and dead_letter_events table
+- analytics_db schema with analytics_events table and analytics_events_dead_letter table
 - Event schemas in domain-types crate
-- Frontend telemetry SDK in client-core package
+- Event type enum for governance
+- admin-service database role (SELECT-only)
 
 **Testing**: cargo test (unit/integration), cargo clippy (linting), cargo fmt (formatting)
 
-**Target Platform**: Linux server (driver-service), Docker containers (PostgreSQL 16+), React Native app (client-core SDK)
+**Target Platform**: Linux server (driver-service), Docker containers (PostgreSQL 16+)
 
 **Project Type**: Monorepo with microservices architecture
 
@@ -38,16 +39,20 @@ Implement telemetry ingestion core with event validation, normalization, idempot
 - Validation: < 100ms per event
 - Idempotency check: < 10ms
 - Enrichment: < 200ms per event
+- Analytics query: < 500ms per paginated query
 - CI gate validation: < 30 seconds
 
 **Constraints**:
-- Single-writer analytics enforcement (driver-service only writes to analytics_db)
-- Event schema validation mandatory (schema_version, user_id, timestamp, payload)
-- Idempotency must be enforced at database level
+- Single-writer analytics enforcement (driver-service ONLY writes to analytics_db)
+- Event schema validation mandatory (schema_version, user_id, timestamp, payload, event_type enum)
+- Unknown/deprecated schema versions rejected immediately (no 30-day grace period)
+- Idempotency must be enforced at database level using UUID v7
 - No dynamic SQL construction (all queries via SQLx)
-- Frontend SDK must provide batching and retry
+- Admin-service has SELECT-only database role (no write access)
+- Location provenance required (EventLocation, SessionLocation, LastKnownLocation, DefaultLocation)
+- Event type must use fixed enum (no free-form strings)
 
-**Scale/Scope**: 10 must-have tasks, 6 should-have tasks, 2 nice-to-have tasks across 3 phases (Setup, Implementation, Polish)
+**Scale/Scope**: 18 must-have tasks across 5 phases (Setup, Foundational, User Stories, Cross-Cutting)
 
 ## Enforcement Kernel Specification
 
@@ -156,20 +161,24 @@ Stage 14: build_success
 
 **Algorithm**:
 - Validate schema_version presence in event contracts
+- Verify schema_version matches known versions only (reject unknown)
+- Verify schema_version not deprecated (reject > 30 days old)
 - Verify user_id validation as UUID format
 - Check timestamp validation (ISO 8601)
 - Validate payload structure (JSON object, required fields)
+- Validate event_type matches EventType enum (no free-form strings)
+- Validate location_source enum (EventLocation, SessionLocation, LastKnownLocation, DefaultLocation)
 
 **Output**: JSON
 ```json
 {
   "status": "passed"|"failed",
   "exit_code": 0,
-  "summary": "Event schema validation enforced in contracts"
+  "summary": "Event schema validation enforced with version governance"
 }
 ```
 
-**Failure Signature**: Exit code 1 with schema violations
+**Failure Signature**: Exit code 1 with schema violations (including unknown/deprecated versions)
 
 ---
 
@@ -283,39 +292,37 @@ specs/004-telemetry-ingestion/
 ```text
 services/driver-service/
 ├── src/
-│   ├── api/telemetry.rs # Telemetry ingestion endpoint
+│   ├── api/telemetry.rs  # Telemetry ingestion endpoint
 │   ├── db/analytics.rs  # Analytics database writer
-│   ├── domain/types/events.rs  # Event schemas (new)
-│   ├── middleware/validation.rs  # Event validation layer
-│   ├── middleware/enrichment.rs  # Event enrichment
-│   ├── middleware/idempotency.rs  # Idempotency system
+│   ├── domain/types/events.rs  # Event schemas and event type enum
+│   ├── middleware/validation.rs  # Event validation layer (including schema version governance)
+│   ├── middleware/enrichment.rs  # Event enrichment with location provenance
+│   ├── middleware/idempotency.rs  # Idempotency system (UUID v7)
 │   └── handlers/telemetry.rs  # Telemetry handlers
 ├── migrations/
-│   ├── 0005_analytics_events.up.sql  # Event table
-│   └── 0005_analytics_events.down.sql
+│   ├── 0005_analytics_events.up.sql  # Event table with idempotency_key unique index
+│   ├── 0005_analytics_events.down.sql
+│   ├── 0006_analytics_events_dead_letter.up.sql  # Dead letter table
+│   └── 0006_analytics_events_dead_letter.down.sql
 └── Cargo.toml  # Updated with new dependencies
 
 apps/packages/domain-types/src/
-└── events.rs  # Event schema registry
-
-apps/packages/client-core/
-└── src/telemetry/
-    ├── sdk.rs  # Frontend telemetry SDK
-    └── emitter.rs  # Event emitter
+└── events.rs  # Event schemas, EventType enum, LocationSource enum
 
 tools/
-├── ci_gate_analytics_write.sh  # Analytics write gate
-├── ci_gate_event_schema.sh  # Event schema validation gate
-├── ci_gate_idempotency.sh  # Idempotency gate
-├── ci_gate_telemetry_routing.sh  # Telemetry routing gate
+├── ci_gate_analytics_write.sh  # Analytics write gate (driver-service only)
+├── ci_gate_event_schema.sh  # Event schema validation gate (including version governance)
+├── ci_gate_idempotency.sh  # Idempotency gate (UUID v7)
+├── ci_gate_telemetry_routing.sh  # Telemetry routing gate (driver-service only)
 └── ci_gate_payload_structure.sh  # Payload structure gate
 ```
 
 **Structure Decision**: 
-- Use existing domain-types crate for schema registry (contract-first)
+- Use existing domain-types crate for event schema registry and EventType enum (no free-form strings)
 - Implement new telemetry modules in driver-service (no cross-service imports)
-- Frontend SDK in client-core (no backend imports)
+- No frontend SDK (telemetry events sent from auth-service, driver-service, inventory-service)
 - CI gates in tools/ (executable scripts)
+- No admin-service write access to analytics_db
 
 ## Complexity Tracking
 
@@ -327,9 +334,12 @@ The enforcement kernel introduces complexity to ensure constitutional compliance
 |---------------------|------------|-------------------------------------|
 | Database roles (bornemap_analytics_writer) | Enforces single-writer at DB level | Direct API calls (violates constitution) |
 | CI analytics write gate | Prevents code-level violations | Manual code review (error-prone) |
-| Event schema validation | Ensures data quality | No validation (data corruption risk) |
-| Idempotency enforcement | Prevents duplicate events | No idempotency (duplicate metrics) |
-| Traefik routing enforcement | Enforces telemetry routing | Manual configuration (configuration drift) |
+| Event schema validation | Ensures data quality with governance | No validation (data corruption risk) |
+| Event type enum governance | Prevents free-form strings | Free-form strings (typos, inconsistency) |
+| Idempotency enforcement with UUID v7 | Prevents duplicate events, ensures time-ordering | No idempotency (duplicate metrics) |
+| Location provenance tracking | Ensures analytics accuracy | No provenance (ambiguous location data) |
+| Schema version governance (reject unknown/deprecated) | Ensures data quality | Grace period (inconsistent data) |
+| Admin-service read-only role | Prevents write access violations | No role enforcement (data corruption risk) |
 
 ---
 
@@ -343,86 +353,88 @@ The enforcement kernel introduces complexity to ensure constitutional compliance
 
 ### Research Tasks
 
-**R-TELE-1: Event Schema Versioning Strategy**
-- **Task**: Research event schema versioning patterns
-- **Goal**: Determine versioning strategy (semantic versioning, backward compatibility, deprecation policy)
-- **Alternatives**: Date-based versioning, descriptive versioning
+**R-TELE-1: Event Type Governance**
+- **Task**: Research event type governance patterns
+- **Goal**: Determine best approach (fixed enum vs free-form strings)
+- **Alternatives**: Free-form strings, free-form with validation, fixed enum
 
-**R-TELE-2: Idempotency Key Generation**
-- **Task**: Research idempotency key generation patterns
-- **Goal**: Determine best approach (hash of event_id + schema_version, UUID, custom algorithm)
-- **Alternatives**: UUID-based, timestamp-based, sequence-based
+**R-TELE-2: Idempotency Key Generation with UUID v7**
+- **Task**: Research UUID v7 (RFC 9562) for idempotency keys
+- **Goal**: Determine UUID v7 vs UUID v4 vs SHA256(producer_id + event_id)
+- **Alternatives**: UUID v4 (random), SHA256 hash, timestamp-based
 
-**R-TELE-3: Event Enrichment Sources**
-- **Task**: Research event enrichment patterns and sources
-- **Goal**: Identify optimal data sources for geolocation, session, role metadata
-- **Alternatives**: Fetch from API, cache at event time, process as part of ingestion
+**R-TELE-3: Location Provenance Strategy**
+- **Task**: Research location provenance patterns and requirements
+- **Goal**: Determine best location_source values and fallback behavior
+- **Alternatives**: No provenance, single source, multiple sources
 
-**R-TELE-4: Frontend SDK Retry Logic**
-- **Task**: Research event batch and retry patterns for SDK
-- **Goal**: Determine optimal batch size, retry strategies, backoff policies
-- **Alternatives**: Single event, fixed batch size, adaptive batching
+**R-TELE-4: Schema Version Governance (Immediate Rejection)**
+- **Task**: Research schema version rejection policies
+- **Goal**: Determine best approach (immediate rejection vs grace period vs mark-only)
+- **Alternatives**: Grace period, mark-only, no validation
 
-**R-TELE-5: Dead-Letter Queue Implementation**
-- **Task**: Research dead-letter queue patterns
-- **Goal**: Determine implementation approach (dedicated table, separate database, topic queue)
-- **Alternatives**: Separate table in same DB, S3, Kafka topic
+**R-TELE-5: Dead-Letter Store Implementation**
+- **Task**: Research dead-letter store patterns
+- **Goal**: Determine implementation approach (table, separate database, separate service)
+- **Alternatives**: Same table, separate table, separate database, event bus
 
-**R-TELE-6: Telemetry Performance**
-- **Task**: Research event ingestion performance patterns
-- **Goal**: Identify performance targets and optimization strategies
-- **Alternatives**: Stream processing, batch processing, real-time vs delayed
+**R-TELE-6: Analytics Query Flow Through Admin-Service**
+- **Task**: Research read-only API patterns and database roles
+- **Goal**: Determine best approach for analytics queries
+- **Alternatives**: Direct DB access, admin-service with role, read-only service
 
 ### Resolved Clarifications
 
-**Question 1**: Event schema versioning strategy
+**Question 1**: Event type governance
 
-**Answer**: Use semantic versioning (e.g., "1.0.0") with automatic deprecation (30 days support for deprecated versions). This allows:
-- Clear version tracking
-- Backward compatibility for 30 days
-- Gradual migration path for new features
-- Version comparison for validation
+**Answer**: Use fixed enum with validation (AUTH_LOGIN, AUTH_LOGOUT, TOKEN_REFRESH, LOCATION_UPDATE, SESSION_START, SESSION_END, DRIVER_STATUS, INVENTORY_UPDATE, PRICE_CHANGE, STOCK_ALERT, ERROR_UNHANDLED). Benefits:
+- Type safety
+- Impossible to typos
+- Easy to add new types through code changes
+- No free-form strings
 
 **Question 2**: Idempotency key generation
 
-**Answer**: Use hash of event_id (UUID) + schema_version using SHA256. This provides:
-- Deterministic key generation
-- Uniqueness guarantees
-- No collisions
-- Simple implementation
+**Answer**: Use UUID v7 (RFC 9562) for idempotency_key. Benefits:
+- Time-ordered (good for analytics ordering)
+- Globally unique with high probability
+- Simple implementation (no hashing)
+- No schema_version needed (event_id already unique)
+- Compatible with PostgreSQL 13+ and all modern UUID libraries
 
-**Question 3**: Event enrichment sources
+**Question 3**: Location provenance strategy
 
-**Answer**: 
-- Geolocation: Fetch from user profile (cached at auth time, TTL 30 minutes)
-- Session metadata: Track in authentication system, attached to event
-- Role context: Extract from JWT claims
-- System metadata: Include from service identity
+**Answer**: Use required location_source enum (EventLocation, SessionLocation, LastKnownLocation, DefaultLocation). Benefits:
+- Ensures analytics accuracy
+- Clear source of location data
+- Can trace data lineage
+- Required field prevents missing location context
 
-**Question 4**: Frontend SDK retry logic
+**Question 4**: Schema version governance
 
-**Answer**:
-- Batch size: 10 events per batch (adjustable)
-- Retry: 3 attempts with exponential backoff (1s, 2s, 4s)
-- Backoff jitter: Add random jitter to prevent thundering herd
-- Batch timeout: 5 seconds
+**Answer**: Unknown and deprecated schema versions rejected immediately (no 30-day grace period). Benefits:
+- Ensures data quality
+- Prevents inconsistent data
+- Simpler implementation
+- Clear validation rules
 
-**Question 5**: Dead-letter queue implementation
+**Question 5**: Dead-letter store implementation
 
-**Answer**: Use dedicated `analytics_events_deadletter` table in analytics_db. Benefits:
+**Answer**: Use dedicated analytics_events_dead_letter table in analytics_db. Benefits:
 - Separate from valid events (no impact on queries)
 - Easy querying and analysis
 - Can be processed asynchronously
 - Supports retry workflows
+- Simple implementation (no message queue complexity)
 
-**Question 6**: Telemetry performance
+**Question 6**: Analytics query flow
 
-**Answer**:
-- Target: 1000 events/second ingestion
-- Validation: < 100ms per event
-- Idempotency: < 10ms per event
-- Enrichment: < 200ms per event
-- Batching: Frontend SDK batches, backend processes in batches
+**Answer**: Analytics queries through admin-service with SELECT-only database role (bornemap_analytics_reader). Benefits:
+- Enforces single-writer architecture
+- Clear separation of concerns
+- Can add query optimization
+- Supports authentication/authorization
+- No direct database access
 
 ---
 
@@ -439,24 +451,33 @@ The enforcement kernel introduces complexity to ensure constitutional compliance
 **Input**: Feature spec requirements → `data-model.md`
 
 **Entities**:
-1. **TelemetryEvent** - Core event structure
-2. **EventEnrichment** - Additional metadata
-3. **EventSchema** - Schema registry definitions
-4. **AnalyticsEvent** - Persisted events in database
-5. **DeadLetterEvent** - Malformed events for debugging
+1. **TelemetryEvent** - Core event structure with schema_version, user_id (UUID), timestamp, event_type (enum), payload (JSON), idempotency_key (UUID v7), enriched_metadata
+2. **EventEnrichment** - Additional metadata with location provenance
+3. **LocationMetadata** - Location data with provenance (EventLocation, SessionLocation, LastKnownLocation, DefaultLocation)
+4. **SessionMetadata** - Session context (session_start, session_duration, last_activity)
+5. **RoleMetadata** - Role context from JWT (driver, partner, admin)
+6. **SystemMetadata** - System context (service_name, event_source)
+7. **EventSchema** - Schema registry definitions
+8. **AnalyticsEvent** - Persisted events in database
+9. **DeadLetterEvent** - Malformed events for debugging
 
 **Relationships**:
-- Event → EventEnrichment (1:1)
+- Event → LocationMetadata (1:1 with provenance)
+- Event → SessionMetadata (1:1)
+- Event → RoleMetadata (1:1)
+- Event → SystemMetadata (1:1)
+- Event → EventEnrichment (aggregate of all metadata)
 - Event → AnalyticsEvent (after normalization)
 - Event → DeadLetterEvent (if validation fails)
 
 **Validation Rules**:
-- schema_version: Required, matches known versions
+- schema_version: Required, matches known versions only (reject unknown), not deprecated (> 30 days old)
 - user_id: Required, must be valid UUID
 - timestamp: Required, ISO 8601 format
 - payload: Required, valid JSON object
-- idempotency_key: Required, SHA256 hash
-- event_type: Required, enum type (auth, location, session, error)
+- idempotency_key: Required, UUID v7 (time-ordered, globally unique)
+- event_type: Required, EventType enum (no free-form strings)
+- location_source: Required, LocationSource enum (EventLocation, SessionLocation, LastKnownLocation, DefaultLocation)
 
 ### Contracts Definition
 
@@ -464,57 +485,56 @@ The enforcement kernel introduces complexity to ensure constitutional compliance
 
 **Contracts to Create**:
 
-1. **events.schema** - Event schema definitions
+1. **events.schema** - Event schema definitions and EventType enum
    - Defines schemas for auth, location, session, error event types
-   - Specifies required fields and validation rules
+   - Specifies required fields, validation rules
+   - Defines EventType enum values
+   - Defines LocationSource enum (EventLocation, SessionLocation, LastKnownLocation, DefaultLocation)
 
 2. **ingestion.contract** - Ingestion API contract
-   - POST /api/v1/telemetry/events
+   - POST /api/v1/telemetry/events (driver-service ingestion endpoint)
    - Request/response formats
    - Error codes and messages
-   - Idempotency response
+   - Idempotency response (UUID v7)
 
-3. **telemetry-sdk.contract** - Frontend SDK interface
-   - TelemetryEmitter interface
-   - Batch methods
-   - Retry behavior
-   - Error handling
-
-4. **analytics-contracts.md** - Analytics queries
+3. **analytics-contracts.md** - Admin-service read API
    - GET /api/v1/analytics/events
-   - Filtering and pagination
-   - Time range queries
-   - Schema_version filtering
+   - Query parameters: user_id, start_time, end_time, schema_version, event_type, page_number, page_size
+   - Response: paginated list of events with total_count, total_pages
+   - Error handling: 403 Forbidden on write attempts
 
 ### Quickstart Guide
 
 **Input**: Feature spec assumptions and common use cases → `quickstart.md`
 
 **Sections**:
-1. Prerequisites
+1. Prerequisites (PostgreSQL 16+, Keycloak JWT)
 2. Quick start (5-minute setup)
-3. Common use cases
+3. Common use cases (auth-service, driver-service, inventory-service sending events)
 4. Integration examples
 5. Troubleshooting
 
 ### Implementation Strategy
 
 **Phase 1 - Foundation**:
-- Create database migration for analytics_events and dead_letter_events tables
-- Implement event schema registry in domain-types
+- Create database migrations for analytics_events and analytics_events_dead_letter tables
+- Implement event schema registry in domain-types (EventType enum, LocationSource enum)
+- Implement event validation layer with schema version governance (reject unknown/deprecated)
 - Create telemetry ingestion endpoint in driver-service
-- Implement event validation layer
+- Configure Traefik telemetry routing (driver-service only)
 
 **Phase 2 - Core Functionality**:
 - Implement event normalization pipeline
-- Implement idempotency system with unique index
-- Implement event enrichment logic
+- Implement UUID v7 idempotency system with unique index
+- Implement event enrichment with location provenance
 - Implement dead-letter logging
+- Create admin-service database role with SELECT-only privileges
 
-**Phase 3 - SDK & Routing**:
-- Create frontend telemetry SDK in client-core
-- Configure Traefik telemetry routing
-- Implement CI gates for telemetry rules
+**Phase 3 - Analytics & Admin**:
+- Implement analytics query handler in admin-service
+- Implement filtering and pagination
+- Create analytics database queries module
+- Implement database role enforcement (bornemap_analytics_reader)
 
 **Phase 4 - Polish**:
 - Add comprehensive error handling
@@ -533,15 +553,18 @@ The enforcement kernel introduces complexity to ensure constitutional compliance
 
 **Execution Flow**:
 1. Database migrations
-2. Domain types (event schemas)
-3. Core ingestion endpoint
-4. Validation and idempotency
-5. Enrichment logic
-6. Frontend SDK
-7. CI gates
-8. Documentation and testing
+2. Event schemas and enums (domain-types)
+3. Core ingestion endpoint in driver-service
+4. Validation layer with schema version governance
+5. UUID v7 idempotency system
+6. Event enrichment with location provenance
+7. Dead-letter logging
+8. Admin-service read-only API
+9. Database role enforcement
+10. CI gates
+11. Documentation and testing
 
-**Checkpoint**: After Phase 2, event ingestion fully functional with idempotency and validation
+**Checkpoint**: After Phase 2, event ingestion fully functional with idempotency, validation, and admin-service read API
 
 ---
 
@@ -568,16 +591,17 @@ The enforcement kernel introduces complexity to ensure constitutional compliance
 ## Exit Criteria
 
 **Phase 1 Complete**:
-- Database schemas exist with analytics_events and dead_letter_events tables
-- Event schemas defined in domain-types
+- Database schemas exist with analytics_events and analytics_events_dead_letter tables
+- Event schemas defined in domain-types (EventType enum, LocationSource enum)
 - Telemetry ingestion endpoint implemented
-- Event validation layer implemented
+- Event validation layer implemented with schema version governance
 
 **Phase 2 Complete**:
 - Event normalization pipeline functional
-- Idempotency system working (duplicate detection)
-- Event enrichment automatic
-- Frontend SDK provides batching and retry
+- UUID v7 idempotency system working (duplicate detection)
+- Event enrichment automatic with location provenance
+- Admin-service read-only API functional
+- Database role enforcement (SELECT-only)
 - CI gates implemented and passing
 
 **Phase 3 Complete**:
@@ -587,12 +611,13 @@ The enforcement kernel introduces complexity to ensure constitutional compliance
 - All exit criteria verified
 
 **Sprint Complete**:
-- ✅ All events flow through driver-service ingestion endpoint
-- ✅ No external writes to analytics_db
-- ✅ Schema validation enforced in CI
-- ✅ Idempotency guaranteed
-- ✅ Analytics gate passes
-- ✅ Telemetry routing enforced
+- ✅ All events flow through driver-service ingestion endpoint (from auth-service, driver-service, inventory-service)
+- ✅ No external writes to analytics_db (single-writer enforcement)
+- ✅ Schema validation enforced in CI (unknown/deprecated versions rejected)
+- ✅ Idempotency guaranteed (UUID v7 with unique index)
+- ✅ Event type enum enforced (no free-form strings)
+- ✅ Location provenance required (EventLocation, SessionLocation, LastKnownLocation, DefaultLocation)
+- ✅ Admin-service read API functional with SELECT-only database role
 
 ---
 
@@ -600,7 +625,9 @@ The enforcement kernel introduces complexity to ensure constitutional compliance
 
 - 100% event ingestion success rate
 - < 1 second event latency
-- 100% idempotency enforcement
+- 100% idempotency enforcement (UUID v7)
+- 100% event type enum enforcement (no free-form strings)
+- 100% location provenance enforcement
 - CI gates passing (5 gates)
 - Integration tests passing (100% coverage)
-- Frontend SDK adoption rate (target: 80%+)
+- Admin-service has no write access to analytics_db (403 Forbidden on write attempts)

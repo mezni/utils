@@ -5,10 +5,10 @@ use actix_web::{web, App, HttpResponse, HttpServer, Responder};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 
+use driver_service::api::telemetry::{ingest_events, configure_routes};
 use driver_service::identity::sync::{identity_sync_middleware, SyncMiddleware};
 use driver_service::middleware::correlation::correlation_middleware;
 use driver_service::middleware::jwt::{jwt_middleware, JwtConfig, JwtMiddleware};
-use driver_service::telemetry::events::handle_event;
 
 #[derive(Serialize, Deserialize)]
 struct HealthResponse {
@@ -80,7 +80,7 @@ async fn main() -> anyhow::Result<()> {
             .wrap(actix_web::middleware::from_fn(jwt_guard))
             .wrap(actix_web::middleware::from_fn(identity_sync_middleware))
             .route("/health", web::get().to(health))
-            .route("/api/v1/telemetry/events", web::post().to(handle_event))
+            .configure(configure_routes)
     })
     .bind(("0.0.0.0", port))?
     .run()
