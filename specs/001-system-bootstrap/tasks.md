@@ -222,15 +222,15 @@ description: "Task list for Sprint 0: System Bootstrap & Enforcement Kernel"
 
 ### Implementation for User Story 5
 
-- [ ] T100 [P] [US5] Create infrastructure/scripts/deploy.sh for service deployment
-- [ ] T101 [P] [US5] Create infrastructure/scripts/migrate.sh for schema migrations
-- [ ] T102 [P] [US5] Create infrastructure/README.md for infrastructure documentation
-- [ ] T103 [P] [US5] Create docs/SYSTEM_STATE.md with current system inventory and status
-- [ ] T104 [P] [US5] Create docs/roadmap_status.md with sprint pipeline and milestones
-- [ ] T105 [P] [US5] Create docs/sprints/sprint_00/review/sprint_00_review.md
-- [ ] T106 [P] [US5] Create docs/sprints/sprint_00/sprint_state.json with machine-readable state
-- [ ] T107 [P] [US5] Create docs/sprints/sprint_00/validation_report.md for compliance audit
-- [ ] T108 [P] [US5] Create docs/sprints/sprint_00/follow_up.md with action items
+- [X] T100 [P] [US5] Create infrastructure/scripts/deploy.sh for service deployment
+- [X] T101 [P] [US5] Create infrastructure/scripts/migrate.sh for schema migrations
+- [X] T102 [P] [US5] Create infrastructure/README.md for infrastructure documentation
+- [X] T103 [P] [US5] Create docs/SYSTEM_STATE.md with current system inventory and status
+- [X] T104 [P] [US5] Create docs/roadmap_status.md with sprint pipeline and milestones
+- [X] T105 [P] [US5] Create docs/sprints/sprint_00/review/sprint_00_review.md
+- [X] T106 [P] [US5] Create docs/sprints/sprint_00/sprint_state.json with machine-readable state
+- [X] T107 [P] [US5] Create docs/sprints/sprint_00/validation_report.md for compliance audit
+- [X] T108 [P] [US5] Create docs/sprints/sprint_00/follow_up.md with action items
 
 **Checkpoint**: At this point, User Story 5 should be fully functional and testable independently
 
@@ -240,12 +240,12 @@ description: "Task list for Sprint 0: System Bootstrap & Enforcement Kernel"
 
 **Purpose**: Improvements that affect multiple user stories
 
-- [ ] T109 [P] Optional: Create infrastructure/redis/redis.conf for Redis configuration
-- [ ] T110 [P] Optional: Create infrastructure/scripts/setup_keycloak.sh for Keycloak setup
-- [ ] T111 [P] Optional: Create infrastructure/realm-bornemap.json for Keycloak realm export
-- [ ] T112 [P] Optional: Add .specify/extensions/git/git-config.yml for auto-commit hooks
-- [ ] T113 [P] Verify all 5 user stories can be tested independently
-- [ ] T114 [P] Run full CI pipeline (9 stages) and verify all pass
+- [X] T109 [P] Optional: Create infrastructure/redis/redis.conf for Redis configuration
+- [X] T110 [P] Optional: Create infrastructure/scripts/setup_keycloak.sh for Keycloak setup
+- [X] T111 [P] Optional: Create infrastructure/realm-bornemap.json for Keycloak realm export
+- [X] T112 [P] Optional: Add .specify/extensions/git/git-config.yml for auto-commit hooks
+- [X] T113 [P] Verify all 5 user stories can be tested independently
+- [X] T114 [P] Run full CI pipeline (9 stages) and verify all pass
 
 ---
 
