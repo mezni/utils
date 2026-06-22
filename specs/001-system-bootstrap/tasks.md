@@ -73,43 +73,43 @@ description: "Task list for Sprint 0: System Bootstrap & Enforcement Kernel"
 
 ### Implementation for User Story 1
 
-- [ ] T025 [P] [US1] Create apps/packages/ui-kit/src/components/ directory
-- [ ] T026 [P] [US1] Create apps/packages/ui-kit/src/layouts/ directory
-- [ ] T027 [P] [US1] Create apps/packages/ui-kit/src/tokens/ directory
-- [ ] T028 [P] [US1] Create apps/packages/ui-kit/src/accessibility/ directory
-- [ ] T029 [P] [US1] Create apps/packages/ui-kit/tests/ directory
-- [ ] T030 [P] [US1] Create apps/packages/domain-types/src/dto/ directory
-- [ ] T031 [P] [US1] Create apps/packages/domain-types/src/events/ directory
-- [ ] T032 [P] [US1] Create apps/packages/domain-types/src/ids/ directory
-- [ ] T033 [P] [US1] Create apps/packages/domain-types/tests/ directory
-- [ ] T034 [P] [US1] Create apps/packages/client-core/src/api/ directory
-- [ ] T035 [P] [US1] Create apps/packages/client-core/src/auth/ directory
-- [ ] T036 [P] [US1] Create apps/packages/client-core/src/mappers/ directory
-- [ ] T037 [P] [US1] Create apps/packages/client-core/tests/ directory
-- [ ] T038 [P] [US1] Create services/auth-service/src/models/ directory
-- [ ] T039 [P] [US1] Create services/auth-service/src/services/ directory
-- [ ] T040 [P] [US1] Create services/auth-service/src/api/ directory
-- [ ] T041 [P] [US1] Create services/auth-service/src/db/ directory
-- [ ] T042 [P] [US1] Create services/auth-service/tests/ directory
-- [ ] T043 [P] [US1] Create services/auth-service/migrations/ directory
-- [ ] T044 [P] [US1] Create services/driver-service/src/models/ directory
-- [ ] T045 [P] [US1] Create services/driver-service/src/services/ directory
-- [ ] T046 [P] [US1] Create services/driver-service/src/api/ directory
-- [ ] T047 [P] [US1] Create services/driver-service/src/db/ directory
-- [ ] T048 [P] [US1] Create services/driver-service/src/telemetry/ directory
-- [ ] T049 [P] [US1] Create services/driver-service/tests/ directory
-- [ ] T050 [P] [US1] Create services/driver-service/migrations/ directory
-- [ ] T051 [P] [US1] Create services/admin-service/src/models/ directory
-- [ ] T052 [P] [US1] Create services/admin-service/src/services/ directory
-- [ ] T053 [P] [US1] Create services/admin-service/src/api/ directory
-- [ ] T054 [P] [US1] Create services/admin-service/src/db/ directory
-- [ ] T055 [P] [US1] Create services/admin-service/tests/ directory
-- [ ] T056 [P] [US1] Create services/admin-service/migrations/ directory
-- [ ] T057 [P] [US1] Create tools/scripts/ directory
-- [ ] T058 [P] [US1] Create infrastructure/scripts/ directory
-- [ ] T059 [P] [US1] Create docs/sprints/sprint_00/backlog/ directory
-- [ ] T060 [P] [US1] Create docs/sprints/sprint_00/review/ directory
-- [ ] T061 [P] [US1] Create docs/spec/ directory
+- [X] T025 [P] [US1] Create apps/packages/ui-kit/src/components/ directory
+- [X] T026 [P] [US1] Create apps/packages/ui-kit/src/layouts/ directory
+- [X] T027 [P] [US1] Create apps/packages/ui-kit/src/tokens/ directory
+- [X] T028 [P] [US1] Create apps/packages/ui-kit/src/accessibility/ directory
+- [X] T029 [P] [US1] Create apps/packages/ui-kit/tests/ directory
+- [X] T030 [P] [US1] Create apps/packages/domain-types/src/dto/ directory
+- [X] T031 [P] [US1] Create apps/packages/domain-types/src/events/ directory
+- [X] T032 [P] [US1] Create apps/packages/domain-types/src/ids/ directory
+- [X] T033 [P] [US1] Create apps/packages/domain-types/tests/ directory
+- [X] T034 [P] [US1] Create apps/packages/client-core/src/api/ directory
+- [X] T035 [P] [US1] Create apps/packages/client-core/src/auth/ directory
+- [X] T036 [P] [US1] Create apps/packages/client-core/src/mappers/ directory
+- [X] T037 [P] [US1] Create apps/packages/client-core/tests/ directory
+- [X] T038 [P] [US1] Create services/auth-service/src/models/ directory
+- [X] T039 [P] [US1] Create services/auth-service/src/services/ directory
+- [X] T040 [P] [US1] Create services/auth-service/src/api/ directory
+- [X] T041 [P] [US1] Create services/auth-service/src/db/ directory
+- [X] T042 [P] [US1] Create services/auth-service/tests/ directory
+- [X] T043 [P] [US1] Create services/auth-service/migrations/ directory
+- [X] T044 [P] [US1] Create services/driver-service/src/models/ directory
+- [X] T045 [P] [US1] Create services/driver-service/src/services/ directory
+- [X] T046 [P] [US1] Create services/driver-service/src/api/ directory
+- [X] T047 [P] [US1] Create services/driver-service/src/db/ directory
+- [X] T048 [P] [US1] Create services/driver-service/src/telemetry/ directory
+- [X] T049 [P] [US1] Create services/driver-service/tests/ directory
+- [X] T050 [P] [US1] Create services/driver-service/migrations/ directory
+- [X] T051 [P] [US1] Create services/admin-service/src/models/ directory
+- [X] T052 [P] [US1] Create services/admin-service/src/services/ directory
+- [X] T053 [P] [US1] Create services/admin-service/src/api/ directory
+- [X] T054 [P] [US1] Create services/admin-service/src/db/ directory
+- [X] T055 [P] [US1] Create services/admin-service/tests/ directory
+- [X] T056 [P] [US1] Create services/admin-service/migrations/ directory
+- [X] T057 [P] [US1] Create tools/scripts/ directory
+- [X] T058 [P] [US1] Create infrastructure/scripts/ directory
+- [X] T059 [P] [US1] Create docs/sprints/sprint_00/backlog/ directory
+- [X] T060 [P] [US1] Create docs/sprints/sprint_00/review/ directory
+- [X] T061 [P] [US1] Create docs/spec/ directory
 
 **Checkpoint**: At this point, User Story 1 should be fully functional and testable independently
 
