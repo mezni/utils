@@ -95,12 +95,13 @@ Stage 9: build_success
 
 #### 1. Identity Validation Gate (CI-1.1)
 
-**Input**: All Rust source files and migration files
+**Input**: All Rust source files, migration files, and SQL migration definitions
 
 **Algorithm**:
-- Check users schema: FAIL if any non-UUID primary keys found
-- Check auth tables: FAIL if any nanoid usage detected
-- Validate no role field mixing between JWT and database
+- Check users.user_profiles: FAIL if any non-UUID `user_id` column found in migration files
+- Check auth tables: FAIL if any `nanoid` or `VARCHAR(15)` with nanoid-like CHECK constraint found in users schema
+- Check entity tables (gis, inventory): FAIL if any UUID column used as primary key
+- Validate no role field mixing between JWT role enum and platform_db role column values
 
 **Output**: JSON
 ```json
@@ -142,10 +143,12 @@ Stage 9: build_success
 **Input**: Route definitions in all three services
 
 **Algorithm**:
-- Scan all route registrations in each service
-- Verify every route has a role guard middleware attached
-- FAIL if any route lacks role enforcement
-- Check that public routes (health, login) are explicitly whitelisted
+- Scan all route registration functions in each service's `src/main.rs` and `src/routes.rs`
+- For each `.route(...)` call, verify a role guard middleware (`.wrap()` with role guard) is applied
+- FAIL if any controller endpoint lacks a `#[Roles(...)]` decorator or equivalent role guard
+- FAIL if any route is not present in the RBAC matrix defined in `contracts/rbac.md`
+- Check that public routes (`GET /health`, `POST /api/v1/auth/login`) are explicitly whitelisted and excluded from role guard enforcement
+- Expected coverage: 100%
 
 **Output**: JSON
 ```json
@@ -218,9 +221,9 @@ Stage 9: build_success
 
 **Compliance Status**: ✅ PASS
 
-**Justification**: users domain remains auth-service owned. auth-service handles JIT provisioning (write to users.user_profiles). Audit events written to analytics_db by auth-service — this is a NEW write path that must be reviewed. Since auth-service only writes to analytics_db.telemetry.raw_events (audit), and driver-service owns analytics writes, this requires constitutional interpretation: audit logging is auth-service writing to analytics_db.
+**Justification**: users domain remains auth-service owned. Audit events follow the event bus pattern (ADMIN → BUS → ADB per constitution §11.4): auth-service publishes events to driver-service `POST /api/v1/telemetry/events`, and driver-service writes them to analytics_db. Auth-service NEVER directly writes to analytics_db. Service-to-service calls use Keycloak service account credentials.
 
-**Verification**: CI analytics write gate updated to permit auth-service audit writes to analytics_db.telemetry.raw_events for event_type 'auth.*' only.
+**Verification**: CI analytics write gate ensures auth-service never connects to analytics_db. All internal API calls authenticated via client_credentials grant.
 
 ---
 
@@ -272,20 +275,13 @@ Stage 9: build_success
 
 ---
 
-### Gate 3b: Analytics Write Gate Exception (NEEDS CLARIFICATION)
+### Gate 3b: Analytics Write Gate — Event Bus Pattern (PASS)
 
 **Constitution Requirement**: driver-service ONLY can write to analytics_db.
 
-**Compliance Status**: ⚠️ NEEDS CLARIFICATION
+**Compliance Status**: ✅ PASS
 
-**Justification**: Auth-service needs to write audit events (login success/failure, token rejection) to analytics_db.telemetry.raw_events. This violates single-writer rule unless an exception is carved out for auth events.
-
-**Verification**: Pending clarification: should auth-service write audit events directly to analytics_db, or should it emit events to driver-service for writing?
-
-**Options**:
-1. Allow auth-service direct write to analytics_db for auth.* event types only (narrow exception with CI gate verification)
-2. Auth-service sends audit events via BUS to driver-service, which writes them to analytics_db (preserves single-writer but adds latency)
-3. Auth-service writes to a local audit table, and driver-service periodically syncs (batch approach)
+**Justification**: Auth-service publishes audit events to driver-service `POST /api/v1/telemetry/events` (event bus). Driver-service validates, deduplicates by idempotency_key, and writes to analytics_db. This follows the existing ADMIN → BUS → ADB pattern defined in constitution §11.4. Auth-service NEVER directly writes to analytics_db. Service-to-service calls use Keycloak service account credentials (auth-service-sa → driver-service-sa).
 
 ---
 
