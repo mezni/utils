@@ -1,6 +1,9 @@
-// Domain Types - Contract-only package for DTOs, event schemas, and entity IDs
-// NO backend framework dependencies (actix-web, sqlx, tokio)
-// Only serde, serde_json, validator
+pub mod role;
+pub mod jwt;
+pub mod audit;
+pub mod user;
 
-// Placeholder for domain type definitions
-// Will be populated in Sprint 1 (Core API Implementation)
+pub use role::Role;
+pub use jwt::JwtClaims;
+pub use audit::{AuditEvent, SecurityEventData};
+pub use user::UserProfile;

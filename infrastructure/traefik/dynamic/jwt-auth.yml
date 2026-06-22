@@ -1,0 +1,58 @@
+http:
+  middlewares:
+    jwt-auth:
+      forwardAuth:
+        address: "http://auth-service:3000/api/v1/auth/verify"
+        trustForwardHeader: true
+        authResponseHeaders:
+          - X-User-UUID
+          - X-User-Role
+          - X-User-Email
+
+    auth-public:
+      chain:
+        middlewares:
+          - rate-limit
+
+  routers:
+    auth-service-router:
+      rule: "Host(`auth.bornemap.local`)"
+      service: auth-service
+      entryPoints:
+        - websecure
+      middlewares:
+        - jwt-auth
+
+    driver-service-router:
+      rule: "Host(`driver.bornemap.local`)"
+      service: driver-service
+      entryPoints:
+        - websecure
+      middlewares:
+        - jwt-auth
+
+    admin-service-router:
+      rule: "Host(`admin.bornemap.local`)"
+      service: admin-service
+      entryPoints:
+        - websecure
+      middlewares:
+        - jwt-auth
+
+    auth-health-router:
+      rule: "Host(`auth.bornemap.local`) && Path(`/health`)"
+      service: auth-service
+      entryPoints:
+        - websecure
+
+    driver-health-router:
+      rule: "Host(`driver.bornemap.local`) && Path(`/health`)"
+      service: driver-service
+      entryPoints:
+        - websecure
+
+    admin-health-router:
+      rule: "Host(`admin.bornemap.local`) && Path(`/health`)"
+      service: admin-service
+      entryPoints:
+        - websecure

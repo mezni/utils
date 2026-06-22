@@ -1,2 +1,6 @@
-// auth-service shared library
-// Placeholder - modules will be implemented in Sprint 1
+pub mod config;
+pub mod keycloak;
+pub mod middleware;
+pub mod provisioning;
+pub mod sync;
+pub mod audit;

@@ -1,8 +1,26 @@
-.PHONY: ci help setup deploy migrate test clean
+.PHONY: ci help setup deploy migrate test ci_gate_keycloak ci_gate_rbac ci_gate_session ci_gate_identity integration-test clean
 
 # CI Enforcement Pipeline
 ci:
 	./tools/ci_guard.sh
+
+# Individual CI gates
+ci_gate_identity:
+	./tools/ci_gate_identity.sh
+
+ci_gate_keycloak:
+	./tools/ci_gate_keycloak.sh
+
+ci_gate_rbac:
+	./tools/ci_gate_rbac.sh
+
+ci_gate_session:
+	./tools/ci_gate_session.sh
+
+# Integration Tests
+integration-test:
+	cargo test --test integration_auth_flow_test
+	cargo test --test integration_audit_flow_test
 
 # Setup tasks
 setup:
@@ -56,6 +74,7 @@ help:
 	@echo ""
 	@echo "Available targets:"
 	@echo "  ci            - Run 9-stage CI enforcement pipeline"
+	@echo "  integration-test - Run integration tests"
 	@echo "  setup         - Build all packages"
 	@echo "  deploy        - Deploy all services"
 	@echo "  migrate       - Run database migrations"

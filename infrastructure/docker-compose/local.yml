@@ -1,4 +1,54 @@
 services:
+  # Keycloak identity provider
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0
+    container_name: bornemap_keycloak
+    command: start --import-realm
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://keycloak-db:5432/keycloak
+      KC_DB_USERNAME: keycloak_admin
+      KC_DB_PASSWORD: keycloak_password
+      KC_HOSTNAME: localhost
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin123
+    ports:
+      - "8080:8080"
+    volumes:
+      - ../../infrastructure/keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json:ro
+    depends_on:
+      keycloak-db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/realms/bornemap"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+    networks:
+      - bornemap-network
+
+  # PostgreSQL for Keycloak
+  keycloak-db:
+    image: postgres:16-alpine
+    container_name: bornemap_keycloak_db
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak_admin
+      POSTGRES_PASSWORD: keycloak_password
+    ports:
+      - "5434:5432"
+    volumes:
+      - keycloak_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U keycloak_admin"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - bornemap-network
+
+  # PostgreSQL for platform_db (users, gis, inventory)
   # PostgreSQL for platform_db (users, gis, inventory)
   platform-db:
     image: postgres:16-alpine
@@ -116,6 +166,7 @@ volumes:
   platform_db_data:
   analytics_db_data:
   redis_data:
+  keycloak_db_data:
 
 networks:
   bornemap-network:

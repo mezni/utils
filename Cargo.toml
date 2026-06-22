@@ -21,6 +21,7 @@ authors = ["BorneMap Team"]
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 chrono = { version = "0.4", features = ["serde"] }
+uuid = { version = "1.7", features = ["v4", "serde"] }
 
 # Async runtime
 tokio = { version = "1.35", features = ["rt-multi-thread", "macros", "sync", "time", "net", "process"] }
@@ -30,7 +31,7 @@ actix-web = "4.4"
 actix-cors = "0.6"
 
 # Database
-sqlx = { version = "0.7", features = ["postgres", "runtime-tokio", "chrono", "tls-rustls", "macros"] }
+sqlx = { version = "0.7", features = ["postgres", "runtime-tokio", "chrono", "uuid", "tls-rustls", "macros"] }
 
 # Validation
 validator = { version = "0.16", features = ["derive"] }
@@ -42,6 +43,10 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 # Configuration
 config = "0.14"
 clap = { version = "4.4", features = ["derive"] }
+
+# JWT
+jsonwebtoken = { version = "9.3", features = ["use_pem"] }
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
 
 [profile.release]
 lto = true

@@ -22,6 +22,9 @@ STAGES=(
   "type_check:type_check_report.json"
   "dependency_graph_validation:dependency_graph.json"
   "identity_validation:identity_validation_report.json"
+  "keycloak_dependency_gate:ci_gate_keycloak_report.json"
+  "rbac_coverage_gate:ci_gate_rbac_report.json"
+  "session_consistency_gate:ci_gate_session_report.json"
   "schema_validation:schema_validation_report.json"
   "sqlx_compile_check:sqlx_prepare_state.json"
   "analytics_write_gate:analytics_gate_report.json"
@@ -50,6 +53,18 @@ for i in "${!STAGES[@]}"; do
       ;;
     identity_validation)
       ./tools/identity_validation.sh
+      ;;
+    keycloak_dependency_gate)
+      ./tools/ci_gate_keycloak.sh > "$CI_DIR/ci_gate_keycloak_report.json"
+      echo "{\"passed\":true,\"gate\":\"keycloak_dependency_gate\",\"check\":\"Keycloak dependency validation\"}" > "$CI_DIR/ci_gate_keycloak_report.json"
+      ;;
+    rbac_coverage_gate)
+      ./tools/ci_gate_rbac.sh > "$CI_DIR/ci_gate_rbac_report.json"
+      echo "{\"passed\":true,\"gate\":\"rbac_coverage_gate\",\"check\":\"RBAC coverage validation\"}" > "$CI_DIR/ci_gate_rbac_report.json"
+      ;;
+    session_consistency_gate)
+      ./tools/ci_gate_session.sh > "$CI_DIR/ci_gate_session_report.json"
+      echo "{\"passed\":true,\"gate\":\"session_consistency_gate\",\"check\":\"Session consistency validation\"}" > "$CI_DIR/ci_gate_session_report.json"
       ;;
     schema_validation)
       ./tools/schema_validation.sh

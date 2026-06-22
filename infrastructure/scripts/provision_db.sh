@@ -56,6 +56,33 @@ docker-compose exec -T analytics-db psql -U bornemap_analytics_writer -c "
   GRANT USAGE ON SCHEMA telemetry TO bornemap_analytics_reader;
 "
 
+# Keycloak DB
+echo "Setting up Keycloak database..."
+docker-compose exec -T keycloak-db psql -U keycloak_admin -d keycloak -c "
+  SELECT 1; -- Verify connection
+" || echo "Note: Keycloak database already exists"
+
+echo ""
+echo "=== Database Provisioning Complete ==="
+echo ""
+echo "Databases are ready:"
+echo "  Keycloak DB: localhost:5434 (keycloak realm config)"
+echo "  Platform DB: localhost:5432 (users, gis, inventory schemas)"
+echo "  Analytics DB: localhost:5433 (telemetry, analytics_events, system_events schemas)"
+echo ""
+echo "PostgreSQL users:"
+echo "  keycloak_admin (keycloak_db: keycloak)"
+echo "  bornemap_admin (platform_db: users, gis, inventory)"
+echo "  bornemap_driver (platform_db: gis)"
+echo "  bornemap_analytics_writer (analytics_db: all)"
+echo "  bornemap_analytics_reader (analytics_db: read-only)"
+echo ""
+echo "Next steps:"
+echo "  1. Review database migrations in services/*/migrations/"
+echo "  2. Run migrations using: ./migrate.sh"
+echo "  3. Run Keycloak setup: ./infrastructure/scripts/setup_keycloak.sh"
+echo "  4. Start services using: ./deploy.sh"
+
 echo ""
 echo "=== Database Provisioning Complete ==="
 echo ""

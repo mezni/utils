@@ -1,0 +1,213 @@
+{
+  "id": "bornemap",
+  "realm": "bornemap",
+  "displayName": "BorneMap Platform",
+  "enabled": true,
+  "sslRequired": "external",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": true,
+  "editUsernameAllowed": false,
+  "bruteForceProtected": true,
+  "permanentLockout": false,
+  "maxFailureWaitSeconds": 900,
+  "minimumQuickLoginWaitSeconds": 60,
+  "waitIncrementSeconds": 60,
+  "quickLoginCheckMilliSeconds": 1000,
+  "maxDeltaTimeSeconds": 43200,
+  "failureFactor": 30,
+  "roles": {
+    "realm": [
+      {
+        "name": "user",
+        "description": "Platform user",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "bornemap"
+      },
+      {
+        "name": "driver",
+        "description": "Standard EV driver",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "bornemap"
+      },
+      {
+        "name": "partner",
+        "description": "Station partner — management access",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "bornemap"
+      },
+      {
+        "name": "admin",
+        "description": "Platform administrator — full system access",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "bornemap"
+      }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "mobile-driver",
+      "name": "Driver Mobile App",
+      "description": "Driver mobile application — PKCE OAuth2 client",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": true,
+      "redirectUris": ["*"],
+      "webOrigins": ["+"],
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "authorizationServicesEnabled": false
+    },
+    {
+      "clientId": "web-driver",
+      "name": "Driver Web App",
+      "description": "Driver web application — PKCE OAuth2 client",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": true,
+      "redirectUris": ["http://localhost:3001/*"],
+      "webOrigins": ["http://localhost:3001"],
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "authorizationServicesEnabled": false
+    },
+    {
+      "clientId": "admin-dashboard",
+      "name": "Admin Dashboard",
+      "description": "Administration dashboard — confidential client",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "redirectUris": ["http://localhost:3002/*"],
+      "webOrigins": ["http://localhost:3002"],
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "authorizationServicesEnabled": false
+    },
+    {
+      "clientId": "auth-service-sa",
+      "name": "Auth Service Service Account",
+      "description": "auth-service machine credentials — client_credentials grant",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true,
+      "authorizationServicesEnabled": false
+    },
+    {
+      "clientId": "driver-service-sa",
+      "name": "Driver Service Service Account",
+      "description": "driver-service machine credentials — client_credentials grant",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true,
+      "authorizationServicesEnabled": false
+    },
+    {
+      "clientId": "admin-service-sa",
+      "name": "Admin Service Service Account",
+      "description": "admin-service machine credentials — client_credentials grant",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true,
+      "authorizationServicesEnabled": false
+    }
+  ],
+  "users": [
+    {
+      "username": "admin",
+      "email": "admin@bornemap.local",
+      "firstName": "Admin",
+      "lastName": "User",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "admin123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["admin", "user"]
+    },
+    {
+      "username": "driver",
+      "email": "driver@bornemap.local",
+      "firstName": "Driver",
+      "lastName": "User",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "driver123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["driver", "user"]
+    },
+    {
+      "username": "partner",
+      "email": "partner@bornemap.local",
+      "firstName": "Partner",
+      "lastName": "User",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "partner123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["partner", "user"]
+    }
+  ],
+  "defaultRoles": ["user"],
+  "requiredCredentials": ["password"],
+  "otpPolicyType": "totp",
+  "otpPolicyAlgorithm": "HmacSHA1",
+  "otpPolicyInitialCounter": 0,
+  "otpPolicyDigits": 6,
+  "otpPolicyLookAheadWindow": 1,
+  "otpPolicyPeriod": 30,
+  "otpPolicyCodeReusable": false,
+  "otpSupportedApplications": ["FreeOTP","Google Authenticator"],
+  "identityProviderMappers": [],
+  "protocolMappers": [
+    {
+      "name": "realm-roles",
+      "protocol": "openid-connect",
+      "protocolMapper": "oidc-usermodel-realm-role-mapper",
+      "consentRequired": false,
+      "config": {
+        "id.token.claim": "true",
+        "access.token.claim": "true",
+        "claim.name": "realm_access.roles",
+        "multivalued": "true"
+      }
+    }
+  ]
+}

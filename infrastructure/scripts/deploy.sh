@@ -26,7 +26,25 @@ cd infrastructure
 # Start database containers
 echo "Starting database containers..."
 docker-compose -f docker-compose/local.yml up -d
-sleep 5
+
+# Wait for databases and Keycloak to be healthy
+echo "Waiting for databases and Keycloak to be ready..."
+sleep 10
+
+# Check if Keycloak is healthy
+echo "Checking Keycloak health..."
+for i in {1..30}; do
+    if curl -f http://localhost:8080/realms/bornemap >/dev/null 2>&1; then
+        echo "Keycloak is ready!"
+        break
+    fi
+    if [ $i -eq 30 ]; then
+        echo "ERROR: Keycloak did not become healthy within 30 seconds"
+        exit 1
+    fi
+    echo "Waiting for Keycloak... ($i/30)"
+    sleep 2
+done
 
 # Build all services
 echo "Building all services..."

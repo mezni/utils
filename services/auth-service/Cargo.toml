@@ -34,14 +34,23 @@ validator = { workspace = true }
 # Configuration
 config = { workspace = true }
 
+# Concurrency
+tokio = { workspace = true }
+
 # Logging
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true }
+
+# Workspace packages
+domain-types = { path = "../../apps/packages/domain-types" }
+
+# JWT validation
+jsonwebtoken = { workspace = true }
+reqwest = { workspace = true }
+uuid = { workspace = true }
 
 # Error handling
 anyhow = "1.0"
 thiserror = "1.0"
 
 [dev-dependencies]
-# Test utilities
-tokio = { workspace = true }

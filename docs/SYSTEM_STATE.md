@@ -1,8 +1,8 @@
 # BorneMap System State
 
 **Version**: 1.0.0
-**Last Updated**: 2026-06-21
-**Status**: Sprint 0 Complete
+**Last Updated**: 2026-06-22
+**Status**: Sprint 1 - Identity & Security Core Complete
 
 ## Executive Summary
 
@@ -21,9 +21,9 @@ BorneMap is a microservices platform for EV charging station management. This do
 
 | Service | Port | Schema | Ownership | Status |
 |---------|------|--------|-----------|--------|
-| auth-service | 3000 | users | auth-service | ✅ Skeleton |
-| driver-service | 3001 | gis, analytics_db | driver-service | ✅ Skeleton |
-| admin-service | 3002 | inventory, analytics_db (read) | admin-service | ✅ Skeleton |
+| auth-service | 3000 | users, audit | auth-service | ✅ Running |
+| driver-service | 3001 | gis, analytics_db | driver-service | ✅ Running |
+| admin-service | 3002 | inventory, analytics_db (read) | admin-service | ✅ Running |
 
 **Total Services**: 3
 **Topology Lock**: Enforced (3000/3001/3002)
@@ -60,6 +60,122 @@ BorneMap is a microservices platform for EV charging station management. This do
 **Roles**: bornemap_analytics_writer (write), bornemap_analytics_reader (read)
 
 **Single-Writer Enforcement**: driver-service only writes to analytics_db
+
+## Identity & Security System
+
+### Keycloak Configuration
+
+**Instance**: Docker container (quay.io/keycloak/keycloak:24.0)
+**Port**: 8080
+**Database**: PostgreSQL keycloak_db (port 5434)
+**Realm**: bornemap
+
+**Clients**:
+1. mobile-driver - Public client with PKCE for mobile auth
+2. web-driver - Public client with PKCE for web auth
+3. admin-dashboard - Confidential client for admin dashboard
+4. auth-service-sa - Service account for auth-service (client_credentials grant)
+5. driver-service-sa - Service account for driver-service (client_credentials grant)
+6. admin-service-sa - Service account for admin-service (client_credentials grant)
+
+**Roles**:
+- driver - Driver role (lowest privilege)
+- partner - Partner role (intermediate privilege)
+- admin - Admin role (highest privilege)
+
+**Role Precedence**: admin > partner > driver
+
+### JWT Validation
+
+**Implementation**: Middleware in all 3 services
+- JWKS cache with automatic refresh on unknown kid
+- Signature, issuer, audience, expiration, not-before validation
+- Clock skew: 5 seconds
+
+**Services**:
+- auth-service: JWT validation + audit logging + sync endpoint
+- driver-service: JWT validation + telemetry events + sync middleware
+- admin-service: JWT validation + telemetry events + sync middleware
+
+### RBAC Enforcement
+
+**Middleware**: RouteGuard (all services)
+- Extracts role from JWT claims
+- Enforces role-based access control on all endpoints
+- Role precedence: admin > partner > driver
+
+**Public Endpoints** (no JWT required):
+- GET /health (all services)
+- POST /api/v1/telemetry/events (driver-service)
+- GET /api/v1/auth/sync (auth-service)
+
+### Just-In-Time Provisioning
+
+**Mechanism**: auth-service GET /api/v1/auth/sync endpoint
+- Called by driver-service and admin-service when user profile missing
+- Upserts user_profiles table with Keycloak data
+- Updates role changes from Keycloak on subsequent calls
+
+**Table**: users.user_profiles
+- user_uuid (UUID, PK, NOT NULL)
+- email (VARCHAR)
+- role (VARCHAR with CHECK: driver, partner, admin)
+
+### Audit Logging
+
+**Emitter**: auth-service → driver-service (HTTP POST)
+- Audits login success/failure, token rejection, access denied
+- Event types: auth.access_granted, auth.access_denied
+- Deduplication by idempotency_key
+
+**Ingestion**: driver-service POST /api/v1/telemetry/events endpoint
+- Public endpoint (no JWT required)
+- Receives audit events from auth-service
+- Forwards to analytics_db (via BUS pattern)
+
+**Correlation ID**: Propagated through all services
+- Auto-generated if not present in request
+- Stored in X-Correlation-ID header
+- Used for request tracing
+
+### OIDC Grant Types
+
+**Password Grant**: Username/password login
+- Clients: mobile-driver, web-driver, admin-dashboard
+- Returns: access_token, refresh_token, expires_in, token_type
+
+**Refresh Token**: Get new access token
+- Uses refresh_token from password grant
+- Returns: new access_token, expires_in, token_type
+
+**Client Credentials**: Service-to-service auth
+- Clients: auth-service-sa, driver-service-sa, admin-service-sa
+- Used by services to call each other
+
+### CI Security Gates
+
+**4 New Gates**:
+1. **Identity Validation** (ci_gate_identity.sh)
+   - Validates UUID usage in user_profiles
+   - Fails if nanoid CHECK constraint found
+   - Fails if entity tables have UUID columns
+
+2. **Keycloak Dependency** (ci_gate_keycloak.sh)
+   - Fails if non-auth-service crates depend on keycloak-client
+   - Fails if keycloak imports outside auth-service
+
+3. **RBAC Coverage** (ci_gate_rbac.sh)
+   - Validates every route has RBAC guard
+   - Fails if route lacks role guard
+   - Fails if route not registered in services
+
+4. **Session Consistency** (ci_gate_session.sh)
+   - Compares JWT role to DB user_profiles.role
+   - Fails on mismatch
+
+**Pipeline Integration**: Added to ci_guard.sh as stages 5-8
+**Local Testing**: make ci_gate_<gate> targets
+**CI Testing**: GitHub Actions automatic execution
 
 ## Identity System
 
@@ -137,7 +253,9 @@ API contracts are being defined in:
 
 ### Makefile Targets
 
-- `ci` - Run 9-stage CI enforcement pipeline
+- `ci` - Run 12-stage CI enforcement pipeline
+- `integration-test` - Run integration tests (full auth flow + audit)
+- `ci_gate_<gate>` - Run individual CI gate (identity, keycloak, rbac, session)
 - `setup` - Build all packages
 - `deploy` - Deploy services
 - `migrate` - Run database migrations
@@ -208,17 +326,20 @@ Each data domain has exactly one owning service:
 
 ### Constitution Requirements
 
-✅ **Service Topology Lock** - 3 services on fixed ports
+✅ **Service Topology Lock** - 3 services on fixed ports (3000/3001/3002)
 ✅ **Identity Dual System** - Keycloak UUID + nanoid(12) with PREFIX
 ✅ **Data Ownership** - Each domain owned by exactly one service
 ✅ **Contract-First** - domain-types → backend → frontend
 ✅ **SQLx Compile-Time** - All queries compile-time verified
-✅ **CI Enforcement** - 9-stage pipeline with hard-stop
+✅ **CI Enforcement** - 12-stage pipeline with hard-stop (9 original + 3 CI gates)
 ✅ **Forbidden Edges** - No service→service imports, etc.
 ✅ **Single-Writer Analytics** - driver-service only writes to analytics_db
 ✅ **Runtime Topology** - NO extra HTTP servers, NO service spawning
 ✅ **Migration Drift Detection** - Migration files match compiled schemas
 ✅ **Identity Location Rules** - UUID only in users table
+✅ **Identity-First Security** - JWT validation on all services, RBAC on all routes
+✅ **Audit Trail** - All auth events logged to analytics_db
+✅ **Correlation ID** - Propagated through all services
 
 **Constitution Compliance**: 100%
 
@@ -237,21 +358,30 @@ Each data domain has exactly one owning service:
 
 ## Next Steps
 
-### Sprint 0 Next Steps
+### Sprint 1 Complete
 
-Phase 8: Polish & Cross-Cutting Concerns (5 tasks remaining)
-- Redis configuration
-- Keycloak setup script
-- Keycloak realm export
-- Extension config
-- Full CI test run
+✅ **Identity & Security Core** (Feature 002)
+- Keycloak integration with 6 clients and 3 roles
+- JWT validation middleware with JWKS caching
+- RBAC enforcement on all routes
+- Just-In-Time provisioning via sync endpoint
+- Audit logging with correlation ID propagation
+- 4 CI security gates
+- OIDC password and refresh token grants
+- Service account support (client_credentials)
+
+### Remaining Sprint 1 Tasks
+
+Phase 8: Polish & Cross-Cutting Concerns (2 tasks remaining)
+- Integration tests for full auth flow (T065)
+- Update sprint review (T067)
 
 ### Future Sprint Planning
 
-Based on the Sprint 0 completion, the following sprints are planned:
-- **Sprint 1**: Core API Implementation
-- **Sprint 2**: Frontend Development
-- **Sprint 3**: Advanced Features
+Based on Sprint 1 completion, the following sprints are planned:
+- **Sprint 2**: Core API Implementation (user stories 1-3 complete, focus on GIS, inventory APIs)
+- **Sprint 3**: Frontend Development (React/Vue UI with Keycloak auth)
+- **Sprint 4**: Advanced Features (real-time telemetry, geospatial queries)
 
 ## Monitoring & Logging
 
@@ -276,6 +406,19 @@ Response format:
   "service": "auth-service"
 }
 ```
+
+### Audit Events
+
+**Endpoint**: driver-service POST /api/v1/telemetry/events
+**Events**:
+- auth.access_granted - Successful auth event
+- auth.access_denied - Failed auth event
+- auth.token_rejected - Token validation failed
+- Role change detected (future)
+- JIT user created (future)
+- JIT user updated (future)
+
+**Correlation ID**: Propagated in X-Correlation-ID header
 
 ## Dependencies
 
@@ -312,3 +455,13 @@ For issues or questions:
   - Enforcement kernel established
   - Database schemas defined
   - Service skeletons created
+- **v1.1.0** (2026-06-22): Sprint 1 - Identity & Security Core complete
+  - Keycloak integration (6 clients, 3 roles)
+  - JWT validation middleware (JWKS caching, auto-refresh)
+  - RBAC enforcement on all routes
+  - JIT provisioning via sync endpoint
+  - Audit logging with correlation ID
+  - 4 CI security gates integrated
+  - OIDC password and refresh token grants
+  - Service account support
+  - Integration tests written
