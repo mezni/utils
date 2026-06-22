@@ -186,29 +186,29 @@ description: "Task list for Sprint 0: System Bootstrap & Enforcement Kernel"
 
 #### auth-service Skeleton
 
-- [ ] T086 [P] [US4] Create services/auth-service/Cargo.toml with dependencies
-- [ ] T087 [P] [US4] Create services/auth-service/src/main.rs with health endpoint
-- [ ] T088 [P] [US4] Create services/auth-service/config.toml for configuration
-- [ ] T089 [P] [US4] Create services/auth-service/src/lib.rs for shared library
+- [X] T086 [P] [US4] Create services/auth-service/Cargo.toml with dependencies
+- [X] T087 [P] [US4] Create services/auth-service/src/main.rs with health endpoint
+- [X] T088 [P] [US4] Create services/auth-service/config.toml for configuration
+- [X] T089 [P] [US4] Create services/auth-service/src/lib.rs for shared library
 
 #### driver-service Skeleton
 
-- [ ] T090 [P] [US4] Create services/driver-service/Cargo.toml with dependencies
-- [ ] T091 [P] [US4] Create services/driver-service/src/main.rs with health endpoint
-- [ ] T092 [P] [US4] Create services/driver-service/config.toml for configuration
-- [ ] T093 [P] [US4] Create services/driver-service/src/lib.rs for shared library
+- [X] T090 [P] [US4] Create services/driver-service/Cargo.toml with dependencies
+- [X] T091 [P] [US4] Create services/driver-service/src/main.rs with health endpoint
+- [X] T092 [P] [US4] Create services/driver-service/config.toml for configuration
+- [X] T093 [P] [US4] Create services/driver-service/src/lib.rs for shared library
 
 #### admin-service Skeleton
 
-- [ ] T094 [P] [US4] Create services/admin-service/Cargo.toml with dependencies
-- [ ] T095 [P] [US4] Create services/admin-service/src/main.rs with health endpoint
-- [ ] T096 [P] [US4] Create services/admin-service/config.toml for configuration
-- [ ] T097 [P] [US4] Create services/admin-service/src/lib.rs for shared library
+- [X] T094 [P] [US4] Create services/admin-service/Cargo.toml with dependencies
+- [X] T095 [P] [US4] Create services/admin-service/src/main.rs with health endpoint
+- [X] T096 [P] [US4] Create services/admin-service/config.toml for configuration
+- [X] T097 [P] [US4] Create services/admin-service/src/lib.rs for shared library
 
 #### Service Verification
 
-- [ ] T098 [US4] Create tools/sqlx_prepare.sh to generate offline data for all services
-- [ ] T099 [US4] Verify health endpoints respond on ports 3000, 3001, 3002
+- [X] T098 [US4] Create tools/sqlx_prepare.sh to generate offline data for all services
+- [X] T099 [US4] Verify health endpoints respond on ports 3000, 3001, 3002
 
 **Checkpoint**: At this point, User Story 4 should be fully functional and testable independently
 
