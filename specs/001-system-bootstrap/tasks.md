@@ -27,14 +27,14 @@ description: "Task list for Sprint 0: System Bootstrap & Enforcement Kernel"
 
 **Purpose**: Monorepo initialization and basic structure
 
-- [ ] T001 Create workspace Cargo.toml with 6 crates (ui-kit, domain-types, client-core, auth-service, driver-service, admin-service)
-- [ ] T002 [P] Create apps/packages/ui-kit/Cargo.toml with UI-only dependencies
-- [ ] T003 [P] Create apps/packages/domain-types/Cargo.toml with contracts-only dependencies
-- [ ] T004 [P] Create apps/packages/client-core/Cargo.toml with transport-only dependencies
-- [ ] T005 [P] Create services/auth-service/Cargo.toml with sqlx, actix-web, serde dependencies
-- [ ] T006 [P] Create services/driver-service/Cargo.toml with sqlx, actix-web, serde, geospatial dependencies
-- [ ] T007 [P] Create services/admin-service/Cargo.toml with sqlx, actix-web, serde dependencies
-- [ ] T008 [P] Create .cargo/config.toml with workspace configuration
+- [X] T001 Create workspace Cargo.toml with 6 crates (ui-kit, domain-types, client-core, auth-service, driver-service, admin-service)
+- [X] T002 [P] Create apps/packages/ui-kit/Cargo.toml with UI-only dependencies
+- [X] T003 [P] Create apps/packages/domain-types/Cargo.toml with contracts-only dependencies
+- [X] T004 [P] Create apps/packages/client-core/Cargo.toml with transport-only dependencies
+- [X] T005 [P] Create services/auth-service/Cargo.toml with sqlx, actix-web, serde dependencies
+- [X] T006 [P] Create services/driver-service/Cargo.toml with sqlx, actix-web, serde, geospatial dependencies
+- [X] T007 [P] Create services/admin-service/Cargo.toml with sqlx, actix-web, serde dependencies
+- [X] T008 [P] Create .cargo/config.toml with workspace configuration
 
 ---
 
@@ -44,22 +44,22 @@ description: "Task list for Sprint 0: System Bootstrap & Enforcement Kernel"
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T009 Create .specify/memory/constitution.md (v1.0.0 from docs/constitution/constitution.md)
-- [ ] T010 Create .specify/extensions.yml with SpecKit hooks configuration
-- [ ] T011 [P] Create .specify/templates/plan-template.md
-- [ ] T012 [P] Create .specify/templates/spec-template.md
-- [ ] T013 [P] Create .specify/templates/tasks-template.md
-- [ ] T014 [P] Create tools/ci_guard.sh with 9-stage CI enforcement
-- [ ] T015 [P] Create tools/01_validate_identity.sh for UUID vs nanoid validation
-- [ ] T016 [P] Create tools/02_validate_deps.sh for dependency graph validation
-- [ ] T017 [P] Create tools/03_validate_analytics_gate.sh for analytics write permission validation
-- [ ] T018 [P] Create tools/04_validate_schema.sh for database schema validation
-- [ ] T019 [P] Create tools/05_sqlx_policy_check.sh for SQLx compile-time policy validation
-- [ ] T020 Create tools/06_ci_guard_final.sh as final CI gate runner
-- [ ] T021 [P] Create .github/workflows/ci.yml with 9-stage CI pipeline (hard-stop on failure)
-- [ ] T022 [P] Create docs/constitution/speckit_enforcement.md
-- [ ] T023 [P] Create infrastructure/docker-compose/local.yml with 3 services + PostgreSQL + Redis
-- [ ] T024 [P] Create infrastructure/traefik/traefik.toml for reverse proxy configuration
+- [X] T009 Create .specify/memory/constitution.md (v1.0.0 from docs/constitution/constitution.md)
+- [X] T010 Create .specify/extensions.yml with SpecKit hooks configuration
+- [X] T011 [P] Create .specify/templates/plan-template.md
+- [X] T012 [P] Create .specify/templates/spec-template.md
+- [X] T013 [P] Create .specify/templates/tasks-template.md
+- [X] T014 [P] Create tools/ci_guard.sh with 9-stage CI enforcement
+- [X] T015 [P] Create tools/01_validate_identity.sh for UUID vs nanoid validation
+- [X] T016 [P] Create tools/02_validate_deps.sh for dependency graph validation
+- [X] T017 [P] Create tools/03_validate_analytics_gate.sh for analytics write permission validation
+- [X] T018 [P] Create tools/04_validate_schema.sh for database schema validation
+- [X] T019 [P] Create tools/05_sqlx_policy_check.sh for SQLx compile-time policy validation
+- [X] T020 Create tools/06_ci_guard_final.sh as final CI gate runner
+- [X] T021 [P] Create .github/workflows/ci.yml with 9-stage CI pipeline (hard-stop on failure)
+- [X] T022 [P] Create docs/constitution/speckit_enforcement.md
+- [X] T023 [P] Create infrastructure/docker-compose/local.yml with 3 services + PostgreSQL + Redis
+- [X] T024 [P] Create infrastructure/traefik/traefik.toml for reverse proxy configuration
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 

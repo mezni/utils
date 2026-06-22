@@ -1,0 +1,22 @@
+[package]
+name = "domain-types"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "Contract-only package for DTOs, event schemas, and entity IDs (NO backend framework dependencies)"
+
+[lib]
+name = "domain_types"
+path = "src/lib.rs"
+
+[dependencies]
+# Only serialization and validation, NO framework dependencies
+serde = { workspace = true }
+serde_json = { workspace = true }
+validator = { workspace = true }
+
+[dev-dependencies]
+# Validation tests only
+serde_json = { workspace = true }

@@ -1,254 +1,169 @@
-<!--
-  Sync Impact Report
-  ====================
-  Version change: (template) → v1.0.0
-  Previous file was an unpopulated template — all sections populated from
-  docs/constitution/constitution.md v1.15.2.
-
-  Modified principles (template → populated):
-    [PRINCIPLE_1_NAME]      → I. Service Topology Lock
-    [PRINCIPLE_2_NAME]      → II. Identity Dual System
-    [PRINCIPLE_3_NAME]      → III. Data Ownership
-    [PRINCIPLE_4_NAME]      → IV. Contract-First
-    [PRINCIPLE_5_NAME]      → V. SQLx Compile-Time
-    [SECTION_2_NAME]        → System Architecture & Topology
-    [SECTION_3_NAME]        → CI Enforcement & Pipeline
-    [GOVERNANCE_RULES]      → Populated with full governance rules
-
-  Added sections (relative to template):
-    - All 5 principles populated with content from 21-section constitution
-    - Section 2 (System Architecture & Topology) — combines sections 3–7, 12–13
-    - Section 3 (CI Enforcement & Pipeline) — combines sections 14, 15, 18
-    - Governance section — combines sections 17, 20, 21
-
-  Removed sections: N/A (template had only placeholders)
-
-  Templates requiring updates:
-    - .specify/templates/plan-template.md        — ✅ Constitution Check gate already references constitution
-    - .specify/templates/spec-template.md        — ✅ No changes needed (scope neutral)
-    - .specify/templates/tasks-template.md       — ✅ No changes needed (structure neutral)
-
-  Follow-up TODOs: None — all placeholders resolved.
--->
-
 # BorneMap Constitution
 
-> System of Record — EV charging station discovery and management platform for the
-> Tunisian market.
+**Version**: 1.15.2
+**Date**: 2026-06-21
+**Status**: Active
+
+## Preamble
+
+BorneMap is a microservices platform for EV charging station management. This constitution defines the architectural rules, constraints, and enforcement mechanisms that ensure system integrity, security, and maintainability across all services.
 
 ## Core Principles
 
-### I. Service Topology Lock
+### 1. Service Topology Lock
+- **Rule**: Exactly three microservices MUST exist: auth-service (3000), driver-service (3001), admin-service (3002)
+- **Consequence**: No additional services, no port changes, no topology modifications
+- **Enforcement**: Hard-stop CI gates on configuration validation
 
-Exactly three services MUST exist, each on a fixed port:
+### 2. Identity Dual System
+- **Rule**: Two independent identity systems: Keycloak UUID (human) and Platform nanoid(12) with PREFIX (business)
+- **Rule**: NO mixing allowed - UUID in users table only, nanoid(12) with PREFIX in entity tables (STA/CHG/OPR/EVT)
+- **Consequence**: Prevents data corruption and enforces business logic
+- **Enforcement**: Static analysis validation
 
-- `auth-service` (3000) — Authentication + user profiles
-- `driver-service` (3001) — GIS + telemetry + analytics write
-- `admin-service` (3002) — Inventory + analytics read
+### 3. Data Ownership
+- **Rule**: Every data domain has exactly one owning service
+- **Rule**: Cross-service writes forbidden
+- **Data Domains**:
+  - users → auth-service
+  - gis → driver-service
+  - inventory → admin-service
+  - analytics → driver-service (write only), admin-service (read only)
+- **Enforcement**: Database roles + CI analytics gate validation
 
-No additional services may be introduced. No service splitting, duplication,
-renaming, or merging is permitted. Any topology change requires a Constitution
-upgrade. **Violation = ARCHITECTURE DRIFT.**
+### 4. Contract-First
+- **Rule**: Contract definition → Backend implementation → Frontend implementation
+- **Rule**: domain-types MUST NOT depend on backend frameworks (actix-web, sqlx, tokio)
+- **Consequence**: Independent teams can work on contracts and implementations in parallel
+- **Enforcement**: Dependency validation with AST analysis
 
-### II. Identity Dual System
+### 5. SQLx Compile-Time Verification
+- **Rule**: All SQL queries MUST be compile-time verified via SQLx
+- **Rule**: NO dynamic SQL construction
+- **Consequence**: Compile-time detection of SQL errors before deployment
+- **Enforcement**: CI sqlx_compile_check stage
 
-Two independent identity systems MUST NEVER overlap:
+### 6. CI Enforcement
+- **Rule**: 9-stage CI pipeline with hard-stop on any failure
+- **Rule**: NO partial success allowed
+- **Stages**: format_check → type_check → dependency_graph_validation → identity_validation → schema_validation → sqlx_compile_check → analytics_write_gate → integration_tests → build_success
+- **Enforcement**: Deterministic exit codes, artifact passing, no bypass
 
-| System       | Type              | Purpose          |
-|--------------|-------------------|------------------|
-| Keycloak     | UUID (sub)        | Human identity   |
-| Platform     | PREFIX-nanoid(12) | Business objects |
+### 7. Forbidden Edges
+- **Rule**: NO service→service imports, NO frontend→backend imports, NO shared-domain→services
+- **Rule**: NO ui-kit→client-core, NO circular dependencies
+- **Consequence**: Enforces bounded context boundaries
+- **Enforcement**: AST-based dependency validation
 
-- Users MUST use UUID only (Keycloak `sub`).
-- Entities MUST use `PREFIX-nanoid(12)` only (prefixes: `STA`, `CHG`, `OPR`, `EVT`).
-- Cross-format mixing is forbidden.
+### 8. Single-Writer Analytics
+- **Rule**: driver-service ONLY can write to analytics_db
+- **Rule**: admin-service and auth-service can ONLY read from analytics_db
+- **Enforcement**: Database roles + CI analytics gate validation
+- **Mechanism**: ADMIN → BUS → ADB (NOT direct write)
 
-Identity fields in analytics MUST separate human and business identifiers:
-`user_uuid` (UUID) and `operator_id` (OPR-xxx) are valid; ambiguous `actor_id`
-fields are invalid.
+### 9. Runtime Topology Enforcement
+- **Rule**: NO extra HTTP servers in worker crates
+- **Rule**: NO service spawning in tests
+- **Rule**: Port bindings locked (3000/3001/3002), NO drift
+- **Enforcement**: CI runtime topology check
 
-### III. Data Ownership
+### 10. Migration Drift Detection
+- **Rule**: Migration files MUST match compiled schemas
+- **Rule**: NO schema divergence between migrations and code
+- **Enforcement**: CI migration drift detection and schema hash validation
 
-Every data domain has exactly one owning service. Cross-service writes are
-forbidden.
+### 11. Identity Location Rules
+- **Rule**: UUID MUST ONLY appear in users table and Keycloak mapping layer
+- **Rule**: UUID MUST NOT appear in any other entity tables
+- **Rule**: nanoid(12) MUST use PREFIX (STA/CHG/OPR/EVT) in entity tables
+- **Enforcement**: Static analysis validation
 
-| Schema/Database    | Owner          | Permissions                         |
-|--------------------|----------------|--------------------------------------|
-| platform_db.users  | auth-service   | READ/WRITE (exclusive)              |
-| platform_db.gis    | driver-service | READ/WRITE (exclusive)              |
-| platform_db.inventory | admin-service | READ/WRITE (exclusive)            |
-| analytics_db       | driver-service | READ/WRITE; admin READ ONLY         |
+## Service Boundaries
 
-Frontend applications have NO direct database access. Ownership transfer
-requires a Constitution upgrade.
+### auth-service (Port 3000)
+- **Owned Data**: users schema
+- **Functions**: Authentication, user profile management, Keycloak integration
+- **No Access**: gis, inventory, analytics (read-only for analytics via BUS)
 
-### IV. Contract-First
+### driver-service (Port 3001)
+- **Owned Data**: gis schema (OSM staging, curated stations, spatial functions), analytics_db (write-only)
+- **Functions**: GIS operations, telemetry ingestion, analytics write, OSM ETL
+- **No Access**: users (read-only via Keycloak), inventory (read-only for nearby search)
 
-All changes follow a strict order:
+### admin-service (Port 3002)
+- **Owned Data**: inventory schema, analytics_db (read-only)
+- **Functions**: Station CRUD, charger CRUD, partner management, inventory sync
+- **No Access**: users (read-only via Keycloak), gis (write-only via events), analytics (write-only via BUS)
 
-1. **Contract definition** — `domain-types` updated (DTOs, API contracts, event
-   schemas).
-2. **Backend implementation** — services implement against published contracts.
-3. **Frontend implementation** — UI consumes backend APIs.
+## Identity System
 
-Any other sequence is an **INVALID CHANGE FLOW**. `domain-types` contains ONLY
-type definitions — no runtime logic, no networking, no UI concerns.
+### Keycloak UUID (Human)
+- **Purpose**: User-facing identifiers (emails, IDs for support)
+- **Format**: UUID v4
+- **Table**: users.user_id
+- **Scope**: ONLY users table and Keycloak mapping layer
 
-### V. SQLx Compile-Time
+### Platform nanoid(12) with PREFIX (Business)
+- **Purpose**: Internal business entity identifiers
+- **Format**: PREFIX + 12 alphanumeric characters
+- **Prefixes**:
+  - STA - Station (inventory.stations)
+  - CHG - Charger (inventory.chargers)
+  - CON - Connector (inventory.connectors)
+  - PRT - Partner (inventory.partners)
+  - EVT - Event (raw_events table)
+- **Scope**: Entity tables ONLY, NO user table
 
-ALL SQL queries MUST be compile-time verified via SQLx. CI MUST run
-`cargo sqlx prepare --check`. No runtime SQL string construction, no dynamic
-query generation, no ORMs. **Failure = HARD STOP.**
+## Enforcement Mechanisms
 
-## System Architecture & Topology
+### CI Pipeline (9 Stages)
+1. format_check - Cargo fmt verification
+2. type_check - Cargo clippy linting
+3. dependency_graph_validation - AST-based forbidden edge detection
+4. identity_validation - UUID/nanoid usage validation
+5. schema_validation - Database schema consistency
+6. sqlx_compile_check - SQLx offline verification
+7. analytics_write_gate - Single-writer analytics enforcement
+8. integration_tests - cargo test execution
+9. build_success - cargo build verification
 
-### Service Responsibilities
+### Static Analysis
+- **Dependency validation**: Syn-based AST parsing
+- **Identity validation**: Regex + context-aware pattern matching
+- **Runtime topology**: Service spawning detection, port binding enforcement
 
-| Service        | Owned APIs                                                     |
-|----------------|---------------------------------------------------------------|
-| auth-service   | Authentication, user profile APIs                             |
-| driver-service | GIS APIs, telemetry ingestion (`POST /api/v1/telemetry/events`), nearby search |
-| admin-service  | Inventory CRUD, analytics dashboards                          |
+### Database Enforcement
+- PostgreSQL roles: bornemap_admin, bornemap_driver, bornemap_auth, bornemap_analytics_writer, bornemap_analytics_reader
+- Schema ownership: Explicit GRANT statements
+- Single-writer enforcement: ROW-level security (optional, future)
 
-Operational endpoints (`/health`, `/ready`, `/live`, `/metrics`) are allowed on
-all services.
+## Compliance Process
 
-### Database Architecture
+1. **Design Phase**: All designs must pass constitution check gates before implementation
+2. **Implementation Phase**: CI enforcement prevents violations from reaching production
+3. **Review Phase**: All code changes must pass constitution validation
+4. **Audit Phase**: Regular compliance audits for data ownership, identity separation, etc.
 
-Only three databases exist:
+## Violation Handling
 
-- **platform_db** — Application data (schemas: `users`, `gis`, `inventory`)
-- **analytics_db** — Telemetry and analytics events
-- **keycloak_db** — Identity provider storage (no application logic)
+1. **CI Violation**: Hard-stop, required fix before merge
+2. **Design Violation**: Rejection, redesign required
+3. **Runtime Violation**: Immediate rollback, fix required
+4. **Severity Levels**:
+   - **Critical**: Service topology, identity separation, data ownership
+   - **High**: Forbidden edges, contract-first, single-writer analytics
+   - **Medium**: SQLx policy, CI enforcement, migration drift
+   - **Low**: Documentation, code style, formatting
 
-### Frontend Package Structure
+## Amendment Process
 
-```
-apps/packages/
-  ui-kit/         — UI ONLY (components, layouts, tokens, accessibility)
-  domain-types/   — Contracts ONLY (DTOs, event schemas, entity IDs)
-  client-core/    — Transport ONLY (API clients, auth, mappers)
-```
+1. **Proposal**: Formal proposal with justification and impact analysis
+2. **Stakeholder Review**: All team members must review and approve
+3. **Version Bump**: Increment version number
+4. **Migration Path**: Clear path for existing code to adapt
 
-Dependency chain: `ui-kit → domain-types → client-core`
+## Version History
 
-### Backend Package Structure
-
-```
-backend/shared/
-  shared-domain/  — Pure domain primitives ONLY (entity IDs, DTOs, event contracts)
-  shared-infra/   — Infra only (JWT parsing, DB pools, logging)
-```
-
-Dependency chain: `services → shared-domain → shared-infra`
-
-### Forbidden Edges
-
-- `service → service` imports
-- `frontend → backend` imports
-- `shared-domain → services`
-- `ui-kit → client-core`
-- Circular dependencies anywhere
-
-**Violation = HARD FAILURE.**
-
-### Trust Boundary
-
-No service trusts another service's runtime state. Trusted sources: Keycloak
-JWT, SQLx compile-time validation, published contracts, schema validation.
-Untrusted: external payloads, cached state, service assumptions, client input.
-
-## CI Enforcement & Pipeline
-
-### CI Pipeline DAG (Strict Order)
-
-1. `format_check`
-2. `type_check`
-3. `dependency_graph_validation`
-4. `identity_validation`
-5. `schema_validation`
-6. `sqlx_compile_check`
-7. `analytics_write_gate`
-8. `integration_tests`
-9. `build_success`
-
-**Any failure = HARD STOP.** No partial success allowed.
-
-### Analytics Write Gate
-
-ONLY `driver-service` may WRITE to `analytics_db`. Enforced via DB roles,
-CI grep/static analysis, and runtime middleware. `admin-service` has READ ONLY
-access. `auth-service` has NO ACCESS.
-
-### Event System
-
-All events flow through a single ingestion endpoint at driver-service:
-`POST /api/v1/telemetry/events`. Events MUST include `schema_version`,
-`idempotency_key`, and be replay-safe. driver-service is the authoritative
-owner of event schemas and MUST deduplicate all events.
-
-### Migration Isolation
-
-| Service        | Allowed Schema           |
-|----------------|--------------------------|
-| auth-service   | `users`                  |
-| driver-service | `gis` + `analytics_db`   |
-| admin-service  | `inventory`              |
-
-Rules: forward-only migrations, no destructive rollback, SQLx compatibility
-required, CI validation required.
-
-### HARD FAIL Conditions
-
-- analytics_db write violation
-- Identity format violation (UUID in entities, nanoid in users)
-- Service topology change
-- SQLx failure
-- Schema mismatch / drift
-- Dependency violation (cycles, cross-layer imports)
-- Migration violation
-
-## Governance
-
-### Authority Hierarchy
-
-1. **SDEC v3.0** — Runtime execution enforcement (highest authority)
-2. **BorneMap Constitution** — Architecture definition (this document)
-3. **Architecture docs** — Detailed design references
-4. **Sprint artifacts** — State, review, backlog documents
-5. **LLM output** — Lowest authority; must not override higher layers
-
-### Amendment Procedure
-
-1. Propose change with rationale and migration plan.
-2. Determine version bump:
-   - **MAJOR**: Backward-incompatible principle removal/redefinition.
-   - **MINOR**: New principle or materially expanded guidance.
-   - **PATCH**: Clarifications, wording, typo fixes.
-3. Ratify with documented approval.
-4. Propagate changes to dependent artifacts (plans, specs, CI scripts).
-5. Update `LAST_AMENDED_DATE`.
-
-### Compliance Review
-
-- Every PR/review MUST verify constitution compliance.
-- CI automatically enforces structural, identity, ownership, and dependency
-  rules.
-- Complexity additions must be justified in the plan template's Complexity
-  Tracking section.
-- Known inherited bugs (KNOWN-001 through KNOWN-004) must be tracked until
-  resolved.
-
-### Sprint Output Requirements
-
-Every sprint MUST produce:
-- `SYSTEM_STATE.md` — Current system inventory and status
-- `roadmap_status.md` — Sprint pipeline and milestones
-- `sprint_state.json` — Machine-readable sprint state
-- `sprint_review.md` — Sprint review and decisions
-- `validation_report.md` — Compliance audit results
-- `follow_up.md` — Action items and open questions
-
----
-
-**Version**: 1.0.0 | **Ratified**: 2026-06-21 | **Last Amended**: 2026-06-21
+- **v1.15.2** (2026-06-21): Updated with runtime topology enforcement, migration drift detection, identity location rules
+- **v1.15.1** (2026-06-20): Updated with enforcement kernel enhancements
+- **v1.15.0** (2026-06-19): Initial constitution for BorneMap project

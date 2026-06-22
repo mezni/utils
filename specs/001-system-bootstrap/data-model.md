@@ -272,7 +272,7 @@ GRANT USAGE ON SCHEMA inventory TO bornemap_driver; -- driver-service needs to q
 
 **Critical Architecture Rule**: "Inventory ↔ GIS sync on CRUD"
 
-Inventory is the business source of truth. Every CRUD operation on inventory tables must emit events to trigger synchronization with the GIS schema. The sync ensures spatial consistency between business entities and the GIS spatial truth layer.
+Inventory is a DATA DOMAIN within admin-service, not a separate service. Every CRUD operation on inventory tables must emit events to trigger synchronization with the GIS schema in driver-service. The sync ensures spatial consistency between business entities and the GIS spatial truth layer.
 
 **Tables**:
 - Partners (business organizations)
@@ -282,9 +282,9 @@ Inventory is the business source of truth. Every CRUD operation on inventory tab
 
 ---
 
-**Event Mechanism for Sync**:
+**Event Mechanism for Sync (CHOSEN MODEL: Event-Driven)**:
 
-**Trigger Events**:
+**Trigger Events** (emitted by admin-service):
 - `inventory.station.created` - emitted when station is created
 - `inventory.station.updated` - emitted when station is updated
 - `inventory.station.deleted` - emitted when station is deleted
@@ -299,9 +299,16 @@ Inventory is the business source of truth. Every CRUD operation on inventory tab
 - Maintains spatial consistency
 
 **Event Bus**:
-- PostgreSQL LISTEN/NOTIFY or external message queue
-- Synchronous trigger-based sync for MVP
-- Asynchronous event bus for production
+- PostgreSQL LISTEN/NOTIFY for MVP
+- External message queue for production
+- Asynchronous event-driven sync (NOT synchronous triggers)
+
+**Sync Rules**:
+- Inventory CRUD → emits event → event bus → GIS worker → updates GIS
+- Idempotency keys in events prevent duplicate sync
+- Events are stored in message queue for audit trail
+- GIS worker processes events in order
+- No synchronous database triggers
 
 ---
 
@@ -821,7 +828,7 @@ $$ LANGUAGE plpgsql;
 
 ### analytics_db
 
-Owned by: driver-service (write), admin-service (read-only)
+Owned by: driver-service (write), admin-service (read-only via BUS)
 
 **PostgreSQL Roles**:
 - `bornemap_analytics_writer` (driver-service)
@@ -842,7 +849,7 @@ GRANT ALL PRIVILEGES ON SCHEMA telemetry TO bornemap_analytics_writer;
 GRANT ALL PRIVILEGES ON SCHEMA analytics TO bornemap_analytics_writer;
 GRANT ALL PRIVILEGES ON SCHEMA system TO bornemap_analytics_writer;
 
--- Reader role (admin-service)
+-- Reader role (admin-service) - NO DIRECT WRITE PERMISSIONS
 GRANT USAGE ON SCHEMA telemetry TO bornemap_analytics_reader;
 GRANT SELECT ON ALL TABLES IN SCHEMA telemetry TO bornemap_analytics_reader;
 
@@ -857,7 +864,9 @@ GRANT SELECT ON ALL TABLES IN SCHEMA system TO bornemap_analytics_reader;
 - CI gate 03_validate_analytics_gate.sh enforces static analysis
 - Database-level roles enforce runtime write permissions
 - No service can write to analytics_db except driver-service
-- admin-service can only read from analytics_db
+- admin-service can only read from analytics_db, writes must go through BUS
+
+**Critical Rule**: Admin-service writes must go through BUS → GIS worker → events, not direct database writes
 
 #### Schema: telemetry_events
 

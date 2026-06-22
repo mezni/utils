@@ -1,0 +1,106 @@
+# Traefik Configuration for BorneMap
+# Reverse proxy for auth-service, driver-service, admin-service
+
+log:
+  level: INFO
+  filePath: /var/log/traefik/traefik.log
+
+accessLog:
+  filePath: /var/log/traefik/access.log
+  format: json
+
+api:
+  dashboard: true
+  insecure: false  # Enable dashboard only via secure connection
+
+entryPoints:
+  web:
+    address: ":80"
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
+
+  websecure:
+    address: ":443"
+    http:
+      tls:
+        certResolver: default
+        domains:
+          - main: bornemap.local
+            sans:
+              - api.bornemap.local
+              - admin.bornemap.local
+              - driver.bornemap.local
+
+  metrics:
+    address: ":8082"
+
+providers:
+  docker:
+    endpoint: "unix:///var/run/docker.sock"
+    exposedByDefault: false
+    network: "bornemap-network"
+    swarmMode: false
+
+  file:
+    filename: /etc/traefik/dynamic.toml
+    watch: true
+
+# Enable Traefik dashboard
+# Access via: http://localhost:8080/dashboard/
+
+# Metrics endpoint
+# http://localhost:8082/metrics
+
+# Dynamic configuration for load balancing
+dynamic:
+  http:
+    routers:
+      auth-service-router:
+        rule: "Host(`auth.bornemap.local`)"
+        service: auth-service
+        entryPoints:
+          - websecure
+      driver-service-router:
+        rule: "Host(`driver.bornemap.local`)"
+        service: driver-service
+        entryPoints:
+          - websecure
+      admin-service-router:
+        rule: "Host(`admin.bornemap.local`)"
+        service: admin-service
+        entryPoints:
+          - websecure
+
+    services:
+      auth-service:
+        loadBalancer:
+          servers:
+            - url: "http://auth-service:3000"
+          healthCheck:
+            path: /health
+            interval: 10s
+            timeout: 5s
+            scheme: http
+
+      driver-service:
+        loadBalancer:
+          servers:
+            - url: "http://driver-service:3001"
+          healthCheck:
+            path: /health
+            interval: 10s
+            timeout: 5s
+            scheme: http
+
+      admin-service:
+        loadBalancer:
+          servers:
+            - url: "http://admin-service:3002"
+          healthCheck:
+            path: /health
+            interval: 10s
+            timeout: 5s
+            scheme: http

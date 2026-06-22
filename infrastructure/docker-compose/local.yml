@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  # PostgreSQL for platform_db (users, gis, inventory)
+  platform-db:
+    image: postgres:16-alpine
+    container_name: bornemap_platform_db
+    environment:
+      POSTGRES_DB: platform_db
+      POSTGRES_USER: bornemap_admin
+      POSTGRES_PASSWORD: bornemap_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - platform_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bornemap_admin"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - bornemap-network
+
+  # PostgreSQL for analytics_db
+  analytics-db:
+    image: postgres:16-alpine
+    container_name: bornemap_analytics_db
+    environment:
+      POSTGRES_DB: analytics_db
+      POSTGRES_USER: bornemap_analytics_writer
+      POSTGRES_PASSWORD: bornemap_password
+    ports:
+      - "5433:5432"
+    volumes:
+      - analytics_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bornemap_analytics_writer"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - bornemap-network
+
+  # Redis (optional, for caching)
+  redis:
+    image: redis:7-alpine
+    container_name: bornemap_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - bornemap-network
+
+volumes:
+  platform_db_data:
+  analytics_db_data:
+  redis_data:
+
+networks:
+  bornemap-network:
+    driver: bridge
