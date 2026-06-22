@@ -20,7 +20,7 @@
 
 **Rationale**: The constitution already defines the BUS pattern (`ADMIN → BUS → ADB`) in §11.4. Auth-service sends audit events to driver-service's `POST /api/v1/telemetry/events` endpoint. Driver-service handles deduplication and writing to analytics_db. This preserves single-writer integrity without constitutional amendment.
 
-**Implementation**: Auth-service emits events as async HTTP POST with retry (3 attempts, exponential backoff) and in-memory ring buffer fallback.
+**Implementation**: Auth-service emits events as async HTTP POST with retry (3 attempts, exponential backoff) and in-memory ring buffer fallback. All calls to driver-service are authenticated via auth-service-sa Keycloak service account credentials (client_credentials grant). Driver-service validates the machine JWT before accepting events.
 
 ## 2. JWT Validation Strategy
 
@@ -49,8 +49,30 @@ Each script follows the same JSON artifact pattern as existing CI scripts.
 
 ## 5. Role Model
 
-**Decision**: Three immutable roles — `driver`, `partner`, `admin`. Mutually exclusive (one user, one role). Roles are stored as PostgreSQL ENUM or VARCHAR with CHECK constraint in `users.user_profiles.role`.
+**Decision**: Three roles with explicit precedence — `admin > partner > driver`. Admin inherits all permissions. Partner inherits driver permissions only if explicitly granted. Roles are stored as VARCHAR with CHECK constraint in `users.user_profiles.role`. **Keycloak JWT role is authoritative for authorization decisions; platform_db role is a projection only and MUST NOT be used for authorization.** This prevents stale DB roles from granting inappropriate access.
 
 ## 6. JWT Token Lifetime
 
-**Decision**: Access tokens: 15 minutes. Refresh tokens: 24 hours. Short-lived access tokens minimize the window for token misuse while keeping UX acceptable.
+**Decision**: Access tokens: 15 minutes. Refresh tokens: 24 hours (OIDC PKCE flow). Short-lived access tokens minimize the window for token misuse. Role revocation takes effect at JWT expiration (max 15 min), or sooner with token introspection.
+
+## 7. JIT Provisioning Flow
+
+**Decision**: JIT provisioning is triggered by ANY service detecting a missing user profile, not just auth-service. Services call auth-service `GET /api/v1/auth/sync?user_uuid={uuid}` (authenticated via machine credentials) which performs the upsert. This decouples JIT from the authentication path and ensures user profiles exist regardless of which service receives the request.
+
+## 8. Client Type Definitions
+
+**Decision**: 
+- `mobile-driver`: Public client, PKCE enabled
+- `web-driver`: Public client, PKCE enabled
+- `admin-dashboard`: Confidential client (client secret)
+- `auth-service-sa`: Confidential service account (client_credentials) for machine-to-machine auth
+- `driver-service-sa`: Confidential service account
+- `admin-service-sa`: Confidential service account
+
+## 9. Service-to-Service Authentication
+
+**Decision**: All internal API calls use Keycloak service account credentials (client_credentials grant). Each service has its own service account with least-privilege roles. This prevents unauthenticated internal access and provides audit trail for service interactions.
+
+## 10. Role Change Propagation
+
+**Decision**: SC-007 corrected to: role changes become effective no later than the user's current JWT expiration (max 15 minutes with 15 min access tokens). No token introspection is implemented in MVP — relying on short-lived tokens is sufficient.

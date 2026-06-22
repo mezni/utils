@@ -22,12 +22,12 @@
 
 **Purpose**: Deploy Keycloak, add Keycloak to docker-compose, define shared contracts in domain-types
 
-- [ ] T001 [P] Add Keycloak service definition to `infrastructure/docker-compose/local.yml` (image, ports 8080, keycloak_db)
-- [ ] T002 [P] Create `infrastructure/keycloak/setup.sh` for realm/client/role provisioning
-- [ ] T003 [P] Create `infrastructure/keycloak/realm-export.json` as export of `bornemap` realm configuration
-- [ ] T004 [P] Define `Role` enum in `apps/packages/domain-types/src/role.rs`
-- [ ] T005 [P] Define `JwtClaims` struct in `apps/packages/domain-types/src/jwt.rs`
-- [ ] T006 [P] Define `AuditEvent` struct in `apps/packages/domain-types/src/audit.rs`
+- [ ] T001 [P] Add Keycloak service definition to `infrastructure/docker-compose/local.yml` (image, ports 8080, keycloak_db, healthcheck)
+- [ ] T002 [P] Create `infrastructure/keycloak/setup.sh` for realm/client/role provisioning (realm: bornemap, clients: mobile-driver public PKCE, web-driver public PKCE, admin-dashboard confidential, auth-service-sa confidential, driver-service-sa confidential, admin-service-sa confidential)
+- [ ] T003 [P] Export and version-control Keycloak realm config to `infrastructure/keycloak/realm-export.json`
+- [ ] T004 [P] Define `Role` enum (Driver, Partner, Admin with precedence) in `apps/packages/domain-types/src/role.rs`
+- [ ] T005 [P] Define `JwtClaims` struct (sub, email, role, exp, iat, iss, aud) in `apps/packages/domain-types/src/jwt.rs`
+- [ ] T006 [P] Define `AuditEvent` and `SecurityEventData` structs (with correlation_id, ip, user_agent) in `apps/packages/domain-types/src/audit.rs`
 - [ ] T007 [P] Define `UserProfile` struct in `apps/packages/domain-types/src/user.rs`
 - [ ] T008 [P] Update `apps/packages/domain-types/src/lib.rs` to export new modules
 
@@ -39,12 +39,12 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T009 Implement `services/auth-service/src/middleware/jwt.rs` — JWT validation middleware (JWKS fetch, cache, signature verify, claim extraction)
-- [ ] T010 Implement `services/driver-service/src/middleware/jwt.rs` — JWT validation middleware (reuses same pattern, no Keycloak Admin API)
-- [ ] T011 Implement `services/admin-service/src/middleware/jwt.rs` — JWT validation middleware (reuses same pattern)
-- [ ] T012 [P] Create `services/auth-service/migrations/0002_user_profiles_role.up.sql` — add `role VARCHAR(20)` column to `users.user_profiles`
-- [ ] T013 Create `services/auth-service/src/keycloak/client.rs` — Keycloak Admin API client (realm config, user lookup)
-- [ ] T014 Implement `services/auth-service/src/config.rs` — load Keycloak URL, realm, client credentials from config/env
+- [ ] T009 Implement `services/auth-service/src/middleware/jwt.rs` — JWT validation middleware (JWKS fetch with cache, signature verify, issuer, audience, expiration, not-before validation; cache refresh on unknown `kid`)
+- [ ] T010 Implement `services/driver-service/src/middleware/jwt.rs` — JWT validation middleware (same claims validation; no Keycloak Admin API dependency)
+- [ ] T011 Implement `services/admin-service/src/middleware/jwt.rs` — JWT validation middleware (same claims validation)
+- [ ] T012 [P] Create `services/auth-service/migrations/0002_user_profiles_role.up.sql` — add `role VARCHAR(20)` column with CHECK (role IN ('driver','partner','admin')) to `users.user_profiles`
+- [ ] T013 Create `services/auth-service/src/keycloak/client.rs` — Keycloak Admin API client (realm config, user lookup, role mapping)
+- [ ] T014 Implement `services/auth-service/src/config.rs` — load Keycloak URL, realm, client credentials, JWKS URI from config/env
 
 **Checkpoint**: Foundation ready — all services can validate JWTs, Keycloak is configured, user_profiles has role column
 
@@ -100,11 +100,16 @@
 
 ### Implementation for User Story 3
 
-- [ ] T031 [P] [US3] Implement `services/auth-service/src/provisioning/jit.rs` — JIT upsert handler (SELECT or INSERT/UPDATE user_profiles)
-- [ ] T032 [P] [US3] Implement `services/auth-service/src/provisioning/middleware.rs` — middleware that calls JIT after JWT validation
-- [ ] T033 [US3] Wire JIT middleware into `services/auth-service/src/main.rs` (after JWT middleware)
-- [ ] T034 [US3] Test JIT provisioning — authenticate as new user, verify DB record created with correct UUID and role
-- [ ] T035 [US3] Test JIT update — change role in Keycloak, re-auth, verify user_profiles.role updated
+- [ ] T031 [P] [US3] Implement `services/auth-service/src/sync/endpoint.rs` — `GET /api/v1/auth/sync?user_uuid={uuid}` sync endpoint (accepts machine auth, upserts user_profiles, returns profile)
+- [ ] T032 [P] [US3] Implement `services/auth-service/src/sync/client.rs` — HTTP client for other services to call the sync endpoint (authenticated via service account credentials)
+- [ ] T033 [US3] Implement `services/auth-service/src/provisioning/jit.rs` — core JIT upsert logic (called by sync endpoint)
+- [ ] T034 [P] [US3] Implement `services/driver-service/src/identity/sync.rs` — middleware that checks local user_profiles cache, calls auth-service sync on cache miss
+- [ ] T035 [P] [US3] Implement `services/admin-service/src/identity/sync.rs` — same sync-on-miss pattern
+- [ ] T036 [US3] Wire sync endpoint into `services/auth-service/src/main.rs`
+- [ ] T037 [US3] Wire sync middleware into `services/driver-service/src/main.rs`
+- [ ] T038 [US3] Wire sync middleware into `services/admin-service/src/main.rs`
+- [ ] T039 [US3] Test JIT provisioning — authenticate as new user through driver-service, verify DB record created with correct UUID and role
+- [ ] T040 [US3] Test JIT update — change role in Keycloak, re-auth, verify user_profiles.role updated
 
 **Checkpoint**: At this point, User Story 3 should be fully functional and testable independently
 
@@ -118,13 +123,16 @@
 
 ### Implementation for User Story 4
 
-- [ ] T036 [P] [US4] Implement `services/auth-service/src/audit/emitter.rs` — HTTP client that POSTs audit events to driver-service `/api/v1/telemetry/events`
-- [ ] T037 [P] [US4] Implement `services/auth-service/src/audit/middleware.rs` — middleware that emits events on login success, failure, token rejection
-- [ ] T038 [US4] Wire audit middleware into `services/auth-service/src/main.rs`
-- [ ] T039 [P] [US4] Implement `services/driver-service/src/telemetry/events.rs` — `POST /api/v1/telemetry/events` endpoint for event ingestion
-- [ ] T040 [P] [US4] Add idempotency check in driver-service event ingestion (dedup by `idempotency_key`)
-- [ ] T041 [US4] Add retry + in-memory ring buffer fallback in auth-service `audit/emitter.rs`
-- [ ] T042 [US4] Test audit flow end-to-end (auth event → driver-service → analytics_db.raw_events)
+- [ ] T041 [P] [US4] Implement `services/auth-service/src/audit/emitter.rs` — HTTP client that POSTs audit events to driver-service `/api/v1/telemetry/events` (authenticated via auth-service-sa machine credentials)
+- [ ] T042 [P] [US4] Implement `services/auth-service/src/audit/middleware.rs` — middleware that emits events on login_success, login_failure, token_rejected, access_denied, role_change_detected, jit_user_created, jit_user_updated, logout
+- [ ] T043 [US4] Wire audit middleware into `services/auth-service/src/main.rs`
+- [ ] T044 [P] [US4] Implement `services/driver-service/src/telemetry/events.rs` — `POST /api/v1/telemetry/events` endpoint for event ingestion (validates service account credentials, deduplicates by idempotency_key)
+- [ ] T045 [P] [US4] Wire event ingestion endpoint into `services/driver-service/src/main.rs`
+- [ ] T046 [US4] Add retry (3 attempts, exponential backoff) + in-memory ring buffer fallback in auth-service `audit/emitter.rs`
+- [ ] T047 [US4] Add correlation ID propagation to `services/auth-service/src/middleware/correlation.rs`
+- [ ] T048 [US4] Add correlation ID propagation to `services/driver-service/src/middleware/correlation.rs`
+- [ ] T049 [US4] Add correlation ID propagation to `services/admin-service/src/middleware/correlation.rs`
+- [ ] T050 [US4] Test audit flow end-to-end (auth event → auth-service emitter → driver-service → analytics_db.raw_events with dedup)
 
 **Checkpoint**: At this point, User Story 4 should be fully functional and testable independently
 
@@ -138,14 +146,14 @@
 
 ### Implementation for User Story 5
 
-- [ ] T043 [P] [US5] Create `tools/ci_gate_identity.sh` — Identity validation gate (CI-1.1): FAIL if users schema has non-UUID IDs, FAIL if nanoid in auth tables
-- [ ] T044 [P] [US5] Create `tools/ci_gate_keycloak.sh` — Keycloak dependency gate (CI-1.2): FAIL if non-auth-service depends on keycloak-client
-- [ ] T045 [P] [US5] Create `tools/ci_gate_rbac.sh` — RBAC coverage check (CI-1.3): scan route registrations, FAIL if any route lacks role guard
-- [ ] T046 [P] [US5] Create `tools/ci_gate_session.sh` — Session consistency check (CI-1.4): verify JWT role matches platform_db role
-- [ ] T047 [US5] Update `tools/ci_guard.sh` to include 4 new gates in appropriate stages
-- [ ] T048 [US5] Update `Makefile` with new CI gate targets
-- [ ] T049 [US5] Update `.github/workflows/ci.yml` to include new gates
-- [ ] T050 [US5] Test CI gates — introduce violation, verify gate catches it and pipeline fails
+- [ ] T051 [P] [US5] Create `tools/ci_gate_identity.sh` — Identity validation gate (CI-1.1): FAIL if users.user_profiles uses non-UUID PK, FAIL if nanoid CHECK found in users schema, FAIL if UUID found in entity tables
+- [ ] T052 [P] [US5] Create `tools/ci_gate_keycloak.sh` — Keycloak dependency gate (CI-1.2): scan Cargo.toml for keycloak-client, FAIL if non-auth-service depends on it; scan Rust imports for `use keycloak` outside auth-service
+- [ ] T053 [P] [US5] Create `tools/ci_gate_rbac.sh` — RBAC coverage check (CI-1.3): scan route registrations for `.route()` calls, FAIL if any lacks role guard, FAIL if any route absent from RBAC matrix in `contracts/rbac.md`, whitelist public routes explicitly
+- [ ] T054 [P] [US5] Create `tools/ci_gate_session.sh` — Session consistency check (CI-1.4): extract role from JWT test vector, compare to platform_db role for same UUID, FAIL on mismatch
+- [ ] T055 [US5] Update `tools/ci_guard.sh` — integrate 4 new gates into identity_validation and schema_validation stages
+- [ ] T056 [US5] Update `Makefile` with new CI gate targets
+- [ ] T057 [US5] Update `.github/workflows/ci.yml` to include new gates
+- [ ] T058 [US5] Test each CI gate — introduce deliberate violation per gate, verify gate catches it and pipeline fails
 
 **Checkpoint**: At this point, User Story 5 should be fully functional and testable independently
 
@@ -155,14 +163,15 @@
 
 **Purpose**: Improvements that affect multiple user stories
 
-- [ ] T051 [P] Add Keycloak container healthcheck to `infrastructure/docker-compose/local.yml`
-- [ ] T052 [P] Update `infrastructure/scripts/deploy.sh` to start Keycloak
-- [ ] T053 [P] Update `infrastructure/scripts/provision_db.sh` with keycloak_db setup if needed
-- [ ] T054 [P] Add token refresh flow to auth-service (refresh token endpoint)
-- [ ] T055 [P] Add JWKS key rotation handling in JWT middleware (refresh cache on key error)
-- [ ] T056 [P] Write integration tests for full auth flow (Keycloak → JWT → JIT → RBAC → audit)
-- [ ] T057 [P] Update `docs/SYSTEM_STATE.md` with identity/security layer additions
-- [ ] T058 [P] Update `docs/sprints/sprint_01/review/sprint_review.md` with completion status
+- [ ] T059 [P] Add Keycloak container healthcheck to `infrastructure/docker-compose/local.yml`
+- [ ] T060 [P] Update `infrastructure/scripts/deploy.sh` to start Keycloak
+- [ ] T061 [P] Update `infrastructure/scripts/provision_db.sh` with keycloak_db setup if needed
+- [ ] T062 [P] Implement OIDC PKCE auth code + refresh token endpoint in auth-service
+- [ ] T063 [P] Add JWKS cache refresh on unknown `kid` in all JWT middleware
+- [ ] T064 [P] Add service account client_credentials grant support in auth-service (machine-to-machine auth)
+- [ ] T065 [P] Write integration tests for full auth flow (PKCE login → JWT → JIT → RBAC → audit → event bus)
+- [ ] T066 [P] Update `docs/SYSTEM_STATE.md` with identity/security layer additions
+- [ ] T067 [P] Update `docs/sprints/sprint_01/review/sprint_review.md` with completion status
 
 ---
 
@@ -180,7 +189,7 @@
 - **User Story 1 (P1)**: Can start after Foundational — No dependencies on other stories
 - **User Story 2 (P1)**: Can start after Foundational — No dependencies on other stories
 - **User Story 3 (P1)**: Can start after Foundational — No dependencies on other stories
-- **User Story 4 (P2)**: Can start after Foundational — Depends on US1 (needs JWT auth working) and US2 (needs RBAC for POST endpoint)
+- **User Story 4 (P2)**: Can start after Foundational — Depends on US1 (needs JWT auth working) and US3 (needs sync endpoint for user identity)
 - **User Story 5 (P2)**: Can start after Foundational — No dependencies on other stories
 
 **All user stories are independently testable after Foundational phase completes.**
@@ -207,19 +216,19 @@
 
 ## Task Summary
 
-**Total Tasks**: 58
+**Total Tasks**: 67
 
 **Task Count per User Story**:
 - Setup: 8 tasks
 - Foundational: 6 tasks
 - User Story 1: 8 tasks
 - User Story 2: 8 tasks
-- User Story 3: 5 tasks
-- User Story 4: 7 tasks
+- User Story 3: 10 tasks
+- User Story 4: 10 tasks
 - User Story 5: 8 tasks
-- Polish: 8 tasks
+- Polish: 9 tasks
 
-**Parallelizable Tasks**: 30 out of 58 (52%)
+**Parallelizable Tasks**: 35 out of 67 (52%)
 
 **Independent Test Criteria**:
 - US1: Authenticate as driver/partner/admin → verify JWT accepted by all 3 services
