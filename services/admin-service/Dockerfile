@@ -1,4 +1,4 @@
-FROM rust:latest-slim-bookworm AS builder
+FROM rust:slim-bookworm AS builder
 WORKDIR /app
 COPY . .
 RUN cargo build --release --bin admin-service
