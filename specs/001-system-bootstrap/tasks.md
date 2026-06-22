@@ -150,27 +150,27 @@ description: "Task list for Sprint 0: System Bootstrap & Enforcement Kernel"
 
 #### auth-service Migrations
 
-- [ ] T074 [P] [US3] Create services/auth-service/migrations/0001_init_users.up.sql
-- [ ] T075 [P] [US3] Create services/auth-service/migrations/0001_init_users.down.sql (if needed)
+- [X] T074 [P] [US3] Create services/auth-service/migrations/0001_init_users.up.sql
+- [X] T075 [P] [US3] Create services/auth-service/migrations/0001_init_users.down.sql (if needed)
 
 #### driver-service Migrations
 
-- [ ] T076 [P] [US3] Create services/driver-service/migrations/0001_init_gis.up.sql
-- [ ] T077 [P] [US3] Create services/driver-service/migrations/0001_init_gis.down.sql (if needed)
-- [ ] T078 [P] [US3] Create services/driver-service/migrations/0002_init_analytics.up.sql
-- [ ] T079 [P] [US3] Create services/driver-service/migrations/0002_init_analytics.down.sql (if needed)
-- [ ] T080 [P] [US3] Create services/driver-service/migrations/0003_create_analytics_indexes.up.sql
-- [ ] T081 [P] [US3] Create services/driver-service/migrations/0003_create_analytics_indexes.down.sql (if needed)
+- [X] T076 [P] [US3] Create services/driver-service/migrations/0001_init_gis.up.sql
+- [X] T077 [P] [US3] Create services/driver-service/migrations/0001_init_gis.down.sql (if needed)
+- [X] T078 [P] [US3] Create services/driver-service/migrations/0002_init_analytics.up.sql
+- [X] T079 [P] [US3] Create services/driver-service/migrations/0002_init_analytics.down.sql (if needed)
+- [X] T080 [P] [US3] Create services/driver-service/migrations/0003_create_analytics_indexes.up.sql
+- [X] T081 [P] [US3] Create services/driver-service/migrations/0003_create_analytics_indexes.down.sql (if needed)
 
 #### admin-service Migrations
 
-- [ ] T082 [P] [US3] Create services/admin-service/migrations/0001_init_inventory.up.sql
-- [ ] T083 [P] [US3] Create services/admin-service/migrations/0001_init_inventory.down.sql (if needed)
+- [X] T082 [P] [US3] Create services/admin-service/migrations/0001_init_inventory.up.sql
+- [X] T083 [P] [US3] Create services/admin-service/migrations/0001_init_inventory.down.sql (if needed)
 
 #### Database Verification
 
-- [ ] T084 [US3] Create infrastructure/scripts/provision_db.sh for database initialization
-- [ ] T085 [US3] Create tools/04_validate_schema.sh for database schema validation
+- [X] T084 [US3] Create infrastructure/scripts/provision_db.sh for database initialization
+- [X] T085 [US3] Create tools/04_validate_schema.sh for database schema validation
 
 **Checkpoint**: At this point, User Story 3 should be fully functional and testable independently
 
