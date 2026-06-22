@@ -1,0 +1,47 @@
+[package]
+name = "admin-service"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "Inventory management service (Port 3002)"
+
+[lib]
+name = "admin_service"
+path = "src/lib.rs"
+
+[[bin]]
+name = "admin-service"
+path = "src/main.rs"
+
+[dependencies]
+# Web framework
+actix-web = { workspace = true }
+actix-cors = { workspace = true }
+
+# Database
+sqlx = { workspace = true }
+
+# Serialization
+serde = { workspace = true }
+serde_json = { workspace = true }
+chrono = { workspace = true }
+
+# Validation
+validator = { workspace = true }
+
+# Configuration
+config = { workspace = true }
+
+# Logging
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+
+# Error handling
+anyhow = "1.0"
+thiserror = "1.0"
+
+[dev-dependencies]
+# Test utilities
+tokio = { workspace = true }

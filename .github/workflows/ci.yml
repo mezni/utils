@@ -1,0 +1,53 @@
+name: BorneMap CI
+
+on:
+  push:
+    branches:
+      - main
+      - '**/001-*'
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+          components: rustfmt, clippy
+
+      - name: Cache Cargo dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: Make CI entrypoint executable
+        run: chmod +x tools/ci_guard.sh
+
+      - name: Run CI Enforcement Pipeline (9 stages)
+        run: ./tools/ci_guard.sh
+        env:
+          SQLX_OFFLINE: true
+          DB_URL: postgresql://user:pass@localhost:5432/borne_map
+
+      - name: Upload CI artifacts
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: ci-artifacts
+          path: .specify/ci-artifacts/
+          retention-days: 30

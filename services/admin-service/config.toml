@@ -1,0 +1,5 @@
+[server]
+port = 3002
+
+[database]
+url = "postgres://bornemap_admin:bornemap_password@localhost:5432/platform_db"

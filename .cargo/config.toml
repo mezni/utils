@@ -1,0 +1,7 @@
+[build]
+# Enable rustc to compile-time verify SQL queries
+rustflags = ["--cfg", "sqlx_offline"]
+
+[term]
+# Better terminal output
+verbose = true

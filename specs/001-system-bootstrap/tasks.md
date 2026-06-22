@@ -27,14 +27,14 @@ description: "Task list for Sprint 0: System Bootstrap & Enforcement Kernel"
 
 **Purpose**: Monorepo initialization and basic structure
 
-- [ ] T001 Create workspace Cargo.toml with 6 crates (ui-kit, domain-types, client-core, auth-service, driver-service, admin-service)
-- [ ] T002 [P] Create apps/packages/ui-kit/Cargo.toml with UI-only dependencies
-- [ ] T003 [P] Create apps/packages/domain-types/Cargo.toml with contracts-only dependencies
-- [ ] T004 [P] Create apps/packages/client-core/Cargo.toml with transport-only dependencies
-- [ ] T005 [P] Create services/auth-service/Cargo.toml with sqlx, actix-web, serde dependencies
-- [ ] T006 [P] Create services/driver-service/Cargo.toml with sqlx, actix-web, serde, geospatial dependencies
-- [ ] T007 [P] Create services/admin-service/Cargo.toml with sqlx, actix-web, serde dependencies
-- [ ] T008 [P] Create .cargo/config.toml with workspace configuration
+- [X] T001 Create workspace Cargo.toml with 6 crates (ui-kit, domain-types, client-core, auth-service, driver-service, admin-service)
+- [X] T002 [P] Create apps/packages/ui-kit/Cargo.toml with UI-only dependencies
+- [X] T003 [P] Create apps/packages/domain-types/Cargo.toml with contracts-only dependencies
+- [X] T004 [P] Create apps/packages/client-core/Cargo.toml with transport-only dependencies
+- [X] T005 [P] Create services/auth-service/Cargo.toml with sqlx, actix-web, serde dependencies
+- [X] T006 [P] Create services/driver-service/Cargo.toml with sqlx, actix-web, serde, geospatial dependencies
+- [X] T007 [P] Create services/admin-service/Cargo.toml with sqlx, actix-web, serde dependencies
+- [X] T008 [P] Create .cargo/config.toml with workspace configuration
 
 ---
 
@@ -44,22 +44,22 @@ description: "Task list for Sprint 0: System Bootstrap & Enforcement Kernel"
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T009 Create .specify/memory/constitution.md (v1.0.0 from docs/constitution/constitution.md)
-- [ ] T010 Create .specify/extensions.yml with SpecKit hooks configuration
-- [ ] T011 [P] Create .specify/templates/plan-template.md
-- [ ] T012 [P] Create .specify/templates/spec-template.md
-- [ ] T013 [P] Create .specify/templates/tasks-template.md
-- [ ] T014 [P] Create tools/ci_guard.sh with 9-stage CI enforcement
-- [ ] T015 [P] Create tools/01_validate_identity.sh for UUID vs nanoid validation
-- [ ] T016 [P] Create tools/02_validate_deps.sh for dependency graph validation
-- [ ] T017 [P] Create tools/03_validate_analytics_gate.sh for analytics write permission validation
-- [ ] T018 [P] Create tools/04_validate_schema.sh for database schema validation
-- [ ] T019 [P] Create tools/05_sqlx_policy_check.sh for SQLx compile-time policy validation
-- [ ] T020 Create tools/06_ci_guard_final.sh as final CI gate runner
-- [ ] T021 [P] Create .github/workflows/ci.yml with 9-stage CI pipeline (hard-stop on failure)
-- [ ] T022 [P] Create docs/constitution/speckit_enforcement.md
-- [ ] T023 [P] Create infrastructure/docker-compose/local.yml with 3 services + PostgreSQL + Redis
-- [ ] T024 [P] Create infrastructure/traefik/traefik.toml for reverse proxy configuration
+- [X] T009 Create .specify/memory/constitution.md (v1.0.0 from docs/constitution/constitution.md)
+- [X] T010 Create .specify/extensions.yml with SpecKit hooks configuration
+- [X] T011 [P] Create .specify/templates/plan-template.md
+- [X] T012 [P] Create .specify/templates/spec-template.md
+- [X] T013 [P] Create .specify/templates/tasks-template.md
+- [X] T014 [P] Create tools/ci_guard.sh with 9-stage CI enforcement
+- [X] T015 [P] Create tools/01_validate_identity.sh for UUID vs nanoid validation
+- [X] T016 [P] Create tools/02_validate_deps.sh for dependency graph validation
+- [X] T017 [P] Create tools/03_validate_analytics_gate.sh for analytics write permission validation
+- [X] T018 [P] Create tools/04_validate_schema.sh for database schema validation
+- [X] T019 [P] Create tools/05_sqlx_policy_check.sh for SQLx compile-time policy validation
+- [X] T020 Create tools/06_ci_guard_final.sh as final CI gate runner
+- [X] T021 [P] Create .github/workflows/ci.yml with 9-stage CI pipeline (hard-stop on failure)
+- [X] T022 [P] Create docs/constitution/speckit_enforcement.md
+- [X] T023 [P] Create infrastructure/docker-compose/local.yml with 3 services + PostgreSQL + Redis
+- [X] T024 [P] Create infrastructure/traefik/traefik.toml for reverse proxy configuration
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -73,43 +73,43 @@ description: "Task list for Sprint 0: System Bootstrap & Enforcement Kernel"
 
 ### Implementation for User Story 1
 
-- [ ] T025 [P] [US1] Create apps/packages/ui-kit/src/components/ directory
-- [ ] T026 [P] [US1] Create apps/packages/ui-kit/src/layouts/ directory
-- [ ] T027 [P] [US1] Create apps/packages/ui-kit/src/tokens/ directory
-- [ ] T028 [P] [US1] Create apps/packages/ui-kit/src/accessibility/ directory
-- [ ] T029 [P] [US1] Create apps/packages/ui-kit/tests/ directory
-- [ ] T030 [P] [US1] Create apps/packages/domain-types/src/dto/ directory
-- [ ] T031 [P] [US1] Create apps/packages/domain-types/src/events/ directory
-- [ ] T032 [P] [US1] Create apps/packages/domain-types/src/ids/ directory
-- [ ] T033 [P] [US1] Create apps/packages/domain-types/tests/ directory
-- [ ] T034 [P] [US1] Create apps/packages/client-core/src/api/ directory
-- [ ] T035 [P] [US1] Create apps/packages/client-core/src/auth/ directory
-- [ ] T036 [P] [US1] Create apps/packages/client-core/src/mappers/ directory
-- [ ] T037 [P] [US1] Create apps/packages/client-core/tests/ directory
-- [ ] T038 [P] [US1] Create services/auth-service/src/models/ directory
-- [ ] T039 [P] [US1] Create services/auth-service/src/services/ directory
-- [ ] T040 [P] [US1] Create services/auth-service/src/api/ directory
-- [ ] T041 [P] [US1] Create services/auth-service/src/db/ directory
-- [ ] T042 [P] [US1] Create services/auth-service/tests/ directory
-- [ ] T043 [P] [US1] Create services/auth-service/migrations/ directory
-- [ ] T044 [P] [US1] Create services/driver-service/src/models/ directory
-- [ ] T045 [P] [US1] Create services/driver-service/src/services/ directory
-- [ ] T046 [P] [US1] Create services/driver-service/src/api/ directory
-- [ ] T047 [P] [US1] Create services/driver-service/src/db/ directory
-- [ ] T048 [P] [US1] Create services/driver-service/src/telemetry/ directory
-- [ ] T049 [P] [US1] Create services/driver-service/tests/ directory
-- [ ] T050 [P] [US1] Create services/driver-service/migrations/ directory
-- [ ] T051 [P] [US1] Create services/admin-service/src/models/ directory
-- [ ] T052 [P] [US1] Create services/admin-service/src/services/ directory
-- [ ] T053 [P] [US1] Create services/admin-service/src/api/ directory
-- [ ] T054 [P] [US1] Create services/admin-service/src/db/ directory
-- [ ] T055 [P] [US1] Create services/admin-service/tests/ directory
-- [ ] T056 [P] [US1] Create services/admin-service/migrations/ directory
-- [ ] T057 [P] [US1] Create tools/scripts/ directory
-- [ ] T058 [P] [US1] Create infrastructure/scripts/ directory
-- [ ] T059 [P] [US1] Create docs/sprints/sprint_00/backlog/ directory
-- [ ] T060 [P] [US1] Create docs/sprints/sprint_00/review/ directory
-- [ ] T061 [P] [US1] Create docs/spec/ directory
+- [X] T025 [P] [US1] Create apps/packages/ui-kit/src/components/ directory
+- [X] T026 [P] [US1] Create apps/packages/ui-kit/src/layouts/ directory
+- [X] T027 [P] [US1] Create apps/packages/ui-kit/src/tokens/ directory
+- [X] T028 [P] [US1] Create apps/packages/ui-kit/src/accessibility/ directory
+- [X] T029 [P] [US1] Create apps/packages/ui-kit/tests/ directory
+- [X] T030 [P] [US1] Create apps/packages/domain-types/src/dto/ directory
+- [X] T031 [P] [US1] Create apps/packages/domain-types/src/events/ directory
+- [X] T032 [P] [US1] Create apps/packages/domain-types/src/ids/ directory
+- [X] T033 [P] [US1] Create apps/packages/domain-types/tests/ directory
+- [X] T034 [P] [US1] Create apps/packages/client-core/src/api/ directory
+- [X] T035 [P] [US1] Create apps/packages/client-core/src/auth/ directory
+- [X] T036 [P] [US1] Create apps/packages/client-core/src/mappers/ directory
+- [X] T037 [P] [US1] Create apps/packages/client-core/tests/ directory
+- [X] T038 [P] [US1] Create services/auth-service/src/models/ directory
+- [X] T039 [P] [US1] Create services/auth-service/src/services/ directory
+- [X] T040 [P] [US1] Create services/auth-service/src/api/ directory
+- [X] T041 [P] [US1] Create services/auth-service/src/db/ directory
+- [X] T042 [P] [US1] Create services/auth-service/tests/ directory
+- [X] T043 [P] [US1] Create services/auth-service/migrations/ directory
+- [X] T044 [P] [US1] Create services/driver-service/src/models/ directory
+- [X] T045 [P] [US1] Create services/driver-service/src/services/ directory
+- [X] T046 [P] [US1] Create services/driver-service/src/api/ directory
+- [X] T047 [P] [US1] Create services/driver-service/src/db/ directory
+- [X] T048 [P] [US1] Create services/driver-service/src/telemetry/ directory
+- [X] T049 [P] [US1] Create services/driver-service/tests/ directory
+- [X] T050 [P] [US1] Create services/driver-service/migrations/ directory
+- [X] T051 [P] [US1] Create services/admin-service/src/models/ directory
+- [X] T052 [P] [US1] Create services/admin-service/src/services/ directory
+- [X] T053 [P] [US1] Create services/admin-service/src/api/ directory
+- [X] T054 [P] [US1] Create services/admin-service/src/db/ directory
+- [X] T055 [P] [US1] Create services/admin-service/tests/ directory
+- [X] T056 [P] [US1] Create services/admin-service/migrations/ directory
+- [X] T057 [P] [US1] Create tools/scripts/ directory
+- [X] T058 [P] [US1] Create infrastructure/scripts/ directory
+- [X] T059 [P] [US1] Create docs/sprints/sprint_00/backlog/ directory
+- [X] T060 [P] [US1] Create docs/sprints/sprint_00/review/ directory
+- [X] T061 [P] [US1] Create docs/spec/ directory
 
 **Checkpoint**: At this point, User Story 1 should be fully functional and testable independently
 
@@ -123,18 +123,18 @@ description: "Task list for Sprint 0: System Bootstrap & Enforcement Kernel"
 
 ### Implementation for User Story 2
 
-- [ ] T062 [P] [US2] Create tools/format_check.sh in tools/ci_guard.sh stage 1
-- [ ] T063 [P] [US2] Create tools/type_check.sh in tools/ci_guard.sh stage 2
-- [ ] T064 [P] [US2] Create tools/dependency_graph_validation.sh in tools/ci_guard.sh stage 3
-- [ ] T065 [P] [US2] Create tools/identity_validation.sh in tools/ci_guard.sh stage 4
-- [ ] T066 [P] [US2] Create tools/schema_validation.sh in tools/ci_guard.sh stage 5
-- [ ] T067 [P] [US2] Create tools/sqlx_compile_check.sh in tools/ci_guard.sh stage 6
-- [ ] T068 [P] [US2] Create tools/analytics_write_gate.sh in tools/ci_guard.sh stage 7
-- [ ] T069 [P] [US2] Create tools/integration_tests.sh in tools/ci_guard.sh stage 8
-- [ ] T070 [P] [US2] Create tools/build_success.sh in tools/ci_guard.sh stage 9
-- [ ] T071 [US2] Integrate all 9 stages into tools/ci_guard.sh with hard-stop enforcement
-- [ ] T072 [US2] Create Makefile with ci target that runs tools/ci_guard.sh
-- [ ] T073 [US2] Create .github/workflows/ci.yml with all 9 CI stages
+- [X] T062 [P] [US2] Create tools/format_check.sh in tools/ci_guard.sh stage 1
+- [X] T063 [P] [US2] Create tools/type_check.sh in tools/ci_guard.sh stage 2
+- [X] T064 [P] [US2] Create tools/dependency_graph_validation.sh in tools/ci_guard.sh stage 3
+- [X] T065 [P] [US2] Create tools/identity_validation.sh in tools/ci_guard.sh stage 4
+- [X] T066 [P] [US2] Create tools/schema_validation.sh in tools/ci_guard.sh stage 5
+- [X] T067 [P] [US2] Create tools/sqlx_compile_check.sh in tools/ci_guard.sh stage 6
+- [X] T068 [P] [US2] Create tools/analytics_write_gate.sh in tools/ci_guard.sh stage 7
+- [X] T069 [P] [US2] Create tools/integration_tests.sh in tools/ci_guard.sh stage 8
+- [X] T070 [P] [US2] Create tools/build_success.sh in tools/ci_guard.sh stage 9
+- [X] T071 [US2] Integrate all 9 stages into tools/ci_guard.sh with hard-stop enforcement
+- [X] T072 [US2] Create Makefile with ci target that runs tools/ci_guard.sh
+- [X] T073 [US2] Create .github/workflows/ci.yml with all 9 CI stages
 
 **Checkpoint**: At this point, User Story 2 should be fully functional and testable independently
 
@@ -150,27 +150,27 @@ description: "Task list for Sprint 0: System Bootstrap & Enforcement Kernel"
 
 #### auth-service Migrations
 
-- [ ] T074 [P] [US3] Create services/auth-service/migrations/0001_init_users.up.sql
-- [ ] T075 [P] [US3] Create services/auth-service/migrations/0001_init_users.down.sql (if needed)
+- [X] T074 [P] [US3] Create services/auth-service/migrations/0001_init_users.up.sql
+- [X] T075 [P] [US3] Create services/auth-service/migrations/0001_init_users.down.sql (if needed)
 
 #### driver-service Migrations
 
-- [ ] T076 [P] [US3] Create services/driver-service/migrations/0001_init_gis.up.sql
-- [ ] T077 [P] [US3] Create services/driver-service/migrations/0001_init_gis.down.sql (if needed)
-- [ ] T078 [P] [US3] Create services/driver-service/migrations/0002_init_analytics.up.sql
-- [ ] T079 [P] [US3] Create services/driver-service/migrations/0002_init_analytics.down.sql (if needed)
-- [ ] T080 [P] [US3] Create services/driver-service/migrations/0003_create_analytics_indexes.up.sql
-- [ ] T081 [P] [US3] Create services/driver-service/migrations/0003_create_analytics_indexes.down.sql (if needed)
+- [X] T076 [P] [US3] Create services/driver-service/migrations/0001_init_gis.up.sql
+- [X] T077 [P] [US3] Create services/driver-service/migrations/0001_init_gis.down.sql (if needed)
+- [X] T078 [P] [US3] Create services/driver-service/migrations/0002_init_analytics.up.sql
+- [X] T079 [P] [US3] Create services/driver-service/migrations/0002_init_analytics.down.sql (if needed)
+- [X] T080 [P] [US3] Create services/driver-service/migrations/0003_create_analytics_indexes.up.sql
+- [X] T081 [P] [US3] Create services/driver-service/migrations/0003_create_analytics_indexes.down.sql (if needed)
 
 #### admin-service Migrations
 
-- [ ] T082 [P] [US3] Create services/admin-service/migrations/0001_init_inventory.up.sql
-- [ ] T083 [P] [US3] Create services/admin-service/migrations/0001_init_inventory.down.sql (if needed)
+- [X] T082 [P] [US3] Create services/admin-service/migrations/0001_init_inventory.up.sql
+- [X] T083 [P] [US3] Create services/admin-service/migrations/0001_init_inventory.down.sql (if needed)
 
 #### Database Verification
 
-- [ ] T084 [US3] Create infrastructure/scripts/provision_db.sh for database initialization
-- [ ] T085 [US3] Create tools/04_validate_schema.sh for database schema validation
+- [X] T084 [US3] Create infrastructure/scripts/provision_db.sh for database initialization
+- [X] T085 [US3] Create tools/04_validate_schema.sh for database schema validation
 
 **Checkpoint**: At this point, User Story 3 should be fully functional and testable independently
 
@@ -186,29 +186,29 @@ description: "Task list for Sprint 0: System Bootstrap & Enforcement Kernel"
 
 #### auth-service Skeleton
 
-- [ ] T086 [P] [US4] Create services/auth-service/Cargo.toml with dependencies
-- [ ] T087 [P] [US4] Create services/auth-service/src/main.rs with health endpoint
-- [ ] T088 [P] [US4] Create services/auth-service/config.toml for configuration
-- [ ] T089 [P] [US4] Create services/auth-service/src/lib.rs for shared library
+- [X] T086 [P] [US4] Create services/auth-service/Cargo.toml with dependencies
+- [X] T087 [P] [US4] Create services/auth-service/src/main.rs with health endpoint
+- [X] T088 [P] [US4] Create services/auth-service/config.toml for configuration
+- [X] T089 [P] [US4] Create services/auth-service/src/lib.rs for shared library
 
 #### driver-service Skeleton
 
-- [ ] T090 [P] [US4] Create services/driver-service/Cargo.toml with dependencies
-- [ ] T091 [P] [US4] Create services/driver-service/src/main.rs with health endpoint
-- [ ] T092 [P] [US4] Create services/driver-service/config.toml for configuration
-- [ ] T093 [P] [US4] Create services/driver-service/src/lib.rs for shared library
+- [X] T090 [P] [US4] Create services/driver-service/Cargo.toml with dependencies
+- [X] T091 [P] [US4] Create services/driver-service/src/main.rs with health endpoint
+- [X] T092 [P] [US4] Create services/driver-service/config.toml for configuration
+- [X] T093 [P] [US4] Create services/driver-service/src/lib.rs for shared library
 
 #### admin-service Skeleton
 
-- [ ] T094 [P] [US4] Create services/admin-service/Cargo.toml with dependencies
-- [ ] T095 [P] [US4] Create services/admin-service/src/main.rs with health endpoint
-- [ ] T096 [P] [US4] Create services/admin-service/config.toml for configuration
-- [ ] T097 [P] [US4] Create services/admin-service/src/lib.rs for shared library
+- [X] T094 [P] [US4] Create services/admin-service/Cargo.toml with dependencies
+- [X] T095 [P] [US4] Create services/admin-service/src/main.rs with health endpoint
+- [X] T096 [P] [US4] Create services/admin-service/config.toml for configuration
+- [X] T097 [P] [US4] Create services/admin-service/src/lib.rs for shared library
 
 #### Service Verification
 
-- [ ] T098 [US4] Create tools/sqlx_prepare.sh to generate offline data for all services
-- [ ] T099 [US4] Verify health endpoints respond on ports 3000, 3001, 3002
+- [X] T098 [US4] Create tools/sqlx_prepare.sh to generate offline data for all services
+- [X] T099 [US4] Verify health endpoints respond on ports 3000, 3001, 3002
 
 **Checkpoint**: At this point, User Story 4 should be fully functional and testable independently
 
@@ -222,15 +222,15 @@ description: "Task list for Sprint 0: System Bootstrap & Enforcement Kernel"
 
 ### Implementation for User Story 5
 
-- [ ] T100 [P] [US5] Create infrastructure/scripts/deploy.sh for service deployment
-- [ ] T101 [P] [US5] Create infrastructure/scripts/migrate.sh for schema migrations
-- [ ] T102 [P] [US5] Create infrastructure/README.md for infrastructure documentation
-- [ ] T103 [P] [US5] Create docs/SYSTEM_STATE.md with current system inventory and status
-- [ ] T104 [P] [US5] Create docs/roadmap_status.md with sprint pipeline and milestones
-- [ ] T105 [P] [US5] Create docs/sprints/sprint_00/review/sprint_00_review.md
-- [ ] T106 [P] [US5] Create docs/sprints/sprint_00/sprint_state.json with machine-readable state
-- [ ] T107 [P] [US5] Create docs/sprints/sprint_00/validation_report.md for compliance audit
-- [ ] T108 [P] [US5] Create docs/sprints/sprint_00/follow_up.md with action items
+- [X] T100 [P] [US5] Create infrastructure/scripts/deploy.sh for service deployment
+- [X] T101 [P] [US5] Create infrastructure/scripts/migrate.sh for schema migrations
+- [X] T102 [P] [US5] Create infrastructure/README.md for infrastructure documentation
+- [X] T103 [P] [US5] Create docs/SYSTEM_STATE.md with current system inventory and status
+- [X] T104 [P] [US5] Create docs/roadmap_status.md with sprint pipeline and milestones
+- [X] T105 [P] [US5] Create docs/sprints/sprint_00/review/sprint_00_review.md
+- [X] T106 [P] [US5] Create docs/sprints/sprint_00/sprint_state.json with machine-readable state
+- [X] T107 [P] [US5] Create docs/sprints/sprint_00/validation_report.md for compliance audit
+- [X] T108 [P] [US5] Create docs/sprints/sprint_00/follow_up.md with action items
 
 **Checkpoint**: At this point, User Story 5 should be fully functional and testable independently
 
@@ -240,12 +240,12 @@ description: "Task list for Sprint 0: System Bootstrap & Enforcement Kernel"
 
 **Purpose**: Improvements that affect multiple user stories
 
-- [ ] T109 [P] Optional: Create infrastructure/redis/redis.conf for Redis configuration
-- [ ] T110 [P] Optional: Create infrastructure/scripts/setup_keycloak.sh for Keycloak setup
-- [ ] T111 [P] Optional: Create infrastructure/realm-bornemap.json for Keycloak realm export
-- [ ] T112 [P] Optional: Add .specify/extensions/git/git-config.yml for auto-commit hooks
-- [ ] T113 [P] Verify all 5 user stories can be tested independently
-- [ ] T114 [P] Run full CI pipeline (9 stages) and verify all pass
+- [X] T109 [P] Optional: Create infrastructure/redis/redis.conf for Redis configuration
+- [X] T110 [P] Optional: Create infrastructure/scripts/setup_keycloak.sh for Keycloak setup
+- [X] T111 [P] Optional: Create infrastructure/realm-bornemap.json for Keycloak realm export
+- [X] T112 [P] Optional: Add .specify/extensions/git/git-config.yml for auto-commit hooks
+- [X] T113 [P] Verify all 5 user stories can be tested independently
+- [X] T114 [P] Run full CI pipeline (9 stages) and verify all pass
 
 ---
 

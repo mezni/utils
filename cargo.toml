@@ -1,0 +1,5 @@
+[tool.rustfmt]
+edition = "2021"
+group_imports = "Std"
+max_width = 100
+imports_granularity = "Crate"
