@@ -28,11 +28,8 @@ CREATE TABLE IF NOT EXISTS gis.osm_charging_stations (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- GIST index for spatial queries
-CREATE INDEX idx_gis_osm_location ON gis.osm_charging_stations USING GIST (location);
-
--- GiST index for spatial search (simplified as point for now)
-CREATE INDEX idx_gis_osm_point ON gis.osm_charging_stations (longitude, latitude);
+-- B-tree index for spatial search (lat/lng pair)
+CREATE INDEX idx_gis_osm_location ON gis.osm_charging_stations (longitude, latitude);
 
 -- Grant permissions
 GRANT ALL PRIVILEGES ON SCHEMA gis TO bornemap_driver;

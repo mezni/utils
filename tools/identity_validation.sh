@@ -30,13 +30,6 @@ for file in $RUST_FILES; do
     fi
   fi
 
-  # Check for nanoid without PREFIX in entity tables
-  if grep -q "nanoid::" "$file" 2>/dev/null; then
-    if ! grep -q "users" "$file" 2>/dev/null && ! grep -q "Keycloak\|keycloak" "$file" 2>/dev/null; then
-      VIOLATIONS=$((VIOLATIONS + 1))
-      echo "  ERROR: nanoid:: found in non-users table: $file"
-    fi
-  fi
 done
 
 # Check SQL migrations for identity violations

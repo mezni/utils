@@ -47,7 +47,7 @@ CREATE TABLE IF NOT EXISTS inventory.connectors (
 );
 
 -- Indexes
-CREATE INDEX IF NOT EXISTS idx_inventory_stations_location ON inventory.stations USING GIST (location);
+CREATE INDEX IF NOT EXISTS idx_inventory_stations_location ON inventory.stations (longitude, latitude);
 
 CREATE INDEX IF NOT EXISTS idx_inventory_stations_status ON inventory.stations(status);
 CREATE INDEX IF NOT EXISTS idx_inventory_stations_name ON inventory.stations(name);

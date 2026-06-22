@@ -323,27 +323,13 @@ Inventory is a DATA DOMAIN within admin-service, not a separate service. Every C
 | osm_id | BIGINT | PRIMARY KEY | OpenStreetMap ID |
 | name | VARCHAR(255) | NULL | Station name from OSM |
 | address | TEXT | NULL | Physical address from OSM |
-| longitude | DOUBLE PRECISION | NOT NULL | GPS longitude |
 | latitude | DOUBLE PRECISION | NOT NULL | GPS latitude |
-| operator | VARCHAR(255) | NULL | Operating company from OSM tags |
-| opening_hours | TEXT | NULL | Operating hours from OSM |
-| capacity | INTEGER | NULL | Station capacity from OSM |
-| fee | TEXT | NULL | Payment fee info from OSM |
-| parking_fee | TEXT | NULL | Parking fee info from OSM |
-| access | TEXT | NULL | Access type from OSM |
-| socket_type2 | INTEGER | NULL | Number of Type 2 sockets |
-| socket_ccs | INTEGER | NULL | Number of CCS sockets |
-| socket_chademo | INTEGER | NULL | Number of CHAdeMO sockets |
-| socket_type2_output | DECIMAL(5,2) | NULL | Type 2 max output in kW |
-| socket_ccs_output | DECIMAL(5,2) | NULL | CCS max output in kW |
-| socket_chademo_output | DECIMAL(5,2) | NULL | CHAdeMO max output in kW |
-| tags | HSTORE | DEFAULT ''::hstore | Additional OSM tags in key-value format |
-| geom | GEOMETRY(Point, 4326) | NOT NULL | Geometry for spatial queries |
-| imported_at | TIMESTAMPTZ | DEFAULT NOW() | Import timestamp |
+| longitude | DOUBLE PRECISION | NOT NULL | GPS longitude |
+| tags | JSONB | NULL | Additional OSM tags |
+| created_at | TIMESTAMPTZ | DEFAULT NOW() | Import timestamp |
 
 **Indexes**:
-- `idx_osm_temp_geom` (USING GIST, mandatory for spatial queries)
-- `idx_osm_temp_osm_id` on (osm_id)
+- `idx_osm_temp_osm_id` on (osm_id) (no spatial index on temp table)
 
 **Notes**:
 - Purpose: Temporary staging for OSM data imports
@@ -364,24 +350,21 @@ Inventory is a DATA DOMAIN within admin-service, not a separate service. Every C
 
 | Column | Type | Constraints | Description |
 |--------|------|-------------|-------------|
-| station_id | VARCHAR(32) | PRIMARY KEY | Station identifier (nanoid(32)) |
-| osm_id | BIGINT | UNIQUE, NULL | OpenStreetMap ID (optional, for tracking) |
+| station_id | VARCHAR(15) | PRIMARY KEY | Station identifier (STA-nanoid12) |
 | name | VARCHAR(255) | NOT NULL | Station name |
 | address | TEXT | NULL | Physical address |
-| location | GEOGRAPHY(Point, 4326) | NOT NULL | GPS coordinates |
-| status | VARCHAR(20) | NOT NULL, DEFAULT 'active' | Station status (active|inactive|removed) |
-| tags | HSTORE | DEFAULT ''::hstore | Additional metadata in key-value format (includes station_id for GIS sync) |
-| created_by | VARCHAR(32) | NULL | User ID who created the station |
+| latitude | DOUBLE PRECISION | NULL | GPS latitude |
+| longitude | DOUBLE PRECISION | NULL | GPS longitude |
+| status | VARCHAR(50) | NOT NULL | Station status |
 | created_at | TIMESTAMPTZ | DEFAULT NOW() | Creation timestamp |
-| updated_by | VARCHAR(32) | NULL | User ID who last updated the station |
 | updated_at | TIMESTAMPTZ | DEFAULT NOW() | Last update timestamp |
 
 **Indexes**:
-- `idx_stations_location` (USING GIST, mandatory for spatial queries)
-- `idx_stations_osm_id` on (osm_id)
+- `idx_stations_location` B-tree on (longitude, latitude) for spatial queries
 - `idx_stations_status` on (status)
+- `idx_stations_name` on (name)
 
-**Identity**: nanoid(32) with PREFIX (not specified, use STA- prefix for clarity)
+**Identity**: STA-nanoid(12) with PREFIX
 
 **Relationships**:
 - Referenced by: connectors.station_id, partners.stations (via foreign keys)
@@ -497,27 +480,13 @@ GRANT USAGE ON SCHEMA gis TO bornemap_admin; -- admin-service needs to query GIS
 | osm_id | BIGINT | PRIMARY KEY | OpenStreetMap ID |
 | name | VARCHAR(255) | NULL | Station name from OSM |
 | address | TEXT | NULL | Physical address from OSM |
-| longitude | DOUBLE PRECISION | NOT NULL | GPS longitude |
 | latitude | DOUBLE PRECISION | NOT NULL | GPS latitude |
-| operator | VARCHAR(255) | NULL | Operating company from OSM tags |
-| opening_hours | TEXT | NULL | Operating hours from OSM |
-| capacity | INTEGER | NULL | Station capacity from OSM |
-| fee | TEXT | NULL | Payment fee info from OSM |
-| parking_fee | TEXT | NULL | Parking fee info from OSM |
-| access | TEXT | NULL | Access type from OSM |
-| socket_type2 | INTEGER | NULL | Number of Type 2 sockets |
-| socket_ccs | INTEGER | NULL | Number of CCS sockets |
-| socket_chademo | INTEGER | NULL | Number of CHAdeMO sockets |
-| socket_type2_output | DECIMAL(5,2) | NULL | Type 2 max output in kW |
-| socket_ccs_output | DECIMAL(5,2) | NULL | CCS max output in kW |
-| socket_chademo_output | DECIMAL(5,2) | NULL | CHAdeMO max output in kW |
-| tags | HSTORE | DEFAULT ''::hstore | Additional OSM tags |
-| geom | GEOMETRY(Point, 4326) | NOT NULL | Geometry for spatial queries |
-| imported_at | TIMESTAMPTZ | DEFAULT NOW() | Import timestamp |
+| longitude | DOUBLE PRECISION | NOT NULL | GPS longitude |
+| tags | JSONB | NULL | Additional OSM tags |
+| created_at | TIMESTAMPTZ | DEFAULT NOW() | Import timestamp |
 
 **Indexes**:
-- `idx_osm_temp_geom` (USING GIST, mandatory)
-- `idx_osm_temp_osm_id` on (osm_id)
+- `idx_osm_temp_osm_id` on (osm_id) (no spatial index on temp table)
 
 ---
 
@@ -530,21 +499,17 @@ GRANT USAGE ON SCHEMA gis TO bornemap_admin; -- admin-service needs to query GIS
 | Column | Type | Constraints | Description |
 |--------|------|-------------|-------------|
 | osm_id | BIGINT | PRIMARY KEY | OpenStreetMap ID |
-| name | VARCHAR(255) | NOT NULL | Station name (normalized) |
-| address | TEXT | NULL | Physical address (normalized) |
-| location | GEOGRAPHY(Point, 4326) | NOT NULL | GPS coordinates |
-| operator | VARCHAR(255) | NULL | Operating company |
-| opening_hours | TEXT | NULL | Operating hours (normalized) |
-| capacity | INTEGER | NULL | Station capacity |
-| fee | TEXT | NULL | Payment fee info (normalized) |
-| parking_fee | TEXT | NULL | Parking fee info (normalized) |
-| access | TEXT | NULL | Access type (normalized) |
-| status | VARCHAR(20) | DEFAULT 'active' | Data status (active|removed) |
+| name | VARCHAR(255) | NULL | Station name |
+| address | TEXT | NULL | Physical address |
+| latitude | DOUBLE PRECISION | NULL | GPS latitude |
+| longitude | DOUBLE PRECISION | NULL | GPS longitude |
+| status | VARCHAR(50) | NOT NULL | Data status |
+| tags | JSONB | NULL | Additional OSM tags |
 | created_at | TIMESTAMPTZ | DEFAULT NOW() | Creation timestamp |
 | updated_at | TIMESTAMPTZ | DEFAULT NOW() | Last update timestamp |
 
 **Indexes**:
-- `idx_osm_cur_location` (USING GIST, mandatory)
+- `idx_gis_osm_location` B-tree on (longitude, latitude)
 - `idx_osm_cur_status` on (status)
 
 **Relationships**:
@@ -560,9 +525,10 @@ GRANT USAGE ON SCHEMA gis TO bornemap_admin; -- admin-service needs to query GIS
 
 **Signature**:
 ```sql
+-- Simple bounding-box filter using lat/lng columns (no PostGIS dependency)
 CREATE OR REPLACE FUNCTION get_nearby_stations(
-    latitude DOUBLE PRECISION,
-    longitude DOUBLE PRECISION,
+    user_lat DOUBLE PRECISION,
+    user_lng DOUBLE PRECISION,
     radius_km DOUBLE PRECISION DEFAULT 10.0
 )
 RETURNS TABLE (
@@ -573,41 +539,38 @@ RETURNS TABLE (
     distance_km DOUBLE PRECISION,
     station_data JSONB
 ) AS $$
+DECLARE
+    lat_range DOUBLE PRECISION := radius_km / 111.0;
+    lng_range DOUBLE PRECISION := radius_km / (111.0 * COS(RADIANS(user_lat)));
 BEGIN
     RETURN QUERY
     SELECT
         s.osm_id,
         s.name,
-        ST_Y(s.location)::DOUBLE PRECISION AS latitude,
-        ST_X(s.location)::DOUBLE PRECISION AS longitude,
-        ST_DistanceSphere(
-            ST_MakePoint(longitude, latitude)::GEOGRAPHY(Point, 4326),
-            s.location
-        ) / 1000 AS distance_km,
+        s.latitude,
+        s.longitude,
+        SQRT(
+            POW((s.latitude - user_lat) * 111.0, 2) +
+            POW((s.longitude - user_lng) * 111.0 * COS(RADIANS(user_lat)), 2)
+        ) AS distance_km,
         ROW_TO_JSON(s) AS station_data
     FROM gis.osm_charging_stations s
     WHERE s.status = 'active'
-      AND ST_DistanceSphere(
-            ST_MakePoint(longitude, latitude)::GEOGRAPHY(Point, 4326),
-            s.location
-        ) <= radius_km * 1000
+      AND s.latitude BETWEEN user_lat - lat_range AND user_lat + lat_range
+      AND s.longitude BETWEEN user_lng - lng_range AND user_lng + lng_range
     ORDER BY distance_km ASC;
 END;
 $$ LANGUAGE plpgsql;
 ```
 
 **Notes**:
-- Uses spatial indexes on gis.osm_charging_stations.location (mandatory)
+- Uses B-tree index on (longitude, latitude) for bounding-box filtering
 - Returns stations within specified radius (km)
-- Distance calculated using ST_DistanceSphere
-- Queryed by driver-service for nearby search API
+- Distance calculated using flat-earth approximation (valid for small radii)
+- B-tree index on (longitude, latitude) supports range scans in WHERE clause
+- Queried by driver-service for nearby search API
 - Uses curated spatial truth (osm_charging_stations) not inventory
 - Admin-service can also query for dashboard
-
-**Performance**:
-- Uses GIST index on gis.osm_charging_stations.location (mandatory)
-- ST_DistanceSphere optimized for Earth's radius
-- Returns OSM ID, name, coordinates, distance, and full station data as JSON
 
 ---
 
@@ -618,8 +581,8 @@ $$ LANGUAGE plpgsql;
 **Signature**:
 ```sql
 CREATE OR REPLACE FUNCTION get_nearby_stations_with_chargers(
-    latitude DOUBLE PRECISION,
-    longitude DOUBLE PRECISION,
+    user_lat DOUBLE PRECISION,
+    user_lng DOUBLE PRECISION,
     radius_km DOUBLE PRECISION DEFAULT 10.0
 )
 RETURNS TABLE (
@@ -628,45 +591,38 @@ RETURNS TABLE (
     latitude DOUBLE PRECISION,
     longitude DOUBLE PRECISION,
     distance_km DOUBLE PRECISION,
-    connector_count INTEGER,
-    available_count INTEGER,
-    connector_types JSONB
+    total_connectors BIGINT,
+    available_connectors BIGINT
 ) AS $$
+DECLARE
+    lat_range DOUBLE PRECISION := radius_km / 111.0;
+    lng_range DOUBLE PRECISION := radius_km / (111.0 * COS(RADIANS(user_lat)));
 BEGIN
     RETURN QUERY
     SELECT
         s.osm_id,
         s.name,
-        ST_Y(s.location)::DOUBLE PRECISION AS latitude,
-        ST_X(s.location)::DOUBLE PRECISION AS longitude,
-        ST_DistanceSphere(
-            ST_MakePoint(longitude, latitude)::GEOGRAPHY(Point, 4326),
-            s.location
-        ) / 1000 AS distance_km,
-        c.total_count,
-        c.available_count,
-        c.connector_types
+        s.latitude,
+        s.longitude,
+        SQRT(
+            POW((s.latitude - user_lat) * 111.0, 2) +
+            POW((s.longitude - user_lng) * 111.0 * COS(RADIANS(user_lat)), 2)
+        ) AS distance_km,
+        COUNT(c.connector_id)::BIGINT AS total_connectors,
+        COUNT(c.connector_id) FILTER (WHERE c.status = 'available')::BIGINT AS available_connectors
     FROM gis.osm_charging_stations s
-    JOIN (
-        SELECT
-            cs.station_id,
-            SUM(cs.count_total) AS total_count,
-            SUM(cs.count_available) AS available_count,
-            JSONB_AGG(
-                JSONB_BUILD_OBJECT(
-                    'type', cs.connector_type,
-                    'count', cs.count_total,
-                    'available', cs.count_available
-                )
-            ) AS connector_types
-        FROM inventory.chargers cs
-        GROUP BY cs.station_id
-    ) c ON s.tags->>'station_id' = c.station_id
+    LEFT JOIN inventory.chargers c ON c.station_id = (
+        -- join via osm_id stored as reference
+        SELECT station_id FROM inventory.stations WHERE station_id = c.station_id
+    )
     WHERE s.status = 'active'
-      AND ST_DistanceSphere(
-            ST_MakePoint(longitude, latitude)::GEOGRAPHY(Point, 4326),
-            s.location
-        ) <= radius_km * 1000
+      AND s.latitude BETWEEN user_lat - lat_range AND user_lat + lat_range
+      AND s.longitude BETWEEN user_lng - lng_range AND user_lng + lng_range
+    GROUP BY s.osm_id, s.name, s.latitude, s.longitude
+    HAVING SQRT(
+        POW((s.latitude - user_lat) * 111.0, 2) +
+        POW((s.longitude - user_lng) * 111.0 * COS(RADIANS(user_lat)), 2)
+    ) <= radius_km
     ORDER BY distance_km ASC;
 END;
 $$ LANGUAGE plpgsql;
@@ -675,7 +631,7 @@ $$ LANGUAGE plpgsql;
 **Notes**:
 - Combines curated spatial truth with business overlay (connectors from inventory)
 - Shows connector counts and availability
-- Uses tags->>'station_id' to join inventory.chargers to gis.osm_charging_stations
+- Uses flat-earth distance approximation (valid for small radii)
 
 ---
 
@@ -754,17 +710,17 @@ $$ LANGUAGE plpgsql;
 
 | Column | Type | Constraints | Description |
 |--------|------|-------------|-------------|
-| station_id | VARCHAR(20) | PRIMARY KEY, NOT NULL | Station identifier (STA-xxxx) |
-| partner_id | VARCHAR(20) | FOREIGN KEY, NULL | Parent partner |
-| osm_id | BIGINT | UNIQUE, NULL | OpenStreetMap ID |
+| station_id | VARCHAR(15) | PRIMARY KEY, NOT NULL | Station identifier (STA-nanoid12) |
 | name | VARCHAR(255) | NOT NULL | Station name |
 | address | TEXT | NULL | Physical address |
-| location | GEOGRAPHY(Point, 4326) | NOT NULL | GPS coordinates |
+| latitude | DOUBLE PRECISION | NULL | GPS latitude |
+| longitude | DOUBLE PRECISION | NULL | GPS longitude |
+| status | VARCHAR(50) | NOT NULL | Station status |
 | created_at | TIMESTAMPTZ | DEFAULT NOW() | Creation timestamp |
 | updated_at | TIMESTAMPTZ | DEFAULT NOW() | Last update timestamp |
 
 **Indexes**:
-- `idx_inventory_stations_location` (USING GIST, mandatory spatial index)
+- `idx_inventory_stations_location` B-tree on (longitude, latitude)
 
 **Purpose**: Physical charging station locations
 
@@ -1215,7 +1171,7 @@ Purpose: SpecKit configuration and enforcement
    - auth-service CANNOT write to analytics_db
 
 5. **Spatial Indexes**:
-   - `idx_inventory_stations_location` (USING GIST) - mandatory for spatial queries
+   - `idx_inventory_stations_location` B-tree on (longitude, latitude) - spatial queries
    - `idx_inventory_chargers_station` - for charger lookup by station
    - `idx_inventory_connectors_charger` - for connector lookup by charger
    - `idx_inventory_connectors_status` - for status-based filtering

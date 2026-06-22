@@ -80,10 +80,11 @@ echo "=== ALL 9 STAGES PASSED ==="
 echo "CI Enforcement Pipeline completed successfully"
 echo ""
 echo "Artifacts:"
-for ARTIFACT in "${STAGES[@]%%:*}"; do
-  ARTIFACT_FILE="$CI_DIR/${STAGES[@]#*:}"
+for i in "${!STAGES[@]}"; do
+  STAGE_NAME="${STAGES[$i]%%:*}"
+  ARTIFACT_FILE="$CI_DIR/${STAGES[$i]##*:}"
   if [ -f "$ARTIFACT_FILE" ]; then
-    echo "  ✓ $ARTIFACT"
+    echo "  ✓ $STAGE_NAME"
   fi
 done
 

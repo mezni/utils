@@ -40,7 +40,7 @@ BorneMap is a microservices platform for EV charging station management. This do
 - `gis`: GIS spatial data (driver-service owned)
   - osm_charging_stations_temp (staging)
   - osm_charging_stations (curated spatial truth)
-  - GIST indexes for spatial queries
+  - B-tree indexes on (longitude, latitude) for spatial queries
 - `inventory`: Business entity data (admin-service owned)
   - stations (STA-nanoid(12))
   - partners (PRT-nanoid(12))
