@@ -1,53 +1,8 @@
-# Git
+target/
 .git/
 .gitignore
-.github/
-
-# Documentation
+*.md
 docs/
 specs/
-*.md
-
-# Build artifacts
-target/
-debug/
-release/
-dist/
-
-# IDE
-.idea/
-.vscode/
-*.swp
-
-# Environment
-.env
-.env.*
-
-# Docker
-Dockerfile*
-docker-compose*.yml
-.dockerignore
-
-# CI
-.github/workflows/
-
-# Test coverage
-coverage/
-*.lcov
-
-# Logs
-*.log
-
-# SpecKit
-.specify/
-
-# Development scripts
-tools/scripts/
-infrastructure/scripts/
-
-# Node modules (if any frontend build tools)
-node_modules/
-
-# Temporary
-tmp/
-temp/
+infrastructure/
+tools/

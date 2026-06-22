@@ -22,7 +22,8 @@ async fn main() -> anyhow::Result<()> {
     tracing_subscriber::fmt::init();
 
     let config = config::Config::builder()
-        .add_source(config::File::with_name("config.toml"))
+        .add_source(config::File::with_name("config.toml").required(false))
+        .add_source(config::Environment::with_prefix("APP"))
         .build()
         .expect("Failed to build config");
 
