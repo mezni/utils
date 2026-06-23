@@ -1,32 +1,51 @@
-version: "3.8"
+version: '3.8'
+
 services:
   postgres:
-    build: ./infrastructure/docker/postgres
+    build:
+      context: ./infrastructure/docker/postgres
     container_name: bornemap-db
     ports:
       - "5432:5432"
-    volumes:
-      - ./infrastructure/postgres/data:/var/lib/postgresql/data
-      - ./infrastructure/postgres/logs:/var/log/postgresql
     environment:
-      POSTGRES_DB: platform_db
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: admin
+      POSTGRES_USER: bornemap
+      POSTGRES_PASSWORD: bomeapassword
+      POSTGRES_DB: bornemap
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infrastructure/postgres/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bornemap"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
 
   admin-service:
-    build: ./infrastructure/docker/admin-service
-    container_name: bornemap-api
+    build:
+      context: .
+      dockerfile: ./infrastructure/docker/admin-service/Dockerfile
+    container_name: bornemap-admin-service
     ports:
       - "8080:8080"
-    depends_on:
-      - postgres
     environment:
-      DATABASE_URL: postgres://admin:admin@postgres:5432/platform_db
+      - DATABASE_URL=postgres://bornemap:bomeapassword@postgres:5432/bornemap
+      - RUST_LOG=info
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
 
   admin-dashboard:
-    build: ./infrastructure/docker/admin-dashboard
-    container_name: bornemap-ui
+    build:
+      context: .
+      dockerfile: ./infrastructure/docker/admin-dashboard/Dockerfile
+    container_name: bornemap-admin-dashboard
     ports:
       - "3000:80"
     depends_on:
       - admin-service
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

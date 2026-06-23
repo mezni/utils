@@ -1,0 +1,11 @@
+node_modules/
+dist/
+build/
+coverage/
+*.min.js
+*.config.js
+*.config.ts
+webpack.config.js
+vite.config.ts
+next.config.js
+tailwind.config.js

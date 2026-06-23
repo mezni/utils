@@ -1,0 +1,18 @@
+[package]
+name = "bornemap-platform-db"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+# Workspace dependencies
+sqlx.workspace = true
+chrono.workspace = true
+nanoid.workspace = true
+
+# Platform crate
+bornemap-platform-core = { path = "../platform-core" }
+
+[dev-dependencies]
+tokio.workspace = true
