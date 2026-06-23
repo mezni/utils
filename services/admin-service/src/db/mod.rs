@@ -1,5 +1,8 @@
 //! Database module for admin-service
-//! Exports analytics query functionality
+//! Exports analytics query functionality and database pool
 
+pub mod analytics_db;
 pub mod queries;
-pub use queries::{get_analytics_events, get_event_count, AnalyticsQueryParams};
+
+pub use analytics_db::{create_pool, DatabaseConfig, PoolStats};
+pub use queries::*;

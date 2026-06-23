@@ -1,0 +1,546 @@
+# Contract: KPI Aggregation Engine
+
+**Feature**: Admin Analytics Read Layer
+**Version**: 1.0.0
+**Type**: Domain Types Contract
+**Location**: `domain-types/src/analytics/`
+
+---
+
+## Overview
+
+This contract defines the KPI aggregation engine domain types. The KPI engine calculates key performance indicators (station_views, search_volume, favorite_count, active_users) from telemetry events and materialized views.
+
+---
+
+## Entity: KPI
+
+**Purpose**: Represents a single KPI metric with derived value and metadata
+
+**Location**: `domain-types/src/analytics/kpi.rs`
+
+**Schema**:
+```rust
+use chrono::{DateTime, Utc};
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct KPI {
+    pub name: String,
+    pub value: f64,
+    pub unit: String,
+    pub source: String,  // "station_usage", "user_activity", "search_trends"
+    pub timestamp: DateTime<Utc>,
+    pub derived_from: String,  // Event type or view name
+}
+
+impl KPI {
+    pub fn new(name: String, value: f64, unit: String, source: String, derived_from: String) -> Self {
+        Self {
+            name,
+            value,
+            unit,
+            source,
+            timestamp: Utc::now(),
+            derived_from,
+        }
+    }
+
+    pub fn format_value(&self) -> String {
+        match self.unit.as_str() {
+            "count" => self.value.round() as i64.to_string(),
+            "seconds" => format!("{:.2}", self.value),
+            _ => self.value.to_string(),
+        }
+    }
+}
+```
+
+**Fields**:
+- `name`: KPI name (e.g., "station_views", "search_volume")
+- `value`: KPI value as f64 (supports fractional values)
+- `unit`: KPI unit (e.g., "count", "seconds")
+- `source`: Source materialized view
+- `timestamp`: KPI calculation timestamp
+- `derived_from`: Event type or view name
+
+**Derived Values**:
+- `station_views`: COUNT(*) from events
+- `search_volume`: COUNT(*) from search events
+- `favorite_count`: COUNT(*) from favorite events
+- `active_users`: COUNT(DISTINCT user_uuid) from events
+- `avg_session_gap_seconds`: AVG(lead event_timestamp - event_timestamp)
+
+---
+
+## Entity: KPICalculation
+
+**Purpose**: Represents a KPI calculation request with filtering parameters
+
+**Location**: `domain-types/src/analytics/kpi.rs`
+
+**Schema**:
+```rust
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct KPICalculation {
+    pub kpi_name: KPIName,
+    pub filters: Option<KPIFilters>,
+    pub aggregations: Vec<KPIAggregation>,
+    pub timestamp: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub enum KPIName {
+    StationViews,
+    SearchVolume,
+    FavoriteCount,
+    ActiveUsers,
+    AvgSessionTime,
+    UniqueUsers,
+    TotalStations,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct KPIFilters {
+    pub partner_id: Option<String>,
+    pub station_id: Option<String>,
+    pub user_uuid: Option<String>,
+    pub date_range: Option<DateRange>,
+    pub event_type: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct KPIAggregation {
+    pub function: String,  // "SUM", "COUNT", "AVG", "MAX", "MIN"
+    pub field: String,
+    pub alias: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DateRange {
+    pub start: String,
+    pub end: String,
+}
+
+impl KPICalculation {
+    pub fn validate(&self) -> Result<(), ValidationError> {
+        match &self.kpi_name {
+            KPIName::StationViews => self.validate_station_views(),
+            KPIName::SearchVolume => self.validate_search_volume(),
+            KPIName::FavoriteCount => self.validate_favorite_count(),
+            KPIName::ActiveUsers => self.validate_active_users(),
+            KPIName::AvgSessionTime => self.validate_avg_session_time(),
+            KPIName::UniqueUsers => self.validate_unique_users(),
+            KPIName::TotalStations => self.validate_total_stations(),
+        }
+    }
+
+    fn validate_station_views(&self) -> Result<(), ValidationError> {
+        if let Some(filters) = &self.filters {
+            if filters.event_type.is_some() && filters.event_type != Some("VIEW".to_string()) {
+                return Err(ValidationError::InvalidEventForKPI {
+                    kpi: "StationViews".to_string(),
+                    invalid_event_type: filters.event_type.clone().unwrap(),
+                });
+            }
+        }
+        Ok(())
+    }
+
+    fn validate_search_volume(&self) -> Result<(), ValidationError> {
+        if let Some(filters) = &self.filters {
+            if filters.event_type.is_some() && filters.event_type != Some("SEARCH".to_string()) {
+                return Err(ValidationError::InvalidEventForKPI {
+                    kpi: "SearchVolume".to_string(),
+                    invalid_event_type: filters.event_type.clone().unwrap(),
+                });
+            }
+        }
+        Ok(())
+    }
+
+    // ... other validation methods
+}
+```
+
+**Validation Rules**:
+- `StationViews` requires `event_type = "VIEW"`
+- `SearchVolume` requires `event_type = "SEARCH"`
+- `FavoriteCount` requires `event_type = "FAVORITE"`
+- `DateRange.start` <= `DateRange.end`
+- `partner_id` must follow PREFIX-nanoid(12) format if provided
+- `station_id` must follow PREFIX-nanoid(12) format if provided
+
+---
+
+## Entity: KPISummary
+
+**Purpose**: Represents aggregated KPI summary across multiple dimensions
+
+**Location**: `domain-types/src/analytics/kpi.rs`
+
+**Schema**:
+```rust
+use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct KPISummary {
+    pub kpi_name: KPIName,
+    pub metrics: HashMap<String, f64>,
+    pub breakdowns: Vec<KPIDimension>,
+    pub timestamp: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct KPIDimension {
+    pub dimension: String,
+    pub value: String,
+    pub count: i64,
+    pub average: f64,
+}
+
+impl KPISummary {
+    pub fn new(kpi_name: KPIName, metrics: HashMap<String, f64>) -> Self {
+        Self {
+            kpi_name,
+            metrics,
+            breakdowns: Vec::new(),
+            timestamp: Utc::now().to_rfc3339(),
+        }
+    }
+
+    pub fn add_breakdown(&mut self, dimension: String, value: String, count: i64, average: f64) {
+        self.breakdowns.push(KPIDimension {
+            dimension,
+            value,
+            count,
+            average,
+        });
+    }
+}
+```
+
+**Fields**:
+- `kpi_name`: KPI name
+- `metrics`: Map of dimension to KPI value
+- `breakdowns`: List of breakdowns by dimension (e.g., by partner, by station)
+- `timestamp`: Summary calculation timestamp
+
+**Example**:
+```rust
+let mut summary = KPISummary::new(
+    KPIName::StationViews,
+    HashMap::from([
+        ("total_views".to_string(), 1250000.0),
+        ("unique_users".to_string(), 42000.0),
+        ("favorite_count".to_string(), 45000.0),
+    ])
+);
+summary.add_breakdown("partner_id".to_string(), "STX-xxx".to_string(), 1250000, 10000.0);
+```
+
+---
+
+## Entity: KPIIntegrityCheck
+
+**Purpose**: Validates that all KPIs are derived from telemetry events only (no external data sources)
+
+**Location**: `domain-types/src/analytics/kpi.rs`
+
+**Schema**:
+```rust
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct KPIIntegrityCheck {
+    pub passed: bool,
+    pub violations: Vec<Violation>,
+    pub check_timestamp: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Violation {
+    pub kpi_name: String,
+    pub source: String,
+    pub reason: String,
+}
+
+impl KPIIntegrityCheck {
+    pub fn new(passed: bool) -> Self {
+        Self {
+            passed,
+            violations: Vec::new(),
+            check_timestamp: Utc::now().to_rfc3339(),
+        }
+    }
+
+    pub fn add_violation(&mut self, kpi_name: String, source: String, reason: String) {
+        self.violations.push(Violation {
+            kpi_name,
+            source,
+            reason,
+        });
+    }
+
+    pub fn is_valid(&self) -> bool {
+        self.passed && self.violations.is_empty()
+    }
+}
+```
+
+**Validation Rules**:
+- KPIs must be derived from `analytics_events` table
+- No hardcoded values in KPI calculations
+- No external API calls in KPI calculations
+- No dynamic SQL for KPI calculations
+- All KPI fields must be derived from event payloads
+
+---
+
+## Entity: KPIAggregationEngine
+
+**Purpose**: Core engine for calculating KPIs from events and materialized views
+
+**Location**: `domain-types/src/analytics/kpi.rs`
+
+**Schema**:
+```rust
+pub struct KPIAggregationEngine {
+    config: KPIConfig,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct KPIConfig {
+    pub max_kpi_calculation_duration_ms: u64,
+    pub enable_integrity_check: bool,
+    pub cache_enabled: bool,
+}
+
+impl KPIAggregationEngine {
+    pub fn new(config: KPIConfig) -> Self {
+        Self { config }
+    }
+
+    pub async fn calculate_station_views(&self, filters: KPIFilters) -> Result<f64, KPIError> {
+        // Validate filters
+        filters.validate()?;
+
+        // Check cache if enabled
+        if self.config.cache_enabled {
+            if let Some(cached) = cache_service.get("station_views").await? {
+                return Ok(cached);
+            }
+        }
+
+        // Calculate from materialized view
+        let value = db::queries::station_usage::get_total_views(filters).await?;
+
+        // Cache result
+        if self.config.cache_enabled {
+            cache_service.set("station_views", value, CACHE_TTL_SUMMARY).await?;
+        }
+
+        Ok(value)
+    }
+
+    pub async fn calculate_search_volume(&self, filters: KPIFilters) -> Result<f64, KPIError> {
+        // Validation for search volume
+        filters.validate()?;
+
+        // Check cache
+        if self.config.cache_enabled {
+            if let Some(cached) = cache_service.get("search_volume").await? {
+                return Ok(cached);
+            }
+        }
+
+        // Calculate from materialized view
+        let value = db::queries::search_trends::get_total_searches(filters).await?;
+
+        // Cache result
+        if self.config.cache_enabled {
+            cache_service.set("search_volume", value, CACHE_TTL_SUMMARY).await?;
+        }
+
+        Ok(value)
+    }
+
+    pub async fn calculate_favorite_count(&self, filters: KPIFilters) -> Result<f64, KPIError> {
+        // Validation for favorite count
+        filters.validate()?;
+
+        // Check cache
+        if self.config.cache_enabled {
+            if let Some(cached) = cache_service.get("favorite_count").await? {
+                return Ok(cached);
+            }
+        }
+
+        // Calculate from materialized view
+        let value = db::queries::station_usage::get_total_favorites(filters).await?;
+
+        // Cache result
+        if self.config.cache_enabled {
+            cache_service.set("favorite_count", value, CACHE_TTL_SUMMARY).await?;
+        }
+
+        Ok(value)
+    }
+
+    pub async fn calculate_active_users(&self, filters: KPIFilters) -> Result<f64, KPIError> {
+        // Validation for active users
+        filters.validate()?;
+
+        // Check cache
+        if self.config.cache_enabled {
+            if let Some(cached) = cache_service.get("active_users").await? {
+                return Ok(cached);
+            }
+        }
+
+        // Calculate from materialized view
+        let value = db::queries::user_activity::get_unique_users(filters).await?;
+
+        // Cache result
+        if self.config.cache_enabled {
+            cache_service.set("active_users", value, CACHE_TTL_SUMMARY).await?;
+        }
+
+        Ok(value)
+    }
+
+    pub async fn validate_kpi_integrity(&self) -> KPIIntegrityCheck {
+        // Check that all KPIs are derived from events only
+        let mut integrity_check = KPIIntegrityCheck::new(true);
+
+        // Scan KPI calculations for external data sources
+        // Verify no hardcoded values
+        // Verify no dynamic SQL
+
+        integrity_check
+    }
+}
+
+#[derive(Debug, thiserror::Error)]
+pub enum KPIError {
+    #[error("Database error: {0}")]
+    Database(#[from] sqlx::Error),
+    #[error("Cache error: {0}")]
+    Cache(#[from] redis::RedisError),
+    #[error("Invalid filter: {0}")]
+    InvalidFilter(String),
+    #[error("Integrity violation: {0}")]
+    IntegrityViolation(String),
+}
+```
+
+---
+
+## Entity: KPIAggregationTask
+
+**Purpose**: Represents a background task for refreshing KPIs
+
+**Location**: `domain-types/src/analytics/kpi.rs`
+
+**Schema**:
+```rust
+use chrono::{DateTime, Utc};
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct KPIAggregationTask {
+    pub task_id: String,
+    pub kpi_name: KPIName,
+    pub filters: KPIFilters,
+    pub status: TaskStatus,
+    pub started_at: DateTime<Utc>,
+    pub completed_at: Option<DateTime<Utc>>,
+    pub result: Option<f64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub enum TaskStatus {
+    Pending,
+    Running,
+    Completed,
+    Failed,
+}
+
+impl KPIAggregationTask {
+    pub fn new(task_id: String, kpi_name: KPIName, filters: KPIFilters) -> Self {
+        Self {
+            task_id,
+            kpi_name,
+            filters,
+            status: TaskStatus::Pending,
+            started_at: Utc::now(),
+            completed_at: None,
+            result: None,
+        }
+    }
+
+    pub fn start(&mut self) {
+        self.status = TaskStatus::Running;
+    }
+
+    pub fn complete(&mut self, result: f64) {
+        self.status = TaskStatus::Completed;
+        self.completed_at = Some(Utc::now());
+        self.result = Some(result);
+    }
+
+    pub fn fail(&mut self, error: String) {
+        self.status = TaskStatus::Failed;
+        self.completed_at = Some(Utc::now());
+        self.result = None;
+    }
+}
+```
+
+---
+
+## Error Types
+
+### KPIError
+
+**Variants**:
+- `Database(sqlx::Error)`: Database query errors
+- `Cache(redis::RedisError)`: Cache operation errors
+- `InvalidFilter(String)`: Invalid filter parameters
+- `IntegrityViolation(String)`: KPI calculation integrity violations
+
+---
+
+## Validation
+
+All KPI calculations must pass validation:
+1. Filter validation (date range, format, values)
+2. KPI integrity check (no external data sources)
+3. Query safety check (no dynamic SQL)
+4. Cache validity check (cache not expired)
+
+---
+
+## Integration
+
+### Materialized Views
+- `station_usage`: Provides station_views, favorites, unique_users
+- `user_activity`: Provides unique_users, total_views, stations_visited
+- `search_trends`: Provides search_volume, unique_searchers
+
+### Cache Layer
+- Cache KPI calculations for 10 minutes (TTL)
+- Invalidate cache on event ingestion
+- Cache hit rate target: 80%+
+
+### CI Gates
+- KPI Integrity Gate: Ensures KPIs derived from events only
+- Query Safety Gate: Prevents dynamic SQL
+- Read-Only Enforcement Gate: Ensures no write operations
+
+---
+
+**Contract Version**: 1.0.0
+**Last Updated**: 2026-06-22
+**Maintainer**: Backend Team

@@ -1,0 +1,614 @@
+# Contract: Cache Invalidation System
+
+**Feature**: Admin Analytics Read Layer
+**Version**: 1.0.0
+**Type**: Interface Contract
+**Transport**: HTTP POST
+
+---
+
+## Overview
+
+This contract defines the cache invalidation system for the admin analytics read layer. The system ensures cache consistency by invalidating cached analytics queries when telemetry events are ingested by driver-service.
+
+---
+
+## Architecture
+
+**Participants**:
+- **driver-service**: Source of telemetry events, triggers cache invalidation
+- **admin-service**: Receives invalidation requests, refreshes cache and materialized views
+- **Redis**: Cache storage, invalidated entries are deleted
+
+**Flow**:
+1. Driver-service ingests telemetry event
+2. Driver-service writes event to analytics_db
+3. Driver-service calls admin-service cache invalidation endpoint
+4. Admin-service refreshes relevant materialized views
+5. Admin-service deletes cache entries
+6. Subsequent queries return fresh data
+
+---
+
+## Cache Invalidation Request
+
+**Endpoint**: `POST /api/v1/cache/invalidate`
+
+**Transport**: HTTP POST with JSON body
+
+**Request Headers**:
+```http
+Content-Type: application/json
+Authorization: Bearer <jwt_token>  // Optional (for testing)
+```
+
+**Request Body**:
+```json
+{
+  "station_id": "STA-abc123def456",
+  "user_uuid": "550e8400-e29b-41d4-a716-446655440000",
+  "event_type": "VIEW",
+  "timestamp": "2026-06-22T15:30:00Z"
+}
+```
+
+**Fields**:
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `station_id` | string | Optional | Station entity ID (PREFIX-nanoid(12)) |
+| `user_uuid` | string | Optional | User UUID (Keycloak UUID) |
+| `event_type` | string | Required | Event type (VIEW, FAVORITE, SEARCH, LOGIN, LOGOUT) |
+| `timestamp` | string | Required | Event ingestion timestamp (ISO 8601) |
+
+**Event Type Values**:
+- `VIEW`: Station view event, invalidates station analytics
+- `FAVORITE`: Favorite event, invalidates station analytics and user activity
+- `SEARCH`: Search event, invalidates search trends
+- `LOGIN`: Login event, invalidates user activity
+- `LOGOUT`: Logout event, invalidates user activity
+
+---
+
+## Response
+
+### Success Response (200 OK)
+
+```json
+{
+  "success": true,
+  "invalidated_at": "2026-06-22T15:30:01Z",
+  "cached_keys": [
+    "station_STA-abc123def456",
+    "station_STS-xxx",
+    "user_550e8400-e29b-41d4-a716-446655440000"
+  ],
+  "views_refreshed": 3,
+  "duration_ms": 45
+}
+```
+
+**Fields**:
+- `success`: True if invalidation succeeded
+- `invalidated_at`: When invalidation was completed
+- `cached_keys`: List of cache keys that were deleted
+- `views_refreshed`: Number of materialized views refreshed
+- `duration_ms`: Duration of invalidation operation
+
+### Error Response (400 Bad Request)
+
+```json
+{
+  "success": false,
+  "error": "invalid_event_type",
+  "message": "Invalid event_type: INVALID_TYPE. Valid types: VIEW, FAVORITE, SEARCH, LOGIN, LOGOUT"
+}
+```
+
+**Error Codes**:
+- `invalid_event_type`: Event type is not valid
+- `invalid_station_id`: Station ID format is invalid (not PREFIX-nanoid(12))
+- `invalid_user_uuid`: User UUID format is invalid (not UUID)
+- `invalid_timestamp`: Timestamp format is invalid (not ISO 8601)
+
+### Error Response (500 Internal Server Error)
+
+```json
+{
+  "success": false,
+  "error": "internal_error",
+  "message": "Failed to refresh materialized views: connection timeout"
+}
+```
+
+---
+
+## Error Handling
+
+### Retry Policy
+
+**Maximum Retries**: 3
+**Retry Delay**: Exponential backoff (1s, 2s, 4s)
+**Retry on Errors**:
+- 500 Internal Server Error
+- 502 Bad Gateway
+- 503 Service Unavailable
+- Timeout
+
+**Circuit Breaker**:
+- If 5 consecutive failures occur, open circuit for 30 seconds
+- After circuit open, reject all requests immediately
+- When circuit is closed, allow one trial request
+- Circuit closes after successful trial request
+
+### Dead Letter Queue
+
+If all retries fail, the request is sent to a dead letter queue for manual investigation.
+
+**Dead Letter Queue Endpoint**: `POST /api/v1/cache/invalidation/failed`
+**Payload**:
+```json
+{
+  "original_request": {
+    "station_id": "STA-abc123def456",
+    "user_uuid": "550e8400-e29b-41d4-a716-446655440000",
+    "event_type": "VIEW",
+    "timestamp": "2026-06-22T15:30:00Z"
+  },
+  "error": "connection timeout",
+  "retry_attempts": 3,
+  "failed_at": "2026-06-22T15:30:07Z"
+}
+```
+
+---
+
+## Materialized View Refresh Logic
+
+### Station Analytics Refresh
+
+**Trigger**: VIEW or FAVORITE event
+
+**Views Refreshed**:
+1. `station_usage` - Refresh station-specific usage data
+2. `summary` - Refresh platform-wide summary (if station is top 10)
+
+**Cache Keys Invalidated**:
+- `station_{{station_id}}`
+- `summary`
+- `user_{{user_uuid}}` (if FAVORITE event)
+
+**Implementation**:
+```sql
+-- Incremental refresh of station_usage
+REFRESH MATERIALIZED VIEW station_usage;
+
+-- Update metadata
+UPDATE materialized_view_meta
+SET last_refreshed_at = NOW()
+WHERE view_name = 'station_usage';
+```
+
+### Search Trends Refresh
+
+**Trigger**: SEARCH event
+
+**Views Refreshed**:
+1. `search_trends` - Refresh search query data
+
+**Cache Keys Invalidated**:
+- `search_{{query_text}}`
+- `search_trends`
+
+**Implementation**:
+```sql
+-- Incremental refresh of search_trends
+REFRESH MATERIALIZED VIEW search_trends;
+
+-- Update metadata
+UPDATE materialized_view_meta
+SET last_refreshed_at = NOW()
+WHERE view_name = 'search_trends';
+```
+
+### User Activity Refresh
+
+**Trigger**: LOGIN or LOGOUT event
+
+**Views Refreshed**:
+1. `user_activity` - Refresh user activity data
+
+**Cache Keys Invalidated**:
+- `user_{{user_uuid}}`
+- `summary`
+
+**Implementation**:
+```sql
+-- Incremental refresh of user_activity
+REFRESH MATERIALIZED VIEW user_activity;
+
+-- Update metadata
+UPDATE materialized_view_meta
+SET last_refreshed_at = NOW()
+WHERE view_name = 'user_activity';
+```
+
+---
+
+## Cache Invalidation Middleware (Admin-Service)
+
+**Location**: `admin-service/src/services/cache_invalidation.rs`
+
+**Schema**:
+```rust
+use serde::{Deserialize, Serialize};
+use chrono::{DateTime, Utc};
+use std::time::Duration;
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CacheInvalidationRequest {
+    pub station_id: Option<String>,
+    pub user_uuid: Option<String>,
+    pub event_type: EventType,
+    pub timestamp: DateTime<Utc>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub enum EventType {
+    VIEW,
+    FAVORITE,
+    SEARCH,
+    LOGIN,
+    LOGOUT,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CacheInvalidationResponse {
+    pub success: bool,
+    pub invalidated_at: DateTime<Utc>,
+    pub cached_keys: Vec<String>,
+    pub views_refreshed: u64,
+    pub duration_ms: u64,
+}
+
+pub struct CacheInvalidationService;
+
+impl CacheInvalidationService {
+    pub async fn invalidate(
+        &self,
+        request: CacheInvalidationRequest,
+    ) -> Result<CacheInvalidationResponse, CacheInvalidationError> {
+        let start = Instant::now();
+
+        // Validate event type
+        self.validate_event_type(&request.event_type)?;
+
+        // Refresh materialized views based on event type
+        let views_refreshed = match request.event_type {
+            EventType::VIEW | EventType::FAVORITE => {
+                self.refresh_station_views(request.station_id.as_ref()).await?
+            }
+            EventType::SEARCH => {
+                self.refresh_search_trends().await?
+            }
+            EventType::LOGIN | EventType::LOGOUT => {
+                self.refresh_user_activity(request.user_uuid.as_ref()).await?
+            }
+        };
+
+        // Invalidate cache entries
+        let cached_keys = self.invalidate_cache_entries(request).await?;
+
+        let duration = start.elapsed().as_millis() as u64;
+
+        Ok(CacheInvalidationResponse {
+            success: true,
+            invalidated_at: Utc::now(),
+            cached_keys,
+            views_refreshed,
+            duration_ms: duration,
+        })
+    }
+
+    async fn refresh_station_views(&self, station_id: Option<&String>) -> Result<u64, CacheInvalidationError> {
+        if let Some(id) = station_id {
+            // Refresh station-specific data
+            db::queries::materialized_views::refresh_station_view(id).await?;
+            Ok(1)
+        } else {
+            // Refresh all stations (expensive, avoid in production)
+            Ok(0)  // Skip full refresh
+        }
+    }
+
+    async fn refresh_search_trends(&self) -> Result<u64, CacheInvalidationError> {
+        // Refresh search trends
+        db::queries::materialized_views::refresh_search_trends().await?;
+        Ok(1)
+    }
+
+    async fn refresh_user_activity(&self, user_uuid: Option<&String>) -> Result<u64, CacheInvalidationError> {
+        if let Some(uuid) = user_uuid {
+            // Refresh user-specific data
+            db::queries::materialized_views::refresh_user_view(uuid).await?;
+            Ok(1)
+        } else {
+            // Refresh all users (expensive, avoid in production)
+            Ok(0)  // Skip full refresh
+        }
+    }
+
+    async fn invalidate_cache_entries(
+        &self,
+        request: CacheInvalidationRequest,
+    ) -> Result<Vec<String>, CacheInvalidationError> {
+        let mut keys = Vec::new();
+
+        // Invalidate station analytics
+        if let Some(station_id) = request.station_id {
+            cache_service.delete(format!("station_{}", station_id)).await?;
+            keys.push(format!("station_{}", station_id));
+        }
+
+        // Invalidate user activity
+        if let Some(user_uuid) = request.user_uuid {
+            cache_service.delete(format!("user_{}", user_uuid)).await?;
+            keys.push(format!("user_{}", user_uuid));
+        }
+
+        // Invalidate search trends
+        if request.event_type == EventType::SEARCH {
+            cache_service.delete("search_trends").await?;
+            keys.push("search_trends".to_string());
+        }
+
+        // Invalidate summary cache
+        cache_service.delete("summary").await?;
+        keys.push("summary".to_string());
+
+        Ok(keys)
+    }
+
+    fn validate_event_type(&self, event_type: &EventType) -> Result<(), CacheInvalidationError> {
+        match event_type {
+            EventType::VIEW | EventType::FAVORITE | EventType::SEARCH | EventType::LOGIN | EventType::LOGOUT => {
+                Ok(())
+            }
+            _ => Err(CacheInvalidationError::InvalidEventType {
+                invalid_type: format!("{:?}", event_type),
+                valid_types: vec![
+                    "VIEW".to_string(),
+                    "FAVORITE".to_string(),
+                    "SEARCH".to_string(),
+                    "LOGIN".to_string(),
+                    "LOGOUT".to_string(),
+                ],
+            }),
+        }
+    }
+}
+
+#[derive(Debug, thiserror::Error)]
+pub enum CacheInvalidationError {
+    #[error("Invalid event type: {0}")]
+    InvalidEventType {
+        invalid_type: String,
+        valid_types: Vec<String>,
+    },
+    #[error("Database error: {0}")]
+    Database(#[from] sqlx::Error),
+    #[error("Cache error: {0}")]
+    Cache(#[from] redis::RedisError),
+    #[error("Invalid station ID: {0}")]
+    InvalidStationId(String),
+    #[error("Invalid user UUID: {0}")]
+    InvalidUserUuid(String),
+}
+```
+
+---
+
+## Driver-Service Integration
+
+**Location**: `driver-service/src/ingestion/handler.rs`
+
+**Implementation**:
+```rust
+pub async fn ingest_event(&self, event: AnalyticsEvent) -> Result<IngestionResult, IngestionError> {
+    // 1. Write event to database
+    self.db_writer.write_event(&event).await?;
+
+    // 2. Invalidate cache via callback
+    self.notify_cache_invalidation(event).await?;
+
+    Ok(IngestionResult::Success)
+}
+
+async fn notify_cache_invalidation(&self, event: AnalyticsEvent) -> Result<(), IngestionError> {
+    let request = CacheInvalidationRequest {
+        station_id: event.station_id.clone(),
+        user_uuid: event.user_uuid.clone(),
+        event_type: match &event.event_type {
+            EventType::VIEW => EventType::VIEW,
+            EventType::FAVORITE => EventType::FAVORITE,
+            EventType::SEARCH => EventType::SEARCH,
+            EventType::LOGIN => EventType::LOGIN,
+            EventType::LOGOUT => EventType::LOGOUT,
+        },
+        timestamp: event.timestamp,
+    };
+
+    // Retry with exponential backoff
+    let response = retry_with_circuit_breaker(
+        self.config.cache_invalidation_url.clone(),
+        request,
+        3,
+        Duration::from_secs(1),
+        Duration::from_secs(5),
+    ).await?;
+
+    if !response.success {
+        return Err(IngestionError::CacheInvalidationFailed {
+            error: "Cache invalidation returned success: false",
+        });
+    }
+
+    Ok(())
+}
+```
+
+---
+
+## Circuit Breaker Implementation
+
+**Location**: `admin-service/src/services/circuit_breaker.rs`
+
+**Schema**:
+```rust
+use std::sync::atomic::{AtomicU32, Ordering};
+use std::time::Duration;
+use std::time::Instant;
+use tokio::time::sleep;
+
+pub struct CircuitBreaker {
+    failure_count: AtomicU32,
+    last_failure_time: AtomicInstant,
+    state: Atomic<State>,
+    max_failure_count: u32,
+    circuit_open_duration: Duration,
+}
+
+enum State {
+    Closed,      // Allow requests
+    Open,        // Reject requests
+    HalfOpen,    // Allow one trial request
+}
+
+impl CircuitBreaker {
+    pub fn new(max_failure_count: u32, circuit_open_duration: Duration) -> Self {
+        Self {
+            failure_count: AtomicU32::new(0),
+            last_failure_time: AtomicInstant::new(Instant::now()),
+            state: Atomic::new(State::Closed),
+            max_failure_count,
+            circuit_open_duration,
+        }
+    }
+
+    pub async fn call<F, R>(&self, f: F) -> Result<R, CircuitBreakerError>
+    where
+        F: FnOnce() -> Result<R, CircuitBreakerError>,
+    {
+        loop {
+            match self.state.load(Ordering::Relaxed) {
+                State::Closed => {
+                    let result = f();
+                    self.on_result(&result)?;
+                    return result;
+                }
+                State::Open => {
+                    // Check if circuit can be closed
+                    if self.can_close() {
+                        self.state.store(State::HalfOpen, Ordering::Relaxed);
+                        continue;
+                    } else {
+                        sleep(self.circuit_open_duration).await;
+                    }
+                }
+                State::HalfOpen => {
+                    let result = f();
+                    self.on_result(&result)?;
+                    return result;
+                }
+            }
+        }
+    }
+
+    fn on_result(&self, result: &Result<(), CircuitBreakerError>) {
+        match result {
+            Ok(()) => {
+                self.failure_count.store(0, Ordering::Relaxed);
+                self.last_failure_time.store(Instant::now());
+                if self.state.load(Ordering::Relaxed) == State::HalfOpen {
+                    self.state.store(State::Closed, Ordering::Relaxed);
+                }
+            }
+            Err(_) => {
+                self.failure_count.fetch_add(1, Ordering::Relaxed);
+                self.last_failure_time.store(Instant::now());
+                self.state.store(State::Open, Ordering::Relaxed);
+            }
+        }
+    }
+
+    fn can_close(&self) -> bool {
+        let failure_count = self.failure_count.load(Ordering::Relaxed);
+        let time_since_last_failure = self.last_failure_time.load().elapsed();
+        failure_count < self.max_failure_count && time_since_last_failure >= self.circuit_open_duration
+    }
+}
+
+#[derive(Debug, thiserror::Error)]
+pub enum CircuitBreakerError {
+    #[error("Circuit is open, rejecting request")]
+    CircuitOpen,
+    #[error("Internal error: {0}")]
+    Internal(#[from] Box<dyn std::error::Error + Send + Sync>),
+}
+
+struct AtomicInstant(Instant);
+
+impl AtomicInstant {
+    fn new(instant: Instant) -> Self {
+        AtomicInstant(instant)
+    }
+
+    fn load(&self, _ordering: Ordering) -> Instant {
+        self.0
+    }
+
+    fn store(&self, instant: Instant, _ordering: Ordering) {
+        self.0 = instant;
+    }
+}
+```
+
+---
+
+## Testing
+
+### Unit Tests
+- Test circuit breaker state transitions
+- Test retry logic with exponential backoff
+- Test cache invalidation for each event type
+
+### Integration Tests
+- Test end-to-end cache invalidation flow
+- Test circuit breaker on consecutive failures
+- Test dead letter queue on all retries fail
+
+### E2E Tests
+- Test cache consistency after event ingestion
+- Test cache invalidation performance (< 5 seconds)
+- Test retry and circuit breaker behavior
+
+---
+
+## Monitoring
+
+**Metrics**:
+- `cache_invalidation_requests_total` (counter)
+- `cache_invalidation_duration_seconds` (histogram)
+- `cache_invalidation_errors_total` (counter)
+- `circuit_breaker_state` (gauge: Closed/Open/HalfOpen)
+- `circuit_breaker_opened_total` (counter)
+
+**Alerts**:
+- Circuit breaker open > 5 minutes
+- Cache invalidation errors > 10% failure rate
+- Cache invalidation duration > 5 seconds
+
+---
+
+**Contract Version**: 1.0.0
+**Last Updated**: 2026-06-22
+**Maintainer**: Backend Team

@@ -1,6 +1,15 @@
 //! Analytics query functions for admin-service
 //! Provides read-only access to telemetry events in analytics_db
 
+mod materialized_views;
+
+pub use materialized_views::{
+    refresh_station_view, refresh_user_view, refresh_search_trends, get_station_view_count,
+    get_user_view_count, get_search_trends_count, get_station_usage_by_partner,
+    get_user_activity_by_partner, get_search_trends_by_partner, validate_station_id,
+    validate_partner_id, validate_user_uuid,
+};
+
 use driver_service::db::analytics::AnalyticsQuery;
 use serde::Deserialize;
 

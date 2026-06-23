@@ -1,0 +1,454 @@
+# API Contract: Admin Analytics Endpoints
+
+**Feature**: Admin Analytics Read Layer
+**Version**: 1.0.0
+**Format**: OpenAPI 3.0.3
+**Base Path**: `/api/v1`
+
+---
+
+## Authentication
+
+All endpoints require Keycloak JWT authentication.
+
+**Header**: `Authorization: Bearer <jwt_token>`
+
+---
+
+## Overview
+
+This contract defines the analytics read API endpoints provided by admin-service. All endpoints are read-only (GET methods only) and enforce strict authentication and authorization.
+
+---
+
+## Endpoints
+
+### 1. Platform-wide Analytics Summary
+
+**Endpoint**: `GET /api/v1/analytics/summary`
+
+**Description**: Retrieves platform-wide KPI aggregation including station_views, search_volume, favorite_count, and active_users.
+
+**Authentication**: Required
+
+**Request**:
+```http
+GET /api/v1/analytics/summary?partner_id=STX-xxx
+Authorization: Bearer <jwt_token>
+```
+
+**Parameters**:
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `partner_id` | string | Optional | Filter analytics by partner (defaults to admin access to all) |
+
+**Success Response (200 OK)**:
+```json
+{
+  "data": {
+    "station_views": 1250000,
+    "search_volume": 85000,
+    "favorite_count": 45000,
+    "active_users": 42000,
+    "total_stations": 1250,
+    "total_users": 58000,
+    "total_searches": 92000,
+    "trends": [
+      "fast charging near me",
+      "stations with supercharger",
+      "electric vehicle charging points"
+    ]
+  },
+  "metadata": {
+    "request_id": "req_abc123",
+    "query_duration_ms": 45,
+    "timestamp": "2026-06-22T15:30:00Z",
+    "cached": false,
+    "cache_hit_rate": 0.75
+  },
+  "cache_status": {
+    "status": "miss",
+    "latency_ms": 45,
+    "ttl_remaining_seconds": null
+  }
+}
+```
+
+**Error Response (401 Unauthorized)**:
+```json
+{
+  "error": "unauthorized",
+  "message": "Invalid or expired JWT token"
+}
+```
+
+**Error Response (403 Forbidden)**:
+```json
+{
+  "error": "forbidden",
+  "message": "Insufficient permissions to access analytics data"
+}
+```
+
+**Error Response (500 Internal Server Error)**:
+```json
+{
+  "error": "internal_error",
+  "message": "Failed to retrieve analytics data"
+}
+```
+
+---
+
+### 2. Station Analytics (Station Intelligence)
+
+**Endpoint**: `GET /api/v1/analytics/stations/:station_id`
+
+**Description**: Retrieves station-specific analytics including views, favorites, search hits, and session statistics.
+
+**Authentication**: Required
+
+**Request**:
+```http
+GET /api/v1/analytics/stations/STA-abc123def456?partner_id=STX-xxx
+Authorization: Bearer <jwt_token>
+```
+
+**Parameters**:
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `partner_id` | string | Optional | Filter by partner (defaults to admin access to all) |
+
+**Success Response (200 OK)**:
+```json
+{
+  "data": {
+    "station_id": "STA-abc123def456",
+    "station_views": 1520,
+    "favorites": 45,
+    "search_hits": 320,
+    "avg_session_time_seconds": 180.5,
+    "unique_users": 580,
+    "last_viewed_at": "2026-06-22T15:30:00Z",
+    "first_viewed_at": "2026-01-15T08:00:00Z",
+    "partner_id": "STX-xxx"
+  },
+  "metadata": {
+    "request_id": "req_def456",
+    "query_duration_ms": 23,
+    "timestamp": "2026-06-22T15:30:00Z",
+    "cached": true,
+    "cache_hit_rate": 0.78
+  },
+  "cache_status": {
+    "status": "hit",
+    "latency_ms": 8,
+    "ttl_remaining_seconds": 292
+  }
+}
+```
+
+**Error Response (404 Not Found)**:
+```json
+{
+  "error": "not_found",
+  "message": "Station not found or no analytics data available"
+}
+```
+
+---
+
+### 3. User Activity Analytics
+
+**Endpoint**: `GET /api/v1/analytics/users/:user_uuid`
+
+**Description**: Retrieves user-specific activity patterns including total views, stations visited, and favorite count.
+
+**Authentication**: Required
+
+**Request**:
+```http
+GET /api/v1/analytics/users/550e8400-e29b-41d4-a716-446655440000?partner_id=STX-xxx
+Authorization: Bearer <jwt_token>
+```
+
+**Parameters**:
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `user_uuid` | UUID | Required | User UUID from Keycloak |
+| `partner_id` | string | Optional | Filter by partner (defaults to admin access to all) |
+
+**Success Response (200 OK)**:
+```json
+{
+  "data": {
+    "user_uuid": "550e8400-e29b-41d4-a716-446655440000",
+    "total_views": 1250,
+    "stations_visited": 85,
+    "operators_visited": 12,
+    "favorites_count": 23,
+    "search_count": 156,
+    "avg_session_gap_seconds": 86400.0,
+    "last_active_at": "2026-06-22T15:30:00Z",
+    "first_active_at": "2026-01-15T08:00:00Z"
+  },
+  "metadata": {
+    "request_id": "req_ghi789",
+    "query_duration_ms": 31,
+    "timestamp": "2026-06-22T15:30:00Z",
+    "cached": true,
+    "cache_hit_rate": 0.82
+  },
+  "cache_status": {
+    "status": "hit",
+    "latency_ms": 5,
+    "ttl_remaining_seconds": 287
+  }
+}
+```
+
+**Error Response (404 Not Found)**:
+```json
+{
+  "error": "not_found",
+  "message": "User not found or no activity data available"
+}
+```
+
+---
+
+### 4. Search Trends
+
+**Endpoint**: `GET /api/v1/analytics/search-trends`
+
+**Description**: Retrieves top search queries and trends based on search volume.
+
+**Authentication**: Required
+
+**Request**:
+```http
+GET /api/v1/analytics/search-trends?limit=10&partner_id=STX-xxx
+Authorization: Bearer <jwt_token>
+```
+
+**Parameters**:
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `limit` | integer | Optional | Number of trends to return (default: 10, max: 50) |
+| `partner_id` | string | Optional | Filter by partner (defaults to admin access to all) |
+
+**Success Response (200 OK)**:
+```json
+{
+  "data": {
+    "trends": [
+      {
+        "query_text": "fast charging near me",
+        "search_count": 12500,
+        "unique_searchers": 3200,
+        "stations_searched": 850,
+        "query_frequency_hours": 12.5,
+        "last_search_at": "2026-06-22T15:30:00Z",
+        "first_search_at": "2026-01-01T00:00:00Z"
+      },
+      {
+        "query_text": "stations with supercharger",
+        "search_count": 9800,
+        "unique_searchers": 2100,
+        "stations_searched": 720,
+        "query_frequency_hours": 15.2,
+        "last_search_at": "2026-06-22T14:45:00Z",
+        "first_search_at": "2026-01-02T08:00:00Z"
+      }
+    ]
+  },
+  "metadata": {
+    "request_id": "req_jkl012",
+    "query_duration_ms": 38,
+    "timestamp": "2026-06-22T15:30:00Z",
+    "cached": false,
+    "cache_hit_rate": 0.76
+  },
+  "cache_status": {
+    "status": "miss",
+    "latency_ms": 38,
+    "ttl_remaining_seconds": null
+  }
+}
+```
+
+**Error Response (500 Internal Server Error)**:
+```json
+{
+  "error": "internal_error",
+  "message": "Failed to retrieve search trends"
+}
+```
+
+---
+
+### 5. Cache Health Check
+
+**Endpoint**: `GET /api/v1/analytics/cache/health`
+
+**Description**: Retrieves cache health metrics including hit rate, total requests, and performance statistics.
+
+**Authentication**: Required (admin only)
+
+**Request**:
+```http
+GET /api/v1/analytics/cache/health
+Authorization: Bearer <jwt_token>
+```
+
+**Success Response (200 OK)**:
+```json
+{
+  "data": {
+    "hit_rate": 0.82,
+    "hits": 85000,
+    "misses": 18500,
+    "invalidations": 4500,
+    "total_requests": 103500,
+    "cache_size_mb": 128.5,
+    "avg_latency_ms": {
+      "hit": 8.5,
+      "miss": 42.3
+    }
+  },
+  "metadata": {
+    "request_id": "req_mno345",
+    "query_duration_ms": 12,
+    "timestamp": "2026-06-22T15:30:00Z",
+    "cached": true,
+    "cache_hit_rate": 0.95
+  },
+  "cache_status": {
+    "status": "hit",
+    "latency_ms": 12,
+    "ttl_remaining_seconds": 299
+  }
+}
+```
+
+---
+
+## Error Responses
+
+### Common Error Codes
+
+| Code | Description |
+|------|-------------|
+| `401 Unauthorized` | Invalid or expired JWT token |
+| `403 Forbidden` | Insufficient permissions to access analytics data |
+| `404 Not Found` | Resource not found |
+| `422 Unprocessable Entity` | Invalid query parameters |
+| `500 Internal Server Error` | Server error |
+
+---
+
+## Query Parameters Validation
+
+### Pagination
+- `page`: Must be >= 1
+- `per_page`: Must be between 1 and 100
+
+### Date Range
+- `start_date`: Must be valid ISO 8601 date format
+- `end_date`: Must be valid ISO 8601 date format
+- `start_date` <= `end_date`
+
+### Partner ID
+- Must follow PREFIX-nanoid(12) format
+- For admin role, partner_id is ignored (full access)
+
+---
+
+## Rate Limiting
+
+All endpoints are rate-limited:
+- **Rate**: 100 requests per minute per user
+- **Burst**: 20 requests per burst
+
+**Header**: `X-RateLimit-Limit: 100`
+**Header**: `X-RateLimit-Remaining: 95`
+**Header**: `X-RateLimit-Reset: 1625226000`
+
+---
+
+## CORS
+
+CORS is enabled for the following origins:
+- `https://admin.bornemap.tn`
+- `https://dashboard.bornemap.tn`
+
+**Allowed Methods**: GET, OPTIONS
+
+---
+
+## Versioning
+
+Current version: **v1**
+
+Future versions will follow: `/api/v2/...`
+
+Backwards compatibility: Guaranteed for v1
+
+---
+
+## Monitoring
+
+All endpoints emit metrics:
+- `analytics_requests_total` (counter)
+- `analytics_request_duration_seconds` (histogram)
+- `cache_hits_total` (counter)
+- `cache_misses_total` (counter)
+- `cache_invalidations_total` (counter)
+
+**Metrics Endpoint**: `/metrics/analytics`
+
+---
+
+## Security
+
+### Authentication Flow
+1. Client obtains JWT from Keycloak
+2. Client includes JWT in Authorization header
+3. Server validates JWT signature and expiration
+4. Server checks user roles (admin/manager)
+5. Server enforces partner isolation if applicable
+
+### Authorization Rules
+- `admin` role: Full access to all analytics endpoints
+- `manager` role: Access to own partner's analytics only
+- Other roles: No access
+
+### Data Protection
+- All data encrypted in transit (HTTPS)
+- No sensitive data in cache (hashed)
+- No personal identifiable information (PII) exposed in public APIs
+
+---
+
+## Testing
+
+### Unit Tests
+- Mock authentication
+- Validate response formats
+- Test error scenarios
+
+### Integration Tests
+- Test with real Keycloak authentication
+- Test cache hit/miss scenarios
+- Test cache invalidation flow
+
+### E2E Tests
+- Full user journey from frontend to backend
+- Test cache consistency
+- Test performance under load
+
+---
+
+**Contract Version**: 1.0.0
+**Last Updated**: 2026-06-22
+**Maintainer**: Backend Team

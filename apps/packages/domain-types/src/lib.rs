@@ -3,9 +3,15 @@ pub mod jwt;
 pub mod audit;
 pub mod user;
 pub mod gis;
+pub mod analytics;
 
 pub use role::Role;
 pub use jwt::JwtClaims;
 pub use audit::{AuditEvent, SecurityEventData};
 pub use user::UserProfile;
 pub use gis::{Station, StationDetail, StationList, Pagination, NearbySearchQuery, StationDetailQuery, Address};
+pub use analytics::{
+    AnalyticsResponse, AnalyticsMetadata, CacheStatus, StationAnalytics, StationAnalyticsQuery,
+    SummaryAnalytics, SummaryWithKPIs, KPIAggregation, SearchTrend, AnalyticsQuery, DateRange,
+    KPIQuery, PaginationMetadata,
+};
