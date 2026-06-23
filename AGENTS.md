@@ -28,6 +28,7 @@ shell commands, and other important information, read the current plan
 **Roles**: driver, partner, admin (RBAC enforced on every endpoint)
 **Auth**: Keycloak OIDC with JWT validation via JWKS
 **Frontend**: data-consumer-only — no business logic leakage
+**Admin Dashboard**: `apps/web/` — Vite + React + TypeScript + Tailwind + shadcn/ui (dark mode only)
 **Personalization**: users.preferences JSONB (separate favorites + preferences sections)
 **Favorites**: driver-service owns favorites API (POST/GET/DELETE /api/v1/driver/favorites)
 **Search**: Online via driver-service → Postgres trigram; offline via local cache
@@ -35,4 +36,5 @@ shell commands, and other important information, read the current plan
 **Telemetry**: Sprint 3 pipeline extended with 6 new event types
 **SQLx**: Compile-time verification mandatory
 **Contract-First**: DTOs in domain-types, then backend, then frontend
+**Build**: `cd apps/web && npm run build` — outputs to `apps/web/dist/`
 <!-- SPECKIT END -->

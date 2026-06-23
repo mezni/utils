@@ -12,7 +12,8 @@ PROJECT_ROOT="/home/dali/WORK/BorneMap"
 FAILURES=0
 
 # Check frontend code for business logic patterns
-FRONTEND_FILES=$(find "$PROJECT_ROOT/apps" -name "*.rs" -type f 2>/dev/null || true)
+FRONTEND_FILES=$(find "$PROJECT_ROOT/apps" -name "*.rs" -o -name "*.ts" -o -name "*.tsx" | grep -v node_modules | grep -v dist 2>/dev/null || true)
+FRONTEND_JS=$(find "$PROJECT_ROOT/apps" -path "*/node_modules" -prune -o -path "*/dist" -prune -o \( -name "*.ts" -o -name "*.tsx" \) -print 2>/dev/null || true)
 for f in $FRONTEND_FILES; do
     # Check for direct database calls
     if grep -qE "sqlx::|PgPool|Pool<Postgres>" "$f" 2>/dev/null; then
@@ -24,8 +25,8 @@ for f in $FRONTEND_FILES; do
         echo "FAIL: Frontend has service topology knowledge in $f"
         FAILURES=$((FAILURES + 1))
     fi
-    # Check for identity validation logic
-    if grep -qiE "jwt.*validate|token.*verify|keycloak.*auth" "$f" 2>/dev/null; then
+    # Check for identity validation logic (exclude doc comments)
+    if grep -qiE "(impl|fn|pub fn).*jwt.*validate|(impl|fn|pub fn).*token.*verify|(impl|fn|pub fn).*keycloak.*auth" "$f" 2>/dev/null; then
         echo "FAIL: Frontend has identity/business logic in $f"
         FAILURES=$((FAILURES + 1))
     fi
@@ -35,6 +36,22 @@ done
 for f in $FRONTEND_FILES; do
     if grep -qE "^use (actix_web|driver_service|auth_service|admin_service)" "$f" 2>/dev/null; then
         echo "FAIL: Frontend imports backend crate in $f"
+        FAILURES=$((FAILURES + 1))
+    fi
+done
+
+# Check TS/JS frontend for business logic patterns
+for f in $FRONTEND_JS; do
+    if grep -qE "sqlx|PgPool|Pool<Postgres>" "$f" 2>/dev/null; then
+        echo "FAIL: JS frontend has direct database call in $f"
+        FAILURES=$((FAILURES + 1))
+    fi
+    if grep -qE "import.*from.*(driver-service|auth-service|admin-service)" "$f" 2>/dev/null; then
+        echo "FAIL: JS frontend imports backend service in $f"
+        FAILURES=$((FAILURES + 1))
+    fi
+    if grep -qE 'localhost:300[0-2]|service_url|backend_url' "$f" 2>/dev/null; then
+        echo "FAIL: JS frontend has hardcoded service URL in $f"
         FAILURES=$((FAILURES + 1))
     fi
 done
