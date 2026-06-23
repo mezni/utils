@@ -10,6 +10,7 @@ Schema: ev
 - id (PRT-xxx PRIMARY KEY)
 - name
 - status
+- is_valid
 - created_by (FK → admins.id)
 - created_at
 - updated_by (FK → admins.id)
