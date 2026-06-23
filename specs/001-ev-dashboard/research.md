@@ -12,54 +12,90 @@ This document consolidates technical research findings for the EV Dashboard Plat
 
 ## Technology Decisions
 
-### 1. External ID Generation (nanoid)
+### 1. Identity Generation (Deterministic)
 
-**Decision**: Use `rust-nanoid` crate for generating unique external IDs
+**Decision**: Use deterministic ID generation from string seed (hash-based nanoid), NOT random nanoid
 
 **Rationale**:
-- Deterministic nanoid generation from provided strings ensures consistent IDs
-- Short (12 characters) and URL-safe
-- Collision rate extremely low for this use case
-- Supported by Rust ecosystem
+- IDs must be consistent across instances and environments
+- Deterministic generation ensures reproducible test scenarios
+- Hash-based nanoid ensures consistent IDs from same seed
+- Avoids UUID (not allowed per constitution)
 
 **Alternatives Considered**:
-- UUID v4: Too long, exposes internal state, not recommended per constitution
+- Random nanoid: IDs differ across instances, non-reproducible
+- UUID v4: Too long, violates constitution, exposes internal state
 - Sequential IDs: Leaks ordering information, not externally stable
-- Hash-based IDs: More expensive, potential collision issues
+- Hash from name: Collision risk, not collision-resistant
 
 **Implementation**:
 ```rust
 // platform-core/src/id/mod.rs
 use nanoid::nanoid;
 
-pub fn generate_partner_id() -> String {
-    format!("PRT-{}", nanoid!(12))
+// Deterministic ID generation from string seed
+pub fn generate_partner_id(seed: &str) -> String {
+    format!("PRT-{}", deterministic_nanoid(seed, 12))
 }
 
-pub fn generate_station_id() -> String {
-    format!("STA-{}", nanoid!(12))
+pub fn generate_station_id(seed: &str) -> String {
+    format!("STA-{}", deterministic_nanoid(seed, 12))
 }
 
-pub fn generate_charger_id() -> String {
-    format!("CHR-{}", nanoid!(12))
+pub fn generate_charger_id(seed: &str) -> String {
+    format!("CHR-{}", deterministic_nanoid(seed, 12))
+}
+
+// Deterministic nanoid implementation using hash
+fn deterministic_nanoid(seed: &str, length: usize) -> String {
+    let seed_bytes = seed.as_bytes();
+    let mut seed_hash = 0u64;
+
+    for byte in seed_bytes {
+        seed_hash = seed_hash.wrapping_mul(31).wrapping_add(*byte as u64);
+    }
+
+    // Use hash as deterministic seed for nanoid
+    nanoid!(length, &seed_hash.to_string().into_bytes())
+}
+```
+
+**Usage**:
+- Infrastructure layer generates IDs from string seed
+- Domain layer receives ID as input (immutable)
+- Application layer orchestrates ID generation
+
+**Validation**:
+```rust
+pub fn validate_partner_id(id: &str) -> bool {
+    id.len() == 18 && id.starts_with("PRT-") && id.chars().skip(4).all(|c| c.is_alphanumeric())
+}
+
+pub fn validate_station_id(id: &str) -> bool {
+    id.len() == 18 && id.starts_with("STA-") && id.chars().skip(4).all(|c| c.is_alphanumeric())
+}
+
+pub fn validate_charger_id(id: &str) -> bool {
+    id.len() == 18 && id.starts_with("CHR-") && id.chars().skip(4).all(|c| c.is_alphanumeric())
 }
 ```
 
 **References**:
-- rust-nanoid crate: https://github.com/niklasf/nanoid-rust
-- Requirements: Constitution II. External Identity Model
+- Constitution II. External Identity Model
+- data-model.md (Identity Generation Rules section)
+- spec.md (FR-032 to FR-036)
 
 ---
 
 ### 2. Database Migration Strategy
 
-**Decision**: SQLx forward-only migrations with timestamp ordering
+**Decision**: SQLx forward-only migrations with timestamp ordering, soft delete support
 
 **Rationale**:
 - Forward-only execution matches SQLx best practices
 - Timestamp-based ordering prevents dependency conflicts
+- Soft delete pattern supports data recovery
 - No rollback dependency requirements simplify maintenance
-- Clear, predictable migration history
 
 **Alternatives Considered**:
 - Down migrations: Add complexity, not needed for this use case
@@ -75,28 +111,76 @@ CREATE SCHEMA IF NOT EXISTS ev;
 CREATE TABLE ev.partners (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT NOW()
+    status TEXT NOT NULL DEFAULT 'ACTIVE',
+    is_valid BOOLEAN NOT NULL DEFAULT TRUE,
+    created_by TEXT NOT NULL REFERENCES admins(id),
+    updated_by TEXT NOT NULL REFERENCES admins(id),
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMP NULL
 );
+
+CREATE UNIQUE INDEX idx_partners_name ON ev.partners(name);
+CREATE INDEX idx_partners_deleted_at ON ev.partners(deleted_at);
+
+ALTER TABLE ev.partners
+ADD CONSTRAINT chk_partners_id CHECK (id ~ '^PRT-[A-Za-z0-9]{12}$');
 
 -- migrations/003_create_stations.sql
 CREATE TABLE ev.stations (
     id TEXT PRIMARY KEY,
+    partner_id TEXT NOT NULL REFERENCES ev.partners(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
     location TEXT,
-    partner_id TEXT NOT NULL REFERENCES ev.partners(id) ON DELETE CASCADE,
-    created_at TIMESTAMP NOT NULL DEFAULT NOW()
+    status TEXT NOT NULL DEFAULT 'ACTIVE',
+    created_by TEXT NOT NULL REFERENCES admins(id),
+    updated_by TEXT NOT NULL REFERENCES admins(id),
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMP NULL
 );
+
+CREATE INDEX idx_stations_partner_id ON ev.stations(partner_id);
+CREATE UNIQUE INDEX idx_stations_name ON ev.stations(name);
+CREATE INDEX idx_stations_deleted_at ON ev.stations(deleted_at);
+
+ALTER TABLE ev.stations
+ADD CONSTRAINT chk_stations_id CHECK (id ~ '^STA-[A-Za-z0-9]{12}$');
+
+-- migrations/004_create_chargers.sql
+CREATE TABLE ev.chargers (
+    id TEXT PRIMARY KEY,
+    station_id TEXT NOT NULL REFERENCES ev.stations(id) ON DELETE CASCADE,
+    status TEXT NOT NULL DEFAULT 'ACTIVE',
+    power_rating INTEGER NOT NULL,
+    created_by TEXT NOT NULL REFERENCES admins(id),
+    updated_by TEXT NOT NULL REFERENCES admins(id),
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMP NULL
+);
+
+CREATE INDEX idx_chargers_station_id ON ev.chargers(station_id);
+CREATE INDEX idx_chargers_status ON ev.chargers(status);
+CREATE INDEX idx_chargers_deleted_at ON ev.chargers(deleted_at);
+
+ALTER TABLE ev.chargers
+ADD CONSTRAINT chk_chargers_id CHECK (id ~ '^CHR-[A-Za-z0-9]{12}$');
+
+ALTER TABLE ev.chargers
+ADD CONSTRAINT chk_power_rating CHECK (power_rating > 0 AND power_rating <= 1000);
 ```
 
 **Rules**:
 - Migrations are forward-only
-- Migrations are timestamp-ordered (001_create_schema.sql, 002_create_partners.sql, etc.)
+- Migrations are timestamp-ordered (001_create_schema.sql, 002_create_partners.sql, 003_create_stations.sql, 004_create_chargers.sql)
 - No rollback dependency allowed
 - Each migration can be applied independently
 
 **References**:
-- Constitution IV. Domain Purity (infrastructure handles DB operations)
-- Epic specification: Section 5.4 Migration Rules
+- Constitution II. External Identity Model
+- data-model.md (Database Schema section)
+- spec.md (FR-057)
 
 ---
 
@@ -116,20 +200,34 @@ CREATE TABLE ev.stations (
 - Page-based (page/size): Less efficient for large datasets (multiple OFFSET operations)
 
 **Implementation**:
-```
-GET /api/v1/partners?page=1&limit=50
-GET /api/v1/stations?page=2&limit=100&partner_id=PRT-xxx
+```sql
+-- Get paginated list (only active records)
+SELECT * FROM ev.partners
+WHERE deleted_at IS NULL
+ORDER BY created_at DESC
+LIMIT $1 OFFSET $2;
 
-Response:
+-- Response schema
 {
   "success": true,
   "data": {
-    "items": [...],
+    "items": [
+      {
+        "id": "PRT-abc123456789",
+        "name": "Example EV Network",
+        "status": "ACTIVE",
+        "is_valid": true,
+        "created_by": "admin-user-id",
+        "updated_by": "admin-user-id",
+        "created_at": "2026-06-23T10:00:00Z",
+        "updated_at": "2026-06-23T10:00:00Z"
+      }
+    ],
     "pagination": {
       "page": 1,
       "limit": 50,
-      "total": 100,
-      "pages": 2
+      "total": 10,
+      "pages": 1
     }
   },
   "error": null
@@ -139,11 +237,11 @@ Response:
 **Parameters**:
 - `page`: Page number (1-indexed, default 1)
 - `limit`: Items per page (default 50, max 100)
-- `offset`: For advanced filtering, not commonly used
 
 **References**:
-- Constitution III. API Contract Compliance (standardized format)
-- Epic specification: FR-022, Success Criteria SC-003
+- Constitution III. API Contract Compliance
+- data-model.md (Query Patterns section)
+- spec.md (FR-062 to FR-064)
 
 ---
 
@@ -171,14 +269,20 @@ import { apiClient } from './client';
 export const partnersApi = {
   list: (page: number = 1, limit: number = 50) =>
     apiClient.get('/partners', { params: { page, limit } }),
-  create: (data: { name: string }) =>
+  create: (data: { name: string, status?: string, is_valid?: boolean }) =>
     apiClient.post('/partners', data),
   get: (id: string) =>
     apiClient.get(`/partners/${id}`),
+  delete: (id: string) =>
+    apiClient.delete(`/partners/${id}`),
+  soft_delete: (id: string) =>
+    apiClient.put(`/partners/${id}`, { deleted_at: new Date().toISOString() }),
+  undelete: (id: string) =>
+    apiClient.put(`/partners/${id}`, { deleted_at: null }),
 };
 
 // hooks/usePartners.ts
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { partnersApi } from '../api/partners';
 
 export const usePartners = (page: number = 1, limit: number = 50) => {
@@ -187,71 +291,318 @@ export const usePartners = (page: number = 1, limit: number = 50) => {
     queryFn: () => partnersApi.list(page, limit),
   });
 };
+
+export const useCreatePartner = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { name: string, status?: string, is_valid?: boolean }) =>
+      partnersApi.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['partners'] });
+    },
+  });
+};
 ```
 
 **References**:
 - Constitution IV. Domain Purity (UI must not contain transport logic)
 - Constitution V. Test-Driven Development (React Query behavior tests)
-- Epic specification: Section 6.3 Frontend Rules
+- data-model.md (Repository Interfaces section)
+- spec.md (FR-050 to FR-052)
 
 ---
 
-### 5. Database Schema Design
+### 5. Cascade Delete Strategy (Hard Delete Only)
 
-**Decision**: Three-table schema with cascading deletes, external IDs as primary keys
+**Decision**: Hard delete with database CASCADE, soft delete with no cascade
 
 **Rationale**:
-- Simple, normalized schema
-- External IDs meet constitution requirements
-- Cascading deletes enforce referential integrity (Partners → Stations → Chargers)
-- Created timestamps for audit trail
+- Hard delete CASCADE: Database-level enforce (ON DELETE CASCADE)
+- Soft delete no cascade: Application-level control
+- Separation of concerns: Database enforces hard delete, application enforces soft delete
+- Consistent with Clean Architecture simplicity
+- Avoids complex application-level CASCADE logic
 
-**Schema**:
+**Rules**:
+1. **Hard Delete**: When entity is hard-deleted (DELETE statement), related entities are automatically deleted via database CASCADE
+2. **Soft Delete**: When entity is soft-deleted (UPDATE deleted_at), related entities are NOT automatically deleted
+3. **Cascade Delete Rule**: CASCADE applies ONLY to hard delete operations
+4. **Soft Delete Rule**: Queries filter by `deleted_at IS NULL` for active records only
 
+**Implementation**:
 ```sql
--- partners table
+-- Partners table (CASCADE on hard delete of partner)
 CREATE TABLE ev.partners (
-    id TEXT PRIMARY KEY,                    -- PRT-xxx (nanoid 12 chars)
-    name TEXT NOT NULL,                     -- Partner name
-    created_at TIMESTAMP NOT NULL DEFAULT NOW()  -- Audit field
+    id TEXT PRIMARY KEY,
+    partner_id TEXT NOT NULL REFERENCES ev.partners(id) ON DELETE CASCADE,
+    -- ...
 );
 
--- stations table
+-- Hard delete partner (stations automatically deleted by database CASCADE)
+DELETE FROM ev.partners WHERE id = 'PRT-abc123456789';
+
+-- Soft delete partner (stations NOT automatically deleted)
+UPDATE ev.partners SET deleted_at = NOW() WHERE id = 'PRT-abc123456789';
+
+-- Stations table (CASCADE on hard delete of station)
 CREATE TABLE ev.stations (
-    id TEXT PRIMARY KEY,                    -- STA-xxx (nanoid 12 chars)
-    name TEXT NOT NULL,                     -- Station name
-    location TEXT,                          -- Station location (optional)
-    partner_id TEXT NOT NULL,               -- FK to partners.id
-    created_at TIMESTAMP NOT NULL DEFAULT NOW()  -- Audit field
+    id TEXT PRIMARY KEY,
+    station_id TEXT NOT NULL REFERENCES ev.stations(id) ON DELETE CASCADE,
+    -- ...
 );
 
--- chargers table
+-- Hard delete station (chargers automatically deleted by database CASCADE)
+DELETE FROM ev.stations WHERE id = 'STA-xyz987654321';
+
+-- Soft delete station (chargers NOT automatically deleted)
+UPDATE ev.stations SET deleted_at = NOW() WHERE id = 'STA-xyz987654321';
+
+-- Chargers table (CASCADE on hard delete of charger - no cascade to children)
 CREATE TABLE ev.chargers (
-    id TEXT PRIMARY KEY,                    -- CHR-xxx (nanoid 12 chars)
-    station_id TEXT NOT NULL,               -- FK to stations.id
-    status TEXT NOT NULL DEFAULT 'active',  -- Charger status
-    power_rating INTEGER NOT NULL,          -- Power rating in kW
-    created_at TIMESTAMP NOT NULL DEFAULT NOW()  -- Audit field
+    id TEXT PRIMARY KEY,
+    station_id TEXT NOT NULL REFERENCES ev.chargers(id) ON DELETE CASCADE,
+    -- ...
 );
+
+-- Hard delete charger (no cascade to children)
+DELETE FROM ev.chargers WHERE id = 'CHR-fee987654321';
+
+-- Soft delete charger (no cascade to children)
+UPDATE ev.chargers SET deleted_at = NOW() WHERE id = 'CHR-fee987654321';
 ```
 
-**Constraints**:
-- All `id` fields are TEXT PRIMARY KEY (external IDs)
-- NO surrogate keys (auto-increment integers)
-- `partner_id` references `ev.partners(id)` with CASCADE delete
-- `station_id` references `ev.stations(id)` with CASCADE delete
-- `created_at` for all tables (audit trail)
+**Rust Repository Interface**:
+```rust
+// domain/repositories/partner_repository.rs
+#[async_trait]
+pub trait PartnerRepository: Send + Sync {
+    async fn create(&self, name: String, created_by: String, updated_by: String) -> Result<Partner, AppError>;
+    async fn get_by_id(&self, id: String) -> Result<Option<Partner>, AppError>;
+    async fn list(&self, page: u32, limit: u32) -> Result<(Vec<Partner>, u64), AppError>;
+    async fn hard_delete(&self, id: String) -> Result<(), AppError>;  // CASCADE to stations
+    async fn soft_delete(&self, id: String, deleted_by: String) -> Result<(), AppError>;  // No cascade
+    async fn undelete(&self, id: String, updated_by: String) -> Result<Partner, AppError>;
+}
+```
 
-**Indexes**:
-```sql
-CREATE INDEX idx_stations_partner_id ON ev.stations(partner_id);
-CREATE INDEX idx_chargers_station_id ON ev.chargers(station_id);
+**Rust Service Layer**:
+```rust
+// application/services/partner_service.rs
+impl PartnerService {
+    pub async fn hard_delete(&self, id: String, deleted_by: String) -> Result<(), AppError> {
+        // Domain invariants
+        let partner = self.repository.get_by_id(id.clone()).await?
+            .ok_or_else(|| AppError::NotFound(format!("Partner {} not found", id)))?;
+
+        if !partner.is_active() {
+            return Err(AppError::Validation("Partner is already deleted".into()));
+        }
+
+        // Hard delete triggers CASCADE (stations automatically deleted by database)
+        self.repository.hard_delete(id).await
+    }
+
+    pub async fn soft_delete(&self, id: String, deleted_by: String) -> Result<(), AppError> {
+        // Domain invariants
+        let partner = self.repository.get_by_id(id.clone()).await?
+            .ok_or_else(|| AppError::NotFound(format!("Partner {} not found", id)))?;
+
+        if !partner.is_active() {
+            return Err(AppError::Validation("Partner is already deleted".into()));
+        }
+
+        // Soft delete does NOT cascade (stations remain active)
+        self.repository.soft_delete(id, deleted_by).await
+    }
+}
 ```
 
 **References**:
-- Constitution II. External Identity Model
-- Constitution IV. Domain Purity (domain entities in Rust, not in SQL)
-- Epic specification: Section 5.2 Tables
+- data-model.md (Soft Delete Strategy section)
+- spec.md (FR-028 to FR-031, FR-068)
+
+---
+
+### 6. Repository Interface Contracts
+
+**Decision**: Explicit repository traits defined in domain layer, implemented in infrastructure layer
+
+**Rationale**:
+- Defines clear contracts for Clean Architecture
+- Domain layer defines interfaces (abstractions)
+- Infrastructure layer implements interfaces (concreteness)
+- Enables dependency injection
+- Enables testing (mock implementations)
+
+**Implementation**:
+```rust
+// domain/repositories/partner_repository.rs
+#[async_trait]
+pub trait PartnerRepository: Send + Sync {
+    // Domain layer defines traits only
+    async fn create(&self, name: String, created_by: String, updated_by: String) -> Result<Partner, AppError>;
+    async fn get_by_id(&self, id: String) -> Result<Option<Partner>, AppError>;
+    async fn list(&self, page: u32, limit: u32) -> Result<(Vec<Partner>, u64), AppError>;
+    async fn hard_delete(&self, id: String) -> Result<(), AppError>;
+    async fn soft_delete(&self, id: String, deleted_by: String) -> Result<(), AppError>;
+    async fn undelete(&self, id: String, updated_by: String) -> Result<Partner, AppError>;
+}
+
+// domain/repositories/station_repository.rs
+#[async_trait]
+pub trait StationRepository: Send + Sync {
+    async fn create(&self, name: String, location: Option<String>, partner_id: String, created_by: String, updated_by: String) -> Result<Station, AppError>;
+    async fn get_by_id(&self, id: String) -> Result<Option<Station>, AppError>;
+    async fn list(&self, page: u32, limit: u32, partner_id: Option<String>) -> Result<(Vec<Station>, u64), AppError>;
+    async fn hard_delete(&self, id: String) -> Result<(), AppError>;
+    async fn soft_delete(&self, id: String, deleted_by: String) -> Result<(), AppError>;
+    async fn undelete(&self, id: String, updated_by: String) -> Result<Station, AppError>;
+}
+
+// domain/repositories/charger_repository.rs
+#[async_trait]
+pub trait ChargerRepository: Send + Sync {
+    async fn create(&self, station_id: String, status: String, power_rating: i32, created_by: String, updated_by: String) -> Result<Charger, AppError>;
+    async fn get_by_id(&self, id: String) -> Result<Option<Charger>, AppError>;
+    async fn list(&self, page: u32, limit: u32, station_id: Option<String>) -> Result<(Vec<Charger>, u64), AppError>;
+    async fn update_status(&self, id: String, status: String, updated_by: String) -> Result<Charger, AppError>;
+    async fn hard_delete(&self, id: String) -> Result<(), AppError>;
+    async fn soft_delete(&self, id: String, deleted_by: String) -> Result<(), AppError>;
+    async fn undelete(&self, id: String, updated_by: String) -> Result<Charger, AppError>;
+}
+
+// infrastructure/repositories/partner_repository_impl.rs
+pub struct PartnerRepositoryImpl {
+    pool: PgPool,
+}
+
+impl PartnerRepository for PartnerRepositoryImpl {
+    async fn create(&self, name: String, created_by: String, updated_by: String) -> Result<Partner, AppError> {
+        // Implementation using SQLx
+        // ...
+    }
+
+    async fn hard_delete(&self, id: String) -> Result<(), AppError> {
+        // Hard delete with CASCADE
+        // Database CASCADE will automatically delete associated stations
+        // ...
+    }
+
+    async fn soft_delete(&self, id: String, deleted_by: String) -> Result<(), AppError> {
+        // Soft delete (no CASCADE)
+        // ...
+    }
+    // ...
+}
+```
+
+**References**:
+- data-model.md (Repository Interfaces section)
+- spec.md (FR-047 to FR-049)
+
+---
+
+### 7. Shared Crates Boundaries
+
+**Decision**: Clear separation between platform-core and platform-db
+
+**Rationale**:
+- platform-core: Pure utilities only
+- platform-db: SQLx operations and repositories
+- No business logic in either
+- No framework usage in either
+
+**platform-core Scope**:
+- Error system (AppError enum)
+- Result types (AppResult<T>)
+- Configuration management
+- ID generation utilities
+- Validation helpers
+- NO IO operations
+
+**platform-db Scope**:
+- SQLx pool management
+- Repository implementations
+- Migrations
+- Database abstractions
+- NO business logic
+
+**References**:
+- Constitution III. API Contract Compliance (application layer orchestration)
+- data-model.md (Repository Interfaces section)
+- spec.md (FR-047 to FR-049)
+
+---
+
+### 8. Status Enum Consistency
+
+**Decision**: Unified status enum across all entities (ACTIVE, INACTIVE, MAINTENANCE, DISABLED)
+
+**Rationale**:
+- Consistent terminology across all entities
+- Easier to understand and maintain
+- Easier to filter and query by status
+- Reduces cognitive load
+
+**Implementation**:
+```rust
+// domain/entities/status.rs
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum EntityStatus {
+    Active,
+    Inactive,
+    Maintenance,
+    Disabled,
+}
+
+impl EntityStatus {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            EntityStatus::Active => "ACTIVE",
+            EntityStatus::Inactive => "INACTIVE",
+            EntityStatus::Maintenance => "MAINTENANCE",
+            EntityStatus::Disabled => "DISABLED",
+        }
+    }
+
+    pub fn from_str(s: &str) -> Result<Self, AppError> {
+        match s.to_uppercase().as_str() {
+            "ACTIVE" => Ok(EntityStatus::Active),
+            "INACTIVE" => Ok(EntityStatus::Inactive),
+            "MAINTENANCE" => Ok(EntityStatus::Maintenance),
+            "DISABLED" => Ok(EntityStatus::Disabled),
+            _ => Err(AppError::Validation(format!("Invalid entity status: {}", s))),
+        }
+    }
+}
+```
+
+**Database Implementation**:
+```sql
+-- All entities include status column
+ALTER TABLE ev.partners ADD COLUMN status TEXT NOT NULL DEFAULT 'ACTIVE';
+ALTER TABLE ev.stations ADD COLUMN status TEXT NOT NULL DEFAULT 'ACTIVE';
+ALTER TABLE ev.chargers ADD COLUMN status TEXT NOT NULL DEFAULT 'ACTIVE';
+
+-- Index for status filtering
+CREATE INDEX idx_partners_status ON ev.partners(status);
+CREATE INDEX idx_stations_status ON ev.stations(status);
+CREATE INDEX idx_chargers_status ON ev.chargers(status);
+
+-- View for active records by status
+CREATE VIEW ev.active_partners_status AS
+SELECT * FROM ev.partners WHERE deleted_at IS NULL;
+
+CREATE VIEW ev.active_stations_status AS
+SELECT * FROM ev.stations WHERE deleted_at IS NULL;
+
+CREATE VIEW ev.active_chargers_status AS
+SELECT * FROM ev.chargers WHERE deleted_at IS NULL;
+```
+
+**References**:
+- data-model.md (Status field definition)
+- spec.md (FR-072 to FR-074)
 
 ---
 
@@ -266,47 +617,81 @@ CREATE INDEX idx_chargers_station_id ON ev.chargers(station_id);
 pub struct Partner {
     pub id: String,
     pub name: String,
+    pub status: String,
+    pub is_valid: bool,
+    pub created_by: String,
+    pub updated_by: String,
     pub created_at: chrono::DateTime<chrono::Utc>,
+    pub updated_at: chrono::DateTime<chrono::Utc>,
+    pub deleted_at: Option<chrono::DateTime<chrono::Utc>>,
 }
 
-// domain/entities/station.rs
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Station {
-    pub id: String,
-    pub name: String,
-    pub location: Option<String>,
-    pub partner_id: String,
-    pub created_at: chrono::DateTime<chrono::Utc>,
+impl Partner {
+    pub fn validate(&self) -> Result<(), AppError> {
+        // Validation logic
+        // ...
+        Ok(())
+    }
+
+    pub fn is_active(&self) -> bool {
+        self.deleted_at.is_none()
+    }
 }
 ```
 
 **Infrastructure Layer (SQLx repositories)**:
 ```rust
-// infrastructure/repositories/partner_repository.rs
+// infrastructure/repositories/partner_repository_impl.rs
 use sqlx::PgPool;
 use domain::entities::partner::Partner;
 
 pub async fn create_partner(
     pool: &PgPool,
     name: String,
+    created_by: String,
+    updated_by: String,
 ) -> Result<Partner, AppError> {
-    let id = id::generate_partner_id();
-    let partner = Partner { id, name, created_at: Utc::now() };
+    let id = id::generate_partner_id("partner");  // Infrastructure only
+    let partner = Partner {
+        id,
+        name,
+        status: "ACTIVE".to_string(),
+        is_valid: true,
+        created_by,
+        updated_by,
+        created_at: Utc::now(),
+        updated_at: Utc::now(),
+        deleted_at: None,
+    };
 
     sqlx::query(
-        "INSERT INTO ev.partners (id, name, created_at)
-         VALUES ($1, $2, $3)
+        "INSERT INTO ev.partners (id, name, status, is_valid, created_by, updated_by, created_at, updated_at, deleted_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
          RETURNING *"
     )
     .bind(&partner.id)
     .bind(&partner.name)
+    .bind(&partner.status)
+    .bind(partner.is_valid)
+    .bind(&partner.created_by)
+    .bind(&partner.updated_by)
     .bind(&partner.created_at)
+    .bind(&partner.updated_at)
+    .bind(&partner.deleted_at)
     .fetch_one(pool)
     .await?
     .map(|row| Partner {
         id: row.get("id"),
         name: row.get("name"),
+        status: row.get("status"),
+        is_valid: row.get("is_valid"),
+        created_by: row.get("created_by"),
+        updated_by: row.get("updated_by"),
         created_at: row.get("created_at"),
+        updated_at: row.get("updated_at"),
+        deleted_at: row.get::<_, Option<String>>("deleted_at").map(|s| {
+            chrono::DateTime::parse_from_rfc3339(&s).ok().unwrap()
+        }),
     })
 }
 ```
@@ -316,16 +701,21 @@ pub async fn create_partner(
 // application/use_cases/create_partner.rs
 pub struct CreatePartner {
     pub name: String,
+    pub created_by: String,
+    pub updated_by: String,
 }
 
 pub async fn execute(pool: &PgPool, cmd: CreatePartner) -> Result<Partner, AppError> {
     // Domain invariants
-    if cmd.name.is_empty() {
+    if cmd.name.trim().is_empty() {
         return Err(AppError::Validation("Name cannot be empty".into()));
     }
 
-    // Call infrastructure
-    partner_repository::create_partner(pool, cmd.name).await
+    // Call infrastructure (ID generation in infrastructure layer)
+    let id = id::generate_partner_id("partner");
+
+    // Call repository
+    partner_repository::create(pool, cmd.name, cmd.created_by, cmd.updated_by).await
 }
 ```
 
@@ -364,12 +754,18 @@ export const apiClient = axios.create({
 import { apiClient } from './client';
 
 export const partnersApi = {
-  list: (params?: { page?: number; limit?: number }) =>
-    apiClient.get('/partners', { params }),
-  create: (data: { name: string }) =>
+  list: (page: number = 1, limit: number = 50) =>
+    apiClient.get('/partners', { params: { page, limit } }),
+  create: (data: { name: string, status?: string, is_valid?: boolean }) =>
     apiClient.post('/partners', data),
   get: (id: string) =>
     apiClient.get(`/partners/${id}`),
+  delete: (id: string) =>
+    apiClient.delete(`/partners/${id}`),
+  soft_delete: (id: string) =>
+    apiClient.put(`/partners/${id}`, { deleted_at: new Date().toISOString() }),
+  undelete: (id: string) =>
+    apiClient.put(`/partners/${id}`, { deleted_at: null }),
 };
 ```
 
@@ -382,14 +778,15 @@ import { partnersApi } from '../api/partners';
 export const usePartners = (page: number = 1, limit: number = 50) => {
   return useQuery({
     queryKey: ['partners', page, limit],
-    queryFn: () => partnersApi.list({ page, limit }),
+    queryFn: () => partnersApi.list(page, limit),
   });
 };
 
 export const useCreatePartner = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: { name: string }) => partnersApi.create(data),
+    mutationFn: (data: { name: string, status?: string, is_valid?: boolean }) =>
+      partnersApi.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['partners'] });
     },
@@ -420,12 +817,6 @@ export const PartnerList = () => {
 };
 ```
 
-**References**:
-- Constitution II. External Identity Model
-- Constitution III. API Contract Compliance
-- Constitution IV. Domain Purity
-- Constitution V. Test-Driven Development
-
 ---
 
 ## Performance Considerations
@@ -434,7 +825,10 @@ export const PartnerList = () => {
 
 **Query Optimization**:
 - Indexes on foreign keys (`partner_id`, `station_id`)
-- Simple COUNT queries for KPIs (no complex aggregation)
+- Indexes on `deleted_at` for soft delete filtering
+- Indexes on `status` for status-based queries
+- Unique indexes on names
+- Simple COUNT queries for KPIs
 - Use EXPLAIN ANALYZE for slow queries
 - Connection pooling via SQLx
 
@@ -461,6 +855,7 @@ services:
 
 **References**:
 - Success Criteria: SC-003, SC-004
+- data-model.md (Database Schema section)
 
 ---
 
@@ -473,24 +868,28 @@ services:
 // application/use_cases/create_partner.rs
 pub struct CreatePartner {
     pub name: String,
+    pub created_by: String,
+    pub updated_by: String,
 }
 
 pub async fn execute(pool: &PgPool, cmd: CreatePartner) -> Result<Partner, AppError> {
     // Validate name
     if cmd.name.trim().is_empty() {
-        return Err(AppError::Validation("Name cannot be empty or whitespace".into()));
+        return Err(AppError::Validation("Name cannot be empty".into()));
     }
 
     if cmd.name.len() > 200 {
         return Err(AppError::Validation("Name cannot exceed 200 characters".into()));
     }
 
-    // Validate character set (alphanumeric, spaces, hyphens)
     if !cmd.name.chars().all(|c| c.is_alphanumeric() || c == ' ' || c == '-') {
         return Err(AppError::Validation("Name can only contain letters, numbers, spaces, and hyphens".into()));
     }
 
-    partner_repository::create_partner(pool, cmd.name).await
+    // Domain invariants are enforced in domain layer
+
+    // Call infrastructure
+    partner_repository::create(pool, cmd.name, cmd.created_by, cmd.updated_by).await
 }
 ```
 
@@ -534,7 +933,7 @@ sqlx::query("SELECT * FROM ev.partners WHERE name = $1")
 
 **References**:
 - Constitution III. API Contract Compliance (validation on all endpoints)
-- Security requirements per constitution
+- spec.md (FR-059 to FR-061, FR-068)
 
 ---
 
@@ -550,6 +949,8 @@ fn test_create_partner_validates_name() {
     let pool = setup_test_pool().await;
     let create_partner = application::use_cases::create_partner::CreatePartner {
         name: String::new(),  // Empty name
+        created_by: "admin-user-id".into(),
+        updated_by: "admin-user-id".into(),
     };
 
     let result = application::use_cases::create_partner::execute(&pool, create_partner).await;
@@ -589,7 +990,7 @@ async fn test_create_partner_success() {
 async fn test_partner_repository_create() {
     let pool = setup_test_pool().await;
 
-    let partner = partner_repository::create_partner(&pool, "Test Partner".into()).await.unwrap();
+    let partner = partner_repository::create_partner(&pool, "Test Partner".into(), "admin".into(), "admin".into()).await.unwrap();
 
     assert_eq!(partner.name, "Test Partner");
     assert!(partner.id.starts_with("PRT-"));
@@ -611,7 +1012,7 @@ describe('PartnerList', () => {
   });
 
   it('renders partner table when data loaded', async () => {
-    const mockData = { items: [{ id: 'PRT-xxx', name: 'Test' }] };
+    const mockData = { items: [{ id: "PRT-xxx", name: "Test" }] };
     render(<PartnerList />);
     // ... test table rendering
   });
@@ -632,7 +1033,7 @@ vi.mock('../client', () => ({
 }));
 
 describe('partnersApi', () => {
-  it('list calls correct endpoint with pagination', () => {
+  it('list calls correct endpoint with pagination', {
     partnersApi.list(1, 50);
     expect(apiClient.get).toHaveBeenCalledWith('/partners', { params: { page: 1, limit: 50 } });
   });
@@ -655,6 +1056,7 @@ describe('usePartners', () => {
 
 **References**:
 - Constitution V. Test-Driven Development (NON-NEGOTIABLE)
+- spec.md (FR-060 to FR-067)
 
 ---
 
@@ -724,7 +1126,7 @@ pub async fn get_partner(
 
 **References**:
 - Constitution: Observability Law (section 9)
-- Epic specification: Section 9 Observability
+- spec.md (FR-068 to FR-071)
 
 ---
 
@@ -733,9 +1135,8 @@ pub async fn get_partner(
 All technical decisions have been made and documented. The implementation can proceed with:
 
 1. **Backend** (Rust + Actix-Web + SQLx):
-   - External ID generation using rust-nanoid
-   - Forward-only SQLx migrations with timestamp ordering
-   - Offset-based pagination for list endpoints
+   - Deterministic ID generation (infrastructure layer)
+   - Soft delete with hard delete CASCADE (database-level)
    - Clean Architecture layers enforced
    - Comprehensive testing strategy
 
@@ -747,9 +1148,10 @@ All technical decisions have been made and documented. The implementation can pr
 
 3. **Database** (PostgreSQL 'ev' schema):
    - Three-table schema with external IDs
-   - Cascading deletes (Partners → Stations → Chargers)
-   - Proper indexing
-   - Audit timestamps
+   - Soft delete with `deleted_at` column
+   - Hard delete CASCADE (ON DELETE CASCADE)
+   - Proper indexing and constraints
+   - Audit fields (created_by, updated_by)
 
 4. **Infrastructure**:
    - Docker containerization
