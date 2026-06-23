@@ -4,7 +4,7 @@
 E001 defines the foundational EV dashboard platform kernel including backend, database, frontend shell, and shared system crates.
 
 Scope:
-- Operators
+- Partners
 - Stations
 - Chargers
 

@@ -4,7 +4,7 @@
 
 ## Entities
 
-- Operators
+- Partners
 - Stations
 - Chargers
 
@@ -12,11 +12,11 @@
 
 ## Relationships
 
-Operators → Stations → Chargers
+Partners → Stations → Chargers
 
 ---
 
 ## Rules
-- Station must belong to operator
+- Station must belong to partner
 - Charger must belong to station
 - Deletion cascades downward

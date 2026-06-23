@@ -86,7 +86,7 @@ ev
 
 Entities:
 
-- operators
+- partners
 - stations
 - chargers
 
@@ -131,7 +131,7 @@ Provides:
 ## 4.1 Entity Hierarchy
 
 ```
-Operators → Stations → Chargers
+Partners → Stations → Chargers
 ```
 
 ## 4.2 Identity Model
@@ -140,7 +140,7 @@ The system uses a single external identifier model:
 
 | Entity | id format |
 |---|---|
-| Operators | PRT-\<nanoid(12)> |
+| Partners | PRT-\<nanoid(12)> |
 | Stations | STA-\<nanoid(12)> |
 | Chargers | CHR-\<nanoid(12)> |
 
@@ -186,7 +186,7 @@ Rules:
 ## 5.3 Core Endpoints
 
 - `/dashboard/kpis`
-- `/operators`
+- `/partners`
 - `/stations`
 - `/chargers`
 

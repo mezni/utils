@@ -4,7 +4,7 @@
 
 ## External ID System
 
-Operators → PRT-<nanoid(12)>
+Partners → PRT-<nanoid(12)>
 Stations  → STA-<nanoid(12)>
 Chargers  → CHR-<nanoid(12)>
 

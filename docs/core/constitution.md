@@ -73,7 +73,7 @@ Format Rules:
 
 | Entity | id format |
 |---|---|
-| Operators | PRT-\<nanoid(12)> |
+| Partners | PRT-\<nanoid(12)> |
 | Stations | STA-\<nanoid(12)> |
 | Chargers | CHR-\<nanoid(12)> |
 
@@ -90,7 +90,7 @@ All relationships MUST use `id`.
 Cascading deletes MUST follow domain hierarchy:
 
 ```
-Operators → Stations → Chargers
+Partners → Stations → Chargers
 ```
 
 No orphan entities are allowed.
@@ -159,7 +159,7 @@ Each entity MUST:
 
 ## 5.2 Business Invariants
 
-* Stations MUST belong to an Operator
+* Stations MUST belong to a Partner
 * Chargers MUST belong to a Station
 * Deletion MUST cascade downward
 

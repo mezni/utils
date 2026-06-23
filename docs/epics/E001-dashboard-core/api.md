@@ -28,10 +28,10 @@ Error:
 
 ## Endpoints
 
-### Operators
-GET /operators
-POST /operators
-GET /operators/{id}
+### Partners
+GET /partners
+POST /partners
+GET /partners/{id}
 
 ### Stations
 GET /stations
