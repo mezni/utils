@@ -1,0 +1,105 @@
+openapi: 3.0.3
+info:
+  title: BorneMap Dashboard API
+  description: EV Infrastructure Dashboard Platform - KPIs Endpoint
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8080/api/v1
+
+tags:
+  - name: Dashboard
+    description: Dashboard KPIs
+
+paths:
+  /dashboard/kpis:
+    get:
+      tags:
+        - Dashboard
+      summary: Get Dashboard KPIs
+      description: |
+        Retrieve aggregate counts for all EV infrastructure entities.
+        This endpoint provides a high-level overview of system health and scale.
+
+        **Performance**: This endpoint executes three COUNT queries in parallel
+        and aggregates the results. It's optimized for fast response times.
+
+      operationId: getDashboardKPIs
+      responses:
+        '200':
+          description: Dashboard KPIs retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardKPIsResponse'
+              example:
+                success: true
+                data:
+                  partners_count: 10
+                  stations_count: 50
+                  chargers_count: 200
+                error: null
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    DashboardKPIsResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: Request status
+          example: true
+        data:
+          type: object
+          required:
+            - partners_count
+            - stations_count
+            - chargers_count
+          properties:
+            partners_count:
+              type: integer
+              minimum: 0
+              description: Total number of partner organizations
+              example: 10
+            stations_count:
+              type: integer
+              minimum: 0
+              description: Total number of charging stations
+              example: 50
+            chargers_count:
+              type: integer
+              minimum: 0
+              description: Total number of charging units
+              example: 200
+        error:
+          $ref: '#/components/schemas/AppError'
+
+    AppError:
+      type: object
+      properties:
+        code:
+          type: string
+          enum: [VALIDATION_ERROR, NOT_FOUND, CONFLICT, INTERNAL_ERROR, DB_ERROR]
+          description: Machine-readable error code
+          example: "INTERNAL_ERROR"
+        message:
+          type: string
+          description: Human-readable error message
+          example: "Failed to query dashboard KPIs"
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        data:
+          type: null
+        error:
+          $ref: '#/components/schemas/AppError'

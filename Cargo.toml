@@ -1,0 +1,6 @@
+[workspace]
+members = [
+    "services/admin-service",
+    "crates/platform-core",
+    "crates/platform-db",
+]

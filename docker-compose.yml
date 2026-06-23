@@ -1,0 +1,32 @@
+version: "3.8"
+services:
+  postgres:
+    build: ./infrastructure/docker/postgres
+    container_name: bornemap-db
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./infrastructure/postgres/data:/var/lib/postgresql/data
+      - ./infrastructure/postgres/logs:/var/log/postgresql
+    environment:
+      POSTGRES_DB: platform_db
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+
+  admin-service:
+    build: ./infrastructure/docker/admin-service
+    container_name: bornemap-api
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    environment:
+      DATABASE_URL: postgres://admin:admin@postgres:5432/platform_db
+
+  admin-dashboard:
+    build: ./infrastructure/docker/admin-dashboard
+    container_name: bornemap-ui
+    ports:
+      - "3000:80"
+    depends_on:
+      - admin-service
