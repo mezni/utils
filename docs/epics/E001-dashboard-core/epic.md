@@ -24,7 +24,7 @@ This epic is non-decomposable and foundational. All future epics depend on it.
 
 ## 1.1 Included Domains
 
-- Operators (EV network operators)
+- Partners (EV network operators)
 - Stations (charging locations)
 - Chargers (charging units)
 
@@ -82,9 +82,9 @@ The system uses ONLY external identifiers:
 
 | Entity | id format |
 |---|---|
-| Operators | PRT-\<nanoid(12)> |
-| Stations | STA-\<nanoid(12)> |
-| Chargers | CHR-\<nanoid(12)> |
+| Partners | PRT-\<hash-nanoid(12)> |
+| Stations | STA-\<hash-nanoid(12)> |
+| Chargers | CHR-\<hash-nanoid(12)> |
 
 ## 3.2 Identity Rules
 
@@ -92,20 +92,34 @@ The system uses ONLY external identifiers:
 - `id` is immutable
 - `id` is used in API, DB, and frontend
 - No UUID or surrogate keys exist
+- IDs are deterministic (hash-based nanoid from seed, infrastructure layer only)
+- Format: ENTITY-{12 chars} (e.g., PRT-abc123456789)
+
+## 3.3 Status Enum
+
+Unified across all entities:
+
+- ACTIVE - Record is active and visible
+- INACTIVE - Record is inactive
+- MAINTENANCE - Record is under maintenance
+- DISABLED - Record is disabled
+
+Default: ACTIVE
 
 ## 3.3 Referential Integrity
 
 Hierarchy:
 
 ```
-Operators → Stations → Chargers
+Partners → Stations → Chargers
 ```
 
 Rules:
 
-- Stations MUST belong to Operators
+- Stations MUST belong to Partners
 - Chargers MUST belong to Stations
-- Cascading deletes enforced
+- Cascading deletes enforced for HARD deletes only
+- Soft deletes do NOT cascade
 
 ---
 
@@ -152,20 +166,26 @@ Rules:
 ### Dashboard
 - GET /api/v1/dashboard/kpis
 
-### Operators
-- GET /api/v1/operators
-- POST /api/v1/operators
-- GET /api/v1/operators/{id}
+### Partners
+- GET /api/v1/partners
+- POST /api/v1/partners
+- GET /api/v1/partners/{id}
+- DELETE /api/v1/partners/{id} (hard delete)
+- PUT /api/v1/partners/{id} (soft delete/undelete)
 
 ### Stations
 - GET /api/v1/stations
 - POST /api/v1/stations
 - GET /api/v1/stations/{id}
+- DELETE /api/v1/stations/{id} (hard delete)
+- PUT /api/v1/stations/{id} (soft delete/undelete)
 
 ### Chargers
 - GET /api/v1/chargers
 - POST /api/v1/chargers
 - GET /api/v1/chargers/{id}
+- DELETE /api/v1/chargers/{id} (hard delete)
+- PUT /api/v1/chargers/{id} (soft delete/undelete)
 
 ---
 
@@ -179,31 +199,50 @@ ev
 
 ## 5.2 Tables
 
-### operators
+### partners
 - id (PRT-xxx PRIMARY KEY)
 - name
+- status (enum: ACTIVE, INACTIVE, MAINTENANCE, DISABLED)
+- is_valid (boolean)
+- created_by (FK → admins.id)
 - created_at
+- updated_by (FK → admins.id)
+- updated_at
+- deleted_at
 
 ### stations
 - id (STA-xxx PRIMARY KEY)
-- operator_id (FK → operators.id)
+- partner_id (FK → partners.id)
 - name
 - location
+- status (enum: ACTIVE, INACTIVE, MAINTENANCE, DISABLED)
+- created_by (FK → admins.id)
 - created_at
+- updated_by (FK → admins.id)
+- updated_at
+- deleted_at
 
 ### chargers
 - id (CHR-xxx PRIMARY KEY)
 - station_id (FK → stations.id)
-- status
-- power_rating
+- status (enum: ACTIVE, INACTIVE, MAINTENANCE, DISABLED)
+- power_rating (kW)
+- created_by (FK → admins.id)
 - created_at
+- updated_by (FK → admins.id)
+- updated_at
+- deleted_at
 
 ## 5.3 Constraints
 
 - id is PRIMARY KEY everywhere
 - Foreign keys use id only
 - No surrogate keys exist
-- Cascading deletes enforced
+- Cascading deletes enforced for HARD DELETE only (ON DELETE CASCADE)
+- Soft deletes do NOT cascade (children remain active)
+- All queries MUST filter by deleted_at IS NULL for active records
+- Audit fields (created_by, updated_by) reference admins table (external dependency)
+- Status enum consistent across all entities (ACTIVE, INACTIVE, MAINTENANCE, DISABLED)
 
 ## 5.4 Migration Rules
 
@@ -244,11 +283,11 @@ ev
 
 Dashboard displays:
 
-- Total Operators
+- Total Partners
 - Total Stations
 - Total Chargers
 
-All derived from API.
+All derived from API (only active records where deleted_at IS NULL).
 
 ---
 
@@ -340,6 +379,37 @@ E001 MUST comply with:
 - docs/core/architecture.md
 - docs/core/api-standards.md
 - docs/core/data-modeling.md
+
+---
+
+# 12. AUDIT & ADMIN DEPENDENCY
+
+## 12.1 Admin Dependency
+
+- **admins table exists in separate system module** (no auth system in scope for E001)
+- Audit fields reference admins table: `created_by`, `updated_by`
+- Responsibility tracking enabled for data lineage
+
+## 12.2 Delete Operations
+
+### Hard Delete (CASCADE)
+
+- DELETE endpoints remove records from database
+- CASCADE delete removes all related children (e.g., deleting partner removes all stations)
+- Permanently removed, cannot be recovered
+
+### Soft Delete (NO CASCADE)
+
+- PUT endpoints set `deleted_at` timestamp
+- Children NOT automatically deleted (stations remain, chargers remain)
+- Records preserved in database for auditing/recovery
+- All queries filter by `deleted_at IS NULL`
+
+### Undelete
+
+- PUT endpoint removes `deleted_at` timestamp
+- Records become active again
+- No CASCADE applied on undelete
 
 ---
 

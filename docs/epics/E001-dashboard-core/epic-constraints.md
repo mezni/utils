@@ -10,8 +10,20 @@
 
 ## Data Constraints
 - id is primary identifier
-- cascade delete required
-- no orphan records
+- Hard delete cascade required
+- Soft delete no cascade (children remain)
+- No orphan records (except after hard delete)
+- Status field required on all entities
+- Status enum: ACTIVE, INACTIVE, MAINTENANCE, DISABLED
+- Audit fields required (created_by, updated_by)
+- Admin dependency (admins table exists externally)
+
+---
+
+## Delete Behavior
+- Hard delete: CASCADE (deletes children automatically)
+- Soft delete: NO cascade (children remain active)
+- All queries filter by deleted_at IS NULL
 
 ---
 
