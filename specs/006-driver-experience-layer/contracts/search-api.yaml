@@ -1,0 +1,163 @@
+openapi: 3.1.0
+info:
+  title: Station Search API
+  version: 1.0.0
+  description: |
+    Station search API for driver-service. Online searches use Postgres trigram (pg_trgm)
+    for fuzzy matching. Offline searches execute against local cache.
+
+servers:
+  - url: http://localhost:3001/api/v1/driver
+    description: driver-service development
+
+paths:
+  /search:
+    get:
+      summary: Search for stations by name, address, or partial match
+      operationId: searchStations
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 2
+          description: Search query (minimum 2 characters)
+        - name: lat
+          in: query
+          schema:
+            type: number
+            format: float
+          description: Center latitude for distance sorting
+        - name: lng
+          in: query
+          schema:
+            type: number
+            format: float
+          description: Center longitude for distance sorting
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+            maximum: 50
+          description: Maximum number of results
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    SearchResult:
+      type: object
+      required:
+        - station_id
+        - name
+        - address
+        - relevance
+        - connector_types
+        - available
+        - lat
+        - lng
+      properties:
+        station_id:
+          type: string
+          pattern: '^STA-[A-Za-z0-9]{12}$'
+          example: STA-abc123def456
+        name:
+          type: string
+          example: Fast Charging Hub Bern
+        address:
+          type: string
+          example: Bahnhofstrasse 1, 3011 Bern
+        distance_km:
+          type: number
+          format: float
+          nullable: true
+          description: Distance from search center (null if no center provided)
+        relevance:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+          description: pg_trgm similarity score
+        connector_types:
+          type: array
+          items:
+            type: string
+            enum: [CCS, CHAdeMO, Type2]
+          example: [CCS, Type2]
+        available:
+          type: boolean
+          description: Whether station has available connectors
+        lat:
+          type: number
+          format: float
+        lng:
+          type: number
+          format: float
+
+    SearchResponse:
+      type: object
+      required:
+        - data
+        - metadata
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchResult'
+        metadata:
+          type: object
+          required:
+            - query
+            - total
+            - latency_ms
+          properties:
+            query:
+              type: string
+            total:
+              type: integer
+            latency_ms:
+              type: integer
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+
+  responses:
+    BadRequest:
+      description: Invalid request parameters
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    Unauthorized:
+      description: Missing or invalid authentication
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'

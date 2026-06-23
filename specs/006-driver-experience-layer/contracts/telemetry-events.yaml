@@ -1,0 +1,37 @@
+# Telemetry Events: Sprint 5 Extension
+
+## Overview
+
+New telemetry event types extending the Sprint 3 event schema. All events ingested via the existing driver-service telemetry pipeline.
+
+## Event Types
+
+| Type | Source | Trigger | Payload |
+|------|--------|---------|---------|
+| FAVORITE_ADDED | Frontend → driver-service | User taps favorite | `{station_id, user_id}` |
+| FAVORITE_REMOVED | Frontend → driver-service | User taps unfavorite | `{station_id, user_id}` |
+| SEARCH_EXECUTED | Frontend → driver-service | User submits search | `{query_text, result_count}` |
+| SEARCH_SELECTED | Frontend → driver-service | User taps search result | `{query_text, station_id, position}` |
+| FILTER_CHANGED | Frontend → driver-service | User changes map filter | `{filter_type, old_value, new_value}` |
+| OFFLINE_MODE_ENTERED | Frontend → driver-service | Device loses connectivity | `{duration_seconds}` |
+
+## Schema (extending Sprint 3 raw_events)
+
+All new events follow the existing schema:
+```json
+{
+  "event_id": "EVT-abc123def456",
+  "event_type": "FAVORITE_ADDED",
+  "user_id": "550e8400-e29b-41d4-a716-446655440000",
+  "event_data": {"station_id": "STA-abc123def456"},
+  "timestamp": "2026-06-22T10:00:00Z",
+  "schema_version": "1.1.0"
+}
+```
+
+## Driver-Service Endpoint
+
+Events are posted to the existing telemetry endpoint:
+```
+POST /api/v1/telemetry/events
+```

@@ -1,0 +1,187 @@
+openapi: 3.1.0
+info:
+  title: Favorites API
+  version: 1.0.0
+  description: |
+    Favorites API for driver-service. Owned by driver-service (FR-022).
+    Favorites are stored in users.preferences JSONB under the `favorites` key.
+
+servers:
+  - url: http://localhost:3001/api/v1/driver
+    description: driver-service development
+
+paths:
+  /favorites:
+    get:
+      summary: List all favorites for the authenticated user
+      operationId: listFavorites
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            default: 50
+      responses:
+        '200':
+          description: List of favorited stations
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FavoritesListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      summary: Add a station to favorites
+      operationId: addFavorite
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddFavoriteRequest'
+      responses:
+        '201':
+          description: Station favorited successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FavoriteResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          description: Station already favorited
+
+    delete:
+      summary: Remove a station from favorites
+      operationId: removeFavorite
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RemoveFavoriteRequest'
+      responses:
+        '200':
+          description: Station removed from favorites
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Favorite not found
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    FavoriteItem:
+      type: object
+      required:
+        - station_id
+        - added_at
+      properties:
+        station_id:
+          type: string
+          pattern: '^STA-[A-Za-z0-9]{12}$'
+          description: STA-prefixed nanoid station identifier
+          example: STA-abc123def456
+        added_at:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp when the favorite was added
+
+    FavoritesListResponse:
+      type: object
+      required:
+        - data
+        - metadata
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/FavoriteItem'
+        metadata:
+          type: object
+          properties:
+            total:
+              type: integer
+            page:
+              type: integer
+            per_page:
+              type: integer
+
+    AddFavoriteRequest:
+      type: object
+      required:
+        - station_id
+      properties:
+        station_id:
+          type: string
+          pattern: '^STA-[A-Za-z0-9]{12}$'
+          description: STA-prefixed nanoid station identifier
+
+    RemoveFavoriteRequest:
+      type: object
+      required:
+        - station_id
+      properties:
+        station_id:
+          type: string
+          pattern: '^STA-[A-Za-z0-9]{12}$'
+          description: STA-prefixed nanoid station identifier
+
+    FavoriteResponse:
+      type: object
+      required:
+        - station_id
+        - added_at
+      properties:
+        station_id:
+          type: string
+          pattern: '^STA-[A-Za-z0-9]{12}$'
+        added_at:
+          type: string
+          format: date-time
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+
+  responses:
+    BadRequest:
+      description: Invalid request parameters
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    Unauthorized:
+      description: Missing or invalid authentication
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
