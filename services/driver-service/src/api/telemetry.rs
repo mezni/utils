@@ -4,13 +4,14 @@ use actix_web::{web, HttpResponse, Responder};
 use serde::{Deserialize, Serialize};
 use tracing::{error, info};
 
-use crate::domain_types::events::{EventType, TelemetryEvent};
+use crate::db::analytics::{write_analytics_event, AnalyticsQuery};
+use crate::db::pool::AnalyticsDb;
 use crate::middleware::enrichment::enrich_event;
 use crate::middleware::idempotency::generate_idempotency_key;
+use crate::middleware::telemetry::log_to_dead_letter;
 use crate::middleware::telemetry::DeadLetterError;
 use crate::middleware::validation::{validate_event, validate_schema_version, validate_event_type, validate_user_id, validate_timestamp, validate_payload, ValidationError};
-use crate::middleware::telemetry::log_to_dead_letter;
-use crate::db::analytics::{write_analytics_event, AnalyticsQuery};
+use domain_types::events::{EnrichedMetadata, EventType, TelemetryEvent, TelemetryStatus};
 
 /// Telemetry event ingestion request
 #[derive(Debug, Deserialize)]
@@ -46,9 +47,10 @@ pub struct TelemetryIngestionResponse {
 
 /// Handle POST /api/v1/telemetry/events
 pub async fn ingest_events(
-    pool: web::Data<sqlx::postgres::PgPool>,
+    pool: web::Data<AnalyticsDb>,
     req: web::Json<TelemetryIngestionRequest>,
 ) -> impl Responder {
+    let db = &pool.0;
     info!(
         request_id = ?req.request_id,
         event_type = %req.event_type,
@@ -147,7 +149,7 @@ pub async fn ingest_events(
     let enriched_location = crate::middleware::enrichment::enrich_location(req.location, location_source_str);
 
     // Create enriched metadata
-    let enriched_metadata = crate::domain_types::events::EnrichedMetadata {
+    let enriched_metadata = EnrichedMetadata {
         location: enriched_location,
         session: session_metadata,
         role: role_metadata,
@@ -164,7 +166,7 @@ pub async fn ingest_events(
         payload: req.payload.clone(),
         idempotency_key,
         enriched_metadata,
-        status: crate::domain_types::events::TelemetryStatus::Pending,
+        status: TelemetryStatus::Pending,
     };
 
     // Validate complete event
@@ -196,7 +198,7 @@ pub async fn ingest_events(
     }
 
     // Write event to analytics database
-    match write_analytics_event(&pool, event.clone()).await {
+    match write_analytics_event(db, event.clone()).await {
         Ok(rows) => {
             if rows == 0 {
                 // Event was rejected (likely duplicate)

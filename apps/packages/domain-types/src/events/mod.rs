@@ -18,6 +18,12 @@ pub enum EventType {
     PRICE_CHANGE,
     STOCK_ALERT,
     ERROR_UNHANDLED,
+    FAVORITE_ADDED,
+    FAVORITE_REMOVED,
+    SEARCH_EXECUTED,
+    SEARCH_SELECTED,
+    FILTER_CHANGED,
+    OFFLINE_MODE_ENTERED,
 }
 
 impl EventType {
@@ -35,6 +41,12 @@ impl EventType {
             "PRICE_CHANGE" => Ok(EventType::PRICE_CHANGE),
             "STOCK_ALERT" => Ok(EventType::STOCK_ALERT),
             "ERROR_UNHANDLED" => Ok(EventType::ERROR_UNHANDLED),
+            "FAVORITE_ADDED" => Ok(EventType::FAVORITE_ADDED),
+            "FAVORITE_REMOVED" => Ok(EventType::FAVORITE_REMOVED),
+            "SEARCH_EXECUTED" => Ok(EventType::SEARCH_EXECUTED),
+            "SEARCH_SELECTED" => Ok(EventType::SEARCH_SELECTED),
+            "FILTER_CHANGED" => Ok(EventType::FILTER_CHANGED),
+            "OFFLINE_MODE_ENTERED" => Ok(EventType::OFFLINE_MODE_ENTERED),
             _ => Err(format!("Unknown event type: {}", s)),
         }
     }
@@ -53,6 +65,12 @@ impl EventType {
             "PRICE_CHANGE",
             "STOCK_ALERT",
             "ERROR_UNHANDLED",
+            "FAVORITE_ADDED",
+            "FAVORITE_REMOVED",
+            "SEARCH_EXECUTED",
+            "SEARCH_SELECTED",
+            "FILTER_CHANGED",
+            "OFFLINE_MODE_ENTERED",
         ]
     }
 }
@@ -189,7 +207,7 @@ impl TelemetryEvent {
             user_id,
             timestamp,
             payload,
-            idempotency_key: Uuid::new_v7(),
+            idempotency_key: Uuid::new_v4(),
             enriched_metadata,
             status: TelemetryStatus::Pending,
         }

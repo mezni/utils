@@ -1,4 +1,4 @@
-use actix_web::web;
+pub mod auth;
 
 use domain_types::role::Role;
 
@@ -14,8 +14,7 @@ pub const AUTH_SERVICE_ROUTES: &[ProtectedRoute] = &[
     ProtectedRoute { path: "/api/v1/auth/logout", allowed_roles: &[Role::Driver, Role::Partner, Role::Admin], public: false },
     ProtectedRoute { path: "/api/v1/auth/sync", allowed_roles: &[Role::Admin], public: false },
     ProtectedRoute { path: "/api/v1/auth/me", allowed_roles: &[Role::Driver, Role::Partner, Role::Admin], public: false },
+    ProtectedRoute { path: "/api/v1/auth/preferences", allowed_roles: &[Role::Driver, Role::Partner, Role::Admin], public: false },
 ];
 
-pub fn configure_routes(cfg: &mut web::ServiceConfig) {
-    cfg.route("/health", web::get().to(super::health));
-}
+

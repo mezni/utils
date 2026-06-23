@@ -1,6 +1,6 @@
 //! Analytics database writer for telemetry ingestion
 
-use crate::domain_types::events::{LocationMetadata, RoleMetadata, SessionMetadata, SystemMetadata, TelemetryEvent, TelemetryStatus};
+use domain_types::events::{LocationMetadata, RoleMetadata, SessionMetadata, SystemMetadata, TelemetryEvent, TelemetryStatus};
 use chrono::{DateTime, Utc};
 use sqlx::postgres::PgPool;
 use tracing::{debug, error, info, warn};

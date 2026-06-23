@@ -1,4 +1,4 @@
-.PHONY: ci help setup deploy migrate test ci_gate_keycloak ci_gate_rbac ci_gate_session ci_gate_identity integration-test clean
+.PHONY: ci help setup deploy migrate test ci_gate_keycloak ci_gate_rbac ci_gate_session ci_gate_identity ci_gate_preferences ci_gate_offline ci_gate_search ci_gate_ui ci_gate_performance integration-test clean
 
 # CI Enforcement Pipeline
 ci:
@@ -16,6 +16,21 @@ ci_gate_rbac:
 
 ci_gate_session:
 	./tools/ci_gate_session.sh
+
+ci_gate_preferences:
+	bash .specify/ci-gates/023-preferences-isolation.sh
+
+ci_gate_offline:
+	bash .specify/ci-gates/024-offline-storage.sh
+
+ci_gate_search:
+	bash .specify/ci-gates/025-search-safety.sh
+
+ci_gate_ui:
+	bash .specify/ci-gates/026-ui-boundary.sh
+
+ci_gate_performance:
+	bash .specify/ci-gates/027-performance-regression.sh
 
 # Integration Tests
 integration-test:

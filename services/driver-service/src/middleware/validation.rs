@@ -1,6 +1,6 @@
 //! Event validation middleware for telemetry ingestion
 
-use crate::domain_types::events::{EventType, LocationSource, TelemetryEvent};
+use domain_types::events::{EnrichedMetadata, EventType, LocationMetadata, LocationSource, RoleMetadata, SessionMetadata, SystemMetadata, TelemetryEvent, TelemetryStatus};
 use crate::middleware::idempotency::is_valid_idempotency_key;
 use crate::middleware::telemetry::DeadLetterError;
 use chrono::DateTime;
@@ -120,29 +120,29 @@ mod tests {
             user_id: Uuid::new_v4(),
             timestamp: Utc::now(),
             payload: json!({"login_method": "password"}),
-            idempotency_key: Uuid::new_v7(),
-            enriched_metadata: crate::domain_types::events::EnrichedMetadata {
-                location: crate::domain_types::events::LocationMetadata {
+            idempotency_key: Uuid::new_v4(),
+            enriched_metadata: EnrichedMetadata {
+                location: LocationMetadata {
                     latitude: Some(37.7749),
                     longitude: Some(-122.4194),
                     country: Some("US".to_string()),
                     city: Some("San Francisco".to_string()),
                     location_source: LocationSource::EventLocation,
                 },
-                session: crate::domain_types::events::SessionMetadata {
+                session: SessionMetadata {
                     session_start: Utc::now(),
                     session_duration: 3600,
                     last_activity: Utc::now(),
                 },
-                role: crate::domain_types::events::RoleMetadata {
+                role: RoleMetadata {
                     role: "driver".to_string(),
                 },
-                system: crate::domain_types::events::SystemMetadata {
+                system: SystemMetadata {
                     service_name: "auth-service".to_string(),
                     event_source: "AUTH_LOGIN".to_string(),
                 },
             },
-            status: crate::domain_types::events::TelemetryStatus::Pending,
+            status: TelemetryStatus::Pending,
         }
     }
 

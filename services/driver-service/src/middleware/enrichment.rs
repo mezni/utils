@@ -1,6 +1,6 @@
 //! Event enrichment middleware for telemetry ingestion
 
-use crate::domain_types::events::{LocationSource, RoleMetadata, SessionMetadata, SystemMetadata};
+use domain_types::events::{LocationMetadata, LocationSource, RoleMetadata, SessionMetadata, SystemMetadata};
 use chrono::{Duration, Utc};
 use tracing::{debug, info, warn};
 
@@ -45,7 +45,7 @@ pub fn enrich_event(
 pub fn enrich_location(
     location: Option<f64>,
     location_source_str: &str,
-) -> crate::domain_types::events::LocationMetadata {
+) -> LocationMetadata {
     let location_source = match location_source_str.to_lowercase().as_str() {
         "event_location" => LocationSource::EventLocation,
         "session_location" => LocationSource::SessionLocation,
@@ -74,7 +74,7 @@ pub fn enrich_location(
         (None, None)
     };
 
-    crate::domain_types::events::LocationMetadata {
+    LocationMetadata {
         latitude,
         longitude,
         country: None,
@@ -88,8 +88,8 @@ pub fn create_location_metadata(
     latitude: Option<f64>,
     longitude: Option<f64>,
     location_source: LocationSource,
-) -> crate::domain_types::events::LocationMetadata {
-    crate::domain_types::events::LocationMetadata {
+) -> LocationMetadata {
+    LocationMetadata {
         latitude,
         longitude,
         country: None,

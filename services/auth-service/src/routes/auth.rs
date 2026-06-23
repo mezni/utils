@@ -1,7 +1,7 @@
 use actix_web::{web, HttpResponse};
 use serde::{Deserialize, Serialize};
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Serialize)]
 pub struct LoginRequest {
     pub username: String,
     pub password: String,
@@ -70,7 +70,7 @@ pub async fn handle_refresh_token(
 
     let response = reqwest::Client::new()
         .post(&token_url)
-        .form(refresh_token.into_inner())
+        .form(&refresh_token.into_inner())
         .send()
         .await;
 

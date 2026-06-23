@@ -252,8 +252,8 @@ mod tests {
         assert!(max_lon >= -180.0 && max_lon <= 180.0);
 
         // Validate center is preserved
-        assert!((min_lat + max_lat) / 2.0 - viewport.lat).abs() < 0.001;
-        assert!((min_lon + max_lon) / 2.0 - viewport.lon).abs() < 0.001);
+        assert!(((min_lat + max_lat) / 2.0 - viewport.lat).abs() < 0.001);
+        assert!(((min_lon + max_lon) / 2.0 - viewport.lon).abs() < 0.001);
     }
 
     #[test]

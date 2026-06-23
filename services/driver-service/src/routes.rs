@@ -12,6 +12,8 @@ pub const DRIVER_SERVICE_ROUTES: &[ProtectedRoute] = &[
     ProtectedRoute { path: "/health", allowed_roles: &[], public: true },
     ProtectedRoute { path: "/api/v1/stations", allowed_roles: &[Role::Driver, Role::Partner, Role::Admin], public: false },
     ProtectedRoute { path: "/api/v1/telemetry/events", allowed_roles: &[Role::Admin], public: false },
+    ProtectedRoute { path: "/api/v1/driver/favorites", allowed_roles: &[Role::Driver], public: false },
+    ProtectedRoute { path: "/api/v1/driver/search", allowed_roles: &[Role::Driver, Role::Partner, Role::Admin], public: false },
 ];
 
 pub fn configure_routes(cfg: &mut web::ServiceConfig) {

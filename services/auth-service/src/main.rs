@@ -3,14 +3,17 @@ use actix_web::dev::{ServiceRequest, ServiceResponse};
 use actix_web::middleware::Next;
 use actix_web::{web, App, HttpResponse, HttpServer, Responder};
 use serde::{Deserialize, Serialize};
+use sqlx::postgres::PgPoolOptions;
 use std::sync::Arc;
 
+use auth_service::api::preferences::{get_preferences, update_preferences, patch_preferences};
 use auth_service::audit::emitter::AuditEmitter;
 use auth_service::audit::middleware::audit_middleware;
 use auth_service::config::AppConfig;
 
 use auth_service::middleware::correlation::correlation_middleware;
 use auth_service::middleware::jwt::{jwt_middleware, JwtConfig, JwtMiddleware};
+use auth_service::routes::auth::{handle_login, handle_refresh_token};
 use auth_service::sync::endpoint::handle_sync;
 
 #[derive(Serialize, Deserialize)]
@@ -71,6 +74,14 @@ async fn main() -> anyhow::Result<()> {
         config.auth_service_client_id.clone(),
     ));
 
+    let database_url = config.database_url.clone();
+
+    let db_pool = PgPoolOptions::new()
+        .max_connections(10)
+        .connect(&database_url)
+        .await
+        .expect("Failed to create database pool");
+
     let port = config.server_port;
 
     tracing::info!("Starting auth-service on port {}", port);
@@ -85,6 +96,7 @@ async fn main() -> anyhow::Result<()> {
         let emitter = audit_emitter.clone();
         App::new()
             .app_data(jwt_middleware.clone())
+            .app_data(web::Data::new(db_pool.clone()))
             .app_data(audit_emitter.clone())
             .wrap(actix_web::middleware::from_fn(correlation_middleware))
             .wrap(actix_web::middleware::from_fn(jwt_guard))
@@ -95,6 +107,9 @@ async fn main() -> anyhow::Result<()> {
             .route("/api/v1/auth/login", web::post().to(handle_login))
             .route("/api/v1/auth/refresh", web::post().to(handle_refresh_token))
             .route("/api/v1/auth/sync", web::get().to(handle_sync))
+            .route("/api/v1/auth/preferences", web::get().to(get_preferences))
+            .route("/api/v1/auth/preferences", web::put().to(update_preferences))
+            .route("/api/v1/auth/preferences", web::patch().to(patch_preferences))
     })
     .bind(("0.0.0.0", port))?
     .run()

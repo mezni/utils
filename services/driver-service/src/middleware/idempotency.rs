@@ -2,26 +2,20 @@
 
 use uuid::Uuid;
 
-/// Generate a UUID v7 idempotency key for duplicate detection
-///
-/// UUID v7 provides time-ordered, globally unique identifiers which are
-/// ideal for analytics events (better for sorting and querying).
+/// Generate a UUID v4 idempotency key for duplicate detection
 ///
 /// # Returns
-/// A new UUID v7
+/// A new UUID v4
 pub fn generate_idempotency_key() -> Uuid {
-    Uuid::new_v7()
+    Uuid::new_v4()
 }
 
-/// Check if a UUID v7 idempotency key is valid
+/// Check if a UUID idempotency key is valid
 ///
 /// # Returns
 /// true if the UUID is valid, false otherwise
 pub fn is_valid_idempotency_key(id: &str) -> bool {
-    match Uuid::parse_str(id) {
-        Ok(uuid) => uuid.is_v7(),
-        Err(_) => false,
-    }
+    Uuid::parse_str(id).is_ok()
 }
 
 #[cfg(test)]
@@ -31,15 +25,14 @@ mod tests {
     #[test]
     fn test_generate_idempotency_key() {
         let key = generate_idempotency_key();
-        assert_eq!(key.version(), 7);
+        assert_eq!(key.get_version(), Some(uuid::Version::Random));
         assert!(is_valid_idempotency_key(&key.to_string()));
     }
 
     #[test]
     fn test_is_valid_idempotency_key() {
-        assert!(is_valid_idempotency_key(&Uuid::new_v7().to_string()));
+        assert!(is_valid_idempotency_key(&Uuid::new_v4().to_string()));
         assert!(!is_valid_idempotency_key("invalid-uuid"));
-        assert!(!is_valid_idempotency_key("00000000-0000-0000-0000-000000000000")); // v4, not v7
     }
 
     #[test]
