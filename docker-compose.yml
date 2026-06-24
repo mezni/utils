@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: bornemap-postgres
+    environment:
+      POSTGRES_USER: bornemap
+      POSTGRES_PASSWORD: bornemap
+      POSTGRES_DB: bornemap
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./migrations/platform_db:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bornemap"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - bornemap-network
+
+  driver-service:
+    build:
+      context: ./source/services/driver-service
+      dockerfile: Dockerfile
+    container_name: bornemap-driver-service
+    environment:
+      DATABASE_URL: postgresql://bornemap:bornemap@postgres:5432/bornemap
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - bornemap-network
+    restart: unless-stopped
+
+  web-driver:
+    build:
+      context: ./source/apps/web-driver
+      dockerfile: Dockerfile
+    container_name: bornemap-web-driver
+    environment:
+      VITE_API_BASE_URL: http://localhost:3001
+    ports:
+      - "5173:5173"
+    depends_on:
+      - driver-service
+    restart: unless-stopped
+    networks:
+      - bornemap-network
+
+volumes:
+  postgres_data:
+
+networks:
+  bornemap-network:
+    driver: bridge
