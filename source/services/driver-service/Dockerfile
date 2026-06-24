@@ -4,15 +4,15 @@ FROM rust:1.81-slim as builder
 WORKDIR /app
 
 # Copy dependencies first for caching
-COPY driver-service/Cargo.toml .
-COPY driver-service/Cargo.lock .
+COPY Cargo.toml .
+COPY Cargo.lock .
 RUN --mount=type=cache,target=/root/.cargo/cache \
     --mount=type=cache,target=/usr/local/cargo/registry \
     cargo fetch --locked
 
 # Copy source code
-COPY driver-service/src ./src
-COPY driver-service/src/**/*.rs ./src
+COPY src ./src
+COPY src/**/*.rs ./src
 
 # Build the binary
 RUN --mount=type=cache,target=/root/.cargo/cache \
