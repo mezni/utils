@@ -3,6 +3,10 @@ name = "driver-service"
 version = "1.0.0"
 edition = "2021"
 
+[[bin]]
+name = "driver-service"
+path = "src/main.rs"
+
 [dependencies]
 axum = "0.8"
 tokio = { version = "1", features = ["full"] }
