@@ -40,7 +40,16 @@
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+**BorneMap Constitution Gates (v1.15.2):**
+- [ ] §2.1 Service Topology Invariance — No new services introduced
+- [ ] §2.4 Entity ID Standard — All entity IDs use `PREFIX-nanoid(12)` format
+- [ ] §4.1 Schema Ownership — Writes only to owned schemas
+- [ ] §10.3 Identity Separation — UUID for users; nanoid for entities
+- [ ] §7 Clean Architecture — Layer dependency direction enforced
+- [ ] §12 Dependency Graph Lock — No cross-service or cross-layer violations
+- [ ] §14 SQLx Enforcement — All queries compile-time verified
+- [ ] §17 Migration Governance — Forward-only, idempotent migrations
+- [ ] §20 Governance Hierarchy — No authority inversion
 
 ## Project Structure
 
