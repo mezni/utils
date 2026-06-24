@@ -1,0 +1,86 @@
+{
+  "sprint": "03",
+  "title": "Web Driver Map UI (Tunisia Map + EV Stations Visualization)",
+  "branch": "sprint/03-web-driver-map",
+  "completed": false,
+  "artifacts": {
+    "source": [
+      "source/packages/domain-types/src/index.ts",
+      "source/packages/domain-types/src/__tests__/station.test.ts",
+      "source/packages/client-core/src/index.ts",
+      "source/packages/client-core/src/stationApi.ts",
+      "source/packages/client-core/src/__tests__/stationApi.test.ts",
+      "source/packages/ui-kit/src/index.ts",
+      "source/packages/ui-kit/src/map/MapProvider.tsx",
+      "source/packages/ui-kit/src/map/MapProvider.module.css",
+      "source/packages/ui-kit/src/map/StationMarkerLayer.tsx",
+      "source/packages/ui-kit/src/feedback/LoadingSpinner.tsx",
+      "source/packages/ui-kit/src/feedback/LoadingSpinner.module.css",
+      "source/packages/ui-kit/src/feedback/ErrorBanner.tsx",
+      "source/packages/ui-kit/src/feedback/ErrorBanner.module.css",
+      "source/packages/ui-kit/src/feedback/EmptyState.tsx",
+      "source/packages/ui-kit/src/feedback/EmptyState.module.css",
+      "source/packages/ui-kit/src/vite-env.d.ts",
+      "source/packages/ui-kit/package.json",
+      "source/packages/ui-kit/tsconfig.json",
+      "source/packages/ui-kit/vitest.config.ts",
+      "source/apps/web-driver/src/main.tsx",
+      "source/apps/web-driver/src/App.tsx",
+      "source/apps/web-driver/src/pages/MapPage.tsx",
+      "source/apps/web-driver/src/pages/MapPage.module.css",
+      "source/apps/web-driver/src/hooks/useStationsNearViewport.ts",
+      "source/apps/web-driver/src/services/stationService.ts",
+      "source/apps/web-driver/src/__tests__/App.test.tsx",
+      "source/apps/web-driver/package.json",
+      "source/apps/web-driver/tsconfig.json",
+      "source/apps/web-driver/vite.config.ts",
+      "source/apps/web-driver/vitest.config.ts",
+      "source/apps/web-driver/index.html",
+      "source/apps/web-driver/vite-env.d.ts"
+    ],
+    "docs": [
+      "docs/speckit/sprints/sprint-03/spec.md",
+      "docs/speckit/sprints/sprint-03/plan.md",
+      "docs/speckit/sprints/sprint-03/tasks.md",
+      "docs/speckit/sprints/sprint-03/quickstart.md",
+      "docs/speckit/sprints/sprint-03/SYSTEM_STATE.md",
+      "docs/speckit/sprints/sprint-03/sprint_state.json",
+      "docs/speckit/sprints/sprint-03/validation_report.md",
+      "docs/speckit/sprints/sprint-03/sprint_review.md",
+      "docs/speckit/sprints/sprint-03/follow_up.md",
+      "docs/speckit/sprints/SPRINTS_01_03_SUMMARY.md"
+    ],
+    "validation": [
+      "pnpm install ✅",
+      "pnpm typecheck ✅",
+      "pnpm test ✅",
+      "cargo check ✅"
+    ]
+  },
+  "status": {
+    "pnpm_install": "pass",
+    "typecheck": "pass",
+    "tests": "pass",
+    "cargo_check": "pass"
+  },
+  "violations": [],
+  "delivery_date": "2026-06-24",
+  "tech_stack": {
+    "frontend": {
+      "framework": "React 18.3.1",
+      "language": "TypeScript 5.6 (strict)",
+      "build": "Vite 6.0",
+      "test": "Vitest 3.2"
+    },
+    "map": {
+      "library": "Leaflet 1.9.4",
+      "react-binding": "react-leaflet 4.2",
+      "clustering": "leaflet.markercluster 1.5.3"
+    },
+    "packages": {
+      "ui-kit": "5 components",
+      "domain-types": "StationDto, schemas",
+      "client-core": "API client, hooks"
+    }
+  }
+}
