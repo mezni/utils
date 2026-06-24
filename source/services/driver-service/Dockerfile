@@ -3,20 +3,16 @@ FROM rust:1.81-slim as builder
 
 WORKDIR /app
 
-# Install sqlx-cli for offline mode preparation
-RUN cargo install sqlx-cli --no-default-features --features postgres
-
 # Copy dependencies first for caching
-COPY driver-service/Cargo.toml ./driver-service/
-COPY driver-service/Cargo.lock ./driver-service/
-WORKDIR /app/driver-service
+COPY driver-service/Cargo.toml .
+COPY driver-service/Cargo.lock .
 RUN --mount=type=cache,target=/root/.cargo/cache \
     --mount=type=cache,target=/usr/local/cargo/registry \
     cargo fetch --locked
 
 # Copy source code
-COPY src ./src
-COPY src/**/*.rs ./src
+COPY driver-service/src ./src
+COPY driver-service/src/**/*.rs ./src
 
 # Build the binary
 RUN --mount=type=cache,target=/root/.cargo/cache \
