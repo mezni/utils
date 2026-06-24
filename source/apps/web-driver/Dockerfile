@@ -18,8 +18,8 @@ WORKDIR /app
 RUN pnpm install --frozen-lockfile
 
 # Copy workspace files
-COPY packages/ ./packages/
-COPY apps/ ./apps/
+COPY ../packages/ ./packages/
+COPY ../apps/ ./apps/
 
 # Build the application
 WORKDIR /app/apps/web-driver

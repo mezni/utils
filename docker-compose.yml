@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   postgres:
     image: postgres:16-alpine
@@ -52,8 +50,32 @@ services:
     networks:
       - bornemap-network
 
+  osm-importer:
+    build:
+      context: ./infra/docker/osm-importer
+      dockerfile: Dockerfile
+    container_name: bornemap-osm-importer
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: bornemap
+      DB_PASSWORD: bornemap
+      DB_NAME: bornemap
+      SOURCE_URL: https://download.geofabrik.de/africa/tunisia-latest.osm.pbf
+    volumes:
+      - osm_data:/app/data
+      - ./migrations/platform_db/gis:/app/migrations:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - bornemap-network
+    command: sh -c "sleep 5 && pnpm run import"
+
 volumes:
   postgres_data:
+  osm_data:
 
 networks:
   bornemap-network:

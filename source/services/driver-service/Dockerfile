@@ -15,8 +15,8 @@ RUN --mount=type=cache,target=/root/.cargo/cache \
     cargo fetch --locked
 
 # Copy source code
-COPY driver-service/src ./src
-COPY driver-service/src/**/*.rs ./src
+COPY src ./src
+COPY src/**/*.rs ./src
 
 # Build the binary
 RUN --mount=type=cache,target=/root/.cargo/cache \
@@ -39,7 +39,7 @@ WORKDIR /app
 COPY --from=builder /app/target/release/driver-service /app/
 
 # Copy sqlx offline data if exists
-COPY --from=builder /app/driver-service/.sqlx /app/.sqlx
+COPY --from=builder /app/.sqlx /app/.sqlx
 
 # Expose port
 EXPOSE 3001
