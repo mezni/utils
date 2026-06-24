@@ -1,0 +1,46 @@
+# Git
+.git/
+.gitignore
+
+# Documentation
+*.md
+docs/
+docs-*
+
+# Build artifacts
+target/
+node_modules/
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+Jenkinsfile
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker files
+Dockerfile*
+docker-compose*.yml
+
+# Environment
+.env
+.env.*
+
+# Tests
+tests/
+__tests__/
+*.test.*
+*.spec.*
+
+# Misc
+.cache/
+.temp/
+tmp/
+*.tmp

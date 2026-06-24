@@ -1,11 +1,7 @@
-//! Error types for platform-core
-//! Defines AppError enum with variants for different error categories
-
 use serde::Serialize;
 use thiserror::Error;
 
-/// Application-wide error type
-#[derive(Error, Serialize, Debug, Clone, PartialEq)]
+#[derive(Error, Debug)]
 pub enum AppError {
     #[error("Validation Error: {0}")]
     Validation(String),
@@ -17,32 +13,55 @@ pub enum AppError {
     Internal(String),
 
     #[error("Database Error: {0}")]
-    Database(#[from] sqlx::Error),
+    Database(String),
 
     #[error("Serialization Error: {0}")]
-    Serialization(#[from] serde_json::Error),
+    Serialization(String),
 
     #[error("Configuration Error: {0}")]
     Configuration(String),
 
     #[error("IO Error: {0}")]
-    Io(#[from] std::io::Error),
+    Io(String),
 }
 
-/// Convenience type alias for Result type
+impl Serialize for AppError {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        serializer.serialize_str(&self.to_string())
+    }
+}
+
+impl From<sqlx::Error> for AppError {
+    fn from(e: sqlx::Error) -> Self {
+        AppError::Database(e.to_string())
+    }
+}
+
+impl From<serde_json::Error> for AppError {
+    fn from(e: serde_json::Error) -> Self {
+        AppError::Serialization(e.to_string())
+    }
+}
+
+impl From<std::io::Error> for AppError {
+    fn from(e: std::io::Error) -> Self {
+        AppError::Io(e.to_string())
+    }
+}
+
 pub type AppResult<T> = Result<T, AppError>;
 
-/// Helper function to create validation errors
 pub fn validation_error(msg: &str) -> AppError {
     AppError::Validation(msg.to_string())
 }
 
-/// Helper function to create not found errors
 pub fn not_found_error(msg: &str) -> AppError {
     AppError::NotFound(msg.to_string())
 }
 
-/// Helper function to create internal errors
 pub fn internal_error(msg: &str) -> AppError {
     AppError::Internal(msg.to_string())
 }

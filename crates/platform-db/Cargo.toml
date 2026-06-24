@@ -10,9 +10,16 @@ license.workspace = true
 sqlx.workspace = true
 chrono.workspace = true
 nanoid.workspace = true
+async-trait.workspace = true
+tracing.workspace = true
+thiserror.workspace = true
+serde.workspace = true
 
 # Platform crate
 bornemap-platform-core = { path = "../platform-core" }
 
 [dev-dependencies]
 tokio.workspace = true
+
+[lib]
+path = "src/mod.rs"

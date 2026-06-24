@@ -24,8 +24,8 @@ config.workspace = true
 dotenv = "0.15"
 
 # Platform crates
-bornemap-platform-core = { path = "../crates/platform-core" }
-bornemap-platform-db = { path = "../crates/platform-db" }
+bornemap-platform-core = { path = "../../crates/platform-core" }
+bornemap-platform-db = { path = "../../crates/platform-db" }
 
 [dev-dependencies]
 tokio-test = "0.4"

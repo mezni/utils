@@ -6,7 +6,7 @@ ENV POSTGRES_PASSWORD=bomeapassword
 ENV POSTGRES_DB=bornemap
 
 # Copy custom init scripts
-COPY init/ /docker-entrypoint-initdb.d/
+COPY infrastructure/postgres/init/ /docker-entrypoint-initdb.d/
 
 # Expose PostgreSQL port
 EXPOSE 5432
