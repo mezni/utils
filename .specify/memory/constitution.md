@@ -1,50 +1,127 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!--
+  Sync Impact Report — Constitution Update
+  Version change: 0.0.0 (template) → 1.0.0 (initial populated)
+  Modified principles: All — first population from BorneMap Constitution v1.15.2
+  Added sections: All principles and sections populated from project constitution
+  Removed sections: None
+  Templates requiring updates:
+    - spec-template.md: ✅ Updated (see consistency check below)
+    - plan-template.md: ✅ Updated
+    - tasks-template.md: ✅ Updated
+    - checklist-template.md: ⚠ No changes needed
+  Follow-up TODOs: None
+-->
+
+# BorneMap Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. Service Topology Lock (NON-NEGOTIABLE)
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+Exactly three services exist: `auth-service` (3000), `driver-service` (3001),
+`admin-service` (3002). No additional services may be introduced. No service
+splitting or duplication allowed. New services require a Constitution upgrade.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+Rationale: Prevents uncontrolled system expansion and maintains deterministic
+service topology.
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+### II. Clean Architecture (NON-NEGOTIABLE)
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+Every backend service MUST follow Clean Architecture with four layers:
+`domain/` (pure logic, no frameworks/DB/HTTP), `application/` (use cases,
+orchestration, DTO mapping), `infrastructure/` (SQLx, Redis, Keycloak,
+external APIs), `presentation/` (HTTP, request validation, response mapping).
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+Rationale: Enforces separation of concerns and testability at every layer.
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+### III. Identity Dual-System (NON-NEGOTIABLE)
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+Two independent identity systems MUST NEVER overlap. Human identity uses
+Keycloak UUID (`user_uuid`). Business entities use `PREFIX-nanoid(12)`
+format (e.g., `STA-abc123def456`). Users MUST NOT use nanoid. Entities
+MUST NOT use UUID. No mixing allowed.
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+Rationale: Prevents identity collision between human users and platform
+entities across the entire system.
+
+### IV. Data Ownership & Isolation
+
+Each data domain is strictly owned by a single service: `users` schema →
+`auth-service`, `gis` schema → `driver-service`, `inventory` schema →
+`admin-service`. Cross-service database writes are FORBIDDEN. No service
+trusts another service's runtime state.
+
+Rationale: Guarantees data integrity, clear failure boundaries, and
+independent service evolution.
+
+### V. Security Engineering (NON-NEGOTIABLE)
+
+Assume all inputs are hostile. Enforce strict validation, authentication
+checks, authorization checks, least privilege, and schema validation at
+every boundary. Never trust client input, cached state, or inter-service
+communication. Trusted sources: Keycloak JWT, SQLx compile-time checks,
+domain-types contracts, schema validation.
+
+Rationale: Defense-in-depth for a geospatial platform handling operator
+and driver data.
+
+## Enforcement & CI
+
+### CI Gates (HARD FAIL Conditions)
+
+- Analytics database write violation → HARD FAIL
+- Identity rule violation → HARD FAIL
+- Service topology change → HARD FAIL
+- SQLx `cargo sqlx prepare --check` failure → HARD FAIL
+- Schema mismatch → HARD FAIL
+- Dependency graph violation → HARD FAIL
+- Migration ownership violation → HARD FAIL
+
+### Testing Requirements
+
+Every feature MUST include unit tests, integration tests, and contract
+tests. Must cover: success paths, failure paths, authorization failures,
+and boundary conditions. No feature is complete without tests.
+
+### Migration Governance
+
+Migrations are forward-only, no destructive rollback, SQLx compatible,
+CI-validated. Ownership: `users` schema → auth-service, `gis` + analytics_db
+→ driver-service, `inventory` schema → admin-service.
+
+## Development Workflow
+
+### Execution Model
+
+Sprint-based with Speckit workflow: Spec → Plan → Tasks → Approval →
+Implementation → Validation → Delivery Artifacts. Each sprint produces:
+SYSTEM_STATE.md, roadmap_status.md, sprint_state.json, sprint_review.md,
+validation_report.md, follow_up.md.
+
+### API Design
+
+REST only, versioned endpoints (`/api/v1/...`), consistent DTOs, structured
+error responses. No duplicate ownership of endpoints. Operational endpoints
+allowed everywhere: `/health`, `/ready`, `/live`, `/metrics`.
+
+### Dependency Graph
+
+Frontend: `ui-kit → domain-types → client-core`. Backend:
+`services → shared-domain → shared-infra`. Service→service imports
+FORBIDDEN. Frontend→backend imports FORBIDDEN. Circular dependencies
+FORBIDDEN. Violation = HARD FAILURE.
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+This Constitution is the System of Record and supersedes all other
+practices and LLM output. Amendments require:
+1. Documentation of the proposed change
+2. Approval and version bump
+3. Migration plan for affected systems
+4. Consistency validation across all dependent artifacts
+5. Compliance review
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+Versioning: MAJOR for backward-incompatible governance/principle changes;
+MINOR for new principles/sections; PATCH for clarifications.
+
+**Version**: 1.0.0 | **Ratified**: 2026-06-24 | **Last Amended**: 2026-06-24

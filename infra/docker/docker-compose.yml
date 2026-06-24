@@ -1,0 +1,39 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgis/postgis:16-3.4
+    environment:
+      POSTGRES_DB: bornemap
+      POSTGRES_USER: bornemap
+      POSTGRES_PASSWORD: bornemap
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ../postgres/migrations:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bornemap"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  osm-importer:
+    build: ./osm-importer
+    environment:
+      PGHOST: postgres
+      PGPORT: 5432
+      PGDATABASE: bornemap
+      PGUSER: bornemap
+      PGPASSWORD: bornemap
+      OSM_URL: "https://download.geofabrik.de/africa/tunisia-latest.osm.pbf"
+      OSM_FILE: /data/tunisia-latest.osm.pbf
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - osmdata:/data
+
+volumes:
+  pgdata:
+  osmdata:
