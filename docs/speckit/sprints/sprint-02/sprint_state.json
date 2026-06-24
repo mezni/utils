@@ -1,0 +1,43 @@
+{
+  "sprint": "02",
+  "title": "Driver-Service API Scaffold",
+  "branch": "sprint/02-driver-service-api",
+  "completed": false,
+  "artifacts": {
+    "source": [
+      "source/services/driver-service/src/main.rs",
+      "source/services/driver-service/src/domain/station.rs",
+      "source/services/driver-service/src/domain/errors.rs",
+      "source/services/driver-service/src/domain/mod.rs",
+      "source/services/driver-service/src/application/get_nearby_stations.rs",
+      "source/services/driver-service/src/application/mod.rs",
+      "source/services/driver-service/src/infrastructure/db.rs",
+      "source/services/driver-service/src/infrastructure/repository.rs",
+      "source/services/driver-service/src/infrastructure/mod.rs",
+      "source/services/driver-service/src/presentation/routes.rs",
+      "source/services/driver-service/src/presentation/dto.rs",
+      "source/services/driver-service/src/presentation/health.rs",
+      "source/services/driver-service/src/presentation/nearby.rs",
+      "source/services/driver-service/src/presentation/mod.rs",
+      "source/services/driver-service/Cargo.toml"
+    ],
+    "docs": [
+      "docs/speckit/sprints/sprint-02/spec.md",
+      "docs/speckit/sprints/sprint-02/plan.md",
+      "docs/speckit/sprints/sprint-02/tasks.md",
+      "docs/speckit/sprints/sprint-02/quickstart.md"
+    ],
+    "validation": [
+      "cargo check",
+      "cargo test",
+      "cargo sqlx prepare --check (requires live DB)"
+    ]
+  },
+  "status": {
+    "cargo_check": "pass",
+    "cargo_test": "pending",
+    "sqlx_prepare": "blocked"
+  },
+  "violations": [],
+  "delivery_date": "2026-06-24"
+}
