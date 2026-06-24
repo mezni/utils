@@ -1,0 +1,55 @@
+{
+  "sprint": "sprint-01",
+  "version": "1.0.0",
+  "branch": "001-bootstrap-gis-ingestion",
+  "status": "complete",
+  "date": "2026-06-24",
+  "constitution_version": "1.15.2",
+  "artifacts": {
+    "spec": "docs/speckit/sprints/sprint-01/spec.md",
+    "plan": "docs/speckit/sprints/sprint-01/plan.md",
+    "tasks": "docs/speckit/sprints/sprint-01/tasks.md",
+    "system_state": "docs/speckit/sprints/sprint-01/SYSTEM_STATE.md",
+    "roadmap": "docs/speckit/sprints/sprint-01/roadmap_status.md",
+    "review": "docs/speckit/sprints/sprint-01/sprint_review.md",
+    "validation": "docs/speckit/sprints/sprint-01/validation_report.md",
+    "follow_up": "docs/speckit/sprints/sprint-01/follow_up.md"
+  },
+  "deliverables": {
+    "migrations": [
+      "migrations/platform_db/gis/001_create_schema.sql",
+      "migrations/platform_db/gis/002_create_staging_table.sql",
+      "migrations/platform_db/gis/003_create_curated_table.sql",
+      "migrations/platform_db/gis/004_find_nearby_stations.sql"
+    ],
+    "docker": [
+      "infra/docker/osm-importer/Dockerfile",
+      "infra/docker/osm-importer/requirements.txt",
+      "infra/docker/osm-importer/scripts/import.sh",
+      "infra/docker/osm-importer/scripts/parse_and_import.py"
+    ],
+    "constitution": ".specify/memory/constitution.md",
+    "plan_template_updated": ".specify/templates/plan-template.md"
+  },
+  "tasks": {
+    "TASK-001": {"name": "Create gis schema", "status": "complete"},
+    "TASK-002": {"name": "Create staging table", "status": "complete"},
+    "TASK-003": {"name": "Create curated table", "status": "complete"},
+    "TASK-004": {"name": "Build OSM importer Dockerfile", "status": "complete"},
+    "TASK-005": {"name": "Implement OSM parsing + ETL", "status": "complete"},
+    "TASK-006": {"name": "Staging to curated transform", "status": "complete"},
+    "TASK-007": {"name": "Implement find_nearby_stations", "status": "complete"},
+    "TASK-008": {"name": "Add defaults + ordering + limit", "status": "complete"},
+    "TASK-009": {"name": "Validate SQLx migrations", "status": "pending_rust_setup"},
+    "TASK-010": {"name": "Integration test", "status": "pending_db_connection"}
+  },
+  "validation": {
+    "python_syntax": "pass",
+    "docker_build": "pass",
+    "sql_idempotency": "pass",
+    "constitution_compliance": "pass",
+    "known_bugs_fixed": ["KNOWN-001", "KNOWN-002"],
+    "sqlx_compile": "not_applicable_yet",
+    "integration_test": "not_executed"
+  }
+}
