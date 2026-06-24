@@ -7,7 +7,7 @@ WORKDIR /app
 RUN npm install -g pnpm
 
 # Copy web-driver files
-COPY web-driver/package.json web-driver/pnpm-lock.yaml web-driver/tsconfig.json ./web-driver/
+COPY package.json pnpm-lock.json tsconfig.json vite.config.ts vite-env.d.ts ./web-driver/
 
 # Install dependencies
 WORKDIR /app/web-driver
