@@ -87,7 +87,7 @@ services:
     restart: unless-stopped
     networks:
       - bornemap-network
-    command: sh -c "sleep 5 && pnpm run import"
+    command: sh -c "sleep 5 && python3 scripts/parse_and_import.py --pbf /data/tunisia.osm.pbf --db-host postgres --db-port 5432 --db-name bornemap --db-user bornemap --db-password bornemap"
 
 volumes:
   postgres_data:
