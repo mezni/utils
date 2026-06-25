@@ -100,6 +100,9 @@ services:
       DATABASE_URL: postgresql://bornemap:bornemap@postgres:5432/bornemap
       KEYCLOAK_REALM: bornemap
       KEYCLOAK_ISSUER: http://keycloak:8080/realms/bornemap
+      KEYCLOAK_CLIENT_ID: admin-dashboard
+      KEYCLOAK_CLIENT_SECRET: pXFERGbIuDhSDGBL555DVlt1hRgIzt93
+      KEYCLOAK_REDIRECT_URI: http://localhost:5174/auth/callback
       RUST_LOG: info
     ports:
       - "3000:3000"

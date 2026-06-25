@@ -1,11 +1,15 @@
 use std::sync::Arc;
-use tracing_subscriber::EnvFilter;
 
-use auth_service::infrastructure::{config::Config, database, keycloak::JwtValidator};
+use auth_service::infrastructure::config::Config;
+use auth_service::infrastructure::database;
+use auth_service::infrastructure::keycloak::JwtValidator;
 use auth_service::repository::user_profile_repository::UserProfileRepository;
 use auth_service::router::create_router;
 use auth_service::services::profile_service::ProfileService;
 use auth_service::state::AppState;
+use auth_service::oidc::client::OidcClient;
+use auth_service::session::manager::SessionManager;
+use tracing_subscriber::EnvFilter;
 
 #[tokio::main]
 async fn main() {
@@ -22,17 +26,24 @@ async fn main() {
         .await
         .expect("failed to connect to database");
 
-    let keycloak = JwtValidator::new(&config.keycloak_jwks_url, &config.keycloak_issuer)
+    let keycloak = JwtValidator::new(&config.oidc.jwks_url, &config.oidc.issuer)
         .await
         .expect("failed to initialize JWT validator");
 
     let profile_repo = UserProfileRepository::new(pool.clone());
     let profile_service = ProfileService::new(profile_repo);
 
+    let oidc_client = OidcClient::new(&config.oidc)
+        .expect("failed to initialize OIDC client");
+
+    let session_manager = SessionManager::new();
+
     let state = Arc::new(AppState {
         pool,
         keycloak,
         profile_service,
+        oidc_client,
+        session_manager,
     });
 
     let app = create_router(state);
