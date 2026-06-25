@@ -50,6 +50,22 @@ services:
     networks:
       - bornemap-network
 
+  admin-service:
+    build:
+      context: ./source/services/admin-service
+      dockerfile: Dockerfile
+    container_name: bornemap-admin-service
+    environment:
+      DATABASE_URL: postgresql://bornemap:bornemap@postgres:5432/bornemap
+    ports:
+      - "3002:3002"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - bornemap-network
+    restart: unless-stopped
+
   osm-importer:
     build:
       context: ./infra/docker/osm-importer

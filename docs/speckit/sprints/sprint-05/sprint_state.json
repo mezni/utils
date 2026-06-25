@@ -1,0 +1,37 @@
+{
+  "sprint_id": "sprint-05",
+  "title": "Admin-Service Bootstrap + EV Domain CRUD APIs",
+  "status": "completed",
+  "date": "2026-06-25",
+  "constitution_version": "1.15.2",
+  "branch": "sprint/05-admin-service-crud",
+  "services": {
+    "admin-service": {
+      "port": 3002,
+      "status": "bootstrapped",
+      "location": "/source/services/admin-service/",
+      "architecture": "clean",
+      "layers": ["domain", "application", "infrastructure", "presentation"]
+    }
+  },
+  "metrics": {
+    "unit_tests": 12,
+    "unit_tests_passed": 12,
+    "integration_tests": 7,
+    "integration_tests_passed": 7,
+    "api_endpoints": 16,
+    "entities": 3
+  },
+  "compliance": {
+    "constitution_checked": true,
+    "identity_separation": true,
+    "soft_delete": true,
+    "sqlx_compile_validation": true,
+    "clean_architecture": true,
+    "no_hard_deletes": true,
+    "no_scope_expansion": true
+  },
+  "hard_stop_conditions": {
+    "none_violated": true
+  }
+}
