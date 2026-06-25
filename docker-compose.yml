@@ -90,6 +90,28 @@ services:
       - bornemap-network
     restart: unless-stopped
 
+  auth-service:
+    build:
+      context: ./source/services/auth-service
+      dockerfile: Dockerfile
+    container_name: bornemap-auth-service
+    environment:
+      SERVICE_PORT: "3000"
+      DATABASE_URL: postgresql://bornemap:bornemap@postgres:5432/bornemap
+      KEYCLOAK_REALM: bornemap
+      KEYCLOAK_ISSUER: http://keycloak:8080/realms/bornemap
+      RUST_LOG: info
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      keycloak:
+        condition: service_started
+    networks:
+      - bornemap-network
+    restart: unless-stopped
+
   osm-importer:
     build:
       context: ./infra/docker/osm-importer
