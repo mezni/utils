@@ -19,6 +19,30 @@ services:
     networks:
       - bornemap-network
 
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0
+    container_name: bornemap-keycloak
+    command: start-dev --import-realm
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak_db
+      KC_DB_USERNAME: bornemap
+      KC_DB_PASSWORD: bornemap
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      KC_HEALTH_ENABLED: "true"
+    ports:
+      - "8080:8080"
+      - "9000:9000"
+    volumes:
+      - ./infra/keycloak/realm:/opt/keycloak/data/import:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - bornemap-network
+    restart: unless-stopped
+
   driver-service:
     build:
       context: ./source/services/driver-service

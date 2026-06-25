@@ -1,0 +1,102 @@
+{
+  "id": "bornemap",
+  "realm": "bornemap",
+  "displayName": "BorneMap",
+  "enabled": true,
+  "sslRequired": "external",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": true,
+  "editUsernameAllowed": false,
+  "accessTokenLifespan": 300,
+  "defaultSignatureAlgorithm": "RS256",
+  "roles": {
+    "realm": [
+      {
+        "name": "driver",
+        "description": "Mobile app user (EV driver)",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "bornemap"
+      },
+      {
+        "name": "partner",
+        "description": "Partner EV station owner",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "bornemap"
+      },
+      {
+        "name": "admin",
+        "description": "Platform administrator",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "bornemap"
+      },
+      {
+        "name": "super_admin",
+        "description": "Super administrator",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "bornemap"
+      }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "mobile-driver",
+      "name": "Mobile Driver App",
+      "enabled": true,
+      "publicClient": true,
+      "protocol": "openid-connect",
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": false,
+      "implicitFlowEnabled": false,
+      "redirectUris": [
+        "bornemap://callback",
+        "http://localhost:3000/*"
+      ],
+      "webOrigins": ["+"],
+      "attributes": {
+        "pkce.code.challenge.method": "S256"
+      }
+    },
+    {
+      "clientId": "web-driver",
+      "name": "Web Driver Map",
+      "enabled": true,
+      "publicClient": true,
+      "protocol": "openid-connect",
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": false,
+      "implicitFlowEnabled": false,
+      "redirectUris": [
+        "http://localhost:5173/*"
+      ],
+      "webOrigins": ["http://localhost:5173"],
+      "attributes": {
+        "pkce.code.challenge.method": "S256"
+      }
+    },
+    {
+      "clientId": "admin-dashboard",
+      "name": "Admin Dashboard",
+      "enabled": true,
+      "publicClient": false,
+      "secret": "bornemap-admin-secret-dev",
+      "protocol": "openid-connect",
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": true,
+      "implicitFlowEnabled": false,
+      "redirectUris": [
+        "http://localhost:5174/*"
+      ],
+      "webOrigins": ["http://localhost:5174"]
+    }
+  ],
+  "users": []
+}
