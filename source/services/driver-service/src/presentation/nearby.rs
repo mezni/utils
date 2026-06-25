@@ -53,7 +53,8 @@ pub async fn nearby_handler(
             let data: Vec<NearbyStationResponse> = stations.into_iter().map(Into::into).collect();
             Ok(Json(json!({ "data": data })))
         }
-        Err(_) => {
+        Err(e) => {
+            tracing::error!(error = %e, "nearby query failed");
             Err((StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"error": "internal server error"}))))
         }
     }

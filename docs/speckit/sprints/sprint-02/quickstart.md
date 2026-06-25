@@ -1,6 +1,6 @@
 # Sprint 02 — Quickstart
 
-**Prerequisites**: Rust 1.81+, PostgreSQL 16+, SQLx CLI
+**Prerequisites**: Rust 1.88+, PostgreSQL 16+, SQLx CLI
 
 ---
 

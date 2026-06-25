@@ -62,6 +62,7 @@ Rules:
 ### IV. Clean Architecture & Dependency Governance
 
 **Backend (Rust):**
+- Version: 1.88+ (minimum stable version for all Rust services)
 - Layers: `domain/` → `application/` → `infrastructure/` → `presentation/`
 - Domain: pure logic only, no DB, no HTTP, no frameworks
 - Application: use-case orchestration only, DTO mapping allowed

@@ -2,7 +2,7 @@ CREATE OR REPLACE FUNCTION gis.find_nearby_stations(
     lat DOUBLE PRECISION,
     lon DOUBLE PRECISION,
     radius INTEGER DEFAULT 5000,
-    limit INTEGER DEFAULT 50
+    max_results INTEGER DEFAULT 50
 )
 RETURNS TABLE(
     station_id TEXT,
@@ -32,5 +32,5 @@ AS $$
             sin(radians(lat)) * sin(radians(s.lat))
           ) * 1000) <= radius
     ORDER BY distance_km ASC, s.station_id ASC
-    LIMIT limit;
+    LIMIT max_results;
 $$;

@@ -247,6 +247,7 @@ name = "driver-service"
 version = "1.0.0"
 dependencies = [
  "axum",
+ "home",
  "serde",
  "serde_json",
  "sqlx",

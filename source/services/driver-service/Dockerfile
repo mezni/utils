@@ -1,5 +1,5 @@
 # Multi-stage build for Rust driver-service
-FROM rust:1.82-slim as builder
+FROM rust:1.88-slim as builder
 
 WORKDIR /app
 
@@ -19,11 +19,6 @@ RUN --mount=type=cache,target=/root/.cargo/cache \
     --mount=type=cache,target=/usr/local/cargo/registry \
     cargo build --release
 
-# Run sqlx prepare for offline mode
-RUN --mount=type=bind,from=docker.io/postgres:16-alpine,src=/var/lib/postgresql/data,target=/var/lib/postgresql/data,readonly \
-    --mount=type=bind,from=docker.io/postgres:16-alpine,src=/docker-entrypoint-initdb.d,target=/docker-entrypoint-initdb.d,readonly \
-    sqlx prepare --database-url postgresql://bornemap:bornemap@postgres:5432/bornemap -- --db-url postgresql://bornemap:bornemap@postgres:5432/bornemap
-
 # Production stage
 FROM debian:bookworm-slim
 
@@ -33,9 +28,6 @@ WORKDIR /app
 
 # Copy binary from builder
 COPY --from=builder /app/target/release/driver-service /app/
-
-# Copy sqlx offline data if exists
-COPY --from=builder /app/.sqlx /app/.sqlx
 
 # Expose port
 EXPOSE 3001

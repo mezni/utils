@@ -1,0 +1,1 @@
+{"version":3,"file":"EmptyState.js","sourceRoot":"","sources":["../../src/feedback/EmptyState.tsx"],"names":[],"mappings":";AAAA,OAAO,MAAM,MAAM,yBAAyB,CAAC;AAM7C,MAAM,UAAU,UAAU,CAAC,EAAE,OAAO,GAAG,0CAA0C,EAAmB;IAClG,OAAO,CACL,eAAK,SAAS,EAAE,MAAM,CAAC,SAAS,iBAAc,aAAa,aACzD,cAAK,SAAS,EAAE,MAAM,CAAC,IAAI,uBAAS,EACpC,yBAAO,OAAO,GAAQ,IAClB,CACP,CAAC;AACJ,CAAC"}
