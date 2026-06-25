@@ -1,0 +1,60 @@
+{
+  "sprint": "sprint-04",
+  "version": "1.0.0",
+  "branch": "sprint/04-ev-domain-bootstrap",
+  "status": "complete",
+  "date": "2026-06-25",
+  "constitution_version": "1.15.2",
+  "artifacts": {
+    "spec": "docs/speckit/sprints/sprint-04/spec.md",
+    "plan": "docs/speckit/sprints/sprint-04/plan.md",
+    "tasks": "docs/speckit/sprints/sprint-04/tasks.md",
+    "system_state": "docs/speckit/sprints/sprint-04/SYSTEM_STATE.md",
+    "review": "docs/speckit/sprints/sprint-04/sprint_review.md",
+    "validation": "docs/speckit/sprints/sprint-04/validation_report.md",
+    "follow_up": "docs/speckit/sprints/sprint-04/follow_up.md"
+  },
+  "deliverables": {
+    "migrations": [
+      "migrations/platform_db/ev/001_create_schema.sql",
+      "migrations/platform_db/ev/002_lookup_tables.sql",
+      "migrations/platform_db/ev/003_create_partners.sql",
+      "migrations/platform_db/ev/004_create_stations.sql",
+      "migrations/platform_db/ev/005_create_chargers.sql",
+      "migrations/platform_db/ev/006_migrate_gis_to_ev.sql"
+    ],
+    "tests": [
+      "tests/ev/001_schema_test.sql",
+      "tests/ev/002_id_format_test.sql",
+      "tests/ev/003_constraint_test.sql"
+    ],
+    "docker": [
+      "docker-compose.yml"
+    ]
+  },
+  "tasks": {
+    "TASK-001": {"name": "Create ev schema + extensions", "status": "complete"},
+    "TASK-002": {"name": "Create lookup tables + seed data", "status": "complete"},
+    "TASK-003": {"name": "Create ev.partners", "status": "complete"},
+    "TASK-004": {"name": "Create ev.stations + spatial index", "status": "complete"},
+    "TASK-005": {"name": "Create ev.chargers + constraints", "status": "complete"},
+    "TASK-006": {"name": "Create GIS → EV migration", "status": "complete"},
+    "TASK-007": {"name": "Apply migrations + validate SQL", "status": "complete"},
+    "TASK-008": {"name": "Integration tests", "status": "complete"},
+    "TASK-009": {"name": "Generate delivery artifacts", "status": "complete"}
+  },
+  "validation": {
+    "schema_exists": "pass",
+    "extensions_installed": "pass",
+    "lookup_tables": "pass",
+    "id_format": "pass",
+    "spatial_index": "pass",
+    "soft_delete": "pass",
+    "foreign_keys": "pass",
+    "constraints": "pass",
+    "seed_data": "pass",
+    "migration_idempotent": "pass",
+    "constitution_compliance": "pass",
+    "tests_passed": "26/26"
+  }
+}
