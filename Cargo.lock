@@ -342,8 +342,12 @@ version = "0.1.0"
 dependencies = [
  "bornemap-core",
  "chrono",
+ "hex",
  "jsonwebtoken",
+ "rand 0.8.6",
  "serde",
+ "sha2",
+ "uuid",
 ]
 
 [[package]]

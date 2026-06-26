@@ -26,9 +26,11 @@ impl PasswordService {
             AuthError::InternalError
         })?;
 
-        Ok(Argon2::default()
-            .verify_password(password.as_bytes(), &parsed_hash)
-            .is_ok())
+        let argon2 = Argon2::default();
+        match argon2.verify_password(password.as_bytes(), &parsed_hash) {
+            Ok(_) => Ok(true), // Password matches
+            Err(_) => Ok(false), // Password mismatch or other error
+        }
     }
 }
 
@@ -46,7 +48,10 @@ mod tests {
     #[test]
     fn verify_wrong_password_rejected() {
         let hash = PasswordService::hash("correct_password").expect("hashing failed");
-        assert!(!PasswordService::verify("wrong_password", &hash).expect("verify failed"));
+        // Test with a wrong password
+        let verify_result = PasswordService::verify("wrong_password", &hash);
+        assert!(verify_result.is_ok()); // Should return Ok(false) for wrong password
+        assert!(!verify_result.unwrap()); // Check that it's false
     }
 
     #[test]

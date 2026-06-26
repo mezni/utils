@@ -38,10 +38,11 @@ curl localhost:8081/health/ready  # → 200
 ```
 Cargo.toml                  # workspace root
 shared/
-├── bornemap-core/          # domain types, errors
-└── bornemap-auth/          # JWT validation
+├── bornemap-core/          # domain types, errors, session management
+├── bornemap-auth/          # JWT validation, refresh tokens
+└── bornemap-db/            # database migrations
 services/
-├── auth-service/           # auth API
+├── auth-service/           # auth API with JWT refresh token rotation
 ├── driver-service/         # driver API (future)
 └── admin-service/          # admin API (future)
 apps/                       # frontends (future)
@@ -65,7 +66,7 @@ infra/
 
 | Service | Port | Status |
 |---|---|---|
-| auth-service | 3000 | Sprint 02 |
+| auth-service | 8081 | Sprint 04 - JWT refresh tokens |
 | driver-service | — | Planned |
 | admin-service | — | Planned |
 
@@ -75,8 +76,15 @@ Key env vars (see `.env.example`):
 
 ```
 HOST=0.0.0.0
-PORT=3000
+PORT=8081
 DATABASE_URL=postgres://postgres:postgres@localhost:5432/postgres
 REDIS_URL=redis://localhost:6379
 RUST_LOG=info
+
+# JWT Configuration
+JWT_SECRET=your-secret-key-here
+JWT_ACCESS_TTL_MINUTES=15
+JWT_REFRESH_TTL_DAYS=7
+JWT_ISSUER=bornemap
+JWT_AUDIENCE=bornemap-app
 ```

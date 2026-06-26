@@ -66,7 +66,8 @@ impl<R: UserRepository> RegisterUseCase<R> {
 
         let access_token = self
             .jwt_service
-            .generate_token(&user.id.to_string(), user.role.as_str())?;
+            .generate_token(&user.id.to_string(), user.role.as_str())
+            .map_err(|_| AuthError::InternalError)?;
 
         Ok(AuthResponse {
             access_token,

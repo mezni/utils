@@ -10,7 +10,10 @@ fn test_config() -> Option<AppConfig> {
         port: 0,
         database_url,
         jwt_secret: "test-integration-secret-key".into(),
-        jwt_expiration_seconds: 3600,
+        jwt_access_ttl_seconds: 3600,
+        jwt_refresh_ttl_seconds: 86400,
+        jwt_issuer: "test-issuer".into(),
+        jwt_audience: "test-audience".into(),
     })
 }
 
@@ -26,7 +29,12 @@ async fn health_live() {
     let pool = create_pool(&config.database_url).await.unwrap();
     run_migrations(&pool).await.unwrap();
     let state = AppState { db: pool };
-    let jwt_service = JwtService::new(config.jwt_secret, config.jwt_expiration_seconds);
+    let jwt_service = JwtService::new(
+        config.jwt_secret,
+        config.jwt_access_ttl_seconds,
+        config.jwt_issuer,
+        config.jwt_audience,
+    );
     let app = test::init_service(
         App::new()
             .app_data(web::Data::new(state))
@@ -49,7 +57,12 @@ async fn register_success() {
     let pool = create_pool(&config.database_url).await.unwrap();
     run_migrations(&pool).await.unwrap();
     let state = AppState { db: pool };
-    let jwt_service = JwtService::new(config.jwt_secret, config.jwt_expiration_seconds);
+    let jwt_service = JwtService::new(
+        config.jwt_secret,
+        config.jwt_access_ttl_seconds,
+        config.jwt_issuer,
+        config.jwt_audience,
+    );
     let app = test::init_service(
         App::new()
             .app_data(web::Data::new(state))
@@ -81,7 +94,12 @@ async fn register_duplicate() {
     let pool = create_pool(&config.database_url).await.unwrap();
     run_migrations(&pool).await.unwrap();
     let state = AppState { db: pool };
-    let jwt_service = JwtService::new(config.jwt_secret, config.jwt_expiration_seconds);
+    let jwt_service = JwtService::new(
+        config.jwt_secret,
+        config.jwt_access_ttl_seconds,
+        config.jwt_issuer,
+        config.jwt_audience,
+    );
     let app = test::init_service(
         App::new()
             .app_data(web::Data::new(state))
@@ -118,7 +136,12 @@ async fn register_validation_error() {
     let pool = create_pool(&config.database_url).await.unwrap();
     run_migrations(&pool).await.unwrap();
     let state = AppState { db: pool };
-    let jwt_service = JwtService::new(config.jwt_secret, config.jwt_expiration_seconds);
+    let jwt_service = JwtService::new(
+        config.jwt_secret,
+        config.jwt_access_ttl_seconds,
+        config.jwt_issuer,
+        config.jwt_audience,
+    );
     let app = test::init_service(
         App::new()
             .app_data(web::Data::new(state))
@@ -145,7 +168,12 @@ async fn login_success() {
     let pool = create_pool(&config.database_url).await.unwrap();
     run_migrations(&pool).await.unwrap();
     let state = AppState { db: pool };
-    let jwt_service = JwtService::new(config.jwt_secret, config.jwt_expiration_seconds);
+    let jwt_service = JwtService::new(
+        config.jwt_secret,
+        config.jwt_access_ttl_seconds,
+        config.jwt_issuer,
+        config.jwt_audience,
+    );
     let app = test::init_service(
         App::new()
             .app_data(web::Data::new(state))
@@ -184,7 +212,12 @@ async fn login_wrong_password() {
     let pool = create_pool(&config.database_url).await.unwrap();
     run_migrations(&pool).await.unwrap();
     let state = AppState { db: pool };
-    let jwt_service = JwtService::new(config.jwt_secret, config.jwt_expiration_seconds);
+    let jwt_service = JwtService::new(
+        config.jwt_secret,
+        config.jwt_access_ttl_seconds,
+        config.jwt_issuer,
+        config.jwt_audience,
+    );
     let app = test::init_service(
         App::new()
             .app_data(web::Data::new(state))
@@ -222,7 +255,12 @@ async fn login_nonexistent_user() {
     let pool = create_pool(&config.database_url).await.unwrap();
     run_migrations(&pool).await.unwrap();
     let state = AppState { db: pool };
-    let jwt_service = JwtService::new(config.jwt_secret, config.jwt_expiration_seconds);
+    let jwt_service = JwtService::new(
+        config.jwt_secret,
+        config.jwt_access_ttl_seconds,
+        config.jwt_issuer,
+        config.jwt_audience,
+    );
     let app = test::init_service(
         App::new()
             .app_data(web::Data::new(state))

@@ -13,7 +13,7 @@ async fn main() -> std::io::Result<()> {
         .json()
         .init();
 
-    let config = AppConfig::from_env();
+    let config = AppConfig::from_env().expect("configuration failed");
 
     let pool = create_pool(&config.database_url)
         .await
@@ -27,7 +27,12 @@ async fn main() -> std::io::Result<()> {
     run_migrations(&pool).await.expect("Migration failed");
 
     let state = AppState { db: pool };
-    let jwt_service = JwtService::new(config.jwt_secret.clone(), config.jwt_expiration_seconds);
+    let jwt_service = JwtService::new(
+        config.jwt_secret.clone(),
+        config.jwt_access_ttl_seconds,
+        config.jwt_issuer.clone(),
+        config.jwt_audience.clone(),
+    );
 
     println!("auth-service running on {}:{}", config.host, config.port);
 

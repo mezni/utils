@@ -5,6 +5,7 @@ use thiserror::Error;
 use uuid::Uuid;
 
 pub type UserId = Uuid;
+pub type SessionId = Uuid;
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -96,8 +97,58 @@ pub enum AppError {
     #[error("Unauthorized")]
     Unauthorized,
 
+    #[error("Invalid credentials")]
+    InvalidCredentials,
+
+    #[error("User already exists")]
+    UserAlreadyExists,
+
+    #[error("Token error: {0}")]
+    TokenError(String),
+
+    #[error("Invalid session")]
+    InvalidSession,
+
+    #[error("Expired session")]
+    ExpiredSession,
+
+    #[error("Configuration error: {0}")]
+    ConfigurationError(String),
+
+    #[error("Database error: {0}")]
+    DatabaseError(String),
+
     #[error("Internal error")]
     InternalError,
+
+    #[error("Validation error: {0}")]
+    ValidationError(String),
+}
+
+impl From<AuthError> for AppError {
+    fn from(e: AuthError) -> Self {
+        match e {
+            AuthError::InvalidCredentials => AppError::InvalidCredentials,
+            AuthError::EmailAlreadyExists => AppError::UserAlreadyExists,
+            AuthError::UserNotFound => AppError::InvalidCredentials,
+            AuthError::ValidationError(msg) => AppError::ValidationError(msg),
+            AuthError::Unauthorized => AppError::Unauthorized,
+            AuthError::InternalError => AppError::InternalError,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Session {
+    pub id: SessionId,
+    pub user_id: UserId,
+    pub token_hash: String,
+    pub family_id: Uuid,
+    pub created_at: DateTime<Utc>,
+    pub expires_at: DateTime<Utc>,
+    pub last_used_at: DateTime<Utc>,
+    pub revoked: bool,
+    pub revoked_at: Option<DateTime<Utc>>,
 }
 
 #[async_trait]
@@ -106,4 +157,13 @@ pub trait UserRepository: Send + Sync {
     async fn find_by_email(&self, email: &str) -> Result<Option<User>, AuthError>;
     async fn find_by_id(&self, id: UserId) -> Result<Option<User>, AuthError>;
     async fn email_exists(&self, email: &str) -> Result<bool, AuthError>;
+}
+
+#[async_trait]
+pub trait SessionRepository: Send + Sync {
+    async fn create(&self, session: &Session) -> Result<(), AppError>;
+    async fn find_by_token_hash(&self, token_hash: &str) -> Result<Option<Session>, AppError>;
+    async fn revoke_session(&self, id: SessionId) -> Result<(), AppError>;
+    async fn revoke_family(&self, family_id: Uuid) -> Result<(), AppError>;
+    async fn delete_expired(&self) -> Result<u64, AppError>;
 }
