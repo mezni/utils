@@ -65,7 +65,7 @@ infra/
 
 | Service | Port | Status |
 |---|---|---|
-| auth-service | 8081 | Sprint 01 |
+| auth-service | 3000 | Sprint 02 |
 | driver-service | — | Planned |
 | admin-service | — | Planned |
 
@@ -75,7 +75,7 @@ Key env vars (see `.env.example`):
 
 ```
 HOST=0.0.0.0
-PORT=8081
+PORT=3000
 DATABASE_URL=postgres://postgres:postgres@localhost:5432/postgres
 REDIS_URL=redis://localhost:6379
 RUST_LOG=info
