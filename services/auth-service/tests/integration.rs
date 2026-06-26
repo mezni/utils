@@ -1,6 +1,6 @@
 use actix_web::{App, test, web};
 use auth_service::{config::AppConfig, http, infrastructure::jwt::JwtService};
-use bornemap_db::{create_pool, run_migrations, AppState};
+use bornemap_db::{AppState, create_pool, run_migrations};
 use serde_json::json;
 
 fn test_config() -> Option<AppConfig> {
@@ -24,7 +24,10 @@ fn test_config() -> Option<AppConfig> {
 async fn health_live() {
     let config = match test_config() {
         Some(c) => c,
-        None => { eprintln!("skipping: TEST_DATABASE_URL not set"); return; }
+        None => {
+            eprintln!("skipping: TEST_DATABASE_URL not set");
+            return;
+        }
     };
     let pool = create_pool(&config.database_url).await.unwrap();
     run_migrations(&pool).await.unwrap();
@@ -52,7 +55,10 @@ async fn health_live() {
 async fn register_success() {
     let config = match test_config() {
         Some(c) => c,
-        None => { eprintln!("skipping: TEST_DATABASE_URL not set"); return; }
+        None => {
+            eprintln!("skipping: TEST_DATABASE_URL not set");
+            return;
+        }
     };
     let pool = create_pool(&config.database_url).await.unwrap();
     run_migrations(&pool).await.unwrap();
@@ -81,7 +87,7 @@ async fn register_success() {
 
     let json_body: serde_json::Value = test::read_body_json(resp).await;
     assert_eq!(json_body["token_type"], "Bearer");
-    assert!(json_body["access_token"].as_str().unwrap().len() > 0);
+    assert!(!json_body["access_token"].as_str().unwrap().is_empty());
     assert_eq!(json_body["expires_in"], 86400);
 }
 
@@ -89,7 +95,10 @@ async fn register_success() {
 async fn register_duplicate() {
     let config = match test_config() {
         Some(c) => c,
-        None => { eprintln!("skipping: TEST_DATABASE_URL not set"); return; }
+        None => {
+            eprintln!("skipping: TEST_DATABASE_URL not set");
+            return;
+        }
     };
     let pool = create_pool(&config.database_url).await.unwrap();
     run_migrations(&pool).await.unwrap();
@@ -131,7 +140,10 @@ async fn register_duplicate() {
 async fn register_validation_error() {
     let config = match test_config() {
         Some(c) => c,
-        None => { eprintln!("skipping: TEST_DATABASE_URL not set"); return; }
+        None => {
+            eprintln!("skipping: TEST_DATABASE_URL not set");
+            return;
+        }
     };
     let pool = create_pool(&config.database_url).await.unwrap();
     run_migrations(&pool).await.unwrap();
@@ -163,7 +175,10 @@ async fn register_validation_error() {
 async fn login_success() {
     let config = match test_config() {
         Some(c) => c,
-        None => { eprintln!("skipping: TEST_DATABASE_URL not set"); return; }
+        None => {
+            eprintln!("skipping: TEST_DATABASE_URL not set");
+            return;
+        }
     };
     let pool = create_pool(&config.database_url).await.unwrap();
     run_migrations(&pool).await.unwrap();
@@ -200,14 +215,17 @@ async fn login_success() {
 
     let json_body: serde_json::Value = test::read_body_json(resp).await;
     assert_eq!(json_body["token_type"], "Bearer");
-    assert!(json_body["access_token"].as_str().unwrap().len() > 0);
+    assert!(!json_body["access_token"].as_str().unwrap().is_empty());
 }
 
 #[actix_web::test]
 async fn login_wrong_password() {
     let config = match test_config() {
         Some(c) => c,
-        None => { eprintln!("skipping: TEST_DATABASE_URL not set"); return; }
+        None => {
+            eprintln!("skipping: TEST_DATABASE_URL not set");
+            return;
+        }
     };
     let pool = create_pool(&config.database_url).await.unwrap();
     run_migrations(&pool).await.unwrap();
@@ -226,7 +244,8 @@ async fn login_wrong_password() {
     )
     .await;
 
-    let register_body = json!({"email": "login-wrong-pw@example.com", "password": "correctpassword"});
+    let register_body =
+        json!({"email": "login-wrong-pw@example.com", "password": "correctpassword"});
     let req = test::TestRequest::post()
         .uri("/api/v1/auth/register")
         .set_json(&register_body)
@@ -250,7 +269,10 @@ async fn login_wrong_password() {
 async fn login_nonexistent_user() {
     let config = match test_config() {
         Some(c) => c,
-        None => { eprintln!("skipping: TEST_DATABASE_URL not set"); return; }
+        None => {
+            eprintln!("skipping: TEST_DATABASE_URL not set");
+            return;
+        }
     };
     let pool = create_pool(&config.database_url).await.unwrap();
     run_migrations(&pool).await.unwrap();

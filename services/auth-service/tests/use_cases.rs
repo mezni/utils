@@ -1,9 +1,9 @@
 use std::sync::{Arc, Mutex};
 
+use async_trait::async_trait;
 use auth_service::application::login::{LoginRequest, LoginUseCase};
 use auth_service::application::refresh::{RefreshRequest, RefreshUseCase};
 use auth_service::application::register::{RegisterRequest, RegisterUseCase};
-use async_trait::async_trait;
 use bornemap_auth::JwtService;
 use bornemap_core::{
     AppError, AuthError, Session, SessionRepository, User, UserId, UserRepository, UserRole,
@@ -97,7 +97,10 @@ impl SessionRepository for MockSessionRepository {
 
     async fn find_by_token_hash(&self, token_hash: &str) -> Result<Option<Session>, AppError> {
         let sessions = self.sessions.lock().unwrap();
-        Ok(sessions.iter().find(|s| s.token_hash == token_hash).cloned())
+        Ok(sessions
+            .iter()
+            .find(|s| s.token_hash == token_hash)
+            .cloned())
     }
 
     async fn revoke_session(&self, id: Uuid) -> Result<(), AppError> {
@@ -117,6 +120,13 @@ impl SessionRepository for MockSessionRepository {
                 s.revoked_at = Some(Utc::now());
             }
         }
+        Ok(())
+    }
+
+    async fn delete_user_sessions(&self, _user_id: UserId) -> Result<(), AppError> {
+        // Mock implementation - just clear all sessions for testing
+        let mut sessions = self.sessions.lock().unwrap();
+        sessions.clear();
         Ok(())
     }
 
@@ -154,7 +164,7 @@ fn registered_user(repo: &MockUserRepository, email: &str, password: &str) {
 #[tokio::test]
 async fn register_success() {
     let repo = MockUserRepository::new();
-    let use_case = RegisterUseCase::new(repo, jwt_service());
+    let use_case = RegisterUseCase::new(repo);
 
     let req = RegisterRequest {
         email: "user@example.com".into(),
@@ -162,15 +172,13 @@ async fn register_success() {
     };
 
     let resp = use_case.execute(req).await.expect("register failed");
-    assert_eq!(resp.token_type, "Bearer");
-    assert_eq!(resp.expires_in, 86400);
-    assert!(!resp.access_token.is_empty());
+    assert!(!resp.user_id.is_empty());
 }
 
 #[tokio::test]
 async fn register_duplicate_email() {
     let repo = MockUserRepository::new();
-    let use_case = RegisterUseCase::new(repo, jwt_service());
+    let use_case = RegisterUseCase::new(repo);
 
     let req = RegisterRequest {
         email: "user@example.com".into(),
@@ -192,7 +200,7 @@ async fn register_duplicate_email() {
 #[tokio::test]
 async fn register_invalid_email_missing_at() {
     let repo = MockUserRepository::new();
-    let use_case = RegisterUseCase::new(repo, jwt_service());
+    let use_case = RegisterUseCase::new(repo);
 
     let req = RegisterRequest {
         email: "userexample.com".into(),
@@ -208,7 +216,7 @@ async fn register_invalid_email_missing_at() {
 #[tokio::test]
 async fn register_invalid_email_missing_dot() {
     let repo = MockUserRepository::new();
-    let use_case = RegisterUseCase::new(repo, jwt_service());
+    let use_case = RegisterUseCase::new(repo);
 
     let req = RegisterRequest {
         email: "user@examplecom".into(),
@@ -224,7 +232,7 @@ async fn register_invalid_email_missing_dot() {
 #[tokio::test]
 async fn register_short_password() {
     let repo = MockUserRepository::new();
-    let use_case = RegisterUseCase::new(repo, jwt_service());
+    let use_case = RegisterUseCase::new(repo);
 
     let req = RegisterRequest {
         email: "user@example.com".into(),
@@ -244,7 +252,7 @@ async fn register_short_password() {
 #[tokio::test]
 async fn register_long_password() {
     let repo = MockUserRepository::new();
-    let use_case = RegisterUseCase::new(repo, jwt_service());
+    let use_case = RegisterUseCase::new(repo);
 
     let req = RegisterRequest {
         email: "user@example.com".into(),
@@ -260,7 +268,7 @@ async fn register_long_password() {
 #[tokio::test]
 async fn register_email_case_insensitive() {
     let repo = MockUserRepository::new();
-    let use_case = RegisterUseCase::new(repo, jwt_service());
+    let use_case = RegisterUseCase::new(repo);
 
     let req = RegisterRequest {
         email: "User@Example.COM".into(),
@@ -301,7 +309,12 @@ async fn login_wrong_password() {
     let user_repo = MockUserRepository::new();
     registered_user(&user_repo, "user@example.com", "password123");
     let session_repo = MockSessionRepository::new();
-    let use_case = LoginUseCase::new(user_repo.clone(), session_repo.clone(), jwt_service(), 86400);
+    let use_case = LoginUseCase::new(
+        user_repo.clone(),
+        session_repo.clone(),
+        jwt_service(),
+        86400,
+    );
 
     let req = LoginRequest {
         email: "user@example.com".into(),
@@ -323,7 +336,7 @@ async fn login_nonexistent_email() {
     let req = LoginRequest {
         email: "user@example.com".into(),
         password: "wrong_password".into(),
-    };  
+    };
     // Password 'wrong_password' should make the login fail.
     let err = use_case
         .execute(req)
@@ -337,7 +350,12 @@ async fn login_creates_session() {
     let user_repo = MockUserRepository::new();
     registered_user(&user_repo, "user@example.com", "password123");
     let session_repo = MockSessionRepository::new();
-    let use_case = LoginUseCase::new(user_repo.clone(), session_repo.clone(), jwt_service(), 86400);
+    let use_case = LoginUseCase::new(
+        user_repo.clone(),
+        session_repo.clone(),
+        jwt_service(),
+        86400,
+    );
 
     let req = LoginRequest {
         email: "user@example.com".into(),
@@ -356,7 +374,12 @@ async fn refresh_success() {
     let user_repo = MockUserRepository::new();
     registered_user(&user_repo, "user@example.com", "password123");
     let session_repo = MockSessionRepository::new();
-    let use_case = LoginUseCase::new(user_repo.clone(), session_repo.clone(), jwt_service(), 86400);
+    let use_case = LoginUseCase::new(
+        user_repo.clone(),
+        session_repo.clone(),
+        jwt_service(),
+        86400,
+    );
 
     let login_req = LoginRequest {
         email: "user@example.com".into(),
@@ -420,7 +443,12 @@ async fn refresh_revoked_session() {
     let user_repo = MockUserRepository::new();
     registered_user(&user_repo, "user@example.com", "password123");
     let session_repo = MockSessionRepository::new();
-    let use_case = LoginUseCase::new(user_repo.clone(), session_repo.clone(), jwt_service(), 86400);
+    let use_case = LoginUseCase::new(
+        user_repo.clone(),
+        session_repo.clone(),
+        jwt_service(),
+        86400,
+    );
 
     let login_req = LoginRequest {
         email: "user@example.com".into(),
@@ -454,7 +482,12 @@ async fn refresh_expired_session() {
     let user_repo = MockUserRepository::new();
     registered_user(&user_repo, "user@example.com", "password123");
     let session_repo = MockSessionRepository::new();
-    let use_case = LoginUseCase::new(user_repo.clone(), session_repo.clone(), jwt_service(), 86400);
+    let use_case = LoginUseCase::new(
+        user_repo.clone(),
+        session_repo.clone(),
+        jwt_service(),
+        86400,
+    );
 
     let login_req = LoginRequest {
         email: "user@example.com".into(),
@@ -488,7 +521,12 @@ async fn refresh_revokes_family_on_re_use() {
     let user_repo = MockUserRepository::new();
     registered_user(&user_repo, "user@example.com", "password123");
     let session_repo = MockSessionRepository::new();
-    let use_case = LoginUseCase::new(user_repo.clone(), session_repo.clone(), jwt_service(), 86400);
+    let use_case = LoginUseCase::new(
+        user_repo.clone(),
+        session_repo.clone(),
+        jwt_service(),
+        86400,
+    );
 
     let login_req = LoginRequest {
         email: "user@example.com".into(),
@@ -529,4 +567,3 @@ async fn refresh_revokes_family_on_re_use() {
     assert!(sessions[0].revoked);
     assert!(sessions[1].revoked);
 }
-

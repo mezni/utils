@@ -18,6 +18,11 @@ pub struct RefreshTokenRequest {
 }
 
 #[derive(Debug, Serialize)]
+pub struct RegisterResponse {
+    pub user_id: String,
+}
+
+#[derive(Debug, Serialize)]
 pub struct AuthResponse {
     pub access_token: String,
     #[serde(skip_serializing_if = "Option::is_none")]

@@ -28,7 +28,7 @@ impl PasswordService {
 
         let argon2 = Argon2::default();
         match argon2.verify_password(password.as_bytes(), &parsed_hash) {
-            Ok(_) => Ok(true), // Password matches
+            Ok(_) => Ok(true),   // Password matches
             Err(_) => Ok(false), // Password mismatch or other error
         }
     }
