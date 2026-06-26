@@ -211,7 +211,7 @@ GET /api/v1/driver/stations
 |---|---|---|---|---|
 | `lat` | f64 | yes | — | Center latitude |
 | `lng` | f64 | yes | — | Center longitude |
-| `radius` | f64 | no | 10 | Search radius in km (max 100) |
+| `radius` | f64 | no | 5 | Search radius in km (max 5) |
 | `page` | u32 | no | 1 | Page number |
 | `per_page` | u32 | no | 20 | Items per page (max 100) |
 
@@ -560,7 +560,7 @@ GET /metrics         → Prometheus-format metrics
 | `password` | min 8 chars, max 128 chars |
 | `latitude` | [-90, 90] |
 | `longitude` | [-180, 180] |
-| `radius` | (0, 100] km |
+| `radius` | (0, 5] km |
 | `station.name` | min 1 char, max 255 chars |
 | `connector.type` | must be one of: `TYPE2`, `CCS`, `CHADEMO`, `TESLA` |
 | `connector.power_kw` | > 0 |

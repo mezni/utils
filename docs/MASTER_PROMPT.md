@@ -24,7 +24,7 @@ BorneMap — EV charging discovery platform (Tunisia)
 
 | Layer | Technology |
 |---|---|
-| Backend | Rust (Actix Web), SQLx |
+| Backend | Rust 1.96 (Actix Web), SQLx |
 | Database | PostgreSQL 16 + PostGIS 3.4 |
 | Cache | Redis 7 |
 | Gateway | Traefik v3 |
@@ -116,6 +116,9 @@ source/
 │   └── shared-ui/
 ├── infra/
 ├── docs/
+│   ├── sprints/         # sprint plans + follow-ups
+│   └── adr/             # architecture decision records
+├── QUICKSTART.md
 └── Cargo.toml
 ```
 
@@ -423,7 +426,10 @@ Each sprint = one branch: `sprint/<id>-<short-name>`
 4. **IMPLEMENTATION ORDER** — domain → application → infrastructure → http → migrations → frontend
 5. **TESTING (Mandatory)** — Unit tests, integration tests, API tests, migration tests, edge cases. FAIL = BLOCK.
 6. **SECURITY REVIEW (Mandatory)** — JWT enforced, RBAC enforced, SQL injection safe, rate limiting active, input validation enforced, no secret leakage. FAIL = BLOCK.
-7. **DOCUMENTATION UPDATE** — Sprint doc, API contract, architecture docs, migrations docs, ADRs if needed. Undocumented change = INVALID.
+7. **DOCUMENTATION UPDATE** — Sprint doc, sprint follow-up, API contract, architecture docs, migrations docs, ADRs if needed.
+   - Each sprint MUST produce a follow-up document at `docs/sprints/sprint_<id>_followup.md`
+   - `QUICKSTART.md` MUST be updated when service ports, env vars, or build steps change
+   - Undocumented change = INVALID.
 8. **GIT WORKFLOW** — `git checkout -b sprint/<id>-<name>` → `git add .` → `git commit -m "sprint(<id>): <summary>"` → `git push origin sprint/<id>-<name>` → open PR.
 9. **REVIEW GATE** — Must pass: cargo check, fmt, clippy -D warnings, tests, sqlx prepare --check, OpenAPI generation.
 10. **MERGE CONDITIONS** — Only merge if: CI green, no BLOCKERS, security passed, docs complete, PR approved.

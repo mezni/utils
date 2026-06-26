@@ -1,0 +1,8 @@
+[workspace]
+members = [
+  "shared/bornemap-core",
+  "shared/bornemap-auth",
+  "services/auth-service"
+]
+
+resolver = "2"
