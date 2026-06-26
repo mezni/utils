@@ -207,7 +207,7 @@ Station {
 Geospatial rules:
 - Coordinates in SRID 4326
 - GIST index required
-- Nearby query radius ≤ 50km
+- Nearby query radius ≤ 5km
 
 #### Connector
 
@@ -303,7 +303,7 @@ SessionStatus {
 Money(u64)                     // centimes (TND)
 Latitude(f64)                  // -90 to 90
 Longitude(f64)                 // -180 to 180
-RadiusKm(f64)                  // 0 to 50
+RadiusKm(f64)                  // 0 to 5
 PowerKw(f64)
 Rating(u8)                     // 1-5
 ```
@@ -411,7 +411,7 @@ UserRegistered { user_id, email, role }
 | Password | min 8 chars, max 128 chars |
 | Latitude | [-90, 90] |
 | Longitude | [-180, 180] |
-| Radius | (0, 50] km (MVP-1); max 100 km (anti-abuse) |
+| Radius | (0, 5] km |
 | Rating | [1, 5] |
 | Power | > 0 kW |
 | Money | ≥ 0 centimes |

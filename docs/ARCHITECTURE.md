@@ -157,10 +157,10 @@ JWT issuer. Manages authentication, refresh tokens, role assignment.
 
 #### driver-service (:3001)
 
-Core EV charging logic: station discovery, booking, geospatial queries.
+Core EV charging logic: station discovery, charging sessions, geospatial queries.
 
-- **Domain**: Station, Charger, ConnectorType, Booking, Review, Driver types
-- **Application**: StationSearchUseCase, CreateBookingUseCase, NearbyQueryUseCase
+- **Domain**: Station, Charger, ConnectorType, ChargingSession, Review, Driver types
+- **Application**: StationSearchUseCase, StartSessionUseCase, StopSessionUseCase, NearbyQueryUseCase
 - **Infrastructure**: PgStationRepository (PostGIS), PgBookingRepository, RedisCache
 - **HTTP**: Driver API handlers, DTOs
 
@@ -263,7 +263,7 @@ JWT claims include:
 | Service | Owns | Reads |
 |---|---|---|
 | auth-service | users, sessions, roles | — |
-| driver-service | stations, chargers, bookings, reviews, drivers | auth-service (HTTP) |
+| driver-service | stations, chargers, charging_sessions, reviews, drivers | auth-service (HTTP) |
 | admin-service | partners, audit logs, admin users | driver-service (HTTP) |
 
 ---
