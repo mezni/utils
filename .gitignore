@@ -1,0 +1,17 @@
+/target
+**/target/
+*.pdb
+.env
+.env.*
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+debug.log
+*.log
+coverage/
+*.profraw
+*.profdata
