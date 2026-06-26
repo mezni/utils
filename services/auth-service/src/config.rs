@@ -25,10 +25,10 @@ impl AppConfig {
             .unwrap_or_else(|_| "3000".into())
             .parse()
             .map_err(|_| AppError::ConfigurationError("Invalid PORT".into()))?;
-        let database_url =
-            env::var("DATABASE_URL").map_err(|_| AppError::ConfigurationError("DATABASE_URL required".into()))?;
-        let jwt_secret =
-            env::var("JWT_SECRET").map_err(|_| AppError::ConfigurationError("JWT_SECRET required".into()))?;
+        let database_url = env::var("DATABASE_URL")
+            .map_err(|_| AppError::ConfigurationError("DATABASE_URL required".into()))?;
+        let jwt_secret = env::var("JWT_SECRET")
+            .map_err(|_| AppError::ConfigurationError("JWT_SECRET required".into()))?;
 
         let access_ttl_minutes: i64 = env::var("JWT_ACCESS_TTL_MINUTES")
             .unwrap_or_else(|_| "15".into())

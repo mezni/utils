@@ -103,6 +103,9 @@ pub enum AppError {
     #[error("User already exists")]
     UserAlreadyExists,
 
+    #[error("User not found")]
+    UserNotFound,
+
     #[error("Token error: {0}")]
     TokenError(String),
 
@@ -123,6 +126,12 @@ pub enum AppError {
 
     #[error("Validation error: {0}")]
     ValidationError(String),
+
+    #[error("Forbidden")]
+    Forbidden,
+
+    #[error("Not found")]
+    NotFound,
 }
 
 impl From<AuthError> for AppError {
@@ -130,7 +139,7 @@ impl From<AuthError> for AppError {
         match e {
             AuthError::InvalidCredentials => AppError::InvalidCredentials,
             AuthError::EmailAlreadyExists => AppError::UserAlreadyExists,
-            AuthError::UserNotFound => AppError::InvalidCredentials,
+            AuthError::UserNotFound => AppError::UserNotFound,
             AuthError::ValidationError(msg) => AppError::ValidationError(msg),
             AuthError::Unauthorized => AppError::Unauthorized,
             AuthError::InternalError => AppError::InternalError,
@@ -165,5 +174,6 @@ pub trait SessionRepository: Send + Sync {
     async fn find_by_token_hash(&self, token_hash: &str) -> Result<Option<Session>, AppError>;
     async fn revoke_session(&self, id: SessionId) -> Result<(), AppError>;
     async fn revoke_family(&self, family_id: Uuid) -> Result<(), AppError>;
+    async fn delete_user_sessions(&self, user_id: UserId) -> Result<(), AppError>;
     async fn delete_expired(&self) -> Result<u64, AppError>;
 }

@@ -41,22 +41,16 @@ impl<R: UserRepository, S: SessionRepository> RefreshUseCase<R, S> {
             .ok_or(AppError::InvalidSession)?;
 
         if session.revoked {
-            self.session_repo
-                .revoke_family(session.family_id)
-                .await?;
+            self.session_repo.revoke_family(session.family_id).await?;
             return Err(AppError::InvalidSession);
         }
 
         if Utc::now() > session.expires_at {
-            self.session_repo
-                .revoke_session(session.id)
-                .await?;
+            self.session_repo.revoke_session(session.id).await?;
             return Err(AppError::ExpiredSession);
         }
 
-        self.session_repo
-            .revoke_session(session.id)
-            .await?;
+        self.session_repo.revoke_session(session.id).await?;
 
         let user = self
             .user_repo

@@ -1,4 +1,4 @@
-use bornemap_core::{AppError, Session, SessionRepository};
+use bornemap_core::{AppError, Session, SessionRepository, UserId};
 use chrono::NaiveDateTime;
 use sqlx::PgPool;
 use uuid::Uuid;
@@ -57,16 +57,14 @@ impl SessionRepository for PgSessionRepository {
     }
 
     async fn revoke_session(&self, id: Uuid) -> Result<(), AppError> {
-        sqlx::query(
-            "UPDATE sessions SET revoked = TRUE, revoked_at = NOW() WHERE id = $1",
-        )
-        .bind(id)
-        .execute(&self.pool)
-        .await
-        .map_err(|e| {
-            tracing::error!("DB session revoke error: {:?}", e);
-            AppError::DatabaseError(e.to_string())
-        })?;
+        sqlx::query("UPDATE sessions SET revoked = TRUE, revoked_at = NOW() WHERE id = $1")
+            .bind(id)
+            .execute(&self.pool)
+            .await
+            .map_err(|e| {
+                tracing::error!("DB session revoke error: {:?}", e);
+                AppError::DatabaseError(e.to_string())
+            })?;
 
         Ok(())
     }
@@ -82,6 +80,19 @@ impl SessionRepository for PgSessionRepository {
             tracing::error!("DB session family revoke error: {:?}", e);
             AppError::DatabaseError(e.to_string())
         })?;
+
+        Ok(())
+    }
+
+    async fn delete_user_sessions(&self, user_id: UserId) -> Result<(), AppError> {
+        sqlx::query("UPDATE sessions SET revoked = TRUE, revoked_at = NOW() WHERE user_id = $1")
+            .bind(user_id)
+            .execute(&self.pool)
+            .await
+            .map_err(|e| {
+                tracing::error!("DB session delete user sessions error: {:?}", e);
+                AppError::DatabaseError(e.to_string())
+            })?;
 
         Ok(())
     }

@@ -53,7 +53,7 @@ impl<R: UserRepository, S: SessionRepository> LoginUseCase<R, S> {
 
         let valid = PasswordService::verify(&req.password, &user.password_hash)
             .map_err(|_| AppError::InternalError)?;
-            
+
         if !valid {
             return Err(AppError::InvalidCredentials);
         }

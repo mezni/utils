@@ -1,7 +1,7 @@
 use actix_web::web;
 use actix_web::{App, HttpServer};
 use auth_service::{config, http, infrastructure};
-use bornemap_db::{create_pool, run_migrations, AppState};
+use bornemap_db::{AppState, create_pool, run_migrations};
 use config::AppConfig;
 use infrastructure::jwt::JwtService;
 use tracing_subscriber::EnvFilter;

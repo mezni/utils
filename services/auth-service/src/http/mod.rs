@@ -9,5 +9,7 @@ pub fn configure(cfg: &mut web::ServiceConfig) {
     cfg.service(health::live)
         .service(health::ready)
         .service(auth::register)
-        .service(auth::login);
+        .service(auth::login)
+        .service(auth::refresh)
+        .service(auth::logout);
 }

@@ -1,47 +1,147 @@
-use actix_web::{HttpResponse, HttpResponseBuilder};
-use bornemap_core::{AppError, AuthError};
+use actix_web::HttpResponse;
+use bornemap_core::AppError;
+use tracing::error;
 
-use super::dto::{ErrorDetail, ErrorResponse};
-
-pub fn map_auth_error(err: AuthError) -> HttpResponse {
-    let (status, code, message) = match &err {
-        AuthError::InvalidCredentials => (409, "INVALID_CREDENTIALS", err.to_string()),
-        AuthError::EmailAlreadyExists => (409, "EMAIL_ALREADY_EXISTS", err.to_string()),
-        AuthError::UserNotFound => (404, "USER_NOT_FOUND", err.to_string()),
-        AuthError::ValidationError(msg) => (400, "VALIDATION_ERROR", msg.clone()),
-        AuthError::Unauthorized => (401, "UNAUTHORIZED", err.to_string()),
-        AuthError::InternalError => (500, "INTERNAL_ERROR", err.to_string()),
-    };
-
-    error_response(status, code, &message)
-}
+use crate::response::{
+    ApiError, ApiResponse, CONFIGURATION_ERROR, DATABASE_ERROR, FORBIDDEN_ERROR, INTERNAL_ERROR,
+    INVALID_CREDENTIALS, NOT_FOUND_ERROR, UNAUTHORIZED_ERROR, USER_ALREADY_EXISTS, USER_NOT_FOUND,
+    VALIDATION_ERROR,
+};
 
 pub fn map_app_error(err: AppError) -> HttpResponse {
-    let (status, code, message) = match &err {
-        AppError::Unauthorized => (401, "UNAUTHORIZED", err.to_string()),
-        AppError::InvalidCredentials => (409, "INVALID_CREDENTIALS", err.to_string()),
-        AppError::UserAlreadyExists => (409, "USER_ALREADY_EXISTS", err.to_string()),
-        AppError::TokenError(_) => (401, "TOKEN_ERROR", err.to_string()),
-        AppError::InvalidSession => (401, "INVALID_SESSION", err.to_string()),
-        AppError::ExpiredSession => (401, "EXPIRED_SESSION", err.to_string()),
-        AppError::ConfigurationError(msg) => (500, "CONFIGURATION_ERROR", msg.clone()),
-        AppError::DatabaseError(msg) => (500, "DATABASE_ERROR", msg.clone()),
-        AppError::InternalError => (500, "INTERNAL_ERROR", err.to_string()),
-        AppError::ValidationError(msg) => (400, "VALIDATION_ERROR", msg.clone()),
+    let (status, api_error) = match &err {
+        AppError::Unauthorized => (
+            401,
+            ApiError {
+                code: UNAUTHORIZED_ERROR.to_string(),
+                message: "Unauthorized".to_string(),
+                field: None,
+            },
+        ),
+        AppError::InvalidCredentials => (
+            401,
+            ApiError {
+                code: INVALID_CREDENTIALS.to_string(),
+                message: "Invalid credentials".to_string(),
+                field: None,
+            },
+        ),
+        AppError::UserAlreadyExists => (
+            409,
+            ApiError {
+                code: USER_ALREADY_EXISTS.to_string(),
+                message: "User already exists".to_string(),
+                field: None,
+            },
+        ),
+        AppError::UserNotFound => (
+            404,
+            ApiError {
+                code: USER_NOT_FOUND.to_string(),
+                message: "User not found".to_string(),
+                field: None,
+            },
+        ),
+        AppError::TokenError(msg) => (
+            401,
+            ApiError {
+                code: UNAUTHORIZED_ERROR.to_string(),
+                message: "Token error".to_string(),
+                field: Some(msg.clone()),
+            },
+        ),
+        AppError::InvalidSession => (
+            401,
+            ApiError {
+                code: UNAUTHORIZED_ERROR.to_string(),
+                message: "Invalid session".to_string(),
+                field: None,
+            },
+        ),
+        AppError::ExpiredSession => (
+            401,
+            ApiError {
+                code: UNAUTHORIZED_ERROR.to_string(),
+                message: "Session expired".to_string(),
+                field: None,
+            },
+        ),
+        AppError::ConfigurationError(msg) => (
+            500,
+            ApiError {
+                code: CONFIGURATION_ERROR.to_string(),
+                message: "Configuration error".to_string(),
+                field: Some(msg.clone()),
+            },
+        ),
+        AppError::DatabaseError(msg) => (
+            500,
+            ApiError {
+                code: DATABASE_ERROR.to_string(),
+                message: "Database error".to_string(),
+                field: Some(msg.clone()),
+            },
+        ),
+        AppError::InternalError => (
+            500,
+            ApiError {
+                code: INTERNAL_ERROR.to_string(),
+                message: "Internal server error".to_string(),
+                field: None,
+            },
+        ),
+        AppError::ValidationError(msg) => (
+            400,
+            ApiError {
+                code: VALIDATION_ERROR.to_string(),
+                message: "Validation error".to_string(),
+                field: Some(msg.clone()),
+            },
+        ),
+        AppError::Forbidden => (
+            403,
+            ApiError {
+                code: FORBIDDEN_ERROR.to_string(),
+                message: "Forbidden".to_string(),
+                field: None,
+            },
+        ),
+        AppError::NotFound => (
+            404,
+            ApiError {
+                code: NOT_FOUND_ERROR.to_string(),
+                message: "Resource not found".to_string(),
+                field: None,
+            },
+        ),
     };
 
-    error_response(status, code, &message)
-}
+    error!("Application error: {:?}", err);
 
-fn error_response(status: u16, code: &str, message: &str) -> HttpResponse {
-    HttpResponseBuilder::new(
+    HttpResponse::build(
         actix_web::http::StatusCode::from_u16(status)
             .unwrap_or(actix_web::http::StatusCode::INTERNAL_SERVER_ERROR),
     )
-    .json(ErrorResponse {
-        error: ErrorDetail {
-            code: code.into(),
-            message: message.into(),
-        },
-    })
+    .json(ApiResponse::<()>::error(
+        api_error.code,
+        api_error.message,
+        "unknown".to_string(), // Will be set by middleware
+        api_error.field,
+    ))
+}
+
+pub fn map_validation_errors(errors: Vec<String>) -> HttpResponse {
+    let _status = 400u16;
+    let api_error = ApiError {
+        code: VALIDATION_ERROR.to_string(),
+        message: "Validation failed".to_string(),
+        field: Some(errors.join(", ")),
+    };
+
+    HttpResponse::build(actix_web::http::StatusCode::BAD_REQUEST).json(ApiResponse::<()>::error(
+        api_error.code,
+        api_error.message,
+        "unknown".to_string(), // Will be set by middleware
+        api_error.field,
+    ))
 }
