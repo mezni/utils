@@ -54,7 +54,37 @@ SPRINT CARD
 
 ---
 
-## 3 · Project State
+## 3 · Skill Usage (Mandatory)
+
+Load the relevant skill before any task in its domain. Skills provide domain-specific instructions, references, and workflows that must be followed.
+
+| Domain | Skill | When to Load |
+|---|---|---|
+| Backend (Rust) | `rust-best-practices` | Writing or reviewing any Rust code |
+| Async Rust | `rust-async-patterns` | Implementing async handlers, actors, or Tokio tasks |
+| Rust layering | `rust-clean-architecture` | Enforcing domain/app/infra/http separation |
+| PostgreSQL | `supabase-postgres-best-practices` | Schema design, query optimization, indexing |
+| DB schema | `postgresql-table-design` | Table creation, constraints, migrations |
+| Frontend (TS) | `typescript-advanced-types` | Writing TypeScript types, generics, utilities |
+| Mobile | `expo-react-native-typescript` | React Native / Expo development |
+| UI/UX | `ui-ux-pro-max` | Any UI/UX work — web or mobile. Use for component design, layout, styling decisions |
+| UI styling | `ui-styling` | Tailwind/shadcn implementation, theme tokens |
+| E2E testing | `e2e-testing-patterns` | Browser-based end-to-end tests with Playwright |
+| Web testing | `webapp-testing` | Local web app interaction and debugging |
+| ADRs | `documentation-and-adrs` | Recording architectural decisions |
+| Testing | `testing-enforcement` | Writing and enforcing test coverage |
+| Security | `security-evolution` | Security review, threat modeling |
+| MVP scope | `mvp-scope-enforcement` | Scope validation against MVP boundaries |
+| API design | `api-contract-discipline` | Designing REST endpoints and contracts |
+| Design | `design` | Logo, CIP, social media visuals |
+| Brand | `brand` | Brand voice, visual identity, style guides |
+| Slides | `slides` | HTML presentation creation |
+
+**Rule:** If a task matches a domain above, load the skill via the skill tool before starting work. Do not guess skill content.
+
+---
+
+## 4 · Project State
 
 - Domain model: may be incomplete
 - API contract: may be incomplete
@@ -67,7 +97,7 @@ SPRINT CARD
 
 ---
 
-## 4 · Monorepo Structure
+## 5 · Monorepo Structure
 
 ```
 source/
@@ -93,7 +123,7 @@ source/
 
 ---
 
-## 5 · Auth Architecture
+## 6 · Auth Architecture
 
 JWT-based stateless auth.
 
@@ -112,7 +142,7 @@ JWT-based stateless auth.
 
 ---
 
-## 6 · Layered Architecture
+## 7 · Layered Architecture
 
 ```
 domain → application → infrastructure → http
@@ -127,7 +157,7 @@ domain → application → infrastructure → http
 
 ---
 
-## 7 · Repository Pattern
+## 8 · Repository Pattern
 
 - Domain defines traits
 - Infrastructure implements them
@@ -139,7 +169,7 @@ domain → application → infrastructure → http
 
 ---
 
-## 8 · Transactions
+## 9 · Transactions
 
 Only **APPLICATION** layer may:
 - Start transaction
@@ -148,7 +178,7 @@ Only **APPLICATION** layer may:
 
 ---
 
-## 9 · Data Ownership
+## 10 · Data Ownership
 
 Each service owns its schema.
 
@@ -156,7 +186,7 @@ Each service owns its schema.
 
 ---
 
-## 10 · API Contract
+## 11 · API Contract
 
 - Base path: `/api/v1/`
 - Breaking changes → `/api/v2/`
@@ -173,7 +203,7 @@ Each service owns its schema.
 
 ---
 
-## 11 · Error Contract
+## 12 · Error Contract
 
 | Code | HTTP Status |
 |---|---|
@@ -186,24 +216,24 @@ Each service owns its schema.
 
 ---
 
-## 12 · Database Rules
+## 13 · Database Rules
 
 - SQLx only
 - Migrations required
 - SRID 4326 for GIS
 - GIST indexes mandatory
-- Max radius queries: 50km
+- Max radius queries: 5km
 
 ---
 
-## 13 · Pagination
+## 14 · Pagination
 
 - Default: 20
 - Max: 100
 
 ---
 
-## 14 · Configuration
+## 15 · Configuration
 
 **AppConfig:**
 - `database_url`
@@ -215,7 +245,7 @@ Each service owns its schema.
 
 ---
 
-## 15 · Security
+## 16 · Security
 
 - Argon2 password hashing
 - JWT validation required
@@ -225,13 +255,13 @@ Each service owns its schema.
 
 ---
 
-## 16 · Rate Limiting
+## 17 · Rate Limiting
 
 Redis token bucket: **100 req/min per user or IP**
 
 ---
 
-## 17 · Observability
+## 18 · Observability
 
 Every request logs:
 - `request_id`
@@ -248,7 +278,7 @@ Every request logs:
 
 ---
 
-## 18 · Feature Flags
+## 19 · Feature Flags
 
 `FEATURE_<NAME>=true|false`
 
@@ -256,13 +286,13 @@ No dead code branches allowed.
 
 ---
 
-## 19 · Background Workers
+## 20 · Background Workers
 
 Must follow: `domain → application → infrastructure`
 
 ---
 
-## 20 · Shared Crates
+## 21 · Shared Crates
 
 | Crate | Responsibility |
 |---|---|
@@ -272,7 +302,7 @@ Must follow: `domain → application → infrastructure`
 
 ---
 
-## 21 · Frontend
+## 22 · Frontend
 
 - Tailwind v4
 - Mobile-first
@@ -280,7 +310,7 @@ Must follow: `domain → application → infrastructure`
 
 ---
 
-## 22 · Dependency Governance
+## 23 · Dependency Governance
 
 Every dependency MUST declare:
 - Why needed
@@ -290,7 +320,7 @@ Every dependency MUST declare:
 
 ---
 
-## 23 · Cargo Workspace Rules
+## 24 · Cargo Workspace Rules
 
 - Workspace mandatory
 - No duplicate versions
@@ -298,7 +328,7 @@ Every dependency MUST declare:
 
 ---
 
-## 24 · Async Rules
+## 25 · Async Rules
 
 | Layer | Async |
 |---|---|
@@ -308,7 +338,7 @@ Every dependency MUST declare:
 
 ---
 
-## 25 · Naming Conventions
+## 26 · Naming Conventions
 
 | Convention | Example |
 |---|---|
@@ -319,7 +349,7 @@ Every dependency MUST declare:
 
 ---
 
-## 26 · Performance Budgets
+## 27 · Performance Budgets
 
 | Operation | P95 |
 |---|---|
@@ -330,7 +360,7 @@ Every dependency MUST declare:
 
 ---
 
-## 27 · CI/CD Requirements
+## 28 · CI/CD Requirements
 
 Must pass:
 - `cargo check`
@@ -342,7 +372,7 @@ Must pass:
 
 ---
 
-## 28 · Architecture Validation
+## 29 · Architecture Validation
 
 Each sprint:
 - No forbidden imports
@@ -352,7 +382,7 @@ Each sprint:
 
 ---
 
-## 29 · ADR Policy
+## 30 · ADR Policy
 
 Required before:
 - Architectural changes
@@ -361,9 +391,9 @@ Required before:
 
 ---
 
-## 30 · Sprint Execution (Speckit Enforced)
+## 31 · Sprint Execution (Speckit Enforced)
 
-### 30.0 · Pre-Flight Skill Check (Mandatory)
+### 31.0 · Pre-Flight Skill Check (Mandatory)
 
 Before execution validate:
 - Testing strategy (unit/integration/contract)
@@ -375,7 +405,7 @@ Before execution validate:
 
 **BLOCK if missing or ambiguous.**
 
-### 30.1 · Branch Policy (Hard Rule)
+### 31.1 · Branch Policy (Hard Rule)
 
 Each sprint = one branch: `sprint/<id>-<short-name>`
 
@@ -385,7 +415,7 @@ Each sprint = one branch: `sprint/<id>-<short-name>`
 - Branch created at sprint start
 - Merge only via PR
 
-### 30.2 · Speckit Lifecycle (Mandatory)
+### 31.2 · Speckit Lifecycle (Mandatory)
 
 1. **SPECIFY** — Parse sprint card. Identify scope, services, DB, API, frontend impact. STOP on ambiguity.
 2. **PLAN** — Produce deterministic plan. Output: `docs/sprints/sprint_<id>.md`
@@ -400,7 +430,7 @@ Each sprint = one branch: `sprint/<id>-<short-name>`
 
 ---
 
-## 31 · Definition of Done
+## 32 · Definition of Done
 
 - Build success
 - Tests pass
@@ -415,7 +445,7 @@ Each sprint = one branch: `sprint/<id>-<short-name>`
 
 ---
 
-## 32 · Release Gate
+## 33 · Release Gate
 
 **BLOCK if:**
 - Missing branch
@@ -426,7 +456,7 @@ Each sprint = one branch: `sprint/<id>-<short-name>`
 
 ---
 
-## 33 · Forbidden
+## 34 · Forbidden
 
 - Inventing APIs
 - Inventing domain logic
