@@ -1,0 +1,22 @@
+[package]
+name = "shared-jwt"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+repository.workspace = true
+license.workspace = true
+description = "Shared JWT token management for BorneMap services"
+
+[dependencies]
+jsonwebtoken = { version = "9", default-features = false, features = ["use_pem"] }
+serde = { workspace = true }
+serde_json = { workspace = true }
+chrono = { workspace = true }
+sha2 = { workspace = true }
+hex = "0.4"
+tokio = { workspace = true }
+tracing = { workspace = true }
+shared-contracts = { path = "../shared-contracts" }
+
+[dev-dependencies]
+tokio = { workspace = true }

@@ -1,0 +1,40 @@
+[package]
+name = "auth-service"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+repository.workspace = true
+license.workspace = true
+description = "Authentication and authorization service for BorneMap"
+
+[[bin]]
+name = "auth-service"
+path = "src/main.rs"
+
+[dependencies]
+shared-database = { path = "../shared-database" }
+shared-cache = { path = "../shared-cache" }
+shared-jwt = { path = "../shared-jwt" }
+shared-errors = { path = "../shared-errors" }
+shared-contracts = { path = "../shared-contracts" }
+sqlx = { workspace = true }
+redis = { workspace = true }
+tokio = { workspace = true }
+axum = { workspace = true }
+tower = { workspace = true }
+tower-http = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+bcrypt = "0.15"
+argon2 = { workspace = true }
+rand = { workspace = true }
+dotenvy = "0.15"
+
+[dev-dependencies]
+tokio = { workspace = true }
+serial_test = "3.0"
+sqlx = { workspace = true }
+hyper = "0.14"
+serde_json = { workspace = true }

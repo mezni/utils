@@ -1,0 +1,18 @@
+[package]
+name = "shared-cache"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+repository.workspace = true
+license.workspace = true
+description = "Shared Redis cache management for BorneMap services"
+
+[dependencies]
+redis = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+tokio = { workspace = true }
+dotenvy = "0.15"

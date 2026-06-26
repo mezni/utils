@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  auth_db:
+    image: postgres:16
+    container_name: borne_map_auth_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: auth_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./migrations:/docker-entrypoint-initdb.d
+    networks:
+      - borne_map_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: borne_map_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - borne_map_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  auth_service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: borne_map_auth_service
+    environment:
+      DATABASE_URL: postgresql://postgres:password@auth_db:5432/auth_db
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET:-dev-secret-key-change-in-production}
+      JWT_ISSUER: borne-map-auth
+      APP_BASE_URL: http://localhost:8080
+    ports:
+      - "8080:8080"
+    depends_on:
+      auth_db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - borne_map_network
+    volumes:
+      - .:/app
+      - cargo_cache:/usr/local/cargo/registry
+
+volumes:
+  postgres_data:
+  redis_data:
+  cargo_cache:
+
+networks:
+  borne_map_network:
+    driver: bridge

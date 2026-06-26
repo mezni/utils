@@ -1,0 +1,16 @@
+[package]
+name = "shared-errors"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+repository.workspace = true
+license.workspace = true
+description = "Shared error types and handling"
+
+[dependencies]
+thiserror = { workspace = true }
+anyhow = { workspace = true }
+tracing = { workspace = true }
+shared-contracts = { path = "../shared-contracts" }
+
+[dev-dependencies]

@@ -1,0 +1,35 @@
+# Rust
+/target
+**/*.rs.bk
+*.pdb
+
+# Cargo
+Cargo.lock
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Debug
+debug.log
+*.log
+
+# Test coverage
+coverage/
+*.profraw
+*.profdata
+
+# Docker
+.dockerignore

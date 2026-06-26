@@ -1,0 +1,19 @@
+[package]
+name = "shared-database"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+repository.workspace = true
+license.workspace = true
+description = "Shared database connection management for BorneMap services"
+
+[dependencies]
+sqlx = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+shared-errors = { path = "../shared-errors" }
+
+[dev-dependencies]
+tokio = { workspace = true }
+sqlx = { workspace = true }
+dotenvy = "0.15"
