@@ -1,0 +1,155 @@
+{
+  "version": 1,
+  "skills": {
+    "api-contract-discipline": {
+      "source": "local",
+      "sourceType": "local",
+      "skillPath": ".agents/skills/api-contract-discipline/SKILL.md",
+      "computedHash": "1bc0fa497bb5ce0837908b48884648203389e4ab93af91159691048ba6152341"
+    },
+    "banner-design": {
+      "source": "nextlevelbuilder/ui-ux-pro-max-skill",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/banner-design/SKILL.md",
+      "computedHash": "913d9c4b2a3b405d638d50131e0dd3fe2787c839423d79287b7858ac29255acc"
+    },
+    "brand": {
+      "source": "nextlevelbuilder/ui-ux-pro-max-skill",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/brand/SKILL.md",
+      "computedHash": "6a450ee1a83a403d47cec2ede9030feb60a67a81fc425d2406e975339313bd44"
+    },
+    "bug-learning-system": {
+      "source": "local",
+      "sourceType": "local",
+      "skillPath": ".agents/skills/bug-learning-system/SKILL.md",
+      "computedHash": "2a33a65f634afb4444d3da3f5f06e7fc072027f9fda5b5413c941aabab01f1de"
+    },
+    "data-ownership": {
+      "source": "local",
+      "sourceType": "local",
+      "skillPath": ".agents/skills/data-ownership/SKILL.md",
+      "computedHash": "4f5d15ea6356c3ad01efb8b961fbb9da45baa21a2bcdc69414dc6b36563ab6a3"
+    },
+    "design": {
+      "source": "nextlevelbuilder/ui-ux-pro-max-skill",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/design/SKILL.md",
+      "computedHash": "413f4ab913d07f7fd92acbadc25d71aad63443be0c40d11234944aea688603b6"
+    },
+    "design-system": {
+      "source": "nextlevelbuilder/ui-ux-pro-max-skill",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/design-system/SKILL.md",
+      "computedHash": "655468bb723a6bc9d17fcb09a6a005e10e313d63b879f4d74fb2abdc3041ae3f"
+    },
+    "documentation-and-adrs": {
+      "source": "local",
+      "sourceType": "local",
+      "skillPath": ".agents/skills/documentation-and-adrs/SKILL.md",
+      "computedHash": "7fed35f9c5b95d8e3623ad24d78d209c3267ab62d7157fc03954c76a7e58adf4"
+    },
+    "e2e-testing-patterns": {
+      "source": "local",
+      "sourceType": "local",
+      "skillPath": ".agents/skills/e2e-testing-patterns/SKILL.md",
+      "computedHash": "1653690dde9eeca6dcb66086277791c2a3ccc2b37eaab6ec9b627a10adfb94be"
+    },
+    "expo-react-native-typescript": {
+      "source": "local",
+      "sourceType": "local",
+      "skillPath": ".agents/skills/expo-react-native-typescript/SKILL.md",
+      "computedHash": "f08213da8f519c2de798c2fc3b1b6ca4d4915428ba3d0dc06ee8a55a26b7782f"
+    },
+    "frontend-architecture-discipline": {
+      "source": "local",
+      "sourceType": "local",
+      "skillPath": ".agents/skills/frontend-architecture-discipline/SKILL.md",
+      "computedHash": "8ca48d1285216a3ca153436546a85276e74d7f20e96ed8ea6fa56cb44b50b2bc"
+    },
+    "llm-execution-control": {
+      "source": "local",
+      "sourceType": "local",
+      "skillPath": ".agents/skills/llm-execution-control/SKILL.md",
+      "computedHash": "16c94f2174006fed74fff7ae9d996d5dbbba1c723b1b70afa07a5cba07f6e79b"
+    },
+    "mvp-scope-enforcement": {
+      "source": "local",
+      "sourceType": "local",
+      "skillPath": ".agents/skills/mvp-scope-enforcement/SKILL.md",
+      "computedHash": "a8587a1ff75c3b0fbb20e255298c04736a6fb3b2e4c5c15684a97de7d16841e4"
+    },
+    "postgresql-table-design": {
+      "source": "local",
+      "sourceType": "local",
+      "skillPath": ".agents/skills/postgresql-table-design/SKILL.md",
+      "computedHash": "3170aed913a522ca10e0f94bcfbef61e4284dd7c9e6aabb5ffaed2dbfb3173b4"
+    },
+    "rust-async-patterns": {
+      "source": "local",
+      "sourceType": "local",
+      "skillPath": ".agents/skills/rust-async-patterns/SKILL.md",
+      "computedHash": "8e9a951c21bb1ee671dd2e7391b193e8e3d362b95ef29c470915837d73bf87df"
+    },
+    "rust-best-practices": {
+      "source": "local",
+      "sourceType": "local",
+      "skillPath": ".agents/skills/rust-best-practices/SKILL.md",
+      "computedHash": "80eeb8ab3da0c889eaaacf1963e8c6126d02e22fae2d4abd9056b4c16c7cc083"
+    },
+    "rust-clean-architecture": {
+      "source": "local",
+      "sourceType": "local",
+      "skillPath": ".agents/skills/rust-clean-architecture/SKILL.md",
+      "computedHash": "96e6768c0255df4e1d497b0b0de53b51e975239a6348c69d17c4b7102a181393"
+    },
+    "security-evolution": {
+      "source": "local",
+      "sourceType": "local",
+      "skillPath": ".agents/skills/security-evolution/SKILL.md",
+      "computedHash": "7ca62a065ce9730c3916cfe6258fda626bad024e5b18a362688a96335b24140f"
+    },
+    "slides": {
+      "source": "nextlevelbuilder/ui-ux-pro-max-skill",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/slides/SKILL.md",
+      "computedHash": "2b90bdaf63f231919a01f4962f374ecd84af101a7e7545f8d9c68e049025accb"
+    },
+    "supabase-postgres-best-practices": {
+      "source": "local",
+      "sourceType": "local",
+      "skillPath": ".agents/skills/supabase-postgres-best-practices/SKILL.md",
+      "computedHash": "ccd6e4596bd51cf344fe76c464867c541ccc16b6d90ae7a9db449fb17588613b"
+    },
+    "testing-enforcement": {
+      "source": "local",
+      "sourceType": "local",
+      "skillPath": ".agents/skills/testing-enforcement/SKILL.md",
+      "computedHash": "1ea38c9ef6dc378c51314b5aff1874fc03c412c941bf7ab63da5b39ca7c4ce30"
+    },
+    "typescript-advanced-types": {
+      "source": "local",
+      "sourceType": "local",
+      "skillPath": ".agents/skills/typescript-advanced-types/SKILL.md",
+      "computedHash": "c32101c65134d94ef1a3305ef486020b57be6408f97ed952c9c560e3fe04188d"
+    },
+    "ui-styling": {
+      "source": "nextlevelbuilder/ui-ux-pro-max-skill",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/ui-styling/SKILL.md",
+      "computedHash": "f8b6c3832d2af51f67b3932e3c4a79bcd8a8596cc61ce1547a686fc951e5c62d"
+    },
+    "ui-ux-pro-max": {
+      "source": "nextlevelbuilder/ui-ux-pro-max-skill",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/ui-ux-pro-max/SKILL.md",
+      "computedHash": "58fe081898866a04a578e7947faae083c1a18ffad502c3486f633c25aa69c7a3"
+    },
+    "webapp-testing": {
+      "source": "local",
+      "sourceType": "local",
+      "skillPath": ".agents/skills/webapp-testing/SKILL.md",
+      "computedHash": "51b7349e77ec63b7744a6f63647e7566a0b4d2e301121cc10e8c2113af6556a2"
+    }
+  }
+}
