@@ -1,8 +1,8 @@
 use actix_web::web;
 use actix_web::{App, HttpServer};
-use auth_service::{config, http, infrastructure};
-use bornemap_auth::{RedisOAuthStateStore, OAuthStateStore};
-use bornemap_db::{AppState, create_pool, run_migrations};
+use auth_service::{config, http, infrastructure, redis_config};
+use bornemap_auth::{OAuthStateStore};
+use bornemap_db::{AppState, create_pool, run_migrations, RedisClient};
 use config::AppConfig;
 use infrastructure::{PgOAuthRepository, GoogleOAuthProvider, OAuthState as OAuthAppState};
 use tracing_subscriber::EnvFilter;
@@ -16,6 +16,12 @@ async fn main() -> std::io::Result<()> {
 
     let config = AppConfig::from_env().expect("configuration failed");
 
+    // Validate Redis configuration
+    redis_config::RedisConfig::from_env()
+        .expect("Failed to load Redis configuration")
+        .validate()
+        .expect("Redis configuration validation failed");
+
     let pool = create_pool(&config.database_url)
         .await
         .expect("DB connection failed");
@@ -27,9 +33,19 @@ async fn main() -> std::io::Result<()> {
 
     run_migrations(&pool).await.expect("Migration failed");
 
+    // Initialize Redis client
+    let redis_client = RedisClient::new(&config.redis_url)
+        .expect("Failed to create Redis client");
+    
+    // Initialize Redis connection
+    redis_client.initialize()
+        .await
+        .expect("Failed to initialize Redis connection");
+
     // Initialize OAuth components
     let oauth_state_store = Box::new(
-        RedisOAuthStateStore::new(&config.redis_url)
+        auth_service::application::oauth_state::RedisOAuthStateStore::new_with_default(redis_client.clone())
+            .await
             .expect("Failed to create OAuth state store")
     );
     
@@ -55,8 +71,12 @@ async fn main() -> std::io::Result<()> {
         oauth_repository,
     };
 
+    // Initialize rate limiting middleware
+    let rate_limiter = http::middleware::RateLimitMiddleware::with_default(redis_client.clone())
+        .expect("Failed to create rate limiter");
+
     let state = AppState { db: pool };
-    let jwt_service = JwtService::new(
+    let jwt_service = infrastructure::jwt::JwtService::new(
         config.jwt_secret.clone(),
         config.jwt_access_ttl_seconds,
         config.jwt_issuer.clone(),
@@ -70,6 +90,7 @@ async fn main() -> std::io::Result<()> {
             .app_data(web::Data::new(state.clone()))
             .app_data(web::Data::new(jwt_service.clone()))
             .app_data(web::Data::new(oauth_state.clone()))
+            .wrap(rate_limiter.clone())
             .configure(|cfg| http::configure(cfg, oauth_state.clone()))
     })
     .bind((config.host, config.port))?
