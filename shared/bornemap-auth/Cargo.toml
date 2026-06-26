@@ -4,11 +4,14 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+async-trait = "0.1"
 bornemap-core = { path = "../bornemap-core" }
 chrono = "0.4"
 hex = "0.4"
 jsonwebtoken = "9"
 rand = "0.8"
+redis = { version = "0.24", features = ["tokio-comp", "json"] }
 serde = { version = "1", features = ["derive"] }
 sha2 = "0.10"
+tokio = { version = "1", features = ["full"] }
 uuid = { version = "1", features = ["v4"] }

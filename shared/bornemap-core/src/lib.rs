@@ -132,6 +132,40 @@ pub enum AppError {
 
     #[error("Not found")]
     NotFound,
+
+    // OAuth errors
+    #[error("OAuth state is invalid")]
+    OAuthStateInvalid,
+
+    #[error("OAuth state has expired")]
+    OAuthStateExpired,
+
+    #[error("OAuth state has already been used")]
+    OAuthStateReused,
+
+    #[error("OAuth provider is unavailable")]
+    OAuthProviderUnavailable(String),
+
+    #[error("OAuth token exchange failed: {0}")]
+    OAuthTokenExchangeFailed(String),
+
+    #[error("OAuth profile fetch failed: {0}")]
+    OAuthProfileFetchFailed(String),
+
+    #[error("OAuth email is not verified")]
+    OAuthEmailNotVerified,
+
+    #[error("Unsupported OAuth provider: {0}")]
+    UnsupportedOAuthProvider(String),
+
+    #[error("OAuth account already exists")]
+    OAuthAccountAlreadyExists,
+
+    #[error("OAuth account linking failed: {0}")]
+    OAuthAccountLinkFailed(String),
+
+    #[error("OAuth state store error: {0}")]
+    OAuthStateStoreError(String),
 }
 
 impl From<AuthError> for AppError {
