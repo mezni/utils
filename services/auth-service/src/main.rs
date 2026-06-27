@@ -1,5 +1,10 @@
 use actix_web::web;
 use actix_web::{App, HttpServer};
+use auth_service::http::middleware::logging::LoggingMiddleware;
+use auth_service::http::middleware::rate_limit::{RateLimitConfig, RateLimitMiddlewareFactory};
+use auth_service::http::middleware::request_id::RequestIdMiddleware;
+use auth_service::http::middleware::tracing::TracingMiddleware;
+use auth_service::http::metrics::{MetricsMiddlewareFactory, PrometheusMetrics};
 use auth_service::{config, http, infrastructure};
 use bornemap_db::{AppState, create_pool, run_migrations, RedisClient};
 use config::AppConfig;
@@ -17,7 +22,6 @@ async fn main() -> std::io::Result<()> {
 
     let config = AppConfig::from_env().expect("configuration failed");
 
-    // Validate Redis configuration
     auth_service::redis_config::RedisConfig::from_env()
         .expect("Failed to load Redis configuration")
         .validate()
@@ -34,13 +38,11 @@ async fn main() -> std::io::Result<()> {
 
     run_migrations(&pool).await.expect("Migration failed");
 
-    // Initialize Redis client
     let redis_client = Arc::new(
         RedisClient::new(&config.redis_url)
             .expect("Failed to create Redis client"),
     );
 
-    // Initialize OAuth components
     let oauth_state_store = Arc::new(
         auth_service::application::oauth_state::RedisOAuthStateStore::new(
             redis_client.clone(),
@@ -63,12 +65,11 @@ async fn main() -> std::io::Result<()> {
         state_store: oauth_state_store,
     };
 
-    // Initialize rate limiting middleware
-    let rate_limit_config = auth_service::http::middleware::RateLimitConfig {
+    let rate_limit_config = RateLimitConfig {
         max_requests: config.rate_limit_requests as u64,
         window_seconds: config.rate_limit_window_seconds,
     };
-    let rate_limiter = auth_service::http::middleware::RateLimitMiddlewareFactory::new(
+    let rate_limiter = RateLimitMiddlewareFactory::new(
         rate_limit_config,
         redis_client,
     );
@@ -81,14 +82,24 @@ async fn main() -> std::io::Result<()> {
         config.jwt_audience.clone(),
     );
 
+    let metrics = Arc::new(
+        PrometheusMetrics::new().expect("Failed to initialize Prometheus metrics"),
+    );
+    let metrics_mw = MetricsMiddlewareFactory::new(metrics.clone());
+
     println!("auth-service running on {}:{}", config.host, config.port);
 
     HttpServer::new(move || {
         App::new()
             .app_data(web::Data::new(state.clone()))
             .app_data(web::Data::new(jwt_service.clone()))
+            .app_data(web::Data::from(metrics.clone()))
             .app_data(web::Data::new(oauth_state.clone()))
+            .wrap(RequestIdMiddleware)
+            .wrap(TracingMiddleware)
+            .wrap(metrics_mw.clone())
             .wrap(rate_limiter.clone())
+            .wrap(LoggingMiddleware)
             .configure(|cfg| http::configure(cfg, oauth_state.clone()))
     })
     .bind((config.host, config.port))?
