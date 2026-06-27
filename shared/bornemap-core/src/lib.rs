@@ -109,6 +109,24 @@ pub enum AppError {
     #[error("Token error: {0}")]
     TokenError(String),
 
+    #[error("Invalid token")]
+    InvalidToken,
+
+    #[error("Token expired")]
+    TokenExpired,
+
+    #[error("Invalid signature")]
+    InvalidSignature,
+
+    #[error("Invalid issuer")]
+    InvalidIssuer,
+
+    #[error("Invalid audience")]
+    InvalidAudience,
+
+    #[error("Invalid configuration: {0}")]
+    InvalidConfiguration(String),
+
     #[error("Invalid session")]
     InvalidSession,
 
