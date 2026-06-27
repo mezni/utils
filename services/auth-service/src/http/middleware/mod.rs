@@ -3,5 +3,6 @@ pub mod auth_middleware;
 pub mod authorization_middleware;
 pub mod logging;
 pub mod rate_limit;
+pub mod rate_limit_tests;
 pub mod request_id;
 pub mod tracing;

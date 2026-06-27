@@ -66,8 +66,10 @@ async fn main() -> std::io::Result<()> {
     };
 
     let rate_limit_config = RateLimitConfig {
-        max_requests: config.rate_limit_requests as u64,
+        ip_limit: config.rate_limit_requests as u64,
+        user_limit: config.rate_limit_requests as u64,
         window_seconds: config.rate_limit_window_seconds,
+        sensitive_endpoint_multiplier: 4,
     };
     let rate_limiter = RateLimitMiddlewareFactory::new(
         rate_limit_config,

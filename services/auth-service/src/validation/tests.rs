@@ -57,19 +57,77 @@ mod validation_tests {
     }
 
     #[test]
-    fn test_invalid_password() {
-        let test_cases = vec![
-            ("", ValidationError::Required("password".to_string())),
-            ("short", ValidationError::PasswordTooShort),
-            ("Toolongpasswordthatexceedslimit123!", ValidationError::PasswordTooLong),
-            ("nocaps123!", ValidationError::PasswordMissingUppercase),
-            ("NOCAPS123!", ValidationError::PasswordMissingLowercase),
-            ("NoNumbers!", ValidationError::PasswordMissingDigit),
-            ("nosppecial123", ValidationError::PasswordMissingSpecial),
+    fn test_invalid_email_security_flaws() {
+        let invalid_emails = vec![
+            "<script>alert('XSS')</script>@example.com",
+            "user@javascript:alert('XSS')",
+            "user@vbscript:alert('XSS')",
+            "user@domain.com\nonload=alert('XSS')",
         ];
-        
-        for (password, _expected_error) in test_cases {
-            assert!(validate_password(password).is_err(), "Password {} should be invalid", password);
+
+        for email in invalid_emails {
+            assert!(validate_email(email).is_err(), "Email {} should be invalid due to security flaws", email);
+            assert!(matches!(validate_email(email), Err(ValidationError::InvalidEmail)));
+        }
+    }
+
+    #[test]
+    fn test_password_too_common() {
+        let common_passwords = vec![
+            "password",
+            "123456789",
+            "qwerty",
+            "admin123",
+        ];
+
+        for password in common_passwords {
+            assert!(validate_password(password).is_err(), "Password {} should be too common", password);
+            assert!(matches!(validate_password(password), Err(ValidationError::PasswordTooCommon)));
+        }
+    }
+
+    #[test]
+    fn test_password_sequential_chars() {
+        let sequential_passwords = vec![
+            "abc123456!@#",
+            "123456789!@#",
+            "password_abc",
+        ];
+
+        for password in sequential_passwords {
+            assert!(validate_password(password).is_err(), "Password {} should not contain sequential characters", password);
+            assert!(matches!(validate_password(password), Err(ValidationError::PasswordTooCommon)));
+        }
+    }
+
+    #[test]
+    fn test_password_repeated_chars() {
+        let repeated_passwords = vec![
+            "aaaaa12345!@#",
+            "1111112345!@#",
+            "password_aaa",
+        ];
+
+        for password in repeated_passwords {
+            assert!(validate_password(password).is_err(), "Password {} should not contain repeated characters", password);
+            assert!(matches!(validate_password(password), Err(ValidationError::PasswordTooCommon)));
+        }
+    }
+
+    #[test]
+    fn test_password_missing_character_types() {
+        let test_cases = vec![
+            ("nouppercasenumbers!", ValidationError::PasswordMissingUppercase),
+            ("NOLOWERCASENUMBERS!", ValidationError::PasswordMissingLowercase),
+            ("NoLettersOrNumbers!", ValidationError::PasswordMissingUppercase),
+            ("Onlylettersandnumbers123", ValidationError::PasswordMissingSpecial),
+            ("ONLYLETTERSANDNUMBERS123", ValidationError::PasswordMissingSpecial),
+        ];
+
+        for (password, expected_error) in test_cases {
+            let result = validate_password(password);
+            assert!(result.is_err(), "Password {} should be invalid", password);
+            assert!(matches!(result, Err(ref e) if e == &expected_error), "Expected {:?}, got {:?}", expected_error, result);
         }
     }
 

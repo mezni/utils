@@ -1,7 +1,7 @@
 use crate::TokenClaims;
 use bornemap_core::AppError;
 use chrono::{DateTime, Utc};
-use jsonwebtoken::{DecodingKey, Validation, decode};
+use jsonwebtoken::{DecodingKey, Validation, decode, decode_header};
 use serde::{Deserialize, Serialize};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
@@ -47,7 +47,29 @@ impl JwtValidator {
     }
 
     pub fn validate(&self, token: &str) -> Result<ValidatedClaims, AppError> {
-        let mut validation = Validation::new(jsonwebtoken::Algorithm::HS256);
+        // Add token size validation
+        if token.len() > 8192 { // 8KB limit
+            return Err(AppError::TokenError("JWT token too large".to_string()));
+        }
+
+        // Add algorithm validation
+        let header = match decode_header(token) {
+            Ok(h) => h,
+            Err(e) => return Err(AppError::TokenError(format!("JWT header error: {:?}", e))),
+        };
+
+        let expected_algorithm = match self.config.algorithm.as_str() {
+            "HS256" => jsonwebtoken::Algorithm::HS256,
+            "RS256" => jsonwebtoken::Algorithm::RS256,
+            "ES256" => jsonwebtoken::Algorithm::ES256,
+            _ => return Err(AppError::InvalidConfiguration("Unsupported JWT algorithm".to_string())),
+        };
+
+        if header.alg != expected_algorithm {
+            return Err(AppError::TokenError(format!("Invalid JWT algorithm: {:?}", header.alg)));
+        }
+
+        let mut validation = Validation::new(expected_algorithm);
         validation.set_issuer(&[&self.config.issuer]);
         validation.set_audience(&[&self.config.audience]);
         validation.leeway = self.config.clock_skew.as_secs();
@@ -55,17 +77,22 @@ impl JwtValidator {
         let token_data = decode::<TokenClaims>(token, &self.decoding_key, &validation)
             .map_err(|e| match e.kind() {
                 jsonwebtoken::errors::ErrorKind::ExpiredSignature => AppError::TokenExpired,
-                jsonwebtoken::errors::ErrorKind::InvalidToken => AppError::InvalidToken,
+                jsonwebtoken::errors::ErrorKind::InvalidToken => AppError::TokenError("Invalid JWT token".to_string()),
                 jsonwebtoken::errors::ErrorKind::InvalidSignature => AppError::InvalidSignature,
                 jsonwebtoken::errors::ErrorKind::InvalidIssuer => AppError::InvalidIssuer,
                 jsonwebtoken::errors::ErrorKind::InvalidAudience => AppError::InvalidAudience,
-                _ => AppError::InvalidToken,
+                _ => AppError::TokenError(format!("JWT validation error: {:?}", e)),
             })?;
 
         let claims = token_data.claims;
         let now = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .map_err(|_| AppError::InternalError)?;
+
+        // Add token binding validation (jti claim)
+        if claims.jti.is_empty() {
+            return Err(AppError::TokenError("Missing JWT ID (jti)".to_string()));
+        }
 
         let issued_at = UNIX_EPOCH + Duration::from_secs(claims.iat as u64);
         let expires_at = UNIX_EPOCH + Duration::from_secs(claims.exp as u64);
@@ -425,5 +452,201 @@ mod tests {
 
         let result = validator.validate(&invalid_token);
         assert!(matches!(result, Err(AppError::InvalidConfiguration(_))));
+    }
+
+    #[test]
+    fn jwt_token_size_limit() {
+        let validator = create_validator();
+        
+        // Create a token that exceeds the size limit
+        let mut large_claims = TokenClaims {
+            sub: "user-123".to_string(),
+            role: "ADMIN".to_string(),
+            iat: Utc::now().timestamp(),
+            exp: (Utc::now() + chrono::Duration::hours(1)).timestamp(),
+            iss: "bornemap".to_string(),
+            aud: "bornemap-app".to_string(),
+            jti: "jti-123".to_string(),
+        };
+        
+        // Make the token large by adding padding to the claims
+        large_claims.sub = "a".repeat(8000); // This will make the token larger than 8KB
+        
+        let large_token = jsonwebtoken::encode(
+            &jsonwebtoken::Header::default(),
+            &large_claims,
+            &jsonwebtoken::EncodingKey::from_secret("test-secret-key".as_bytes()),
+        ).unwrap();
+
+        let result = validator.validate(&large_token);
+        assert!(matches!(result, Err(AppError::InvalidToken(ref msg)) if msg.contains("too large")));
+    }
+
+    #[test]
+    fn jwt_algorithm_confusion_attack() {
+        let validator = create_validator();
+        
+        // Create token with algorithm confusion vulnerability
+        let malicious_claims = TokenClaims {
+            sub: "user-123".to_string(),
+            role: "ADMIN".to_string(),
+            iat: Utc::now().timestamp(),
+            exp: (Utc::now() + chrono::Duration::hours(1)).timestamp(),
+            iss: "bornemap".to_string(),
+            aud: "bornemap-app".to_string(),
+            jti: "jti-123".to_string(),
+        };
+        
+        // Token signed with RS256 but validator expects HS256
+        let malicious_token = jsonwebtoken::encode(
+            &jsonwebtoken::Header::new(jsonwebtoken::Algorithm::RS256),
+            &malicious_claims,
+            &jsonwebtoken::EncodingKey::from_secret("test-secret-key".as_bytes()),
+        ).unwrap();
+        
+        let result = validator.validate(&malicious_token);
+        assert!(matches!(result, Err(AppError::InvalidToken(ref msg)) if msg.contains("Invalid JWT algorithm")));
+    }
+
+    #[test]
+    fn jwt_missing_token_id() {
+        let validator = create_validator();
+        
+        let claims_without_jti = TokenClaims {
+            sub: "user-123".to_string(),
+            role: "ADMIN".to_string(),
+            iat: Utc::now().timestamp(),
+            exp: (Utc::now() + chrono::Duration::hours(1)).timestamp(),
+            iss: "bornemap".to_string(),
+            aud: "bornemap-app".to_string(),
+            jti: "".to_string(), // Empty jti
+        };
+
+        let token_without_jti = jsonwebtoken::encode(
+            &jsonwebtoken::Header::default(),
+            &claims_without_jti,
+            &jsonwebtoken::EncodingKey::from_secret("test-secret-key".as_bytes()),
+        ).unwrap();
+
+        let result = validator.validate(&token_without_jti);
+        assert!(matches!(result, Err(AppError::InvalidToken(ref msg)) if msg.contains("Missing JWT ID")));
+    }
+
+    #[test]
+    fn jwt_algorithm_validation() {
+        let validator = create_validator();
+        
+        let claims = TokenClaims {
+            sub: "user-123".to_string(),
+            role: "ADMIN".to_string(),
+            iat: Utc::now().timestamp(),
+            exp: (Utc::now() + chrono::Duration::hours(1)).timestamp(),
+            iss: "bornemap".to_string(),
+            aud: "bornemap-app".to_string(),
+            jti: "jti-123".to_string(),
+        };
+
+        // Test valid HS256 algorithm
+        let valid_token = jsonwebtoken::encode(
+            &jsonwebtoken::Header::new(jsonwebtoken::Algorithm::HS256),
+            &claims,
+            &jsonwebtoken::EncodingKey::from_secret("test-secret-key".as_bytes()),
+        ).unwrap();
+
+        let result = validator.validate(&valid_token);
+        assert!(result.is_ok());
+
+        // Test invalid algorithm configuration
+        let invalid_config = JwtConfig {
+            algorithm: "INVALID_ALGORITHM".to_string(),
+            issuer: "bornemap".to_string(),
+            audience: "bornemap-app".to_string(),
+            clock_skew: Duration::from_secs(30),
+        };
+
+        let invalid_validator = JwtValidator::new("test-secret-key".to_string(), invalid_config);
+        assert!(matches!(invalid_validator, Err(AppError::InvalidConfiguration(_))));
+    }
+
+    #[test]
+    fn jwt_token_binding_protection() {
+        let validator = create_validator();
+        
+        let claims = TokenClaims {
+            sub: "user-123".to_string(),
+            role: "ADMIN".to_string(),
+            iat: Utc::now().timestamp(),
+            exp: (Utc::now() + chrono::Duration::hours(1)).timestamp(),
+            iss: "bornemap".to_string(),
+            aud: "bornemap-app".to_string(),
+            jti: "unique-token-id-123".to_string(),
+        };
+
+        let token = jsonwebtoken::encode(
+            &jsonwebtoken::Header::default(),
+            &claims,
+            &jsonwebtoken::EncodingKey::from_secret("test-secret-key".as_bytes()),
+        ).unwrap();
+
+        // First validation should succeed
+        assert!(validator.validate(&token).is_ok());
+
+        // The token binding protection would be implemented by tracking jti claims
+        // in a database or cache to prevent replay attacks
+        // For this test, we'll verify that the jti is properly validated
+        let validated = validator.validate(&token).unwrap();
+        assert_eq!(validated.jti, "unique-token-id-123");
+    }
+
+    #[test]
+    fn jwt_clock_skew_handling() {
+        let validator = create_validator();
+        
+        let claims = TokenClaims {
+            sub: "user-123".to_string(),
+            role: "ADMIN".to_string(),
+            iat: Utc::now().timestamp(),
+            exp: (Utc::now() + chrono::Duration::seconds(1)).timestamp(), // Expires in 1 second
+            iss: "bornemap".to_string(),
+            aud: "bornemap-app".to_string(),
+            jti: "jti-123".to_string(),
+        };
+
+        let token = jsonwebtoken::encode(
+            &jsonwebtoken::Header::default(),
+            &claims,
+            &jsonwebtoken::EncodingKey::from_secret("test-secret-key".as_bytes()),
+        ).unwrap();
+
+        // Should succeed with clock skew
+        assert!(validator.validate(&token).is_ok());
+
+        // Test with expired token (no clock skew)
+        let config_no_skew = JwtConfig {
+            algorithm: "HS256".to_string(),
+            issuer: "bornemap".to_string(),
+            audience: "bornemap-app".to_string(),
+            clock_skew: Duration::from_secs(0), // No clock skew
+        };
+
+        let validator_no_skew = JwtValidator::new("test-secret-key".to_string(), config_no_skew).unwrap();
+        let expired_claims = TokenClaims {
+            sub: "user-456".to_string(),
+            role: "ADMIN".to_string(),
+            iat: Utc::now().timestamp() - 3600, // Issued 1 hour ago
+            exp: Utc::now().timestamp() - 1,    // Expired 1 second ago
+            iss: "bornemap".to_string(),
+            aud: "bornemap-app".to_string(),
+            jti: "jti-456".to_string(),
+        };
+
+        let expired_token = jsonwebtoken::encode(
+            &jsonwebtoken::Header::default(),
+            &expired_claims,
+            &jsonwebtoken::EncodingKey::from_secret("test-secret-key".as_bytes()),
+        ).unwrap();
+
+        let result = validator_no_skew.validate(&expired_token);
+        assert!(matches!(result, Err(AppError::TokenExpired)));
     }
 }

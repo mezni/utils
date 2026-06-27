@@ -34,11 +34,11 @@ impl CurrentUser {
     }
 
     pub fn is_driver(&self) -> bool {
-        self.role == Role::Driver
+        self.role == Role::RegisteredDriver
     }
 
     pub fn is_system(&self) -> bool {
-        self.role == Role::System
+        false // System role no longer exists
     }
 }
 
@@ -114,13 +114,12 @@ mod tests {
     use uuid::Uuid;
 
     fn create_test_jwt_service() -> JwtService {
-        let validator = JwtValidator::new(
+        JwtService::new(
             "test-secret-key".to_string(),
-            JwtConfig::default(),
-        ).unwrap();
-        JwtService {
-            validator: Arc::new(validator),
-        }
+            3600,
+            "bornemap".to_string(),
+            "bornemap-app".to_string(),
+        )
     }
 
     #[test]

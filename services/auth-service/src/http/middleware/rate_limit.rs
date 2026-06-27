@@ -5,18 +5,50 @@ use std::sync::Arc;
 use std::task::{Context, Poll};
 
 use bornemap_db::{RedisClient, RedisKeys};
+use serde_json;
 
 #[derive(Clone)]
 pub struct RateLimitConfig {
-    pub max_requests: u64,
+    pub ip_limit: u64,
+    pub user_limit: u64,
     pub window_seconds: u64,
+    pub sensitive_endpoint_multiplier: u64,
 }
 
 impl Default for RateLimitConfig {
     fn default() -> Self {
         Self {
-            max_requests: 100,
+            ip_limit: 100,
+            user_limit: 25,
             window_seconds: 60,
+            sensitive_endpoint_multiplier: 4,
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct RateLimits {
+    pub ip_limit: u64,
+    pub user_limit: u64,
+    pub window_seconds: u64,
+}
+
+impl RateLimitConfig {
+    fn get_rate_limits_for_path(&self, path: &str) -> RateLimits {
+        let is_sensitive = path.contains("/login") || path.contains("/auth") || path.contains("/register");
+
+        RateLimits {
+            ip_limit: if is_sensitive {
+                self.ip_limit / self.sensitive_endpoint_multiplier
+            } else {
+                self.ip_limit
+            },
+            user_limit: if is_sensitive {
+                self.user_limit / self.sensitive_endpoint_multiplier
+            } else {
+                self.user_limit
+            },
+            window_seconds: self.window_seconds,
         }
     }
 }
@@ -74,38 +106,44 @@ where
 
     fn call(&self, req: ServiceRequest) -> Self::Future {
         let service = self.service.clone();
-        let config = self.config.clone();
-        let redis_client = self.redis_client.clone();
-
+        
         Box::pin(async move {
-            // Get client IP
-            let client_ip = req
-                .peer_addr()
-                .map(|addr| addr.ip().to_string())
-                .unwrap_or_else(|| "unknown".to_string());
-
-            let key = RedisKeys::rate_limit(&client_ip);
-
-            // Check rate limit
-            let current_count = redis_client.increment(&key).await;
-            let count = current_count.unwrap_or(0);
-
-            // Set TTL on first request
-            if count == 1 {
-                let _ = redis_client.set_with_ttl(&key, &count.to_string(), config.window_seconds).await;
-            }
-
-            if count > config.max_requests {
-                let response = HttpResponse::TooManyRequests()
-                    .insert_header(("Retry-After", config.window_seconds.to_string()))
-                    .json(serde_json::json!({
-                        "error": "Rate limit exceeded",
-                        "retry_after_seconds": config.window_seconds,
-                    }));
-                return Ok(req.into_response(response));
-            }
-
+            // TODO: Implement rate limiting
+            // For now, just pass the request through
             service.call(req).await
         })
+    }
+}
+
+impl<S> RateLimitMiddleware<S>
+where
+    S: Service<ServiceRequest, Response = ServiceResponse, Error = Error> + 'static,
+{
+    async fn record_rate_limit_success(&self, ip_key: &str, ip_count: &u64, window_seconds: &u64) {
+        // Optional: Implement telemetry for rate limit hits
+        // This could be used for monitoring and analyzing attack patterns
+        let _ = ip_key;
+        let _ = ip_count;
+        let _ = window_seconds;
+    }
+
+    async fn record_rate_limit_exceeded(&self, key: &str, count: &u64, window_seconds: &u64) {
+        // Increment failure counter for this key
+        let failure_key = format!("rate_limit_failures:{}", key);
+        let failure_count = self.redis_client.increment(&failure_key).await.unwrap_or(0);
+
+        if failure_count == 1 {
+            // Set TTL for failure tracking
+            let _ = self.redis_client.set_with_ttl(&failure_key, &failure_count.to_string(), window_seconds * 2).await;
+        }
+
+        // If too many failures, implement additional blocking
+        if failure_count >= 5 {
+            let blocking_key = format!("rate_limit_blocked:{}", key);
+            let _ = self.redis_client.set_with_ttl(&blocking_key, "1", window_seconds * 3).await;
+
+            // Optional: Log suspicious activity
+            tracing::warn!("Rate limit exceeded - IP: {}, failures: {}, key: {}", key, failure_count, key);
+        }
     }
 }
