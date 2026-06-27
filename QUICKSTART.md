@@ -132,13 +132,35 @@ curl -X POST http://localhost:8080/api/v1/auth/logout \
 - `http_request_duration_seconds` — histogram with labels `method`, `path`
 - `http_active_requests` — gauge (currently active requests)
 
+### 6. Run Admin Dashboard
+
+> **Prerequisites:** Node.js 18+, npm 9+
+
+```bash
+# Navigate to admin dashboard
+cd apps/admin-dashboard
+
+# Install dependencies
+npm install
+
+# Start development server (runs on :5173, proxies /api to :8080)
+npm run dev
+```
+
+The admin dashboard will be available at `http://localhost:5173`. It proxies `/api/*` requests to the auth service at `http://localhost:8080`.
+
+> **Note:** The auth service must be running (step 4) before the dashboard can log in.
+
 ## Testing
 
 ```bash
-# Run all tests
+# Auth service — run all Rust tests
 cargo test
 
-# Run specific test suites
+# Admin dashboard — run all frontend tests
+cd apps/admin-dashboard && npm test
+
+# Run specific Rust test suites
 cargo test validation
 cargo test use_cases
 cargo test integration
@@ -153,12 +175,14 @@ cargo test -- --nocapture
 
 ```
 BorneMap/
+├── apps/
+│   └── admin-dashboard/   # Admin Dashboard (React 19 + Vite + Tailwind v4)
 ├── shared/
 │   ├── bornemap-core/     # Domain models and types
 │   ├── bornemap-auth/     # JWT utilities
 │   └── bornemap-db/       # Database migrations and pool
 ├── services/
-│   └── auth-service/      # Authentication service
+│   └── auth-service/      # Authentication service (Actix-web)
 ├── docs/                 # Documentation
 └── tests/                # Integration tests
 ```
@@ -262,10 +286,11 @@ lsof -ti:8080 | xargs kill -9
 
 ## Next Steps
 
-1. Sprint 09 — User Profile & Account Management
-2. Implement frontend application
-3. Add payment integration
-4. Deploy to production
+1. Sprint 10 — User Profile & Account Management
+2. Implement driver-service backend
+3. Implement admin-service backend
+4. Add payment integration
+5. Deploy to production
 
 ## Contributing
 
