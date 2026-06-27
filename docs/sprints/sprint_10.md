@@ -155,3 +155,9 @@ const { data } = useQuery<DashboardMetrics>({
 - `apps/admin-dashboard/src/features/dashboard/DashboardPage.tsx` - Frontend integration
 - `docs/API_CONTRACT.md` - Updated API contract
 - `docs/sprints/sprint_10.md` - Sprint documentation
+
+## Branch
+
+- **Branch**: `sprint-10-admin-metrics-api`
+- **PR**: #316
+- **Status**: ✅ Completed and ready for review

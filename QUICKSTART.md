@@ -320,10 +320,12 @@ lsof -ti:8080 | xargs kill -9
 ## Next Steps
 
 1. Sprint 11 — Additional Admin Metrics (active users, new users today, total trackers)
-2. Implement driver-service backend
-3. Implement admin-service backend
-4. Add payment integration
-5. Deploy to production
+2. Sprint 12 — Real-time dashboard updates with WebSocket
+3. Sprint 13 — Export functionality for metrics data
+4. Implement driver-service backend
+5. Implement admin-service backend
+6. Add payment integration
+7. Deploy to production
 
 ## Contributing
 
