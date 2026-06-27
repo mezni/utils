@@ -1,6 +1,7 @@
 use actix_web::{App, test, web};
 use auth_service::{config::AppConfig, http, infrastructure::jwt::JwtService};
 use bornemap_db::{AppState, create_pool, run_migrations};
+use std::sync::Arc;
 use serde_json::json;
 
 fn test_config() -> Option<AppConfig> {
@@ -14,7 +15,44 @@ fn test_config() -> Option<AppConfig> {
         jwt_refresh_ttl_seconds: 86400,
         jwt_issuer: "test-issuer".into(),
         jwt_audience: "test-audience".into(),
+        redis_url: "redis://localhost:6379".into(),
+        rate_limit_requests: 100,
+        rate_limit_window_seconds: 60,
+        oauth_state_ttl_seconds: 300,
+        google_client_id: None,
+        google_client_secret: None,
+        google_redirect_uri: None,
+        google_auth_url: None,
+        google_token_url: None,
+        google_userinfo_url: None,
     })
+}
+
+fn create_oauth_state() -> http::oauth::OAuthState {
+    use auth_service::application::oauth_state::OAuthStateStore;
+
+    struct NoopStateStore;
+
+    #[async_trait::async_trait]
+    impl OAuthStateStore for NoopStateStore {
+        async fn store_oauth_state(&self, _state: &str) -> Result<(), bornemap_core::AppError> {
+            Ok(())
+        }
+        async fn validate_oauth_state(&self, _state: &str) -> Result<bool, bornemap_core::AppError> {
+            Ok(true)
+        }
+        async fn create(&self, _state: &str, _ttl: std::time::Duration) -> Result<(), bornemap_core::AppError> {
+            Ok(())
+        }
+        async fn consume(&self, _state: &str) -> Result<bool, bornemap_core::AppError> {
+            Ok(true)
+        }
+    }
+
+    http::oauth::OAuthState {
+        google_provider: None,
+        state_store: Arc::new(NoopStateStore),
+    }
 }
 
 // Cannot share the init pattern due to impl Trait in return position,
@@ -38,11 +76,12 @@ async fn health_live() {
         config.jwt_issuer,
         config.jwt_audience,
     );
+    let oauth_state = create_oauth_state();
     let app = test::init_service(
         App::new()
             .app_data(web::Data::new(state))
             .app_data(web::Data::new(jwt_service))
-            .configure(http::configure),
+            .configure(|cfg| http::configure(cfg, oauth_state.clone())),
     )
     .await;
 
@@ -69,11 +108,12 @@ async fn register_success() {
         config.jwt_issuer,
         config.jwt_audience,
     );
+    let oauth_state = create_oauth_state();
     let app = test::init_service(
         App::new()
             .app_data(web::Data::new(state))
             .app_data(web::Data::new(jwt_service))
-            .configure(http::configure),
+            .configure(|cfg| http::configure(cfg, oauth_state.clone())),
     )
     .await;
 
@@ -109,11 +149,12 @@ async fn register_duplicate() {
         config.jwt_issuer,
         config.jwt_audience,
     );
+    let oauth_state = create_oauth_state();
     let app = test::init_service(
         App::new()
             .app_data(web::Data::new(state))
             .app_data(web::Data::new(jwt_service))
-            .configure(http::configure),
+            .configure(|cfg| http::configure(cfg, oauth_state.clone())),
     )
     .await;
 
@@ -154,11 +195,12 @@ async fn register_validation_error() {
         config.jwt_issuer,
         config.jwt_audience,
     );
+    let oauth_state = create_oauth_state();
     let app = test::init_service(
         App::new()
             .app_data(web::Data::new(state))
             .app_data(web::Data::new(jwt_service))
-            .configure(http::configure),
+            .configure(|cfg| http::configure(cfg, oauth_state.clone())),
     )
     .await;
 
@@ -189,11 +231,12 @@ async fn login_success() {
         config.jwt_issuer,
         config.jwt_audience,
     );
+    let oauth_state = create_oauth_state();
     let app = test::init_service(
         App::new()
             .app_data(web::Data::new(state))
             .app_data(web::Data::new(jwt_service))
-            .configure(http::configure),
+            .configure(|cfg| http::configure(cfg, oauth_state.clone())),
     )
     .await;
 
@@ -236,11 +279,12 @@ async fn login_wrong_password() {
         config.jwt_issuer,
         config.jwt_audience,
     );
+    let oauth_state = create_oauth_state();
     let app = test::init_service(
         App::new()
             .app_data(web::Data::new(state))
             .app_data(web::Data::new(jwt_service))
-            .configure(http::configure),
+            .configure(|cfg| http::configure(cfg, oauth_state.clone())),
     )
     .await;
 
@@ -283,11 +327,12 @@ async fn login_nonexistent_user() {
         config.jwt_issuer,
         config.jwt_audience,
     );
+    let oauth_state = create_oauth_state();
     let app = test::init_service(
         App::new()
             .app_data(web::Data::new(state))
             .app_data(web::Data::new(jwt_service))
-            .configure(http::configure),
+            .configure(|cfg| http::configure(cfg, oauth_state.clone())),
     )
     .await;
 

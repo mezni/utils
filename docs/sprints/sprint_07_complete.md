@@ -391,6 +391,44 @@ infra/docker-compose.yml                        # Redis service configuration
 
 ---
 
+## 🔧 **Compilation Fixes Applied**
+
+### Issues Resolved
+The Sprint 07 code had ~40 compilation errors due to API mismatches between code and actual library interfaces. These were resolved:
+
+### OpenSSL Build
+- Added `openssl = { version = "0.10", features = ["vendored"] }` to compile OpenSSL from source (no system `libssl-dev` required)
+
+### Architecture Alignment
+- `PgUserRepository` now implements `bornemap_core::UserRepository` (replaced local trait)
+- `PgSessionRepository` now implements `bornemap_core::SessionRepository` (replaced local trait)
+- Module structure cleaned up: OAuth types moved to proper locations
+
+### API Mismatches Fixed
+- Password service: Converted from async trait to free functions `hash_password()` / `verify_password()`
+- Redis client: Added `Clone` derive; removed `with_config()` → `new()`; removed `exists_and_valid()` → `exists()`
+- `AppError::InternalError` fixed from function-style to unit-variant usage
+- All config `Option<String>` fields wrapped in `Some()`
+- OAuth Google provider: Restructured to remove nested `pub mod google`
+
+### bornemap-auth Crate Fixed
+- Added `pub mod oauth;` to `lib.rs`
+- Removed conflicting `oauth.rs` file (kept `oauth/mod.rs`)
+- Added missing `serde_json` dependency
+- Fixed module export paths for `OAuthTokenBundle` and `OAuthStateStore`
+
+### Test Suite
+- Updated integration tests to pass OAuth state to `http::configure()`
+- Fixed `use_cases.rs` and `password_test.rs` to use new free-function API
+- Removed outdated/duplicate test files
+
+### Result
+```
+cargo check --workspace --tests  →  Clean (0 errors, 0 warnings)
+```
+
+---
+
 ## 📋 **Sprint 07 Complete**
 
 The Redis integration and security hardening system is now **fully implemented** and ready for production use. The system provides:
@@ -400,6 +438,5 @@ The Redis integration and security hardening system is now **fully implemented**
 ✅ **Rate Limiting Middleware** for protecting authentication endpoints  
 ✅ **Session Helpers** for temporary authentication data  
 ✅ **Docker Integration** with Redis service configuration  
-✅ **Comprehensive Testing** with 100% coverage  
 
 The implementation successfully establishes Redis as shared infrastructure while maintaining Clean Architecture boundaries and providing robust security features for the authentication service.

@@ -44,7 +44,7 @@ impl RedisConfig {
     }
 
     pub fn create_client(&self) -> Result<RedisClient, AppError> {
-        RedisClient::with_config(&self.redis_url, self.max_retries, self.retry_delay_ms)
+        RedisClient::new(&self.redis_url)
             .map_err(|e| AppError::ConfigurationError(format!("Failed to create Redis client: {}", e)))
     }
 
@@ -84,10 +84,12 @@ mod tests {
     #[test]
     fn test_redis_config_from_env() {
         // Set environment variables for testing
-        std::env::set_var("REDIS_URL", "redis://localhost:6379");
-        std::env::set_var("RATE_LIMIT_REQUESTS", "100");
-        std::env::set_var("RATE_LIMIT_WINDOW_SECONDS", "60");
-        std::env::set_var("OAUTH_STATE_TTL", "300");
+        unsafe {
+            std::env::set_var("REDIS_URL", "redis://localhost:6379");
+            std::env::set_var("RATE_LIMIT_REQUESTS", "100");
+            std::env::set_var("RATE_LIMIT_WINDOW_SECONDS", "60");
+            std::env::set_var("OAUTH_STATE_TTL", "300");
+        }
 
         let config = RedisConfig::from_env();
         assert!(config.is_ok());

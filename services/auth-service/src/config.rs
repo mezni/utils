@@ -93,9 +93,9 @@ impl AppConfig {
             google_client_id,
             google_client_secret,
             google_redirect_uri,
-            google_auth_url,
-            google_token_url,
-            google_userinfo_url,
+            google_auth_url: Some(google_auth_url),
+            google_token_url: Some(google_token_url),
+            google_userinfo_url: Some(google_userinfo_url),
         })
     }
 }

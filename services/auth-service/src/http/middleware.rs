@@ -1,3 +1,3 @@
 pub mod rate_limit;
 
-pub use rate_limit::{RateLimitMiddleware, RateLimitConfig, EndpointRateLimits};
+pub use rate_limit::{RateLimitConfig, RateLimitMiddleware, RateLimitMiddlewareFactory};

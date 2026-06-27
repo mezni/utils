@@ -82,14 +82,14 @@ impl From<RedisError> for bornemap_core::AppError {
     fn from(e: RedisError) -> Self {
         match e {
             RedisError::Connection(_) => bornemap_core::AppError::ConfigurationError(format!("Redis connection failed: {}", e)),
-            RedisError::Command(_) => bornemap_core::AppError::InternalError(format!("Redis command failed: {}", e)),
-            RedisError::Timeout(_) => bornemap_core::AppError::InternalError(format!("Redis timeout: {}", e)),
+            RedisError::Command(_) => bornemap_core::AppError::InternalError,
+            RedisError::Timeout(_) => bornemap_core::AppError::InternalError,
             RedisError::Authentication(_) => bornemap_core::AppError::ConfigurationError(format!("Redis authentication failed: {}", e)),
             RedisError::Configuration(_) => bornemap_core::AppError::ConfigurationError(e.to_string()),
-            RedisError::Network(_) => bornemap_core::AppError::InternalError(format!("Redis network error: {}", e)),
-            RedisError::Server(_) => bornemap_core::AppError::InternalError(format!("Redis server error: {}", e)),
-            RedisError::KeyNotFound(_) => bornemap_core::AppError::NotFound(format!("Redis key not found: {}", e)),
-            RedisError::ValueExpired(_) => bornemap_core::AppError::InvalidSession(format!("Redis value expired: {}", e)),
+            RedisError::Network(_) => bornemap_core::AppError::InternalError,
+            RedisError::Server(_) => bornemap_core::AppError::InternalError,
+            RedisError::KeyNotFound(_) => bornemap_core::AppError::NotFound,
+            RedisError::ValueExpired(_) => bornemap_core::AppError::InvalidSession,
             RedisError::RateLimitExceeded(_) => bornemap_core::AppError::ValidationError(format!("Rate limit exceeded: {}", e)),
         }
     }

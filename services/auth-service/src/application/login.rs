@@ -3,7 +3,7 @@ use chrono::Utc;
 use uuid::Uuid;
 
 use crate::infrastructure::jwt::JwtService;
-use crate::infrastructure::password::PasswordService;
+use crate::infrastructure::password;
 
 #[derive(Debug)]
 pub struct LoginRequest {
@@ -51,7 +51,7 @@ impl<R: UserRepository, S: SessionRepository> LoginUseCase<R, S> {
             .map_err(AppError::from)?
             .ok_or(AppError::InvalidCredentials)?;
 
-        let valid = PasswordService::verify(&req.password, &user.password_hash)
+        let valid = password::verify_password(&req.password, &user.password_hash)
             .map_err(|_| AppError::InternalError)?;
 
         if !valid {

@@ -2,8 +2,7 @@ use bornemap_core::{AuthError, User, UserRepository, UserRole, UserStatus};
 use chrono::Utc;
 use uuid::Uuid;
 
-
-use crate::infrastructure::password::PasswordService;
+use crate::infrastructure::password;
 
 #[derive(Debug)]
 pub struct RegisterRequest {
@@ -32,7 +31,8 @@ impl<R: UserRepository> RegisterUseCase<R> {
             return Err(AuthError::EmailAlreadyExists);
         }
 
-        let password_hash = PasswordService::hash(&req.password)?;
+        let password_hash = password::hash_password(&req.password)
+            .map_err(|_| AuthError::InternalError)?;
 
         let user = User {
             id: Uuid::new_v4(),

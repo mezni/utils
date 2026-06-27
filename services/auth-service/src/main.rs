@@ -1,10 +1,11 @@
 use actix_web::web;
 use actix_web::{App, HttpServer};
-use auth_service::{config, http, infrastructure, redis_config};
-use bornemap_auth::{OAuthStateStore};
+use auth_service::{config, http, infrastructure};
 use bornemap_db::{AppState, create_pool, run_migrations, RedisClient};
 use config::AppConfig;
-use infrastructure::{PgOAuthRepository, GoogleOAuthProvider, OAuthState as OAuthAppState};
+use http::oauth::OAuthState;
+use infrastructure::oauth::google::GoogleOAuthProvider;
+use std::sync::Arc;
 use tracing_subscriber::EnvFilter;
 
 #[actix_web::main]
@@ -17,7 +18,7 @@ async fn main() -> std::io::Result<()> {
     let config = AppConfig::from_env().expect("configuration failed");
 
     // Validate Redis configuration
-    redis_config::RedisConfig::from_env()
+    auth_service::redis_config::RedisConfig::from_env()
         .expect("Failed to load Redis configuration")
         .validate()
         .expect("Redis configuration validation failed");
@@ -34,46 +35,43 @@ async fn main() -> std::io::Result<()> {
     run_migrations(&pool).await.expect("Migration failed");
 
     // Initialize Redis client
-    let redis_client = RedisClient::new(&config.redis_url)
-        .expect("Failed to create Redis client");
-    
-    // Initialize Redis connection
-    redis_client.initialize()
-        .await
-        .expect("Failed to initialize Redis connection");
+    let redis_client = Arc::new(
+        RedisClient::new(&config.redis_url)
+            .expect("Failed to create Redis client"),
+    );
 
     // Initialize OAuth components
-    let oauth_state_store = Box::new(
-        auth_service::application::oauth_state::RedisOAuthStateStore::new_with_default(redis_client.clone())
-            .await
-            .expect("Failed to create OAuth state store")
+    let oauth_state_store = Arc::new(
+        auth_service::application::oauth_state::RedisOAuthStateStore::new(
+            redis_client.clone(),
+        ),
     );
-    
-    let oauth_repository = PgOAuthRepository::new(pool.clone());
-    
-    let google_provider = config.google_client_id
-        .and_then(|client_id| {
-            config.google_client_secret.clone().map(|client_secret| {
-                GoogleOAuthProvider::new(
-                    client_id,
-                    client_secret,
-                    config.google_redirect_uri.unwrap_or_else(|| "http://localhost:8080/api/v1/auth/oauth/google/callback".to_string()),
-                    config.google_auth_url,
-                    config.google_token_url,
-                    config.google_userinfo_url,
-                )
-            })
-        });
-    
-    let oauth_state = OAuthAppState {
+
+    let google_provider = config.google_client_id.clone().map(|client_id| {
+        GoogleOAuthProvider::new(
+            client_id,
+            config.google_client_secret.clone().unwrap_or_default(),
+            config
+                .google_redirect_uri
+                .clone()
+                .unwrap_or_else(|| "http://localhost:8080/api/v1/auth/oauth/google/callback".to_string()),
+        )
+    });
+
+    let oauth_state = OAuthState {
         google_provider,
         state_store: oauth_state_store,
-        oauth_repository,
     };
 
     // Initialize rate limiting middleware
-    let rate_limiter = http::middleware::RateLimitMiddleware::with_default(redis_client.clone())
-        .expect("Failed to create rate limiter");
+    let rate_limit_config = auth_service::http::middleware::RateLimitConfig {
+        max_requests: config.rate_limit_requests as u64,
+        window_seconds: config.rate_limit_window_seconds,
+    };
+    let rate_limiter = auth_service::http::middleware::RateLimitMiddlewareFactory::new(
+        rate_limit_config,
+        redis_client,
+    );
 
     let state = AppState { db: pool };
     let jwt_service = infrastructure::jwt::JwtService::new(
