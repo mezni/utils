@@ -98,4 +98,42 @@ impl bornemap_core::UserRepository for PgUserRepository {
 
         Ok(row.map_or(false, |r| r.0))
     }
+
+    async fn count_users(&self) -> Result<i64, bornemap_core::AppError> {
+        sqlx::query_scalar::<_, i64>("SELECT COUNT(*)::bigint FROM users")
+            .fetch_one(&self.pool)
+            .await
+            .map_err(|e| bornemap_core::AppError::DatabaseError(e.to_string()))
+    }
+
+    async fn users_growth_by_day(
+        &self,
+        range: &bornemap_core::MetricsRange,
+    ) -> Result<Vec<bornemap_core::UsersGrowthPoint>, bornemap_core::AppError> {
+        const FALLBACK_DATE: &str = "2020-01-01";
+        let fallback = chrono::NaiveDate::parse_from_str(FALLBACK_DATE, "%Y-%m-%d")
+            .map_err(|_e| bornemap_core::AppError::InternalError)?;
+        let today = match chrono::Utc::now().date_naive().pred_opt() {
+            Some(d) => d,
+            None => fallback,
+        };
+        let start_date = today - chrono::Duration::days(range.num_days());
+
+        let rows = sqlx::query_as::<_, (chrono::NaiveDate, i64)>(
+            "SELECT created_at::date AS date, COUNT(*)::bigint AS count \
+             FROM users \
+             WHERE created_at >= $1 \
+             GROUP BY created_at::date \
+             ORDER BY created_at::date",
+        )
+        .bind(start_date)
+        .fetch_all(&self.pool)
+        .await
+        .map_err(|e| bornemap_core::AppError::DatabaseError(e.to_string()))?;
+
+        Ok(rows
+            .into_iter()
+            .map(|(date, count)| bornemap_core::UsersGrowthPoint { date, count })
+            .collect())
+    }
 }

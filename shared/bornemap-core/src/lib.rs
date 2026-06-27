@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, NaiveDate, Utc};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use uuid::Uuid;
@@ -182,6 +182,47 @@ impl From<AuthError> for AppError {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct UsersGrowthPoint {
+    pub date: NaiveDate,
+    pub count: i64,
+}
+
+pub struct UsersMetrics {
+    pub total: i64,
+    pub growth: Vec<UsersGrowthPoint>,
+}
+
+pub enum MetricsRange {
+    Days7,
+    Days30,
+    Days90,
+    Days365,
+}
+
+impl MetricsRange {
+    pub fn num_days(&self) -> i64 {
+        match self {
+            MetricsRange::Days7 => 7,
+            MetricsRange::Days30 => 30,
+            MetricsRange::Days90 => 90,
+            MetricsRange::Days365 => 365,
+        }
+    }
+
+    pub fn from_str(s: &str) -> Result<Self, AppError> {
+        match s {
+            "7d" => Ok(MetricsRange::Days7),
+            "30d" => Ok(MetricsRange::Days30),
+            "90d" => Ok(MetricsRange::Days90),
+            "365d" => Ok(MetricsRange::Days365),
+            _ => Err(AppError::ValidationError(format!(
+                "Invalid range '{}'. Supported values: 7d, 30d, 90d, 365d",
+                s
+            ))),
+        }
+    }
+}
+
 pub struct Session {
     pub id: SessionId,
     pub user_id: UserId,
@@ -200,6 +241,8 @@ pub trait UserRepository: Send + Sync {
     async fn find_by_email(&self, email: &str) -> Result<Option<User>, AuthError>;
     async fn find_by_id(&self, id: UserId) -> Result<Option<User>, AuthError>;
     async fn email_exists(&self, email: &str) -> Result<bool, AuthError>;
+    async fn count_users(&self) -> Result<i64, AppError>;
+    async fn users_growth_by_day(&self, range: &MetricsRange) -> Result<Vec<UsersGrowthPoint>, AppError>;
 }
 
 #[async_trait]
