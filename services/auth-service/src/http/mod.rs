@@ -2,6 +2,7 @@ pub mod auth;
 pub mod dto;
 pub mod error;
 pub mod health;
+pub mod middleware;
 pub mod oauth;
 
 use actix_web::web;

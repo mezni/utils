@@ -6,9 +6,11 @@ BorneMap is an electric vehicle charging station management platform built with 
 
 ## Prerequisites
 
-- Rust 1.70+ 
+- Rust 1.70+
 - PostgreSQL 14+
+- Redis 7+ (optional, for OAuth state & rate limiting)
 - Docker (optional)
+- `gcc`, `perl`, `make` (for vendored OpenSSL build, if system `libssl-dev` unavailable)
 
 ## Quick Start
 
@@ -44,6 +46,12 @@ JWT_AUDIENCE=bornemap-app
 
 # Database Configuration
 DATABASE_URL=postgresql://localhost:5432/bornemap_dev
+
+# Redis Configuration
+REDIS_URL=redis://localhost:6379
+RATE_LIMIT_REQUESTS=100
+RATE_LIMIT_WINDOW_SECONDS=60
+OAUTH_STATE_TTL=300
 ```
 
 ### 4. Build and Run Auth Service
@@ -53,11 +61,16 @@ DATABASE_URL=postgresql://localhost:5432/bornemap_dev
 cd services/auth-service
 cargo build --release
 
-# Run the service
+# Run the service (requires PostgreSQL + Redis)
+DATABASE_URL=postgresql://localhost:5432/bornemap_dev \
+REDIS_URL=redis://localhost:6379 \
+JWT_SECRET=your-secret \
 cargo run --release
 ```
 
 The auth service will be available at `http://localhost:8080`
+
+> **Note:** If `libssl-dev` is not installed on your system, OpenSSL is compiled from source using the `vendored` feature. Ensure `gcc`, `perl`, and `make` are available.
 
 ### 5. Test the API
 
@@ -165,12 +178,19 @@ cargo check --all-targets --all-features
 
 ## Docker Support (Optional)
 
+The Docker Compose stack includes PostgreSQL and Redis services:
+
 ```bash
 # Build and run with Docker Compose
 docker-compose up -d
 
 # View logs
 docker-compose logs -f auth-service
+
+# The stack includes:
+#   - auth-service (port 8080)
+#   - postgres (port 5432)
+#   - redis (port 6379)
 ```
 
 ## Environment Variables
@@ -183,6 +203,10 @@ docker-compose logs -f auth-service
 | `JWT_ISSUER` | No | bornemap | JWT issuer |
 | `JWT_AUDIENCE` | No | bornemap-app | JWT audience |
 | `DATABASE_URL` | Yes | - | PostgreSQL connection string |
+| `REDIS_URL` | No | `redis://localhost:6379` | Redis connection string |
+| `RATE_LIMIT_REQUESTS` | No | 100 | Max requests per window |
+| `RATE_LIMIT_WINDOW_SECONDS` | No | 60 | Rate limit window duration |
+| `OAUTH_STATE_TTL` | No | 300 | OAuth state TTL in seconds |
 
 ## Troubleshooting
 
@@ -220,7 +244,7 @@ lsof -ti:8080 | xargs kill -9
 
 ## Next Steps
 
-1. Complete remaining sprints (06-08)
+1. Sprint 08 — User Profile & Account Management
 2. Implement frontend application
 3. Add payment integration
 4. Deploy to production

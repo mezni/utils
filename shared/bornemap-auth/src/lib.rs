@@ -1,3 +1,5 @@
+pub mod oauth;
+
 use bornemap_core::AppError;
 use chrono::Utc;
 use jsonwebtoken::{DecodingKey, EncodingKey, Header, Validation, decode, encode};

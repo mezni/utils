@@ -114,6 +114,14 @@ pub fn map_app_error(err: AppError) -> HttpResponse {
                 field: None,
             },
         ),
+        _ => (
+            500,
+            ApiError {
+                code: INTERNAL_ERROR.to_string(),
+                message: "Internal server error".to_string(),
+                field: Some(format!("{:?}", err)),
+            },
+        ),
     };
 
     error!("Application error: {:?}", err);

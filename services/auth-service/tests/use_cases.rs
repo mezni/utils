@@ -148,7 +148,7 @@ fn jwt_service() -> JwtService {
 }
 
 fn registered_user(repo: &MockUserRepository, email: &str, password: &str) {
-    let hash = auth_service::infrastructure::password::PasswordService::hash(password).unwrap();
+    let hash = auth_service::infrastructure::password::hash_password(password).unwrap();
     let user = User {
         id: Uuid::new_v4(),
         email: email.to_string(),

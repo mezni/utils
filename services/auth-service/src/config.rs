@@ -11,8 +11,11 @@ pub struct AppConfig {
     pub jwt_refresh_ttl_seconds: i64,
     pub jwt_issuer: String,
     pub jwt_audience: String,
-    // OAuth configuration
+    // Redis configuration
     pub redis_url: String,
+    pub rate_limit_requests: u32,
+    pub rate_limit_window_seconds: u64,
+    // OAuth configuration
     pub oauth_state_ttl_seconds: i64,
     // Google OAuth configuration
     pub google_client_id: Option<String>,
@@ -54,6 +57,14 @@ impl AppConfig {
         let jwt_audience = env::var("JWT_AUDIENCE").unwrap_or_else(|_| "bornemap-api".into());
 
         let redis_url = env::var("REDIS_URL").unwrap_or_else(|_| "redis://localhost:6379".into());
+        let rate_limit_requests: u32 = env::var("RATE_LIMIT_REQUESTS")
+            .unwrap_or_else(|_| "100".into())
+            .parse()
+            .map_err(|_| AppError::ConfigurationError("Invalid RATE_LIMIT_REQUESTS".into()))?;
+        let rate_limit_window_seconds: u64 = env::var("RATE_LIMIT_WINDOW_SECONDS")
+            .unwrap_or_else(|_| "60".into())
+            .parse()
+            .map_err(|_| AppError::ConfigurationError("Invalid RATE_LIMIT_WINDOW_SECONDS".into()))?;
         let oauth_state_ttl_seconds: i64 = env::var("OAUTH_STATE_TTL")
             .unwrap_or_else(|_| "300".into())
             .parse()
@@ -76,13 +87,15 @@ impl AppConfig {
             jwt_issuer,
             jwt_audience,
             redis_url,
+            rate_limit_requests,
+            rate_limit_window_seconds,
             oauth_state_ttl_seconds,
             google_client_id,
             google_client_secret,
             google_redirect_uri,
-            google_auth_url,
-            google_token_url,
-            google_userinfo_url,
+            google_auth_url: Some(google_auth_url),
+            google_token_url: Some(google_token_url),
+            google_userinfo_url: Some(google_userinfo_url),
         })
     }
 }
