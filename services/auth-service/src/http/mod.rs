@@ -24,6 +24,7 @@ pub fn configure(cfg: &mut web::ServiceConfig, oauth_state: oauth::OAuthState) {
     cfg.service(health::live)
         .service(health::ready)
         .service(metrics::metrics_handler)
+        .service(admin_metrics::users_metrics)
         .service(auth::register)
         .service(auth::login)
         .service(auth::refresh)
