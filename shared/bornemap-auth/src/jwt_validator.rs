@@ -70,15 +70,37 @@ impl JwtValidator {
         let issued_at = UNIX_EPOCH + Duration::from_secs(claims.iat as u64);
         let expires_at = UNIX_EPOCH + Duration::from_secs(claims.exp as u64);
 
+        // Normalize and validate role
+        let normalized_role = self.normalize_role(&claims.role)?;
+
         Ok(ValidatedClaims {
             sub: claims.sub,
-            role: claims.role,
+            role: normalized_role,
             iat: DateTime::from(issued_at),
             exp: DateTime::from(expires_at),
             iss: claims.iss,
             aud: claims.aud,
             jti: claims.jti,
         })
+    }
+
+    fn normalize_role(&self, role: &str) -> Result<String, AppError> {
+        // Try to parse as canonical role first
+        if let Some(parsed_role) = crate::rbac::Role::try_from_str(role) {
+            return Ok(parsed_role.as_str().to_string());
+        }
+
+        // If not canonical, try to normalize common variations
+        let normalized = match role.to_uppercase().as_str() {
+            "DRIVER" => "REGISTERED_DRIVER",  // Legacy role mapping
+            _ => return Err(AppError::InvalidConfiguration(format!("Unknown role: {}", role))),
+        };
+
+        // Verify the normalized role is valid
+        crate::rbac::Role::try_from_str(normalized)
+            .ok_or_else(|| AppError::InvalidConfiguration(format!("Invalid normalized role: {}", normalized)))?;
+
+        Ok(normalized.to_string())
     }
 
     pub fn config(&self) -> &JwtConfig {
@@ -113,6 +135,23 @@ impl ValidatedClaims {
 
     pub fn role(&self) -> &str {
         &self.role
+    }
+
+    pub fn parsed_role(&self) -> Result<crate::rbac::Role, AppError> {
+        crate::rbac::Role::try_from_str(&self.role)
+            .ok_or_else(|| AppError::InvalidConfiguration(format!("Invalid role in claims: {}", self.role)))
+    }
+
+    pub fn is_admin(&self) -> bool {
+        matches!(self.parsed_role(), Ok(crate::rbac::Role::Admin))
+    }
+
+    pub fn is_partner(&self) -> bool {
+        matches!(self.parsed_role(), Ok(crate::rbac::Role::Partner))
+    }
+
+    pub fn is_registered_driver(&self) -> bool {
+        matches!(self.parsed_role(), Ok(crate::rbac::Role::RegisteredDriver))
     }
 }
 
@@ -258,6 +297,9 @@ mod tests {
         assert_eq!(validated.role, "ADMIN");
         assert_eq!(validated.iss, "bornemap");
         assert_eq!(validated.aud, "bornemap-app");
+        assert!(validated.is_admin());
+        assert!(!validated.is_partner());
+        assert!(!validated.is_registered_driver());
     }
 
     #[test]
@@ -308,5 +350,80 @@ mod tests {
         assert!(result.is_ok());
         let validated = result.unwrap();
         assert!(validated.user_id().is_err());
+    }
+
+    #[test]
+    fn role_normalization_canonical_roles() {
+        let validator = create_validator();
+        
+        // Test canonical role names
+        let admin_claims = TokenClaims {
+            sub: "user-123".to_string(),
+            role: "ADMIN".to_string(),
+            iat: Utc::now().timestamp(),
+            exp: (Utc::now() + chrono::Duration::hours(1)).timestamp(),
+            iss: "bornemap".to_string(),
+            aud: "bornemap-app".to_string(),
+            jti: "jti-123".to_string(),
+        };
+
+        let admin_token = jsonwebtoken::encode(
+            &jsonwebtoken::Header::default(),
+            &admin_claims,
+            &jsonwebtoken::EncodingKey::from_secret("test-secret-key".as_bytes()),
+        ).unwrap();
+
+        let admin_result = validator.validate(&admin_token);
+        assert!(admin_result.is_ok());
+        let admin_validated = admin_result.unwrap();
+        assert_eq!(admin_validated.role, "ADMIN");
+        assert!(admin_validated.is_admin());
+
+        // Test legacy role normalization
+        let legacy_claims = TokenClaims {
+            sub: "user-456".to_string(),
+            role: "DRIVER".to_string(),  // Legacy role
+            iat: Utc::now().timestamp(),
+            exp: (Utc::now() + chrono::Duration::hours(1)).timestamp(),
+            iss: "bornemap".to_string(),
+            aud: "bornemap-app".to_string(),
+            jti: "jti-456".to_string(),
+        };
+
+        let legacy_token = jsonwebtoken::encode(
+            &jsonwebtoken::Header::default(),
+            &legacy_claims,
+            &jsonwebtoken::EncodingKey::from_secret("test-secret-key".as_bytes()),
+        ).unwrap();
+
+        let legacy_result = validator.validate(&legacy_token);
+        assert!(legacy_result.is_ok());
+        let legacy_validated = legacy_result.unwrap();
+        assert_eq!(legacy_validated.role, "REGISTERED_DRIVER");
+        assert!(legacy_validated.is_registered_driver());
+    }
+
+    #[test]
+    fn role_normalization_rejects_unknown_roles() {
+        let validator = create_validator();
+        
+        let invalid_claims = TokenClaims {
+            sub: "user-789".to_string(),
+            role: "UNKNOWN_ROLE".to_string(),
+            iat: Utc::now().timestamp(),
+            exp: (Utc::now() + chrono::Duration::hours(1)).timestamp(),
+            iss: "bornemap".to_string(),
+            aud: "bornemap-app".to_string(),
+            jti: "jti-789".to_string(),
+        };
+
+        let invalid_token = jsonwebtoken::encode(
+            &jsonwebtoken::Header::default(),
+            &invalid_claims,
+            &jsonwebtoken::EncodingKey::from_secret("test-secret-key".as_bytes()),
+        ).unwrap();
+
+        let result = validator.validate(&invalid_token);
+        assert!(matches!(result, Err(AppError::InvalidConfiguration(_))));
     }
 }

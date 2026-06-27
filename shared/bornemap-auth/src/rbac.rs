@@ -5,8 +5,7 @@ use std::collections::HashSet;
 pub enum Role {
     Admin,
     Partner,
-    Driver,
-    System,
+    RegisteredDriver,
 }
 
 impl Role {
@@ -14,8 +13,7 @@ impl Role {
         match self {
             Role::Admin => "ADMIN",
             Role::Partner => "PARTNER",
-            Role::Driver => "DRIVER",
-            Role::System => "SYSTEM",
+            Role::RegisteredDriver => "REGISTERED_DRIVER",
         }
     }
 
@@ -23,22 +21,20 @@ impl Role {
         match s {
             "ADMIN" => Some(Role::Admin),
             "PARTNER" => Some(Role::Partner),
-            "DRIVER" => Some(Role::Driver),
-            "SYSTEM" => Some(Role::System),
+            "REGISTERED_DRIVER" => Some(Role::RegisteredDriver),
             _ => None,
         }
     }
 
-    pub fn all() -> [Role; 4] {
-        [Role::Admin, Role::Partner, Role::Driver, Role::System]
+    pub fn all() -> [Role; 3] {
+        [Role::Admin, Role::Partner, Role::RegisteredDriver]
     }
 
     pub fn hierarchy(&self) -> Vec<Role> {
         match self {
-            Role::Admin => vec![Role::Admin, Role::Partner, Role::Driver],
-            Role::Partner => vec![Role::Partner, Role::Driver],
-            Role::Driver => vec![Role::Driver],
-            Role::System => vec![Role::System],
+            Role::Admin => vec![Role::Admin, Role::Partner, Role::RegisteredDriver],
+            Role::Partner => vec![Role::Partner, Role::RegisteredDriver],
+            Role::RegisteredDriver => vec![Role::RegisteredDriver],
         }
     }
 }
@@ -185,16 +181,15 @@ mod tests {
     fn role_creation() {
         assert_eq!(Role::Admin.as_str(), "ADMIN");
         assert_eq!(Role::Partner.as_str(), "PARTNER");
-        assert_eq!(Role::Driver.as_str(), "DRIVER");
-        assert_eq!(Role::System.as_str(), "SYSTEM");
+        assert_eq!(Role::RegisteredDriver.as_str(), "REGISTERED_DRIVER");
     }
 
     #[test]
     fn role_from_str() {
         assert_eq!(Role::try_from_str("ADMIN"), Some(Role::Admin));
         assert_eq!(Role::try_from_str("PARTNER"), Some(Role::Partner));
-        assert_eq!(Role::try_from_str("DRIVER"), Some(Role::Driver));
-        assert_eq!(Role::try_from_str("SYSTEM"), Some(Role::System));
+        assert_eq!(Role::try_from_str("REGISTERED_DRIVER"), Some(Role::RegisteredDriver));
+        assert_eq!(Role::try_from_str("DRIVER"), None); // Old role name should be rejected
         assert_eq!(Role::try_from_str("INVALID"), None);
     }
 
@@ -203,12 +198,12 @@ mod tests {
         let admin_hierarchy = Role::Admin.hierarchy();
         assert!(admin_hierarchy.contains(&Role::Admin));
         assert!(admin_hierarchy.contains(&Role::Partner));
-        assert!(admin_hierarchy.contains(&Role::Driver));
-        assert!(!admin_hierarchy.contains(&Role::System));
+        assert!(admin_hierarchy.contains(&Role::RegisteredDriver));
+        assert!(!admin_hierarchy.contains(&Role::System)); // System role removed
 
         let partner_hierarchy = Role::Partner.hierarchy();
         assert!(partner_hierarchy.contains(&Role::Partner));
-        assert!(partner_hierarchy.contains(&Role::Driver));
+        assert!(partner_hierarchy.contains(&Role::RegisteredDriver));
         assert!(!partner_hierarchy.contains(&Role::Admin));
         assert!(!partner_hierarchy.contains(&Role::System));
     }
@@ -240,7 +235,7 @@ mod tests {
         let set = RoleSet::from_strs(&["ADMIN", "PARTNER"]).unwrap();
         assert!(set.contains(Role::Admin));
         assert!(set.contains(Role::Partner));
-        assert!(!set.contains(Role::Driver));
+        assert!(!set.contains(Role::RegisteredDriver));
     }
 
     #[test]
@@ -255,8 +250,8 @@ mod tests {
         
         assert!(set.contains_any(&[Role::Admin]));
         assert!(set.contains_any(&[Role::Partner]));
-        assert!(set.contains_any(&[Role::Admin, Role::Driver]));
-        assert!(!set.contains_any(&[Role::Driver, Role::System]));
+        assert!(set.contains_any(&[Role::Admin, Role::RegisteredDriver]));
+        assert!(!set.contains_any(&[Role::RegisteredDriver, Role::System])); // System role removed
     }
 
     #[test]
@@ -265,18 +260,18 @@ mod tests {
         
         assert!(set.contains_all(&[Role::Admin]));
         assert!(set.contains_all(&[Role::Partner]));
-        assert!(!set.contains_all(&[Role::Admin, Role::Driver]));
-        assert!(!set.contains_all(&[Role::Admin, Role::Partner, Role::Driver]));
+        assert!(!set.contains_all(&[Role::Admin, Role::RegisteredDriver]));
+        assert!(!set.contains_all(&[Role::Admin, Role::Partner, Role::RegisteredDriver]));
     }
 
     #[test]
     fn role_checker_single_role() {
         let checker = RoleChecker::require_role(Role::Admin);
         let admin_set = RoleSet::from_roles(&[Role::Admin]);
-        let driver_set = RoleSet::from_roles(&[Role::Driver]);
+        let registered_driver_set = RoleSet::from_roles(&[Role::RegisteredDriver]);
 
         assert!(checker.check(&admin_set).is_ok());
-        assert!(matches!(checker.check(&driver_set), Err(AppError::Forbidden)));
+        assert!(matches!(checker.check(&registered_driver_set), Err(AppError::Forbidden)));
     }
 
     #[test]
@@ -284,11 +279,11 @@ mod tests {
         let checker = RoleChecker::require_any_roles(&[Role::Admin, Role::Partner]);
         let admin_set = RoleSet::from_roles(&[Role::Admin]);
         let partner_set = RoleSet::from_roles(&[Role::Partner]);
-        let driver_set = RoleSet::from_roles(&[Role::Driver]);
+        let registered_driver_set = RoleSet::from_roles(&[Role::RegisteredDriver]);
 
         assert!(checker.check(&admin_set).is_ok());
         assert!(checker.check(&partner_set).is_ok());
-        assert!(matches!(checker.check(&driver_set), Err(AppError::Forbidden)));
+        assert!(matches!(checker.check(&registered_driver_set), Err(AppError::Forbidden)));
     }
 
     #[test]
@@ -308,25 +303,25 @@ mod tests {
         let set = RoleSet::from_roles(&[Role::Admin, Role::Partner]);
 
         assert!(set.has_role(Role::Admin));
-        assert!(!set.has_role(Role::Driver));
+        assert!(!set.has_role(Role::RegisteredDriver));
 
         assert!(set.has_any_role(&[Role::Admin]));
         assert!(set.has_any_role(&[Role::Partner]));
-        assert!(set.has_any_role(&[Role::Admin, Role::Driver]));
-        assert!(!set.has_any_role(&[Role::Driver, Role::System]));
+        assert!(set.has_any_role(&[Role::Admin, Role::RegisteredDriver]));
+        assert!(!set.has_any_role(&[Role::RegisteredDriver, Role::System])); // System role removed
 
         assert!(set.has_all_roles(&[Role::Admin]));
         assert!(set.has_all_roles(&[Role::Partner]));
-        assert!(!set.has_all_roles(&[Role::Admin, Role::Driver]));
+        assert!(!set.has_all_roles(&[Role::Admin, Role::RegisteredDriver]));
     }
 
     #[test]
     fn role_all() {
         let all_roles = Role::all();
-        assert_eq!(all_roles.len(), 4);
+        assert_eq!(all_roles.len(), 3);
         assert!(all_roles.contains(&Role::Admin));
         assert!(all_roles.contains(&Role::Partner));
-        assert!(all_roles.contains(&Role::Driver));
-        assert!(all_roles.contains(&Role::System));
+        assert!(all_roles.contains(&Role::RegisteredDriver));
+        assert!(!all_roles.contains(&Role::System)); // System role removed
     }
 }
