@@ -1,0 +1,11 @@
+[package]
+name = "bornemap-authz"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+bornemap-auth = { path = "../bornemap-auth" }
+bornemap-core = { path = "../bornemap-core" }
+serde = { version = "1.0", features = ["derive"] }
+uuid = { version = "1.0", features = ["v4"] }
+thiserror = "1.0"

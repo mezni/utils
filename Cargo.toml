@@ -2,6 +2,7 @@
 members = [
   "shared/bornemap-core",
   "shared/bornemap-auth",
+  "shared/bornemap-authz",
   "shared/bornemap-db",
   "services/auth-service"
 ]
