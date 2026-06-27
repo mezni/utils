@@ -4,11 +4,14 @@ import { MetricsCard } from './MetricsCard'
 import { UserGrowthChart } from './UserGrowthChart'
 import { MetricsCardSkeleton } from '@/components/ui/Skeleton'
 
+interface UsersGrowthPoint {
+  date: string
+  count: number
+}
+
 interface DashboardMetrics {
-  totalUsers: number
-  activeUsers: number
-  newUsersToday: number
-  totalTrackers: number
+  total: number
+  growth: UsersGrowthPoint[]
 }
 
 function UsersIcon() {
@@ -48,20 +51,13 @@ function TrackerIcon() {
   )
 }
 
-const mockChartData = [
-  { date: 'Jan', users: 400 },
-  { date: 'Feb', users: 600 },
-  { date: 'Mar', users: 800 },
-  { date: 'Apr', users: 1100 },
-  { date: 'May', users: 1500 },
-  { date: 'Jun', users: 2100 },
-]
-
 export function DashboardPage() {
   const { data: metrics, isLoading } = useQuery<DashboardMetrics>({
     queryKey: ['dashboard', 'metrics'],
     queryFn: async () => {
-      const res = await api.get<DashboardMetrics>('/admin/metrics')
+      const res = await api.get<DashboardMetrics>('/api/v1/admin/metrics/users', {
+        params: { range: '30d' }
+      })
       return res.data
     },
     refetchInterval: 30_000,
@@ -81,35 +77,41 @@ export function DashboardPage() {
           <>
             <MetricsCard
               label="Total Users"
-              value={metrics?.totalUsers ?? 0}
+              value={metrics?.total ?? 0}
               change="+12%"
               changeType="positive"
               icon={<UsersIcon />}
             />
             <MetricsCard
               label="Active Users"
-              value={metrics?.activeUsers ?? 0}
-              change="+8%"
-              changeType="positive"
+              value={0}
+              change="Coming Soon"
+              changeType="neutral"
               icon={<ActiveIcon />}
             />
             <MetricsCard
               label="New Today"
-              value={metrics?.newUsersToday ?? 0}
+              value={0}
+              change="Coming Soon"
               icon={<TodayIcon />}
             />
             <MetricsCard
               label="Trackers"
-              value={metrics?.totalTrackers ?? 0}
-              change="+3%"
-              changeType="positive"
+              value={0}
+              change="Coming Soon"
+              changeType="neutral"
               icon={<TrackerIcon />}
             />
           </>
         )}
       </div>
 
-      <UserGrowthChart data={mockChartData} />
+      <UserGrowthChart 
+        data={metrics?.growth.map(point => ({
+          date: new Date(point.date).toLocaleDateString('en-US', { month: 'short' }),
+          users: point.count
+        })) || []} 
+      />
     </div>
   )
 }

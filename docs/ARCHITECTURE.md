@@ -151,12 +151,12 @@ Domain Layer (pure Rust, no IO)
 
 #### auth-service (:3000)
 
-JWT issuer. Manages authentication, refresh tokens, role assignment.
+JWT issuer. Manages authentication, refresh tokens, role assignment, and admin metrics.
 
-- **Domain**: User, Session, Role, JwtToken types
-- **Application**: RegisterUseCase, LoginUseCase, RefreshUseCase, LogoutUseCase
+- **Domain**: User, Session, Role, JwtToken, UsersMetrics, UsersGrowthPoint, MetricsRange types
+- **Application**: RegisterUseCase, LoginUseCase, RefreshUseCase, LogoutUseCase, GetUsersMetricsUseCase
 - **Infrastructure**: PgUserRepository, PgSessionRepository, JwtProvider, Argon2Hasher
-- **HTTP**: Auth handlers, DTOs
+- **HTTP**: Auth handlers, AdminMetrics handler, DTOs
 
 #### driver-service (:3001)
 
@@ -176,6 +176,8 @@ Admin operations: manage stations, partners, drivers, analytics.
 - **Infrastructure**: PgAdminRepository, PgAuditRepository
 - **HTTP**: Admin API handlers, DTOs
 
+**Note:** User metrics endpoint is implemented in auth-service due to user data ownership.
+
 ### Z3 — Shared Libraries (Compile-time, not services)
 
 | Crate | Responsibility | Used By |
@@ -183,6 +185,7 @@ Admin operations: manage stations, partners, drivers, analytics.
 | `bornemap-core` | Domain types, errors, enums across all services | All services (app layer) |
 | `bornemap-db` | DB helpers, connection pooling, migration utilities | All services (infra layer) |
 | `bornemap-auth` | JWT validation, role checking, request guards | All services (http layer) |
+| `bornemap-core` | Domain types, errors, enums across all services | All services (app layer) | |
 
 Key rules:
 - Shared crates are compile-time dependencies only
@@ -265,7 +268,7 @@ JWT claims include:
 
 | Service | Owns | Reads |
 |---|---|---|
-| auth-service | users, sessions, roles | — |
+| auth-service | users, sessions, roles, user metrics | — |
 | driver-service | stations, chargers, charging_sessions, reviews, drivers | auth-service (HTTP) |
 | admin-service | partners, audit logs, admin users | driver-service (HTTP) |
 

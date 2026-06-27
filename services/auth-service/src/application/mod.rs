@@ -1,4 +1,5 @@
 pub mod login;
+pub mod metrics;
 pub mod oauth_use_case;
 pub mod oauth_state;
 pub mod refresh;

@@ -1,8 +1,8 @@
 # BorneMap API Contract
 
-Version  : v14
+Version  : v15
 Status   : Draft
-Updated  : 2026-06-26
+Updated  : 2026-06-27
 
 ---
 
@@ -505,7 +505,67 @@ PATCH /api/v1/admin/connectors/{id}
 }
 ```
 
-### 4.3 Pricing (Post-MVP Only ❌ MVP-1 Disabled)
+### 4.3 User Metrics
+
+```
+GET /api/v1/admin/metrics/users
+```
+
+**Headers:** `Authorization: Bearer <JWT>`
+
+**Query Parameters:**
+
+| Param | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `range` | string | no | `30d` | Time range for growth data |
+
+**Valid Range Values:**
+- `7d` - Last 7 days
+- `30d` - Last 30 days (default)
+- `90d` - Last 90 days
+- `365d` - Last 365 days
+
+**Response (200):**
+
+```json
+{
+  "data": {
+    "total": 1250,
+    "growth": [
+      {
+        "date": "2026-06-20",
+        "count": 45
+      },
+      {
+        "date": "2026-06-21", 
+        "count": 52
+      },
+      {
+        "date": "2026-06-22",
+        "count": 48
+      }
+    ]
+  },
+  "meta": null,
+  "error": null
+}
+```
+
+**Error Response (400):**
+
+```json
+{
+  "data": null,
+  "meta": null,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Invalid range value",
+    "field": "range"
+  }
+}
+```
+
+### 4.4 Pricing (Post-MVP Only ❌ MVP-1 Disabled)
 
 ⚠️ DISABLED IN MVP-1 (no business model / no payment system)
 
@@ -549,6 +609,7 @@ GET /metrics         → Prometheus-format metrics
 | `DELETE /admin/stations/{id}` | Yes | ADMIN |
 | `POST /admin/connectors` | Yes | ADMIN / PARTNER |
 | `PATCH /admin/connectors/{id}` | Yes | ADMIN / PARTNER |
+| `GET /admin/metrics/users` | Yes | ADMIN |
 
 ---
 
@@ -567,3 +628,4 @@ GET /metrics         → Prometheus-format metrics
 | `review.rating` | [1, 5] |
 | `pagination.page` | >= 1 |
 | `pagination.per_page` | [1, 100] |
+| `metrics.range` | must be one of: `7d`, `30d`, `90d`, `365d` |
