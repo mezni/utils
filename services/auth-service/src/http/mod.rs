@@ -6,10 +6,21 @@ pub mod health;
 pub mod metrics;
 pub mod middleware;
 pub mod oauth;
+pub mod extractors;
 
 use actix_web::web;
 
 pub fn configure(cfg: &mut web::ServiceConfig, oauth_state: oauth::OAuthState) {
+    // Admin routes - require authentication and ADMIN role
+    cfg.service(
+        web::scope("/api/v1/admin")
+            .service(
+                web::scope("")
+                    .service(admin_metrics::users_metrics)
+            )
+    );
+
+    // Public routes
     cfg.service(health::live)
         .service(health::ready)
         .service(metrics::metrics_handler)

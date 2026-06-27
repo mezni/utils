@@ -1,4 +1,6 @@
+pub mod jwt_validator;
 pub mod oauth;
+pub mod rbac;
 
 use bornemap_core::AppError;
 use chrono::Utc;

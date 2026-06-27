@@ -35,7 +35,14 @@ api.interceptors.response.use(
   async (error: AxiosError) => {
     const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean; _retryCount?: number }
 
-    if (error.response?.status !== 401 || originalRequest._retry) {
+    // Handle 403 Forbidden errors (insufficient permissions)
+    if (error.response?.status === 403) {
+      // Don't redirect for 403 errors, let the component handle them
+      return Promise.reject(error)
+    }
+
+    // Handle 401 Unauthorized errors
+    if (error.response?.status !== 401 || originalRequest?._retry) {
       return Promise.reject(error)
     }
 
@@ -43,7 +50,7 @@ api.interceptors.response.use(
       return new Promise<string>((resolve, reject) => {
         pendingQueue.push({ resolve, reject })
       }).then((token) => {
-        if (originalRequest.headers) {
+        if (originalRequest?.headers) {
           originalRequest.headers.Authorization = `Bearer ${token}`
         }
         return api(originalRequest)
@@ -66,7 +73,7 @@ api.interceptors.response.use(
 
       processQueue(null, data.access_token)
 
-      if (originalRequest.headers) {
+      if (originalRequest?.headers) {
         originalRequest.headers.Authorization = `Bearer ${data.access_token}`
       }
       return api(originalRequest)
@@ -74,6 +81,7 @@ api.interceptors.response.use(
       processQueue(refreshError, null)
       localStorage.removeItem('access_token')
       localStorage.removeItem('refresh_token')
+      localStorage.removeItem('user')
       window.location.href = '/login'
       return Promise.reject(refreshError)
     } finally {
@@ -81,3 +89,37 @@ api.interceptors.response.use(
     }
   },
 )
+
+// Utility functions for role-based API calls
+export const apiWithRole = (requiredRole: string) => {
+  const instance = axios.create({
+    baseURL: API_BASE,
+    headers: { 'Content-Type': 'application/json' },
+    timeout: 15_000,
+  })
+
+  instance.interceptors.request.use((config: InternalAxiosRequestConfig) => {
+    const token = localStorage.getItem('access_token')
+    if (token && config.headers) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
+    return config
+  })
+
+  instance.interceptors.response.use(
+    (response) => response,
+    async (error: AxiosError) => {
+      if (error.response?.status === 403) {
+        // Add role information to the error
+        const customError = new Error(`Access denied. Required role: ${requiredRole}`) as any
+        customError.response = error.response
+        customError.status = 403
+        customError.requiredRole = requiredRole
+        return Promise.reject(customError)
+      }
+      return Promise.reject(error)
+    }
+  )
+
+  return instance
+}

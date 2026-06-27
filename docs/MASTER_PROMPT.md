@@ -89,7 +89,10 @@ Load the relevant skill before any task in its domain. Skills provide domain-spe
 - Domain model: may be incomplete
 - API contract: may be incomplete
 - Services: not fully implemented
-- Completed sprints: []
+- Completed sprints: [Sprint 09, Sprint 10]
+- Current sprint: Sprint 11 (planned)
+- Sprint 10 branch: `sprint-10-admin-metrics-api`
+- Sprint 10 PR: #316
 
 **Rule:** If specs are missing:
 - ✅ allowed: scaffolding, infra, shared crates

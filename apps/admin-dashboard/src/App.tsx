@@ -3,7 +3,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useEffect } from 'react'
 import { useAuthStore } from '@/stores/auth-store'
 import { AppLayout } from '@/components/layout/AppLayout'
-import { AuthGuard, GuestGuard } from '@/components/guards/AuthGuard'
+import { GuestGuard } from '@/components/guards/AuthGuard'
+import { RouteGuard, AdminRoute, PublicRoute, UnauthorizedPage } from '@/components/guards/RouteGuard'
 import { LoginPage } from '@/features/auth/LoginPage'
 import { DashboardPage } from '@/features/dashboard/DashboardPage'
 import { UsersPage } from '@/features/users/UsersPage'
@@ -28,21 +29,26 @@ const router = createBrowserRouter([
   {
     path: '/login',
     element: (
-      <GuestGuard>
+      <PublicRoute>
         <LoginPage />
-      </GuestGuard>
+      </PublicRoute>
     ),
+  },
+  {
+    path: '/unauthorized',
+    element: <UnauthorizedPage />,
   },
   {
     path: '/',
     element: (
-      <AuthGuard>
+      <RouteGuard>
         <AppLayout />
-      </AuthGuard>
+      </RouteGuard>
     ),
     children: [
-      { index: true, element: <DashboardPage /> },
-      { path: 'users', element: <UsersPage /> },
+      { index: true, element: <AdminRoute><DashboardPage /></AdminRoute> },
+      { path: 'users', element: <AdminRoute><UsersPage /></AdminRoute> },
+      // Add more routes with role protection as needed
     ],
   },
 ])

@@ -1,9 +1,9 @@
-use actix_web::{get, web, HttpRequest, HttpResponse};
+use actix_web::{get, web, HttpResponse};
 use serde::Serialize;
 
 use super::error::map_app_error;
 use crate::application::metrics::{GetUsersMetricsRequest, GetUsersMetricsUseCase};
-use crate::infrastructure::jwt::JwtService;
+use crate::http::middleware::admin_scope::AdminRequest;
 use crate::infrastructure::pg_user_repo::PgUserRepository;
 use crate::middleware::RequestId;
 use crate::response::ApiResponse;
@@ -44,41 +44,14 @@ impl From<UsersGrowthPoint> for UsersGrowthPointResponse {
     }
 }
 
-fn extract_admin(
-    req: &HttpRequest,
-    jwt_service: &JwtService,
-) -> Result<bornemap_core::UserId, bornemap_core::AppError> {
-    let header = req
-        .headers()
-        .get("Authorization")
-        .and_then(|v| v.to_str().ok())
-        .and_then(|v| v.strip_prefix("Bearer "))
-        .ok_or(bornemap_core::AppError::Unauthorized)?;
-
-    let claims = jwt_service
-        .validate_token(header)
-        .map_err(|_| bornemap_core::AppError::Unauthorized)?;
-
-    if claims.role != "ADMIN" {
-        return Err(bornemap_core::AppError::Forbidden);
-    }
-
-    uuid::Uuid::parse_str(&claims.sub)
-        .map_err(|_| bornemap_core::AppError::Unauthorized)
-}
-
 #[get("/api/v1/admin/metrics/users")]
 pub async fn users_metrics(
-    req: HttpRequest,
+    admin_request: AdminRequest<()>,
     state: web::Data<AppState>,
-    jwt_service: web::Data<JwtService>,
     query: web::Query<MetricsQuery>,
     request_id: RequestId,
 ) -> HttpResponse {
-    let _admin_id = match extract_admin(&req, &jwt_service) {
-        Ok(id) => id,
-        Err(err) => return map_app_error(err),
-    };
+    let _current_user = admin_request.current_user; // User is already validated as ADMIN by middleware
 
     let range = match MetricsRange::from_str(&query.range) {
         Ok(r) => r,

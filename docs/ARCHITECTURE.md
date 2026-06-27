@@ -100,13 +100,13 @@ flowchart TB
 | Component | Port | Status |
 |---|---|---|---|
 | Traefik | 80 / 443 | Planned |
-| auth-service | 3000 | Implemented |
+| auth-service | 3000 | Implemented ✅ |
 | driver-service | 3001 | Planned |
 | admin-service | 3002 | Planned |
 | Web driver app | 5000 | Planned |
-| Admin dashboard | 5173 (dev) / 5001 (prod) | Implemented |
-| PostgreSQL | 5432 | Required |
-| Redis | 6379 | Required |
+| Admin dashboard | 5173 (dev) / 5001 (prod) | Implemented ✅ |
+| PostgreSQL | 5432 | Required ✅ |
+| Redis | 6379 | Required ✅ |
 
 ---
 
@@ -123,7 +123,7 @@ flowchart TB
 All client traffic routes through Traefik gateway. No direct service access.
 
 **Implemented clients:**
-- **Admin Dashboard** (`apps/admin-dashboard/`) — React 19 SPA with Tailwind v4 terminal-green theme, React Router, TanStack Query, Zustand, Axios, Framer Motion, Recharts. See `docs/sprints/sprint_09.md`.
+- **Admin Dashboard** (`apps/admin-dashboard/`) — React 19 SPA with Tailwind v4 terminal-green theme, React Router, TanStack Query, Zustand, Axios, Framer Motion, Recharts. See `docs/sprints/sprint_09.md` and `docs/sprints/sprint_10.md`.
 
 ### Z1 — Edge Zone
 

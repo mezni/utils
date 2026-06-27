@@ -1,4 +1,5 @@
 pub mod jwt;
+pub mod jwt_service;
 pub mod oauth;
 pub mod password;
 pub mod pg_session_repo;
