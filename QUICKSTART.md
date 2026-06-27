@@ -151,6 +151,39 @@ The admin dashboard will be available at `http://localhost:5173`. It proxies `/a
 
 > **Note:** The auth service must be running (step 4) before the dashboard can log in.
 
+### 7. Admin Metrics API
+
+The admin dashboard includes a live user metrics API endpoint:
+
+```bash
+# Get user metrics (requires ADMIN role JWT token)
+curl -X GET "http://localhost:8080/api/v1/admin/metrics/users?range=30d" \
+  -H "Authorization: Bearer your-admin-jwt-token"
+```
+
+**Response:**
+```json
+{
+  "data": {
+    "total": 1250,
+    "growth": [
+      {
+        "date": "2026-06-20",
+        "count": 45
+      },
+      {
+        "date": "2026-06-21",
+        "count": 52
+      }
+    ]
+  },
+  "meta": null,
+  "error": null
+}
+```
+
+**Available ranges:** `7d`, `30d`, `90d`, `365d`
+
 ## Testing
 
 ```bash
@@ -286,7 +319,7 @@ lsof -ti:8080 | xargs kill -9
 
 ## Next Steps
 
-1. Sprint 10 — User Profile & Account Management
+1. Sprint 11 — Additional Admin Metrics (active users, new users today, total trackers)
 2. Implement driver-service backend
 3. Implement admin-service backend
 4. Add payment integration
