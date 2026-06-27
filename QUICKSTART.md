@@ -121,6 +121,17 @@ curl -X POST http://localhost:8080/api/v1/auth/logout \
 | GET | `/health/live` | Health check |
 | GET | `/health/ready` | Readiness check |
 
+### Observability
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/metrics` | Prometheus metrics (text format) |
+
+**Metrics exposed:**
+- `http_requests_total` — counter with labels `method`, `path`, `status`
+- `http_request_duration_seconds` — histogram with labels `method`, `path`
+- `http_active_requests` — gauge (currently active requests)
+
 ## Testing
 
 ```bash
@@ -242,9 +253,16 @@ lsof -ti:8080 | xargs kill -9
 - Sprint Reports: `docs/sprints/`
 - Issues: GitHub Issues
 
+## Known Issues
+
+1. **Migration 003 will fail** — `shared/bornemap-db/migrations/202406260003_add_oauth_accounts.sql` tries to `CREATE TABLE oauth_accounts` which was already created by `202406260001_init_auth.sql`. Must be converted to `ALTER TABLE` before deploying.
+2. **Redis connections block the async runtime** — `RedisClient` uses synchronous `get_connection()` under all async methods. Works for development but will block tokio under load. Requires the `aio` feature from the `redis` crate.
+3. **Rate limiter has a TOCTOU race** — `INCR` + `SETEX` is not atomic. Two concurrent requests near the limit can both pass. Fix planned via Redis Lua scripting.
+4. **No Dockerfile for auth-service** — `infra/docker-compose.yml` references `services/auth-service/Dockerfile` which doesn't exist.
+
 ## Next Steps
 
-1. Sprint 08 — User Profile & Account Management
+1. Sprint 09 — User Profile & Account Management
 2. Implement frontend application
 3. Add payment integration
 4. Deploy to production
