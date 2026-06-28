@@ -1,0 +1,23 @@
+[package]
+name = "admin-service"
+version = "0.1.0"
+edition.workspace = true
+
+[dependencies]
+actix-web.workspace = true
+actix-rt.workspace = true
+actix-cors.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+sqlx.workspace = true
+tokio.workspace = true
+uuid.workspace = true
+chrono.workspace = true
+log.workspace = true
+env_logger.workspace = true
+dotenvy.workspace = true
+common-auth = { path = "../../crates/common-auth" }
+common-db = { path = "../../crates/common-db" }
+common-errors = { path = "../../crates/common-errors" }
+common-types = { path = "../../crates/common-types" }
+common-config = { path = "../../crates/common-config" }
