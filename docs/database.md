@@ -112,31 +112,23 @@ CREATE INDEX IF NOT EXISTS idx_stations_geo_hint ON ev.stations(latitude, longit
 
 ## 5. GIS Schema (Projection Layer)
 
-### 5.1 `gis.station_projection`
+### 5.1 `gis.station_locations`
 
 ```sql
-CREATE TABLE gis.station_projection (
-    station_id   TEXT PRIMARY KEY,
-    geom         GEOGRAPHY(POINT, 4326) NOT NULL,
-    latitude     DOUBLE PRECISION NOT NULL,
-    longitude    DOUBLE PRECISION NOT NULL,
-    updated_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
+CREATE TABLE gis.station_locations (
+    station_id UUID PRIMARY KEY,
+    geom GEOGRAPHY(POINT, 4326) NOT NULL,
+    CONSTRAINT fk_gis_station
+        FOREIGN KEY (station_id) REFERENCES ev.stations(id) ON DELETE CASCADE
 );
-
-CREATE INDEX IF NOT EXISTS idx_station_projection_geom
-ON gis.station_projection
-USING GIST (geom);
 ```
 
-### 5.2 `gis.station_projection_sync_log` (Optional Audit)
+### 5.2 Spatial Index (CRITICAL)
 
 ```sql
-CREATE TABLE gis.station_projection_sync_log (
-    id           BIGSERIAL PRIMARY KEY,
-    station_id   TEXT NOT NULL,
-    operation    TEXT NOT NULL,
-    synced_at    TIMESTAMPTZ DEFAULT NOW()
-);
+CREATE INDEX idx_station_locations_geom
+ON gis.station_locations
+USING GIST (geom);
 ```
 
 ## 6. EV → GIS Synchronization (Trigger System)
@@ -144,93 +136,93 @@ CREATE TABLE gis.station_projection_sync_log (
 ### 6.1 Sync Function
 
 ```sql
-CREATE OR REPLACE FUNCTION gis.sync_station_projection()
+CREATE OR REPLACE FUNCTION gis.sync_station_location()
 RETURNS TRIGGER AS $$
 BEGIN
-    IF TG_OP = 'DELETE' THEN
-        DELETE FROM gis.station_projection
-        WHERE station_id = OLD.id;
-
-        INSERT INTO gis.station_projection_sync_log (station_id, operation)
-        VALUES (OLD.id, 'DELETE');
-
-        RETURN OLD;
-    END IF;
-
-    INSERT INTO gis.station_projection (
-        station_id, geom, latitude, longitude, updated_at
-    )
+    INSERT INTO gis.station_locations (station_id, geom)
     VALUES (
         NEW.id,
-        ST_SetSRID(ST_MakePoint(NEW.longitude, NEW.latitude), 4326)::geography,
-        NEW.latitude,
-        NEW.longitude,
-        NOW()
+        ST_SetSRID(ST_MakePoint(NEW.longitude, NEW.latitude), 4326)::geography
     )
     ON CONFLICT (station_id)
-    DO UPDATE SET
-        geom = EXCLUDED.geom,
-        latitude = EXCLUDED.latitude,
-        longitude = EXCLUDED.longitude,
-        updated_at = NOW();
-
-    INSERT INTO gis.station_projection_sync_log (station_id, operation)
-    VALUES (NEW.id, TG_OP);
-
+    DO UPDATE SET geom = EXCLUDED.geom;
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 ```
 
-### 6.2 Trigger Binding
+### 6.2 Trigger
 
 ```sql
-CREATE TRIGGER trg_station_projection_sync
-AFTER INSERT OR UPDATE OR DELETE
+CREATE TRIGGER trg_sync_station_location
+AFTER INSERT OR UPDATE OF latitude, longitude
 ON ev.stations
 FOR EACH ROW
-EXECUTE FUNCTION gis.sync_station_projection();
+EXECUTE FUNCTION gis.sync_station_location();
 ```
 
 ## 7. GIS Query Layer
 
-### 7.1 `gis.get_nearby_stations()`
+### 7.1 `gis.nearby_stations()`
 
 ```sql
-CREATE OR REPLACE FUNCTION gis.get_nearby_stations(
+CREATE OR REPLACE FUNCTION gis.nearby_stations(
     lat DOUBLE PRECISION,
     lng DOUBLE PRECISION,
-    radius_meters INTEGER DEFAULT 5000
+    radius DOUBLE PRECISION
 )
 RETURNS TABLE (
-    station_id TEXT,
-    latitude DOUBLE PRECISION,
-    longitude DOUBLE PRECISION,
-    distance_meters DOUBLE PRECISION
-)
-AS $$
+    station_id UUID,
+    partner_id UUID,
+    distance DOUBLE PRECISION
+) AS $$
 BEGIN
     RETURN QUERY
     SELECT
-        sp.station_id,
-        sp.latitude,
-        sp.longitude,
+        s.id,
+        s.partner_id,
         ST_Distance(
-            sp.geom,
+            l.geom,
             ST_SetSRID(ST_MakePoint(lng, lat), 4326)::geography
-        ) AS distance_meters
-    FROM gis.station_projection sp
+        ) AS distance
+    FROM gis.station_locations l
+    JOIN ev.stations s ON s.id = l.station_id
     WHERE ST_DWithin(
-        sp.geom,
+        l.geom,
         ST_SetSRID(ST_MakePoint(lng, lat), 4326)::geography,
-        radius_meters
+        radius
     )
-    ORDER BY distance_meters ASC;
+    ORDER BY distance ASC;
 END;
 $$ LANGUAGE plpgsql;
 ```
 
-## 8. Design Guarantees (Enforced)
+## 8. Data Integrity & Indexes
+
+```sql
+CREATE INDEX idx_stations_partner_id ON ev.stations(partner_id);
+CREATE INDEX idx_connectors_station_id ON ev.connectors(station_id);
+CREATE UNIQUE INDEX uniq_station_per_partner ON ev.stations(partner_id, name);
+```
+
+## 9. Automatic `updated_at` Trigger
+
+```sql
+CREATE OR REPLACE FUNCTION ev.touch_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_stations_updated_at
+BEFORE UPDATE ON ev.stations
+FOR EACH ROW
+EXECUTE FUNCTION ev.touch_updated_at();
+```
+
+## 10. Design Guarantees (Enforced)
 
 | Guarantee | Mechanism |
 |-----------|-----------|
@@ -239,39 +231,11 @@ $$ LANGUAGE plpgsql;
 | Strong Consistency | Any station update automatically updates spatial layer |
 | High Performance | GiST index on geography; `ST_DWithin` filter pushdown; join optimized via indexed FK |
 
-## 9. Service Permissions
+## 11. Service Permissions
 
 | Service | Schema Access | Operations |
 |---------|--------------|------------|
 | Admin Service | `ev` | Write |
-| Driver Service | `gis` (execute `get_nearby_stations`) | Read-only |
+| Driver Service | `ev` (read) + `gis` (execute `nearby_stations`) | Read-only |
 | GIS system | `gis` | Internal trigger only |
 | Auth Service | `users` | Write |
-
-## 10. Runtime Flows
-
-### Write Path (Admin Service → Trigger → GIS)
-```
-Admin Service
-   ↓ INSERT/UPDATE/DELETE
-ev.stations
-   ↓ (DB trigger: trg_station_projection_sync)
-gis.sync_station_projection()
-   ↓
-gis.station_projection (upsert/delete)
-   ↓
-gis.station_projection_sync_log (audit)
-```
-
-### Read Path (Driver Service → GIS)
-```
-Driver Service API
-   ↓
-gis.get_nearby_stations(lat, lng, radius)
-   ↓
-PostGIS GiST index (ST_DWithin)
-   ↓
-Filtered + sorted results (distance ASC)
-   ↓
-Response to client
-```
