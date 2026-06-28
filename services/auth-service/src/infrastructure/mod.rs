@@ -1,1 +1,3 @@
-// Infrastructure layer — database repositories and external integrations will be implemented in future sprints
+pub mod password;
+pub mod jwt_service;
+pub mod postgres_repo;

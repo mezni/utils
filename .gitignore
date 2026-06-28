@@ -21,3 +21,7 @@ Thumbs.db
 
 # Logs
 *.log
+
+# pnpm
+pnpm-lock.yaml
+pnpm-workspace.yaml
