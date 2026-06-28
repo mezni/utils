@@ -3,7 +3,6 @@ import { DataTable } from "../ui/DataTable";
 import { CommandBar } from "../ui/CommandBar";
 import { SideDrawer } from "../ui/SideDrawer";
 import { EntityForm } from "../ui/EntityForm";
-import { Badge } from "../ui/Badge";
 import type { Partner, CreatePartnerInput } from "../../types";
 import { partnersApi } from "../../api/partners";
 import type { UseToastResult } from "../ui/Toast";
@@ -61,14 +60,9 @@ export function PartnersPage({ toast, onNavigate }: PartnersPageProps) {
         columns={[
           { key: "name", header: "Name", sortable: true },
           {
-            key: "stations",
-            header: "Stations",
-            render: (row: Partner) => <Badge>{row.id.slice(0, 8)}</Badge>,
-          },
-          {
             key: "created_at",
             header: "Created",
-            render: (row: Partner) => (
+            render: (row) => (
               <span className="text-surface-400 text-xs">
                 {new Date(row.created_at).toLocaleDateString()}
               </span>
@@ -76,7 +70,7 @@ export function PartnersPage({ toast, onNavigate }: PartnersPageProps) {
           },
         ]}
         data={filtered}
-        onRowClick={(row) => onNavigate("stations", (row as unknown as Partner).id)}
+        onRowClick={(row) => onNavigate("stations", row.id)}
       />
 
       <SideDrawer

@@ -29,6 +29,7 @@ export function CommandBar({
               value={searchValue}
               onChange={(e) => onSearchChange(e.target.value)}
               className="input pl-9"
+              aria-label={searchPlaceholder}
             />
           </div>
         )}

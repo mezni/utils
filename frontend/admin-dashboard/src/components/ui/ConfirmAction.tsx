@@ -44,7 +44,7 @@ export function ConfirmAction({
                 <h3 className="text-base font-semibold text-surface-50 mb-1">{title}</h3>
                 <p className="text-sm text-surface-400">{message}</p>
               </div>
-              <button onClick={() => !loading && setOpen(false)} className="btn-ghost p-1 rounded-md">
+              <button onClick={() => !loading && setOpen(false)} className="btn-ghost p-1 rounded-md" aria-label="Close confirmation">
                 <X size={16} />
               </button>
             </div>

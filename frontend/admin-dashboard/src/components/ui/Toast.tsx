@@ -33,7 +33,7 @@ export function ToastContainer({ toasts }: ToastContainerProps) {
   if (toasts.length === 0) return null;
 
   return (
-    <div className="fixed bottom-6 right-6 z-[100] flex flex-col gap-3">
+    <div className="fixed bottom-6 right-6 z-[100] flex flex-col gap-3" aria-live="polite">
       {toasts.map((t) => (
         <div
           key={t.id}

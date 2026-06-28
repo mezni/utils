@@ -17,6 +17,7 @@ interface EntityFormProps {
   onCancel: () => void;
   submitLabel?: string;
   loading?: boolean;
+  initialValues?: Record<string, string | number>;
 }
 
 export function EntityForm({
@@ -25,8 +26,10 @@ export function EntityForm({
   onCancel,
   submitLabel = "Save",
   loading,
+  initialValues,
 }: EntityFormProps) {
   const [values, setValues] = useState<Record<string, string | number>>(() => {
+    if (initialValues) return { ...initialValues };
     const initial: Record<string, string | number> = {};
     for (const f of fields) {
       initial[f.name] = f.type === "number" ? 0 : "";

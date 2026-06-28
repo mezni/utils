@@ -32,7 +32,7 @@ export function StationsPage({ toast, partnerId }: StationsPageProps) {
     try {
       const data = await stationsApi.list(partnerId);
       setStations(data);
-    } catch (err) {
+    } catch {
       toast.toast("error", "Failed to load stations");
     } finally {
       setLoading(false);
@@ -61,6 +61,7 @@ export function StationsPage({ toast, partnerId }: StationsPageProps) {
     setSelectedStation(station);
     setDrawerMode("detail");
     setDrawerOpen(true);
+    setConnectorDrawerOpen(false);
     fetchConnectors(station.id);
   };
 
@@ -131,161 +132,96 @@ export function StationsPage({ toast, partnerId }: StationsPageProps) {
     toast.toast("success", "Connector removed");
   };
 
-  const StationDrawerContent = () => {
-    if (drawerMode === "create") {
-      return (
-        <EntityForm
-          fields={[
-            { name: "name", label: "Station Name", placeholder: "e.g. Downtown Hub", required: true },
-            { name: "address", label: "Address", placeholder: "123 Main St", required: true },
-            { name: "latitude", label: "Latitude", type: "number", step: "0.000001", required: true },
-            { name: "longitude", label: "Longitude", type: "number", step: "0.000001", required: true },
-          ]}
-          onSubmit={handleCreate}
-          onCancel={() => setDrawerOpen(false)}
-          submitLabel="Create Station"
-        />
-      );
-    }
+  const StationDetailView = () => {
+    if (!selectedStation) return null;
 
-    if (drawerMode === "edit" && selectedStation) {
-      return (
-        <EntityForm
-          fields={[
-            { name: "name", label: "Station Name", required: true },
-            { name: "address", label: "Address", required: true },
-            { name: "latitude", label: "Latitude", type: "number", step: "0.000001", required: true },
-            { name: "longitude", label: "Longitude", type: "number", step: "0.000001", required: true },
-          ]}
-          onSubmit={handleUpdate}
-          onCancel={() => setDrawerMode("detail")}
-          submitLabel="Save Changes"
-        />
-      );
-    }
-
-    if (drawerMode === "detail" && selectedStation) {
-      return (
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h3 className="text-base font-semibold text-surface-50">{selectedStation.name}</h3>
-            <div className="flex items-center gap-2">
-              <button onClick={openEdit} className="btn-ghost p-1.5 rounded-md" title="Edit">
-                <Pencil size={15} />
-              </button>
-              <ConfirmAction
-                title="Delete Station"
-                message={`Are you sure you want to delete "${selectedStation.name}"? This action cannot be undone.`}
-                onConfirm={handleDelete}
-                trigger={(open: () => void) => (
-                  <button onClick={open} className="btn-ghost p-1.5 rounded-md text-danger-400 hover:text-danger-400" title="Delete">
-                    <Trash2 size={15} />
-                  </button>
-                )}
-              />
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            <div>
-              <span className="text-xs text-surface-500 uppercase tracking-wider font-medium">Address</span>
-              <p className="text-sm text-surface-50 mt-0.5 flex items-center gap-1.5">
-                <MapPin size={14} className="text-surface-400" />
-                {selectedStation.address}
-              </p>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <span className="text-xs text-surface-500 uppercase tracking-wider font-medium">Latitude</span>
-                <p className="text-sm text-surface-50 mt-0.5">{selectedStation.latitude.toFixed(6)}</p>
-              </div>
-              <div>
-                <span className="text-xs text-surface-500 uppercase tracking-wider font-medium">Longitude</span>
-                <p className="text-sm text-surface-50 mt-0.5">{selectedStation.longitude.toFixed(6)}</p>
-              </div>
-            </div>
-            <div>
-              <span className="text-xs text-surface-500 uppercase tracking-wider font-medium">Created</span>
-              <p className="text-sm text-surface-50 mt-0.5">{new Date(selectedStation.created_at).toLocaleString()}</p>
-            </div>
-          </div>
-
-          <div className="border-t border-surface-700/50 pt-6">
-            <div className="flex items-center justify-between mb-4">
-              <h4 className="text-sm font-semibold text-surface-200 flex items-center gap-2">
-                <PlugZap size={15} className="text-brand-400" />
-                Connectors ({connectors.length})
-              </h4>
-              <button onClick={() => setConnectorDrawerOpen(true)} className="btn-ghost text-xs p-1.5 rounded-md">
-                <Plus size={15} />
-              </button>
-            </div>
-
-            {connectors.length === 0 ? (
-              <p className="text-sm text-surface-500 text-center py-6">No connectors yet</p>
-            ) : (
-              <div className="space-y-2">
-                {connectors.map((c) => (
-                  <div key={c.id} className="flex items-center justify-between px-3 py-2.5 rounded-lg bg-surface-800 border border-surface-700/50">
-                    <div className="flex items-center gap-3">
-                      <Badge variant="brand">{c.connector_type}</Badge>
-                      <span className="text-sm text-surface-50">{c.power_kw} kW</span>
-                    </div>
-                    <ConfirmAction
-                      title="Remove Connector"
-                      message={`Remove this ${c.connector_type} connector?`}
-                      onConfirm={() => handleDeleteConnector(c.id)}
-                      trigger={(open: () => void) => (
-                        <button onClick={open} className="btn-ghost p-1 rounded-md text-danger-400 opacity-0 group-hover:opacity-100">
-                          <Trash2 size={14} />
-                        </button>
-                      )}
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <SideDrawer
-            open={connectorDrawerOpen}
-            onClose={() => setConnectorDrawerOpen(false)}
-            title="Add Connector"
-          >
-            <EntityForm
-              fields={[
-                {
-                  name: "connector_type",
-                  label: "Connector Type",
-                  type: "select",
-                  required: true,
-                  options: [
-                    { value: "CCS", label: "CCS (Combined Charging System)" },
-                    { value: "CHAdeMO", label: "CHAdeMO" },
-                    { value: "Type2", label: "Type 2 (AC)" },
-                    { value: "Type1", label: "Type 1 (J1772)" },
-                    { value: "Tesla", label: "Tesla Supercharger" },
-                  ],
-                },
-                {
-                  name: "power_kw",
-                  label: "Power Output (kW)",
-                  type: "number",
-                  step: "0.1",
-                  min: 1,
-                  required: true,
-                },
-              ]}
-              onSubmit={handleAddConnector}
-              onCancel={() => setConnectorDrawerOpen(false)}
-              submitLabel="Add Connector"
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h3 className="text-base font-semibold text-surface-50">{selectedStation.name}</h3>
+          <div className="flex items-center gap-2">
+            <button onClick={openEdit} className="btn-ghost p-1.5 rounded-md" aria-label="Edit station">
+              <Pencil size={15} />
+            </button>
+            <ConfirmAction
+              title="Delete Station"
+              message={`Are you sure you want to delete "${selectedStation.name}"? This action cannot be undone.`}
+              onConfirm={handleDelete}
+              trigger={(open: () => void) => (
+                <button onClick={open} className="btn-ghost p-1.5 rounded-md text-danger-400 hover:text-danger-400" aria-label="Delete station">
+                  <Trash2 size={15} />
+                </button>
+              )}
             />
-          </SideDrawer>
+          </div>
         </div>
-      );
-    }
 
-    return null;
+        <div className="space-y-3">
+          <div>
+            <span className="text-xs text-surface-500 uppercase tracking-wider font-medium">Address</span>
+            <p className="text-sm text-surface-50 mt-0.5 flex items-center gap-1.5">
+              <MapPin size={14} className="text-surface-400" />
+              {selectedStation.address}
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <span className="text-xs text-surface-500 uppercase tracking-wider font-medium">Latitude</span>
+              <p className="text-sm text-surface-50 mt-0.5">{selectedStation.latitude.toFixed(6)}</p>
+            </div>
+            <div>
+              <span className="text-xs text-surface-500 uppercase tracking-wider font-medium">Longitude</span>
+              <p className="text-sm text-surface-50 mt-0.5">{selectedStation.longitude.toFixed(6)}</p>
+            </div>
+          </div>
+          <div>
+            <span className="text-xs text-surface-500 uppercase tracking-wider font-medium">Created</span>
+            <p className="text-sm text-surface-50 mt-0.5">{new Date(selectedStation.created_at).toLocaleString()}</p>
+          </div>
+        </div>
+
+        <div className="border-t border-surface-700/50 pt-6">
+          <div className="flex items-center justify-between mb-4">
+            <h4 className="text-sm font-semibold text-surface-200 flex items-center gap-2">
+              <PlugZap size={15} className="text-brand-400" />
+              Connectors ({connectors.length})
+            </h4>
+            <button onClick={() => setConnectorDrawerOpen(true)} className="btn-ghost text-xs p-1.5 rounded-md" aria-label="Add connector">
+              <Plus size={15} />
+            </button>
+          </div>
+
+          {connectors.length === 0 ? (
+            <p className="text-sm text-surface-500 text-center py-6">No connectors yet</p>
+          ) : (
+            <div className="space-y-2">
+              {connectors.map((c) => (
+                <div key={c.id} className="group flex items-center justify-between px-3 py-2.5 rounded-lg bg-surface-800 border border-surface-700/50">
+                  <div className="flex items-center gap-3">
+                    <Badge variant="brand">{c.connector_type}</Badge>
+                    <span className="text-sm text-surface-50">{c.power_kw} kW</span>
+                  </div>
+                  <ConfirmAction
+                    title="Remove Connector"
+                    message={`Remove this ${c.connector_type} connector?`}
+                    onConfirm={() => handleDeleteConnector(c.id)}
+                    trigger={(open: () => void) => (
+                      <button
+                        onClick={open}
+                        className="btn-ghost p-1.5 rounded-md text-danger-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                        aria-label={`Remove ${c.connector_type} connector`}
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    )}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -323,7 +259,7 @@ export function StationsPage({ toast, partnerId }: StationsPageProps) {
           },
         ]}
         data={filtered}
-        onRowClick={(row) => openDetail(row as unknown as Station)}
+        onRowClick={(row) => openDetail(row)}
       />
 
       <SideDrawer
@@ -335,7 +271,76 @@ export function StationsPage({ toast, partnerId }: StationsPageProps) {
           selectedStation?.name || "Station Details"
         }
       >
-        <StationDrawerContent />
+        {drawerMode === "create" && (
+          <EntityForm
+            fields={[
+              { name: "name", label: "Station Name", placeholder: "e.g. Downtown Hub", required: true },
+              { name: "address", label: "Address", placeholder: "123 Main St", required: true },
+              { name: "latitude", label: "Latitude", type: "number", step: "0.000001", required: true },
+              { name: "longitude", label: "Longitude", type: "number", step: "0.000001", required: true },
+            ]}
+            onSubmit={handleCreate}
+            onCancel={() => setDrawerOpen(false)}
+            submitLabel="Create Station"
+          />
+        )}
+
+        {drawerMode === "edit" && selectedStation && (
+          <EntityForm
+            fields={[
+              { name: "name", label: "Station Name", required: true },
+              { name: "address", label: "Address", required: true },
+              { name: "latitude", label: "Latitude", type: "number", step: "0.000001", required: true },
+              { name: "longitude", label: "Longitude", type: "number", step: "0.000001", required: true },
+            ]}
+            initialValues={{
+              name: selectedStation.name,
+              address: selectedStation.address,
+              latitude: selectedStation.latitude,
+              longitude: selectedStation.longitude,
+            }}
+            onSubmit={handleUpdate}
+            onCancel={() => setDrawerMode("detail")}
+            submitLabel="Save Changes"
+          />
+        )}
+
+        {drawerMode === "detail" && <StationDetailView />}
+      </SideDrawer>
+
+      <SideDrawer
+        open={connectorDrawerOpen}
+        onClose={() => setConnectorDrawerOpen(false)}
+        title="Add Connector"
+      >
+        <EntityForm
+          fields={[
+            {
+              name: "connector_type",
+              label: "Connector Type",
+              type: "select",
+              required: true,
+              options: [
+                { value: "CCS", label: "CCS (Combined Charging System)" },
+                { value: "CHAdeMO", label: "CHAdeMO" },
+                { value: "Type2", label: "Type 2 (AC)" },
+                { value: "Type1", label: "Type 1 (J1772)" },
+                { value: "Tesla", label: "Tesla Supercharger" },
+              ],
+            },
+            {
+              name: "power_kw",
+              label: "Power Output (kW)",
+              type: "number",
+              step: "0.1",
+              min: 1,
+              required: true,
+            },
+          ]}
+          onSubmit={handleAddConnector}
+          onCancel={() => setConnectorDrawerOpen(false)}
+          submitLabel="Add Connector"
+        />
       </SideDrawer>
     </>
   );

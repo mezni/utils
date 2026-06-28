@@ -39,7 +39,7 @@ export function SideDrawer({ open, onClose, title, children, width = "w-[480px]"
       >
         <div className="flex items-center justify-between px-6 h-16 border-b border-surface-700">
           <h2 className="text-lg font-semibold text-surface-50">{title}</h2>
-          <button onClick={onClose} className="btn-ghost p-1.5 rounded-md">
+          <button onClick={onClose} className="btn-ghost p-1.5 rounded-md" aria-label="Close drawer">
             <X size={18} />
           </button>
         </div>
