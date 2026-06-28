@@ -112,23 +112,31 @@ CREATE INDEX IF NOT EXISTS idx_stations_geo_hint ON ev.stations(latitude, longit
 
 ## 5. GIS Schema (Projection Layer)
 
-### 5.1 `gis.station_locations`
+### 5.1 `gis.station_projection`
 
 ```sql
-CREATE TABLE gis.station_locations (
-    station_id UUID PRIMARY KEY,
-    geom GEOGRAPHY(POINT, 4326) NOT NULL,
-    CONSTRAINT fk_gis_station
-        FOREIGN KEY (station_id) REFERENCES ev.stations(id) ON DELETE CASCADE
+CREATE TABLE gis.station_projection (
+    station_id   TEXT PRIMARY KEY,
+    geom         GEOGRAPHY(POINT, 4326) NOT NULL,
+    latitude     DOUBLE PRECISION NOT NULL,
+    longitude    DOUBLE PRECISION NOT NULL,
+    updated_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+CREATE INDEX IF NOT EXISTS idx_station_projection_geom
+ON gis.station_projection
+USING GIST (geom);
 ```
 
-### 5.2 Spatial Index (CRITICAL)
+### 5.2 `gis.station_projection_sync_log` (Optional Audit)
 
 ```sql
-CREATE INDEX idx_station_locations_geom
-ON gis.station_locations
-USING GIST (geom);
+CREATE TABLE gis.station_projection_sync_log (
+    id           BIGSERIAL PRIMARY KEY,
+    station_id   TEXT NOT NULL,
+    operation    TEXT NOT NULL,
+    synced_at    TIMESTAMPTZ DEFAULT NOW()
+);
 ```
 
 ## 6. EV → GIS Synchronization (Trigger System)
@@ -136,93 +144,93 @@ USING GIST (geom);
 ### 6.1 Sync Function
 
 ```sql
-CREATE OR REPLACE FUNCTION gis.sync_station_location()
+CREATE OR REPLACE FUNCTION gis.sync_station_projection()
 RETURNS TRIGGER AS $$
 BEGIN
-    INSERT INTO gis.station_locations (station_id, geom)
+    IF TG_OP = 'DELETE' THEN
+        DELETE FROM gis.station_projection
+        WHERE station_id = OLD.id;
+
+        INSERT INTO gis.station_projection_sync_log (station_id, operation)
+        VALUES (OLD.id, 'DELETE');
+
+        RETURN OLD;
+    END IF;
+
+    INSERT INTO gis.station_projection (
+        station_id, geom, latitude, longitude, updated_at
+    )
     VALUES (
         NEW.id,
-        ST_SetSRID(ST_MakePoint(NEW.longitude, NEW.latitude), 4326)::geography
+        ST_SetSRID(ST_MakePoint(NEW.longitude, NEW.latitude), 4326)::geography,
+        NEW.latitude,
+        NEW.longitude,
+        NOW()
     )
     ON CONFLICT (station_id)
-    DO UPDATE SET geom = EXCLUDED.geom;
+    DO UPDATE SET
+        geom = EXCLUDED.geom,
+        latitude = EXCLUDED.latitude,
+        longitude = EXCLUDED.longitude,
+        updated_at = NOW();
+
+    INSERT INTO gis.station_projection_sync_log (station_id, operation)
+    VALUES (NEW.id, TG_OP);
+
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 ```
 
-### 6.2 Trigger
+### 6.2 Trigger Binding
 
 ```sql
-CREATE TRIGGER trg_sync_station_location
-AFTER INSERT OR UPDATE OF latitude, longitude
+CREATE TRIGGER trg_station_projection_sync
+AFTER INSERT OR UPDATE OR DELETE
 ON ev.stations
 FOR EACH ROW
-EXECUTE FUNCTION gis.sync_station_location();
+EXECUTE FUNCTION gis.sync_station_projection();
 ```
 
 ## 7. GIS Query Layer
 
-### 7.1 `gis.nearby_stations()`
+### 7.1 `gis.get_nearby_stations()`
 
 ```sql
-CREATE OR REPLACE FUNCTION gis.nearby_stations(
+CREATE OR REPLACE FUNCTION gis.get_nearby_stations(
     lat DOUBLE PRECISION,
     lng DOUBLE PRECISION,
-    radius DOUBLE PRECISION
+    radius_meters INTEGER DEFAULT 5000
 )
 RETURNS TABLE (
-    station_id UUID,
-    partner_id UUID,
-    distance DOUBLE PRECISION
-) AS $$
+    station_id TEXT,
+    latitude DOUBLE PRECISION,
+    longitude DOUBLE PRECISION,
+    distance_meters DOUBLE PRECISION
+)
+AS $$
 BEGIN
     RETURN QUERY
     SELECT
-        s.id,
-        s.partner_id,
+        sp.station_id,
+        sp.latitude,
+        sp.longitude,
         ST_Distance(
-            l.geom,
+            sp.geom,
             ST_SetSRID(ST_MakePoint(lng, lat), 4326)::geography
-        ) AS distance
-    FROM gis.station_locations l
-    JOIN ev.stations s ON s.id = l.station_id
+        ) AS distance_meters
+    FROM gis.station_projection sp
     WHERE ST_DWithin(
-        l.geom,
+        sp.geom,
         ST_SetSRID(ST_MakePoint(lng, lat), 4326)::geography,
-        radius
+        radius_meters
     )
-    ORDER BY distance ASC;
+    ORDER BY distance_meters ASC;
 END;
 $$ LANGUAGE plpgsql;
 ```
 
-## 8. Data Integrity & Indexes
-
-```sql
-CREATE INDEX idx_stations_partner_id ON ev.stations(partner_id);
-CREATE INDEX idx_connectors_station_id ON ev.connectors(station_id);
-CREATE UNIQUE INDEX uniq_station_per_partner ON ev.stations(partner_id, name);
-```
-
-## 9. Automatic `updated_at` Trigger
-
-```sql
-CREATE OR REPLACE FUNCTION ev.touch_updated_at()
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW.updated_at = NOW();
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER trg_stations_updated_at
-BEFORE UPDATE ON ev.stations
-FOR EACH ROW
-EXECUTE FUNCTION ev.touch_updated_at();
-```
-
-## 10. Design Guarantees (Enforced)
+## 8. Design Guarantees (Enforced)
 
 | Guarantee | Mechanism |
 |-----------|-----------|
@@ -231,11 +239,39 @@ EXECUTE FUNCTION ev.touch_updated_at();
 | Strong Consistency | Any station update automatically updates spatial layer |
 | High Performance | GiST index on geography; `ST_DWithin` filter pushdown; join optimized via indexed FK |
 
-## 11. Service Permissions
+## 9. Service Permissions
 
 | Service | Schema Access | Operations |
 |---------|--------------|------------|
 | Admin Service | `ev` | Write |
-| Driver Service | `ev` (read) + `gis` (execute `nearby_stations`) | Read-only |
+| Driver Service | `gis` (execute `get_nearby_stations`) | Read-only |
 | GIS system | `gis` | Internal trigger only |
 | Auth Service | `users` | Write |
+
+## 10. Runtime Flows
+
+### Write Path (Admin Service → Trigger → GIS)
+```
+Admin Service
+   ↓ INSERT/UPDATE/DELETE
+ev.stations
+   ↓ (DB trigger: trg_station_projection_sync)
+gis.sync_station_projection()
+   ↓
+gis.station_projection (upsert/delete)
+   ↓
+gis.station_projection_sync_log (audit)
+```
+
+### Read Path (Driver Service → GIS)
+```
+Driver Service API
+   ↓
+gis.get_nearby_stations(lat, lng, radius)
+   ↓
+PostGIS GiST index (ST_DWithin)
+   ↓
+Filtered + sorted results (distance ASC)
+   ↓
+Response to client
+```
