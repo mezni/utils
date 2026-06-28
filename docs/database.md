@@ -36,8 +36,10 @@ CREATE TABLE users.accounts (
 ```sql
 CREATE TABLE ev.partners (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name TEXT NOT NULL UNIQUE,
-    created_at TIMESTAMP NOT NULL DEFAULT NOW()
+    name TEXT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    CONSTRAINT uq_partners_name UNIQUE (name)
 );
 ```
 
@@ -51,35 +53,61 @@ CREATE TABLE ev.stations (
     address TEXT NOT NULL,
     latitude DOUBLE PRECISION NOT NULL,
     longitude DOUBLE PRECISION NOT NULL,
-    status TEXT NOT NULL DEFAULT 'Active'
-        CHECK (status IN ('Active', 'Inactive', 'Maintenance')),
-    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     CONSTRAINT fk_station_partner
         FOREIGN KEY (partner_id) REFERENCES ev.partners(id) ON DELETE CASCADE,
     CONSTRAINT chk_latitude CHECK (latitude BETWEEN -90 AND 90),
-    CONSTRAINT chk_longitude CHECK (longitude BETWEEN -180 AND 180)
+    CONSTRAINT chk_longitude CHECK (longitude BETWEEN -180 AND 180),
+    CONSTRAINT uq_station_partner_name UNIQUE (partner_id, name)
 );
 ```
 
 ### 4.3 `ev.connectors`
 
 ```sql
-CREATE TYPE ev.connector_type AS ENUM (
-    'CCS2', 'CHAdeMO', 'Type2', 'Tesla'
-);
-
 CREATE TABLE ev.connectors (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     station_id UUID NOT NULL,
-    type ev.connector_type NOT NULL,
+    type TEXT NOT NULL,
     power_kw NUMERIC NOT NULL CHECK (power_kw > 0),
-    status TEXT NOT NULL DEFAULT 'Available'
-        CHECK (status IN ('Available', 'Busy', 'Offline', 'Faulted')),
-    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     CONSTRAINT fk_connector_station
         FOREIGN KEY (station_id) REFERENCES ev.stations(id) ON DELETE CASCADE
 );
+```
+
+### 4.4 Automatic `updated_at` Triggers
+
+```sql
+CREATE OR REPLACE FUNCTION ev.set_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_partners_updated_at
+BEFORE UPDATE ON ev.partners
+FOR EACH ROW EXECUTE FUNCTION ev.set_updated_at();
+
+CREATE TRIGGER trg_stations_updated_at
+BEFORE UPDATE ON ev.stations
+FOR EACH ROW EXECUTE FUNCTION ev.set_updated_at();
+
+CREATE TRIGGER trg_connectors_updated_at
+BEFORE UPDATE ON ev.connectors
+FOR EACH ROW EXECUTE FUNCTION ev.set_updated_at();
+```
+
+### 4.5 Indexes
+
+```sql
+CREATE INDEX IF NOT EXISTS idx_stations_partner_id ON ev.stations(partner_id);
+CREATE INDEX IF NOT EXISTS idx_connectors_station_id ON ev.connectors(station_id);
+CREATE INDEX IF NOT EXISTS idx_stations_geo_hint ON ev.stations(latitude, longitude);
 ```
 
 ## 5. GIS Schema (Projection Layer)
