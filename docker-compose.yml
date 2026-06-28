@@ -1,8 +1,6 @@
-version: "3.9"
-
 services:
   postgres:
-    image: postgis/postgis:15-3.4
+    image: postgis/postgis:16-3.4
     container_name: bornemap-db
     restart: unless-stopped
     environment:
