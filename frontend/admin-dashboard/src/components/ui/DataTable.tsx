@@ -1,47 +1,33 @@
-import { ChevronUp, ChevronDown, ChevronsUpDown } from "lucide-react";
+import { ReactNode } from "react";
 
 interface Column<T> {
-  key: string;
-  header: string;
-  render?: (row: T) => React.ReactNode;
-  sortable?: boolean;
-  width?: string;
+  key: keyof T | string;
+  label: string;
+  render?: (value: any, record: T) => ReactNode;
 }
 
 interface DataTableProps<T> {
   columns: Column<T>[];
   data: T[];
-  onRowClick?: (row: T) => void;
-  sortKey?: string;
-  sortDir?: "asc" | "desc";
-  onSort?: (key: string) => void;
   loading?: boolean;
+  emptyMessage?: string;
+  className?: string;
 }
 
-export function DataTable<T extends { id?: string }>({
+export function DataTable<T>({
   columns,
   data,
-  onRowClick,
-  sortKey,
-  sortDir,
-  onSort,
-  loading,
+  loading = false,
+  emptyMessage = "No data available",
+  className = "",
 }: DataTableProps<T>) {
-  const SortIcon = ({ column }: { column: string }) => {
-    if (sortKey !== column) return <ChevronsUpDown size={14} className="text-surface-500" />;
-    return sortDir === "asc" ? (
-      <ChevronUp size={14} className="text-brand-400" />
-    ) : (
-      <ChevronDown size={14} className="text-brand-400" />
-    );
-  };
-
   if (loading) {
     return (
-      <div className="card p-12 text-center">
-        <div className="animate-pulse space-y-4">
-          <div className="h-4 bg-surface-700 rounded w-1/3 mx-auto" />
-          <div className="h-4 bg-surface-700 rounded w-1/4 mx-auto" />
+      <div className={`bg-white rounded-lg border border-gray-200 ${className}`}>
+        <div className="px-6 py-4">
+          <div className="flex items-center justify-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-2 border-gray-300 border-t-blue-500"></div>
+          </div>
         </div>
       </div>
     );
@@ -49,52 +35,88 @@ export function DataTable<T extends { id?: string }>({
 
   if (data.length === 0) {
     return (
-      <div className="card p-12 text-center">
-        <p className="text-surface-400 text-sm">No records found</p>
+      <div className={`bg-white rounded-lg border border-gray-200 ${className}`}>
+        <div className="px-6 py-4">
+          <div className="text-center py-8">
+            <p className="text-gray-500">{emptyMessage}</p>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="card overflow-hidden">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="border-b border-surface-700/50">
-            {columns.map((col) => (
-              <th
-                key={col.key}
-                className={`px-4 py-3 text-left text-xs font-medium text-surface-400 uppercase tracking-wider ${
-                  col.sortable ? "cursor-pointer select-none hover:text-surface-50" : ""
-                }`}
-                style={col.width ? { width: col.width } : undefined}
-                onClick={() => col.sortable && onSort?.(col.key)}
-              >
-                <div className="flex items-center gap-1.5">
-                  {col.header}
-                  {col.sortable && <SortIcon column={col.key} />}
-                </div>
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-surface-700/30">
-          {data.map((row, i) => (
-            <tr
-              key={row.id ?? i}
-              className={`transition-colors ${
-                onRowClick ? "cursor-pointer hover:bg-surface-700/40" : ""
-              }`}
-              onClick={() => onRowClick?.(row)}
-            >
-              {columns.map((col) => (
-                <td key={col.key} className="px-4 py-3 text-surface-50">
-                  {col.render ? col.render(row) : (row as unknown as Record<string, React.ReactNode>)[col.key] ?? "-"}
-                </td>
+    <div className={`bg-white rounded-lg border border-gray-200 overflow-hidden ${className}`}>
+      {/* Table */}
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          <thead className="bg-gray-50 border-b border-gray-200">
+            <tr>
+              {columns.map((column) => (
+                <th
+                  key={column.key as string}
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider"
+                >
+                  {column.label}
+                </th>
               ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {data.map((record, index) => (
+              <tr key={index} className="hover:bg-gray-50">
+                {columns.map((column) => {
+                  const value = column.key in record 
+                    ? (record as any)[column.key] 
+                    : undefined;
+                  
+                  const content = column.render 
+                    ? column.render(value, record)
+                    : (
+                        <div className="text-sm text-gray-900">
+                          {value?.toString() || "-"}
+                        </div>
+                      );
+                  
+                  return (
+                    <td key={column.key as string} className="px-6 py-4 whitespace-nowrap">
+                      {content}
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      
+      {/* Pagination */}
+      {data.length > 10 && (
+        <div className="px-6 py-3 border-t border-gray-200 bg-gray-50">
+          <div className="flex items-center justify-between">
+            <div className="text-sm text-gray-700">
+              Showing 1 to 10 of {data.length} results
+            </div>
+            <div className="flex gap-1">
+              <button className="px-3 py-1 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
+                Previous
+              </button>
+              <button className="px-3 py-1 text-sm font-medium text-gray-700 bg-blue-50 text-blue-600 border border-blue-300 rounded-md">
+                1
+              </button>
+              <button className="px-3 py-1 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
+                2
+              </button>
+              <button className="px-3 py-1 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
+                3
+              </button>
+              <button className="px-3 py-1 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
+                Next
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

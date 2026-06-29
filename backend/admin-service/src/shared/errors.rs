@@ -27,33 +27,35 @@ impl<T: Serialize> ApiResponse<T> {
             error: None,
         })
     }
+}
 
-    pub fn not_found(msg: &str) -> HttpResponse {
+impl ApiResponse<()> {
+    pub fn not_found(msg: String) -> HttpResponse {
         HttpResponse::NotFound().json(Self {
             data: None,
             error: Some(ApiError {
                 code: "NOT_FOUND".to_string(),
-                message: msg.to_string(),
+                message: msg,
             }),
         })
     }
 
-    pub fn bad_request(msg: &str) -> HttpResponse {
+    pub fn bad_request(msg: String) -> HttpResponse {
         HttpResponse::BadRequest().json(Self {
             data: None,
             error: Some(ApiError {
                 code: "BAD_REQUEST".to_string(),
-                message: msg.to_string(),
+                message: msg,
             }),
         })
     }
 
-    pub fn internal_error(msg: &str) -> HttpResponse {
+    pub fn internal_error(msg: String) -> HttpResponse {
         HttpResponse::InternalServerError().json(Self {
             data: None,
             error: Some(ApiError {
                 code: "INTERNAL_ERROR".to_string(),
-                message: msg.to_string(),
+                message: msg,
             }),
         })
     }

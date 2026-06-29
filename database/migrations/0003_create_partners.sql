@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS ev.partners (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id TEXT PRIMARY KEY,
 
     name TEXT NOT NULL,
 

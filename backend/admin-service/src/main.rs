@@ -35,7 +35,7 @@ async fn main() -> std::io::Result<()> {
     let station_repo = PostgresStationRepository::new(pool.clone());
     let connector_repo = PostgresConnectorRepository::new(pool.clone());
 
-    tracing::info!("admin-service running on 0.0.0.0:3000");
+    tracing::info!("admin-service running on 0.0.0.0:3002");
 
     HttpServer::new(move || {
         App::new()
@@ -46,7 +46,7 @@ async fn main() -> std::io::Result<()> {
             .service(health)
             .configure(configure_routes_typed)
     })
-    .bind(("0.0.0.0", 3000))?
+    .bind(("0.0.0.0", 3002))?
     .run()
     .await
 }

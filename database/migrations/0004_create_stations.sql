@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS ev.stations (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id TEXT PRIMARY KEY,
 
-    partner_id UUID NOT NULL,
+    partner_id TEXT NOT NULL,
 
     name TEXT NOT NULL,
     address TEXT NOT NULL,

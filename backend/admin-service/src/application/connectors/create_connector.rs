@@ -36,8 +36,7 @@ impl<R: ConnectorRepository, S: StationRepository> CreateConnectorUseCase<R, S> 
         }
 
         let station = self
-            .station_repo
-            .find_by_id(&input.station_id)
+            .station_repo.find_by_id(&input.station_id)
             .await?
             .ok_or_else(|| format!("Station {} not found", input.station_id))?;
 

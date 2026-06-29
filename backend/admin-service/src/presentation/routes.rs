@@ -12,9 +12,9 @@ use crate::presentation::handlers::stations;
 
 pub fn configure_routes<P, S, C>(cfg: &mut web::ServiceConfig)
 where
-    P: PartnerRepository + 'static,
-    S: StationRepository + 'static,
-    C: ConnectorRepository + 'static,
+    P: PartnerRepository + Clone + 'static,
+    S: StationRepository + Clone + 'static,
+    C: ConnectorRepository + Clone + 'static,
 {
     cfg.service(
         web::scope("/api/v1")

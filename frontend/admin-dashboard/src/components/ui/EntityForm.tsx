@@ -1,107 +1,138 @@
-import { useState } from "react";
+import { ReactNode } from "react";
 
-interface Field {
+interface FormField {
   name: string;
   label: string;
-  type?: "text" | "number" | "email" | "select";
+  type: "text" | "email" | "number" | "password" | "textarea" | "select";
   required?: boolean;
   placeholder?: string;
-  options?: { value: string; label: string }[];
-  min?: number;
-  step?: string;
+  options?: Array<{ value: string; label: string }>;
+  className?: string;
 }
 
 interface EntityFormProps {
-  fields: Field[];
-  onSubmit: (values: Record<string, string | number>) => Promise<void>;
+  fields: FormField[];
+  initialData?: Record<string, any>;
+  onSubmit: (values: Record<string, any>) => void;
   onCancel: () => void;
-  submitLabel?: string;
-  loading?: boolean;
-  initialValues?: Record<string, string | number>;
+  submitText?: string;
+  cancelText?: string;
+  className?: string;
 }
 
 export function EntityForm({
   fields,
+  initialData = {},
   onSubmit,
   onCancel,
-  submitLabel = "Save",
-  loading,
-  initialValues,
+  submitText = "Submit",
+  cancelText = "Cancel",
+  className = "",
 }: EntityFormProps) {
-  const [values, setValues] = useState<Record<string, string | number>>(() => {
-    if (initialValues) return { ...initialValues };
-    const initial: Record<string, string | number> = {};
-    for (const f of fields) {
-      initial[f.name] = f.type === "number" ? 0 : "";
-    }
-    return initial;
-  });
-  const [error, setError] = useState<string | null>(null);
+  const [formData, setFormData] = useState<Record<string, any>>(initialData);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+    
+    fields.forEach(field => {
+      if (field.required && !formData[field.name]) {
+        newErrors[field.name] = `${field.label} is required`;
+      }
+    });
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
-    try {
-      await onSubmit(values);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
+    if (validateForm()) {
+      onSubmit(formData);
+    }
+  };
+
+  const handleChange = (name: string, value: any) => {
+    setFormData(prev => ({ ...prev, [name]: value }));
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: "" }));
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
+    <form onSubmit={handleSubmit} className={`space-y-6 ${className}`}>
       {fields.map((field) => (
-        <div key={field.name}>
-          <label className="label">
+        <div key={field.name} className="space-y-2">
+          <label
+            htmlFor={field.name}
+            className={`block text-sm font-medium ${
+              field.required ? 'text-gray-900' : 'text-gray-700'
+            }`}
+          >
             {field.label}
-            {field.required && <span className="text-danger-400 ml-1">*</span>}
+            {field.required && <span className="text-red-500">*</span>}
           </label>
-          {field.type === "select" && field.options ? (
+          
+          {field.type === "textarea" ? (
+            <textarea
+              id={field.name}
+              className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                errors[field.name] ? 'border-red-300' : ''
+              }`}
+              placeholder={field.placeholder}
+              value={formData[field.name] || ""}
+              onChange={(e) => handleChange(field.name, e.target.value)}
+              rows={4}
+            />
+          ) : field.type === "select" ? (
             <select
-              value={values[field.name] as string}
-              onChange={(e) => setValues((v) => ({ ...v, [field.name]: e.target.value }))}
-              className="input"
-              required={field.required}
+              id={field.name}
+              className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                errors[field.name] ? 'border-red-300' : ''
+              }`}
+              value={formData[field.name] || ""}
+              onChange={(e) => handleChange(field.name, e.target.value)}
             >
-              <option value="">Select...</option>
-              {field.options.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
+              <option value="">{field.placeholder}</option>
+              {field.options?.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
                 </option>
               ))}
             </select>
           ) : (
             <input
-              type={field.type || "text"}
-              value={values[field.name] as string}
-              onChange={(e) =>
-                setValues((v) => ({
-                  ...v,
-                  [field.name]: field.type === "number" ? parseFloat(e.target.value) || 0 : e.target.value,
-                }))
-              }
+              type={field.type}
+              id={field.name}
+              className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                errors[field.name] ? 'border-red-300' : ''
+              }`}
               placeholder={field.placeholder}
-              className="input"
-              required={field.required}
-              min={field.min}
-              step={field.step}
+              value={formData[field.name] || ""}
+              onChange={(e) => handleChange(field.name, e.target.value)}
             />
+          )}
+          
+          {errors[field.name] && (
+            <p className="text-sm text-red-600">{errors[field.name]}</p>
           )}
         </div>
       ))}
-
-      {error && (
-        <div className="rounded-lg bg-danger-500/10 border border-danger-500/20 px-4 py-3 text-sm text-danger-400">
-          {error}
-        </div>
-      )}
-
-      <div className="flex items-center gap-3 pt-2">
-        <button type="submit" disabled={loading} className="btn-primary flex-1 justify-center">
-          {loading ? "Saving..." : submitLabel}
+      
+      <div className="flex justify-end gap-3 pt-6 border-t border-gray-200">
+        <button
+          type="button"
+          className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500"
+          onClick={onCancel}
+        >
+          {cancelText}
         </button>
-        <button type="button" onClick={onCancel} className="btn-secondary">
-          Cancel
+        <button
+          type="submit"
+          className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          {submitText}
         </button>
       </div>
     </form>

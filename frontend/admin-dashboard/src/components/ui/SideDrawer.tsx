@@ -1,49 +1,64 @@
-import { useCallback, useEffect, useRef } from "react";
-import { X } from "lucide-react";
+import { ReactNode, useEffect } from "react";
 
 interface SideDrawerProps {
+  title: string;
+  children: ReactNode;
   open: boolean;
   onClose: () => void;
-  title: string;
-  children: React.ReactNode;
-  width?: string;
+  size?: "sm" | "md" | "lg";
+  className?: string;
 }
 
-export function SideDrawer({ open, onClose, title, children, width = "w-[480px]" }: SideDrawerProps) {
-  const ref = useRef<HTMLDivElement>(null);
-
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    },
-    [onClose]
-  );
-
+export function SideDrawer({
+  title,
+  children,
+  open,
+  onClose,
+  size = "md",
+  className = "",
+}: SideDrawerProps) {
   useEffect(() => {
-    if (open) {
-      document.addEventListener("keydown", handleKeyDown);
-      return () => document.removeEventListener("keydown", handleKeyDown);
-    }
-  }, [open, handleKeyDown]);
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    if (open) document.addEventListener("keydown", handleEsc);
+    return () => document.removeEventListener("keydown", handleEsc);
+  }, [open, onClose]);
+
+  if (!open) return null;
+
+  const sizeClasses = {
+    sm: "max-w-sm",
+    md: "max-w-md",
+    lg: "max-w-lg",
+  };
 
   return (
     <>
-      {open && (
-        <div className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      )}
       <div
-        ref={ref}
-        className={`fixed top-0 right-0 z-50 h-full ${width} bg-surface-900 border-l border-surface-700 shadow-2xl transition-transform duration-300 ${
-          open ? "translate-x-0" : "translate-x-full"
-        }`}
-      >
-        <div className="flex items-center justify-between px-6 h-16 border-b border-surface-700">
-          <h2 className="text-lg font-semibold text-surface-50">{title}</h2>
-          <button onClick={onClose} className="btn-ghost p-1.5 rounded-md" aria-label="Close drawer">
-            <X size={18} />
-          </button>
+        className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 transition-opacity"
+        onClick={onClose}
+      />
+      <div className="fixed inset-0 z-50 flex justify-end">
+        <div
+          className={`w-full ${sizeClasses[size]} bg-white shadow-2xl border-l border-gray-200 animate-slide-in-right flex flex-col ${className}`}
+        >
+          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+            <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+            <button
+              onClick={onClose}
+              className="p-2 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+              aria-label="Close drawer"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          <div className="flex-1 overflow-y-auto px-6 py-4">
+            {children}
+          </div>
         </div>
-        <div className="overflow-y-auto h-[calc(100%-4rem)] p-6">{children}</div>
       </div>
     </>
   );

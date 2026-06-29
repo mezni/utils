@@ -11,11 +11,11 @@ pub struct CreatePartnerRequest {
     pub name: String,
 }
 
-pub async fn create_partner<R: PartnerRepository + 'static>(
+pub async fn create_partner<R: PartnerRepository + Clone + 'static>(
     repo: web::Data<R>,
     body: web::Json<CreatePartnerRequest>,
 ) -> HttpResponse {
-    let use_case = CreatePartnerUseCase::new(repo.get_ref().clone());
+    let use_case = CreatePartnerUseCase::new((**repo).clone());
     match use_case
         .execute(CreatePartnerInput {
             name: body.name.clone(),
@@ -23,16 +23,16 @@ pub async fn create_partner<R: PartnerRepository + 'static>(
         .await
     {
         Ok(partner) => ApiResponse::created(partner),
-        Err(msg) => ApiResponse::bad_request(&msg),
+        Err(msg) => ApiResponse::bad_request(msg),
     }
 }
 
-pub async fn list_partners<R: PartnerRepository + 'static>(
+pub async fn list_partners<R: PartnerRepository + Clone + 'static>(
     repo: web::Data<R>,
 ) -> HttpResponse {
-    let use_case = ListPartnersUseCase::new(repo.get_ref().clone());
+    let use_case = ListPartnersUseCase::new((**repo).clone());
     match use_case.execute().await {
         Ok(partners) => ApiResponse::success(partners),
-        Err(msg) => ApiResponse::internal_error(&msg),
+        Err(msg) => ApiResponse::internal_error(msg),
     }
 }

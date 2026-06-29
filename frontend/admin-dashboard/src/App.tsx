@@ -10,6 +10,7 @@ type Page = "partners" | "stations";
 export default function App() {
   const [page, setPage] = useState<Page>("partners");
   const [selectedPartnerId, setSelectedPartnerId] = useState<string | undefined>();
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const toast = useToast();
 
   const sidebarItems = [
@@ -17,10 +18,7 @@ export default function App() {
       label: "Partners",
       icon: <Building2 size={18} />,
       active: page === "partners",
-      onClick: () => {
-        setPage("partners");
-        setSelectedPartnerId(undefined);
-      },
+      onClick: () => { setPage("partners"); setSelectedPartnerId(undefined); },
     },
     {
       label: "Stations",
@@ -39,8 +37,10 @@ export default function App() {
 
   return (
     <AppLayout
-      title={page === "partners" ? "Partners" : "Stations"}
+      title={page === "partners" ? "Partners Management" : "Stations Management"}
       sidebarItems={sidebarItems}
+      sidebarCollapsed={sidebarCollapsed}
+      onSidebarToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
       toast={toast}
     >
       {page === "partners" ? (

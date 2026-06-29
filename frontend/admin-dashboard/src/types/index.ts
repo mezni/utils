@@ -1,56 +1,35 @@
-export interface Partner {
-  id: string;
-  name: string;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface Station {
-  id: string;
-  partner_id: string;
-  name: string;
-  address: string;
-  latitude: number;
-  longitude: number;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface Connector {
-  id: string;
-  station_id: string;
-  connector_type: string;
-  power_kw: number;
-  created_at: string;
-  updated_at: string;
-}
+export * from "../api/partners";
+export * from "../api/stations";
+export * from "../api/connectors";
 
 export interface ApiResponse<T> {
-  data: T | null;
-  error: { code: string; message: string } | null;
+  data: T;
+  message?: string;
 }
 
-export interface CreatePartnerInput {
-  name: string;
+export interface PaginatedResponse<T> {
+  data: T[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
 }
 
-export interface CreateStationInput {
-  partner_id: string;
-  name: string;
-  address: string;
-  latitude: number;
-  longitude: number;
+export interface PaginationParams {
+  page?: number;
+  limit?: number;
+  search?: string;
 }
 
-export interface UpdateStationInput {
-  name: string;
-  address: string;
-  latitude: number;
-  longitude: number;
+export interface SortParams {
+  field: string;
+  order: "asc" | "desc";
 }
 
-export interface CreateConnectorInput {
-  station_id: string;
-  connector_type: string;
-  power_kw: number;
+export interface FilterParams {
+  status?: string;
+  dateRange?: {
+    start: string;
+    end: string;
+  };
 }

@@ -1,19 +1,25 @@
-import { MapPin, PlugZap } from "lucide-react";
+import { ReactNode } from "react";
 
 interface BadgeProps {
-  variant?: "default" | "brand" | "danger" | "warning";
-  children: React.ReactNode;
+  children: ReactNode;
+  variant?: "primary" | "secondary" | "success" | "danger" | "warning";
+  className?: string;
 }
 
-export function Badge({ variant = "default", children }: BadgeProps) {
-  const variants = {
-    default: "bg-surface-700 text-surface-200",
-    brand: "bg-brand-500/10 text-brand-400",
-    danger: "bg-danger-500/10 text-danger-400",
-    warning: "bg-yellow-500/10 text-yellow-400",
+export function Badge({ children, variant = "secondary", className = "" }: BadgeProps) {
+  const variantClasses = {
+    primary: "bg-blue-100 text-blue-800",
+    secondary: "bg-gray-100 text-gray-800",
+    success: "bg-green-100 text-green-800",
+    danger: "bg-red-100 text-red-800",
+    warning: "bg-yellow-100 text-yellow-800",
   };
-
-  return <span className={`badge ${variants[variant]}`}>{children}</span>;
+  
+  const classes = `inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${variantClasses[variant]} ${className}`;
+  
+  return (
+    <span className={classes}>
+      {children}
+    </span>
+  );
 }
-
-export { MapPin, PlugZap };

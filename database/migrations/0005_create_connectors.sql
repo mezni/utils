@@ -1,9 +1,9 @@
 CREATE TABLE IF NOT EXISTS ev.connectors (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id TEXT PRIMARY KEY,
 
-    station_id UUID NOT NULL,
+    station_id TEXT NOT NULL,
 
-    type TEXT NOT NULL,
+    "type" TEXT NOT NULL,
     power_kw NUMERIC NOT NULL CHECK (power_kw > 0),
 
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),

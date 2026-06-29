@@ -31,13 +31,13 @@ pub struct ListStationsQuery {
     pub partner_id: Option<String>,
 }
 
-pub async fn create_station<R: StationRepository + 'static, P: PartnerRepository + 'static>(
+pub async fn create_station<R: StationRepository + Clone + 'static, P: PartnerRepository + Clone + 'static>(
     station_repo: web::Data<R>,
     partner_repo: web::Data<P>,
     body: web::Json<CreateStationRequest>,
 ) -> HttpResponse {
     let use_case =
-        CreateStationUseCase::new(station_repo.get_ref().clone(), partner_repo.get_ref().clone());
+        CreateStationUseCase::new((**station_repo).clone(), (**partner_repo).clone());
     match use_case
         .execute(CreateStationInput {
             partner_id: body.partner_id.clone(),
@@ -49,30 +49,30 @@ pub async fn create_station<R: StationRepository + 'static, P: PartnerRepository
         .await
     {
         Ok(station) => ApiResponse::created(station),
-        Err(msg) => ApiResponse::bad_request(&msg),
+        Err(msg) => ApiResponse::bad_request(msg),
     }
 }
 
-pub async fn list_stations<R: StationRepository + 'static>(
+pub async fn list_stations<R: StationRepository + Clone + 'static>(
     station_repo: web::Data<R>,
     query: web::Query<ListStationsQuery>,
 ) -> HttpResponse {
-    let use_case = ListStationsUseCase::new(station_repo.get_ref().clone());
+    let use_case = ListStationsUseCase::new((**station_repo).clone());
     match use_case
         .execute(query.partner_id.as_deref())
         .await
     {
         Ok(stations) => ApiResponse::success(stations),
-        Err(msg) => ApiResponse::internal_error(&msg),
+        Err(msg) => ApiResponse::internal_error(msg),
     }
 }
 
-pub async fn update_station<R: StationRepository + 'static>(
+pub async fn update_station<R: StationRepository + Clone + 'static>(
     station_repo: web::Data<R>,
     path: web::Path<String>,
     body: web::Json<UpdateStationRequest>,
 ) -> HttpResponse {
-    let use_case = UpdateStationUseCase::new(station_repo.get_ref().clone());
+    let use_case = UpdateStationUseCase::new((**station_repo).clone());
     match use_case
         .execute(UpdateStationInput {
             id: path.into_inner(),
@@ -86,26 +86,26 @@ pub async fn update_station<R: StationRepository + 'static>(
         Ok(station) => ApiResponse::success(station),
         Err(msg) => {
             if msg.contains("not found") {
-                ApiResponse::not_found(&msg)
+                ApiResponse::not_found(msg)
             } else {
-                ApiResponse::bad_request(&msg)
+                ApiResponse::bad_request(msg)
             }
         }
     }
 }
 
-pub async fn delete_station<R: StationRepository + 'static>(
+pub async fn delete_station<R: StationRepository + Clone + 'static>(
     station_repo: web::Data<R>,
     path: web::Path<String>,
 ) -> HttpResponse {
-    let use_case = DeleteStationUseCase::new(station_repo.get_ref().clone());
+    let use_case = DeleteStationUseCase::new((**station_repo).clone());
     match use_case.execute(&path.into_inner()).await {
         Ok(_) => HttpResponse::NoContent().finish(),
         Err(msg) => {
             if msg.contains("not found") {
-                ApiResponse::not_found(&msg)
+                ApiResponse::not_found(msg)
             } else {
-                ApiResponse::internal_error(&msg)
+                ApiResponse::internal_error(msg)
             }
         }
     }

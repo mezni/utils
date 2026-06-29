@@ -2,6 +2,10 @@ use sqlx::postgres::PgPoolOptions;
 use sqlx::PgPool;
 use std::env;
 
+fn generate_id(prefix: &str) -> String {
+    format!("{}_{}", prefix, nanoid::nanoid!(8).to_uppercase())
+}
+
 async fn get_pool() -> PgPool {
     let database_url = env::var("DATABASE_URL")
         .unwrap_or_else(|_| "postgres://postgres:postgres@localhost:5432/bornemap_test".to_string());
@@ -15,14 +19,14 @@ async fn get_pool() -> PgPool {
 
 async fn run_migrations(pool: &PgPool) {
     let migrations = vec![
-        include_str!("../../../../database/migrations/0001_create_ev_schema.sql"),
-        include_str!("../../../../database/migrations/0002_extensions.sql"),
-        include_str!("../../../../database/migrations/0003_create_partners.sql"),
-        include_str!("../../../../database/migrations/0004_create_stations.sql"),
-        include_str!("../../../../database/migrations/0005_create_connectors.sql"),
-        include_str!("../../../../database/migrations/0006_indexes.sql"),
-        include_str!("../../../../database/migrations/0007_updated_at_trigger.sql"),
-        include_str!("../../../../database/migrations/0008_updated_at_bindings.sql"),
+        include_str!("../../../database/migrations/0001_create_ev_schema.sql"),
+        include_str!("../../../database/migrations/0002_extensions.sql"),
+        include_str!("../../../database/migrations/0003_create_partners.sql"),
+        include_str!("../../../database/migrations/0004_create_stations.sql"),
+        include_str!("../../../database/migrations/0005_create_connectors.sql"),
+        include_str!("../../../database/migrations/0006_indexes.sql"),
+        include_str!("../../../database/migrations/0007_updated_at_trigger.sql"),
+        include_str!("../../../database/migrations/0008_updated_at_bindings.sql"),
     ];
 
     for migration in &migrations {
@@ -53,18 +57,19 @@ async fn test_create_partner() {
     let pool = get_pool().await;
     run_migrations(&pool).await;
 
-    sqlx::query("INSERT INTO ev.partners (name) VALUES ($1)")
+    let id = generate_id("PRT");
+    sqlx::query("INSERT INTO ev.partners (id, name) VALUES ($1, $2)")
+        .bind(&id)
         .bind("Tesla Tunisia")
         .execute(&pool)
         .await
         .expect("partner creation should succeed");
 
-    let count: (i64,) =
-        sqlx::query_as("SELECT COUNT(*) FROM ev.partners WHERE name = $1")
-            .bind("Tesla Tunisia")
-            .fetch_one(&pool)
-            .await
-            .expect("query should succeed");
+    let count: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM ev.partners WHERE name = $1")
+        .bind("Tesla Tunisia")
+        .fetch_one(&pool)
+        .await
+        .expect("query should succeed");
 
     assert_eq!(count.0, 1);
 }
@@ -74,13 +79,17 @@ async fn test_unique_partner_name() {
     let pool = get_pool().await;
     run_migrations(&pool).await;
 
-    sqlx::query("INSERT INTO ev.partners (name) VALUES ($1)")
+    let id1 = generate_id("PRT");
+    sqlx::query("INSERT INTO ev.partners (id, name) VALUES ($1, $2)")
+        .bind(&id1)
         .bind("Tesla")
         .execute(&pool)
         .await
         .expect("first insert should succeed");
 
-    let result = sqlx::query("INSERT INTO ev.partners (name) VALUES ($1)")
+    let id2 = generate_id("PRT");
+    let result = sqlx::query("INSERT INTO ev.partners (id, name) VALUES ($1, $2)")
+        .bind(&id2)
         .bind("Tesla")
         .execute(&pool)
         .await;
@@ -93,17 +102,19 @@ async fn test_create_station() {
     let pool = get_pool().await;
     run_migrations(&pool).await;
 
-    let partner_id: uuid::Uuid = sqlx::query_scalar(
-        "INSERT INTO ev.partners (name) VALUES ($1) RETURNING id",
+    let partner_id: String = sqlx::query_scalar(
+        "INSERT INTO ev.partners (id, name) VALUES ($1, $2) RETURNING id",
     )
+    .bind(generate_id("PRT"))
     .bind("Test Partner")
     .fetch_one(&pool)
     .await
     .expect("partner creation should succeed");
 
     sqlx::query(
-        "INSERT INTO ev.stations (partner_id, name, address, latitude, longitude) VALUES ($1, $2, $3, $4, $5)",
+        "INSERT INTO ev.stations (id, partner_id, name, address, latitude, longitude) VALUES ($1, $2, $3, $4, $5, $6)",
     )
+    .bind(generate_id("STN"))
     .bind(partner_id)
     .bind("Station Alpha")
     .bind("123 Main St")
@@ -126,12 +137,11 @@ async fn test_station_invalid_partner_fk() {
     let pool = get_pool().await;
     run_migrations(&pool).await;
 
-    let fake_id = uuid::Uuid::nil();
-
     let result = sqlx::query(
-        "INSERT INTO ev.stations (partner_id, name, address, latitude, longitude) VALUES ($1, $2, $3, $4, $5)",
+        "INSERT INTO ev.stations (id, partner_id, name, address, latitude, longitude) VALUES ($1, $2, $3, $4, $5, $6)",
     )
-    .bind(fake_id)
+    .bind(generate_id("STN"))
+    .bind("invalid_id")
     .bind("Orphan Station")
     .bind("Nowhere")
     .bind(0.0)
@@ -150,17 +160,19 @@ async fn test_station_invalid_latitude() {
     let pool = get_pool().await;
     run_migrations(&pool).await;
 
-    let partner_id: uuid::Uuid = sqlx::query_scalar(
-        "INSERT INTO ev.partners (name) VALUES ($1) RETURNING id",
+    let partner_id: String = sqlx::query_scalar(
+        "INSERT INTO ev.partners (id, name) VALUES ($1, $2) RETURNING id",
     )
+    .bind(generate_id("PRT"))
     .bind("Partner")
     .fetch_one(&pool)
     .await
     .expect("partner creation should succeed");
 
     let result = sqlx::query(
-        "INSERT INTO ev.stations (partner_id, name, address, latitude, longitude) VALUES ($1, $2, $3, $4, $5)",
+        "INSERT INTO ev.stations (id, partner_id, name, address, latitude, longitude) VALUES ($1, $2, $3, $4, $5, $6)",
     )
+    .bind(generate_id("STN"))
     .bind(partner_id)
     .bind("Bad Station")
     .bind("Nowhere")
@@ -180,17 +192,19 @@ async fn test_station_invalid_longitude() {
     let pool = get_pool().await;
     run_migrations(&pool).await;
 
-    let partner_id: uuid::Uuid = sqlx::query_scalar(
-        "INSERT INTO ev.partners (name) VALUES ($1) RETURNING id",
+    let partner_id: String = sqlx::query_scalar(
+        "INSERT INTO ev.partners (id, name) VALUES ($1, $2) RETURNING id",
     )
+    .bind(generate_id("PRT"))
     .bind("Partner")
     .fetch_one(&pool)
     .await
     .expect("partner creation should succeed");
 
     let result = sqlx::query(
-        "INSERT INTO ev.stations (partner_id, name, address, latitude, longitude) VALUES ($1, $2, $3, $4, $5)",
+        "INSERT INTO ev.stations (id, partner_id, name, address, latitude, longitude) VALUES ($1, $2, $3, $4, $5, $6)",
     )
+    .bind(generate_id("STN"))
     .bind(partner_id)
     .bind("Bad Station")
     .bind("Nowhere")
@@ -210,17 +224,19 @@ async fn test_create_connector() {
     let pool = get_pool().await;
     run_migrations(&pool).await;
 
-    let partner_id: uuid::Uuid = sqlx::query_scalar(
-        "INSERT INTO ev.partners (name) VALUES ($1) RETURNING id",
+    let partner_id: String = sqlx::query_scalar(
+        "INSERT INTO ev.partners (id, name) VALUES ($1, $2) RETURNING id",
     )
+    .bind(generate_id("PRT"))
     .bind("Partner")
     .fetch_one(&pool)
     .await
     .expect("partner creation should succeed");
 
-    let station_id: uuid::Uuid = sqlx::query_scalar(
-        "INSERT INTO ev.stations (partner_id, name, address, latitude, longitude) VALUES ($1, $2, $3, $4, $5) RETURNING id",
+    let station_id: String = sqlx::query_scalar(
+        "INSERT INTO ev.stations (id, partner_id, name, address, latitude, longitude) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id",
     )
+    .bind(generate_id("STN"))
     .bind(partner_id)
     .bind("Station")
     .bind("Addr")
@@ -231,8 +247,9 @@ async fn test_create_connector() {
     .expect("station creation should succeed");
 
     sqlx::query(
-        "INSERT INTO ev.connectors (station_id, type, power_kw) VALUES ($1, $2, $3)",
+        r#"INSERT INTO ev.connectors (id, station_id, "type", power_kw) VALUES ($1, $2, $3, $4)"#,
     )
+    .bind(generate_id("CON"))
     .bind(station_id)
     .bind("CCS2")
     .bind(150.0)
@@ -253,12 +270,11 @@ async fn test_connector_invalid_station_fk() {
     let pool = get_pool().await;
     run_migrations(&pool).await;
 
-    let fake_id = uuid::Uuid::nil();
-
     let result = sqlx::query(
-        "INSERT INTO ev.connectors (station_id, type, power_kw) VALUES ($1, $2, $3)",
+        r#"INSERT INTO ev.connectors (id, station_id, "type", power_kw) VALUES ($1, $2, $3, $4)"#,
     )
-    .bind(fake_id)
+    .bind(generate_id("CON"))
+    .bind("invalid_station_id")
     .bind("CCS2")
     .bind(50.0)
     .execute(&pool)
@@ -275,17 +291,19 @@ async fn test_connector_zero_power_rejected() {
     let pool = get_pool().await;
     run_migrations(&pool).await;
 
-    let partner_id: uuid::Uuid = sqlx::query_scalar(
-        "INSERT INTO ev.partners (name) VALUES ($1) RETURNING id",
+    let partner_id: String = sqlx::query_scalar(
+        "INSERT INTO ev.partners (id, name) VALUES ($1, $2) RETURNING id",
     )
+    .bind(generate_id("PRT"))
     .bind("Partner")
     .fetch_one(&pool)
     .await
     .expect("partner creation should succeed");
 
-    let station_id: uuid::Uuid = sqlx::query_scalar(
-        "INSERT INTO ev.stations (partner_id, name, address, latitude, longitude) VALUES ($1, $2, $3, $4, $5) RETURNING id",
+    let station_id: String = sqlx::query_scalar(
+        "INSERT INTO ev.stations (id, partner_id, name, address, latitude, longitude) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id",
     )
+    .bind(generate_id("STN"))
     .bind(partner_id)
     .bind("Station")
     .bind("Addr")
@@ -296,8 +314,9 @@ async fn test_connector_zero_power_rejected() {
     .expect("station creation should succeed");
 
     let result = sqlx::query(
-        "INSERT INTO ev.connectors (station_id, type, power_kw) VALUES ($1, $2, $3)",
+        r#"INSERT INTO ev.connectors (id, station_id, "type", power_kw) VALUES ($1, $2, $3, $4)"#,
     )
+    .bind(generate_id("CON"))
     .bind(station_id)
     .bind("CCS2")
     .bind(0.0)
@@ -315,17 +334,19 @@ async fn test_cascade_delete_partner_removes_stations() {
     let pool = get_pool().await;
     run_migrations(&pool).await;
 
-    let partner_id: uuid::Uuid = sqlx::query_scalar(
-        "INSERT INTO ev.partners (name) VALUES ($1) RETURNING id",
+    let partner_id: String = sqlx::query_scalar(
+        "INSERT INTO ev.partners (id, name) VALUES ($1, $2) RETURNING id",
     )
+    .bind(generate_id("PRT"))
     .bind("Delete Me")
     .fetch_one(&pool)
     .await
     .expect("partner creation should succeed");
 
-    let station_id: uuid::Uuid = sqlx::query_scalar(
-        "INSERT INTO ev.stations (partner_id, name, address, latitude, longitude) VALUES ($1, $2, $3, $4, $5) RETURNING id",
+    let station_id: String = sqlx::query_scalar(
+        "INSERT INTO ev.stations (id, partner_id, name, address, latitude, longitude) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id",
     )
+    .bind(generate_id("STN"))
     .bind(partner_id)
     .bind("Station To Delete")
     .bind("Addr")
@@ -335,7 +356,8 @@ async fn test_cascade_delete_partner_removes_stations() {
     .await
     .expect("station creation should succeed");
 
-    sqlx::query("INSERT INTO ev.connectors (station_id, type, power_kw) VALUES ($1, $2, $3)")
+    sqlx::query(r#"INSERT INTO ev.connectors (id, station_id, "type", power_kw) VALUES ($1, $2, $3, $4)"#)
+        .bind(generate_id("CON"))
         .bind(station_id)
         .bind("CCS2")
         .bind(50.0)
@@ -373,9 +395,10 @@ async fn test_updated_at_trigger_on_partner() {
     let pool = get_pool().await;
     run_migrations(&pool).await;
 
-    let partner_id: uuid::Uuid = sqlx::query_scalar(
-        "INSERT INTO ev.partners (name) VALUES ($1) RETURNING id",
+    let partner_id: String = sqlx::query_scalar(
+        "INSERT INTO ev.partners (id, name) VALUES ($1, $2) RETURNING id",
     )
+    .bind(generate_id("PRT"))
     .bind("Original Name")
     .fetch_one(&pool)
     .await
@@ -384,17 +407,16 @@ async fn test_updated_at_trigger_on_partner() {
     let (original_updated_at,): (chrono::DateTime<chrono::Utc>,) = sqlx::query_as(
         "SELECT updated_at FROM ev.partners WHERE id = $1",
     )
-    .bind(partner_id)
+    .bind(&partner_id)
     .fetch_one(&pool)
     .await
     .expect("query should succeed");
 
-    // Wait a moment to ensure timestamp difference
     tokio::time::sleep(std::time::Duration::from_millis(10)).await;
 
     sqlx::query("UPDATE ev.partners SET name = $1 WHERE id = $2")
         .bind("Updated Name")
-        .bind(partner_id)
+        .bind(&partner_id)
         .execute(&pool)
         .await
         .expect("update should succeed");
@@ -402,7 +424,7 @@ async fn test_updated_at_trigger_on_partner() {
     let (new_updated_at,): (chrono::DateTime<chrono::Utc>,) = sqlx::query_as(
         "SELECT updated_at FROM ev.partners WHERE id = $1",
     )
-    .bind(partner_id)
+    .bind(&partner_id)
     .fetch_one(&pool)
     .await
     .expect("query should succeed");
@@ -418,10 +440,8 @@ async fn test_migration_idempotency() {
     let pool = get_pool().await;
     run_migrations(&pool).await;
 
-    // Running migrations again should not error
     run_migrations(&pool).await;
 
-    // Verify schema still intact
     let count: (i64,) = sqlx::query_as(
         "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'ev'",
     )

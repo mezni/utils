@@ -20,14 +20,14 @@ pub struct ListConnectorsQuery {
     pub station_id: String,
 }
 
-pub async fn create_connector<R: ConnectorRepository + 'static, S: StationRepository + 'static>(
+pub async fn create_connector<R: ConnectorRepository + Clone + 'static, S: StationRepository + Clone + 'static>(
     connector_repo: web::Data<R>,
     station_repo: web::Data<S>,
     body: web::Json<CreateConnectorRequest>,
 ) -> HttpResponse {
     let use_case = CreateConnectorUseCase::new(
-        connector_repo.get_ref().clone(),
-        station_repo.get_ref().clone(),
+        (**connector_repo).clone(),
+        (**station_repo).clone(),
     );
     match use_case
         .execute(CreateConnectorInput {
@@ -38,33 +38,33 @@ pub async fn create_connector<R: ConnectorRepository + 'static, S: StationReposi
         .await
     {
         Ok(connector) => ApiResponse::created(connector),
-        Err(msg) => ApiResponse::bad_request(&msg),
+        Err(msg) => ApiResponse::bad_request(msg),
     }
 }
 
-pub async fn list_connectors<R: ConnectorRepository + 'static>(
+pub async fn list_connectors<R: ConnectorRepository + Clone + 'static>(
     connector_repo: web::Data<R>,
     query: web::Query<ListConnectorsQuery>,
 ) -> HttpResponse {
-    let use_case = ListConnectorsUseCase::new(connector_repo.get_ref().clone());
+    let use_case = ListConnectorsUseCase::new((**connector_repo).clone());
     match use_case.execute(&query.station_id).await {
         Ok(connectors) => ApiResponse::success(connectors),
-        Err(msg) => ApiResponse::internal_error(&msg),
+        Err(msg) => ApiResponse::internal_error(msg),
     }
 }
 
-pub async fn delete_connector<R: ConnectorRepository + 'static>(
+pub async fn delete_connector<R: ConnectorRepository + Clone + 'static>(
     connector_repo: web::Data<R>,
     path: web::Path<String>,
 ) -> HttpResponse {
-    let use_case = DeleteConnectorUseCase::new(connector_repo.get_ref().clone());
+    let use_case = DeleteConnectorUseCase::new((**connector_repo).clone());
     match use_case.execute(&path.into_inner()).await {
         Ok(_) => HttpResponse::NoContent().finish(),
         Err(msg) => {
             if msg.contains("not found") {
-                ApiResponse::not_found(&msg)
+                ApiResponse::not_found(msg)
             } else {
-                ApiResponse::internal_error(&msg)
+                ApiResponse::internal_error(msg)
             }
         }
     }

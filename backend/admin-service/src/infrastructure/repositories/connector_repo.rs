@@ -19,9 +19,9 @@ impl PostgresConnectorRepository {
 impl ConnectorRepository for PostgresConnectorRepository {
     async fn create(&self, connector: &Connector) -> Result<Connector, String> {
         sqlx::query_as::<_, (String, String, String, f64, chrono::DateTime<chrono::Utc>, chrono::DateTime<chrono::Utc>)>(
-            r#"INSERT INTO ev.connectors (id, station_id, type, power_kw)
+            r#"INSERT INTO ev.connectors (id, station_id, "type", power_kw)
                VALUES ($1, $2, $3, $4)
-               RETURNING id, station_id, type, power_kw, created_at, updated_at"#,
+               RETURNING id, station_id, "type", power_kw, created_at, updated_at"#,
         )
         .bind(&connector.id)
         .bind(&connector.station_id)
@@ -44,7 +44,7 @@ impl ConnectorRepository for PostgresConnectorRepository {
 
     async fn list_by_station(&self, station_id: &str) -> Result<Vec<Connector>, String> {
         sqlx::query_as::<_, (String, String, String, f64, chrono::DateTime<chrono::Utc>, chrono::DateTime<chrono::Utc>)>(
-            "SELECT id, station_id, type, power_kw, created_at, updated_at FROM ev.connectors WHERE station_id = $1 ORDER BY created_at ASC",
+            r#"SELECT id, station_id, "type", power_kw, created_at, updated_at FROM ev.connectors WHERE station_id = $1 ORDER BY created_at ASC"#,
         )
         .bind(station_id)
         .fetch_all(&self.pool)
@@ -68,7 +68,7 @@ impl ConnectorRepository for PostgresConnectorRepository {
 
     async fn find_by_id(&self, id: &str) -> Result<Option<Connector>, String> {
         sqlx::query_as::<_, (String, String, String, f64, chrono::DateTime<chrono::Utc>, chrono::DateTime<chrono::Utc>)>(
-            "SELECT id, station_id, type, power_kw, created_at, updated_at FROM ev.connectors WHERE id = $1",
+            r#"SELECT id, station_id, "type", power_kw, created_at, updated_at FROM ev.connectors WHERE id = $1"#,
         )
         .bind(id)
         .fetch_optional(&self.pool)
