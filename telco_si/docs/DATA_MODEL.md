@@ -1,8 +1,41 @@
 # Data Model
 
-All entities are declared as **single-class `SQLModel` structures**. Cross-schema references use global identifiers (`UUID`, `MSISDN`, `ICCID`) rather than physical foreign keys, preserving schema isolation.
+This document describes the data model as it exists today and the entity design
+planned for later features.
 
-## Schemas & Entities
+> **Status:** the six domain schemas exist (created by baseline migration `0001`),
+> but **no domain tables are defined yet**. The entity layout below is the
+> **planned** target for feature `002`+ (see `docs/PLAN.md`, Sprint 2).
+
+## Implemented Today
+
+Database instance: `telco` (single PostgreSQL 16 instance, logical schema separation).
+
+```text
+PostgreSQL Instance: telco
+ └── public
+      ├── alembic_version            (alembic migration state — single row, "0001")
+      └── alembic_revision_checksum  (startup integrity: sha256 of each applied revision file)
+ └── catalog     (empty schema — planned: offers & pricing)
+ └── inventory   (empty schema — planned: SIM / resource assets)
+ └── crm         (empty schema — planned: subscriber & account identity)
+ └── usage       (empty schema — planned: Call Detail Records)
+ └── billing     (empty schema — planned: invoicing & receivables)
+ └── dunning     (empty schema — planned: collections enforcement)
+```
+
+The two `public` tables are maintained by the application:
+- `alembic_version` — current migration revision number (op maintained by Alembic).
+- `alembic_revision_checksum` — `version_num` (PK) + `checksum` (sha256) per applied
+  revision; used by the startup runner to refuse starting when an applied migration
+  file was edited in place.
+
+## Planned Domain Entities
+
+All entities are designed as **single-class `SQLModel` structures** with explicit
+`schema="<domain>"` assignments. Cross-schema references use global identifiers
+(`UUID`, `MSISDN`, `ICCID`) rather than physical foreign keys, preserving schema
+isolation.
 
 ### `catalog` — Catalog
 
@@ -23,8 +56,6 @@ SIM / resource inventory including barring states used by the Dunning lifecycle.
 | `SimCard` | Physical SIM resource keyed by **ICCID** and **MSISDN**. |
 | `SimState` | Lifecycle / barring state (e.g., `ACTIVE`, `BARRED`). |
 
-Barring a SIM is the enforcement mechanism for service suspension in the Dunning state machine.
-
 ### `crm` — CRM
 
 Subscribers and their account relationships.
@@ -43,8 +74,6 @@ Call Detail Records (CDRs) and aggregated usage.
 | --- | --- |
 | `Cdr` | Raw call detail record, resolved against subscriber **MSISDN**. |
 | `UsageSummary` | Aggregated usage per subscriber / period. |
-
-CDRs are ingested **asynchronously** and resolve against pre-existing MSISDN records.
 
 ### `billing` — Billing
 
@@ -69,7 +98,7 @@ The collections enforcement context.
 | `DunningEvent` | State transition audit record. |
 | `DunningSettlement` | Record of balance settlement that resolves a case. |
 
-## Dunning State Machine
+## Dunning State Machine *(planned)*
 
 ```
 FIRST_NOTICE → WARNING → SUSPENDED → TERMINATED

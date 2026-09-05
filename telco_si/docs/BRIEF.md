@@ -13,17 +13,28 @@ To build a **reference-grade Telecommunications Business Support System & Operat
 
 …all without the operational overhead of a distributed microservices network.
 
+## Implementation Status
+
+- **Implemented (Feature `001-infra-multi-schema-engine`):** containerized FastAPI app + PostgreSQL, six isolated domain schemas, automatic multi-schema migrations with applied-revision integrity checks, environment-driven configuration, and the `/health` endpoint. See `docs/ARCHITECTURE.md`, `docs/OPERATIONS.md`, and `specs/001-infra-multi-schema-engine/`.
+- **Planned:** domain entities and REST APIs, the dunning & collections lifecycle, and the synthetic-data CLI seeder. The remainder of this document describes the **target** system; items marked *(planned)* are not yet built.
+
 ## System Scope
 
-### In Scope (Phase 1)
+### In Scope
 
-**Domain Segregation**
-5 primary bounded contexts — `catalog`, `inventory`, `crm`, `usage`, `billing` — enforced via isolated PostgreSQL database schemas.
+**Domain Segregation** *(implemented)*
+Six bounded contexts — `catalog`, `inventory`, `crm`, `usage`, `billing`, `dunning` — enforced via isolated PostgreSQL database schemas. The baseline migration creates the six schemas; domain tables are added by later features.
 
-**Unified Data & API Layer**
+**Database Migrations** *(implemented)*
+Automated multi-schema introspection and version tracking using Alembic, run automatically at startup. Each applied revision's file checksum is recorded (`public.alembic_revision_checksum`); an applied revision edited in place fails startup with a clear error.
+
+**Containerized Development Environment** *(implemented)*
+Fully repeatable setup using Docker Compose (`app`, `db`).
+
+**Unified Data & API Layer** *(planned)*
 Declarative, typed RESTful endpoints and database entities defined via single-class `SQLModel` structures.
 
-**Dunning & Collections Lifecycle**
+**Dunning & Collections Lifecycle** *(planned)*
 End-to-end delinquency state machine tracking overdue invoices:
 
 $$\text{FIRST\_NOTICE} \rightarrow \text{WARNING} \rightarrow \text{SUSPENDED} \rightarrow \text{TERMINATED} \mid \text{RESOLVED}$$
@@ -33,16 +44,10 @@ Including:
 - Service suspensions (barring SIM resources in Inventory)
 - Balance settlement
 
-**Database Migrations**
-Automated multi-schema introspection and version tracking using Alembic.
-
-**Synthetic Data Generation Engine**
+**Synthetic Data Generation Engine** *(planned)*
 A standalone, CLI-based seeder powered by Python Faker & Typer that ingests schema-aligned relational test data — including overdue invoices, dunning cases, and barred SIM states — in strict topological order.
 
-**Containerized Development Environment**
-Fully repeatable setup using Docker Compose (`app`, `db`).
-
-### Out of Scope (Phase 1)
+### Out of Scope
 
 - **Real-time network interfaces** — e.g., direct GTP/SGi-LAN packet inspection, Diameter/RADIUS protocol drivers.
 - **Microservice orchestration engines** — e.g., Kubernetes, service meshes like Istio.
@@ -57,15 +62,15 @@ A single PostgreSQL database instance with logical schema separation provides su
 **Cross-Domain Identifiers**
 Global identifiers — specifically `UUID`, `MSISDN` (E.164 phone number), and `ICCID` (SIM serial) — serve as primary cross-domain join keys without breaking schema boundaries.
 
-**Usage Ingestion Pattern**
+**Usage Ingestion Pattern** *(planned)*
 Call Detail Records (CDRs) are ingested asynchronously and resolve against pre-existing subscriber MSISDN records created in the CRM context.
 
-**Topological Seeding Order**
+**Topological Seeding Order** *(planned)*
 Synthetic data ingestion strictly follows the relational dependency chain:
 
 $$\text{Catalog} \longrightarrow \text{Inventory} \longrightarrow \text{CRM} \longrightarrow \text{Usage} \longrightarrow \text{Billing} \longrightarrow \text{Dunning}$$
 
-**Data Generation Capacity & Distribution**
+**Data Generation Capacity & Distribution** *(planned)*
 The CLI seeder generates dataset proportions of:
 
 - ~**80%** healthy accounts (`CURRENT`)

@@ -1,13 +1,15 @@
-# Seeding — Synthetic Data Generation Engine
+# Seeding — Synthetic Data Generation Engine (Planned)
 
-A standalone, **CLI-based seeder** powered by Python **Faker** & **Typer**. It ingests schema-aligned relational test data — including **overdue invoices, dunning cases, and barred SIM states** — in strict topological order.
+> **Status: NOT IMPLEMENTED.** This page documents the *design target* only.
+> The CLI seeder does not exist yet — it is scheduled for Sprint 4
+> (see `docs/PLAN.md` and Epic 5). The six domain schemas are currently empty.
 
 ## Purpose
 
 Generate realistic relational test data across all six schemas that is:
 
-- **Schema-aligned** — matches the `SQLModel` entity definitions.
-- **Relationally consistent** — respect foreign-key-like dependencies via global identifiers.
+- **Schema-aligned** — matches the `SQLModel` entity definitions (planned, Sprint 2).
+- **Relationally consistent** — respects foreign-key-like dependencies via global identifiers.
 - **Lifecycle-representative** — includes healthy, delinquent, and suspended states.
 
 ## Topological Seeding Order
@@ -30,7 +32,7 @@ The CLI seeder generates dataset proportions of:
 
 This ensures every branch of the Dunning state machine is represented in seeded data.
 
-## Usage
+## Usage *(target interface)*
 
 ```bash
 # Seed the database (various sizes)
