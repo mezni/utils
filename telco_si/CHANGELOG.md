@@ -250,6 +250,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `subscriber_pagination_returns_correct_page` — updated to build a
     `SubscriberListQuery`.
 
+### Added
+
+- Optimistic concurrency control via a persistence `version` column (Phase 2,
+  Subscriber context, part 5):
+  - `migrations/20260924153511_add_subscriber_version.sql` —
+    `ALTER TABLE subscribers ADD COLUMN version INTEGER NOT NULL DEFAULT 1`.
+    Existing rows start at version `1`.
+  - `src/domain/subscriber/entity.rs` — `Subscriber` now carries a
+    `version: i64` field: `new()` sets it to `1`, `version()` exposes it
+    read-only, and `increment_version()` advances it after a successful
+    persist. `reconstitute()` accepts the version from the database.
+  - `src/application/error.rs` — new `ApplicationError::ConcurrencyConflict`
+    ("subscriber was modified by another request"), mapped to HTTP 409 in
+    `src/interfaces/http/error.rs`.
+- Integration test (`tests/subscriber_integration.rs`):
+  - `stale_subscriber_update_is_rejected` — two copies of the same subscriber
+    (both version 1); the first update succeeds (DB version → 2), then the
+    stale copy's update fails because its `WHERE version = 1` no longer
+    matches.
+
+### Changed
+
+- `subscribers` updates now use optimistic locking:
+  - `src/infrastructure/persistence/subscriber_repository.rs` — `update()`
+    becomes conditional: `SET ... version = version + 1 WHERE id = ? AND
+    version = ?`. When `rows_affected() == 0` the repository distinguishes
+    "subscriber does not exist" from "subscriber update conflict" with a
+    follow-up existence check (`SELECT version ...`), bailing with a
+    repository-specific message. `SubscriberRow`, the INSERT, and the
+    `find_by_id` / `find_by_account_number` SELECTs now include `version`.
+  - `src/application/subscriber/service.rs` — `suspend()` / `activate()` /
+    `terminate()` call `subscriber.increment_version()` after a successful
+    `update()`, keeping the in-memory aggregate's version in sync with the
+    database (`domain 3` → `UPDATE 3 → 4` → `domain 4`); a failed update
+    leaves the domain version untouched.
+  - The concurrency mechanism is demonstrated but the repository still returns
+    `anyhow` errors (mapped to `Infrastructure` → 500) for now; a typed
+    repository-error design (`NotFound` / `Duplicate` / `ConcurrencyConflict` /
+    `Database`) can replace this later.
+
 ## [0.0.2] - 2026-09-19
 
 ### Added
