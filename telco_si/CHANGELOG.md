@@ -328,6 +328,53 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `invalid_suspend_does_not_generate_event` — a second, failed suspend
     leaves the event count unchanged.
 
+### Added
+
+- Transactional outbox pattern (Phase 2, Subscriber context, part 7):
+  - `migrations/20260924155420_create_outbox_events.sql` — `outbox_events`
+    table (`aggregate_type`/`aggregate_id`, `event_type`, `payload`,
+    `occurred_at`/`created_at`, `published_at`, `attempts`, `last_error`) with
+    an index on `(published_at, created_at)` for the future publisher worker.
+    Applied to the local database via `cargo sqlx migrate run`.
+  - `src/domain/events.rs` — `DomainEvent` now derives
+    `Serialize + Deserialize`, plus metadata helpers so infrastructure never
+    matches on event internals: `event_type()` (`subscriber.suspended` /
+    `subscriber.activated` / `subscriber.terminated`), `aggregate_type()`,
+    `aggregate_id()`, `occurred_at()`.
+  - `src/domain/subscriber/entity.rs` — new `clear_domain_events()` (paired
+    with the existing `domain_events()` slice accessor): events are read via
+    `domain_events().to_vec()` and persisted, and only cleared *after* a
+    successful save.
+  - `src/application/subscriber/repository.rs` — `SubscriberRepository::update`
+    replaced by `save(subscriber, events: &[DomainEvent])`, since one
+    persistence operation now means "save the aggregate **and** its domain
+    events".
+  - `src/infrastructure/persistence/subscriber_repository.rs` — transactional
+    `save()`: `pool.begin()` → optimistic-lock UPDATE (same `version` guard) →
+    one INSERT per event into `outbox_events` (JSON payload) → `tx.commit()`.
+    Any failure rolls back the whole transaction, so the system never ends up
+    in "subscriber changed, event missing" — only "subscriber unchanged, event
+    missing". A conflict (`rows_affected() == 0`) bails with
+    `subscriber update conflict` (the previous existence-check branch was
+    simplified away).
+  - `src/application/subscriber/service.rs` — `suspend()` / `activate()` /
+    `terminate()` now: mutate → `domain_events().to_vec()` → `repository.save()`
+    → `clear_domain_events()` → `increment_version()`. `create()` still uses
+    `repository.create()` unchanged (creation emits no event yet; a future
+    `SubscriberCreated` would join the outbox the same way).
+  - `EventPublisher` / `InMemoryEventPublisher` remain unwired: the intended
+    flow is domain event → application service → `repository.save()` →
+    [Subscriber row + Outbox row] in one transaction → future worker →
+    `EventPublisher`, never a direct DB→publisher call inside a request.
+- Integration test (`tests/subscriber_integration.rs`):
+  - `suspend_persists_domain_event_to_outbox` — suspending a subscriber
+    writes an `outbox_events` row with `event_type = subscriber.suspended`,
+    `aggregate_type = subscriber`, and a payload containing
+    `SubscriberSuspended` — proving domain event → JSON serialization →
+    outbox persistence.
+  - `stale_subscriber_update_is_rejected` — updated to the new
+    `save(subscriber, events)` signature.
+
 ## [0.0.2] - 2026-09-19
 
 ### Added
