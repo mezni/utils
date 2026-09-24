@@ -290,6 +290,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     repository-error design (`NotFound` / `Duplicate` / `ConcurrencyConflict` /
     `Database`) can replace this later.
 
+### Added
+
+- Domain events + first event-infrastructure boundary (Phase 2, Subscriber
+  context, part 6):
+  - `src/domain/events.rs` — `DomainEvent` enum recording facts about what
+    already happened, named with past-tense verbs (`SubscriberSuspended`,
+    `SubscriberActivated`, `SubscriberTerminated`), each carrying
+    `subscriber_id` and `occurred_at` — distinct from commands
+    (`SuspendSubscriber`, etc.). Exported from `src/domain/mod.rs`.
+  - `src/domain/subscriber/entity.rs` — `Subscriber` now collects generated
+    events in `events: Vec<DomainEvent>`:
+    - `new()` and `reconstitute()` start with an empty event list, so loading
+      a persisted subscriber never re-emits historical events.
+    - `suspend()` / `activate()` / `terminate()` record the corresponding
+      event only after a valid state transition
+      (validate → change state → record event), so failed operations generate
+      nothing.
+    - `domain_events()` exposes the collection as an immutable
+      `&[DomainEvent]`; `take_domain_events()` drains it with
+      `std::mem::take`, so events can be dispatched exactly once.
+  - `src/application/event_publisher.rs` — `EventPublisher` port
+    (`async_trait`, `Send + Sync`) with a single `publish(DomainEvent)`
+    method — the first event infrastructure boundary, so the application
+    depends on an interface rather than a concrete broker (dependency
+    inversion; the transport could later be SQLite, an outbox, Kafka,
+    RabbitMQ, or a cloud bus). Exported from `src/application/mod.rs`.
+  - `src/infrastructure/events/{mod,in_memory}.rs` —
+    `InMemoryEventPublisher` holding an `Arc<Mutex<Vec<DomainEvent>>>` for
+    now (intentionally simple), exported from `src/infrastructure/mod.rs`.
+  - The publisher is deliberately **not** wired into `SubscriberService` yet:
+    publishing outside the same transaction can leave
+    (database update, event dispatch) inconsistent — the motivation for the
+    transactional outbox pattern, which comes next.
+- Unit tests (`src/domain/subscriber/entity.rs`):
+  - `suspending_subscriber_generates_event` — one event of the right variant.
+  - `invalid_suspend_does_not_generate_event` — a second, failed suspend
+    leaves the event count unchanged.
+
 ## [0.0.2] - 2026-09-19
 
 ### Added
