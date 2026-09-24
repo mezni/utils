@@ -9,13 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 | Version | Feature Domain | Key Objectives |
 |---------|----------------|----------------|
-| 0.0.5   | Subscriber | Subscriber context: domain/application layers + REST API, typed errors & validation, paginated/filterable list, optimistic locking, domain events, transactional outbox |
-| 0.0.4   | Subscriber | Repository port + SQLite persistence, subscribers table migration, domain reconstitution |
-| 0.0.3   | Foundation | Database pool creation, WAL + foreign keys, health endpoint with DB verification |
+| 0.0.5   | Foundation + Subscriber | Foundation hardening (pool/WAL/config/health verification); full Subscriber context: domain/application/infrastructure layers, REST API, typed errors & validation, paginated/filterable list, optimistic locking, domain events, transactional outbox |
 | 0.0.2   | Foundation | Dependencies, Actix Web server, health endpoint |
 | 0.0.1   | Foundation | Project scaffold, DDD structure, dependencies, config, entry point |
-
-> Note: `0.0.5` is a work-in-progress and corresponds to the `[Unreleased]` section below; `0.0.3` and `0.0.4` never received dedicated release sections in this changelog (their deliverables were folded into `[Unreleased]`), so the table is the authoritative summary of scoped version objectives.
 
 ### Legend
 
@@ -23,6 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Key Objectives: main deliverables scoped to that version.
 
 ## [Unreleased]
+
+## [0.0.5] - 2026-09-24
 
 ### Added
 
