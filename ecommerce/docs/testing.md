@@ -42,6 +42,31 @@ property-based testing, §44 contract regression tests, §45 naming conventions,
 coverage policy, §50 migration testing, §52 synthetic-data rules, §53 provider testing, §54 dependency
 injection, §55 bug-to-regression-test process, §58 workflow, and §60 summary — is retained in full.
 
+## Test architecture
+
+This feature uses three test layers, each with a dedicated in-process `TestClient` so no external
+server is required. The layers are:
+
+1. **Unit** (`tests/unit/`) — domain rules, state transitions, calculations, validation. No database,
+   no FastAPI, no HTTPX. Pure Python objects exercising business invariants. Fast, isolated, order-
+   independent.
+
+2. **Integration** (`tests/integration/`) — repositories, SQLite persistence, transactions, database
+   relationships. Starts a real `alembic`-managed database in a temp directory. Verifies that the
+   application correctly persists and reads data through the repository pattern.
+
+3. **API** (`tests/api/`) — HTTP contract, workflows, failures, authentication. Starts the real
+   FastAPI application via `create_app()` and uses `httpx.AsyncClient` against `http://127.0.0.1:8000`.
+   Each test gets its own isolated test database. The `TestClient` approach (in-process, no OS process)
+   is used for the unit and integration layers; the API layer uses `httpx.AsyncClient` against the
+   running server because it tests the full HTTP pipeline (routing, error envelope, request ID echo,
+   description switches).
+
+The in-process `TestClient` approach means the next feature can extend the same structure — add
+unit tests without spinning up a server, add integration tests that test the repository pattern, and
+add API tests that test the full HTTP pipeline — without cross-layer contamination. Each layer has
+its own test database, seed, and determinism controls.
+
 ---
 
 # 1. Purpose

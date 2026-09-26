@@ -290,8 +290,7 @@ CORS is **off by default** and, when enabled, requires explicit origins. `"*"` i
 the server holds synthetic-but-realistic PII-shaped data, and a wildcard origin on a local server is
 how that data ends up on a page it should not be on.
 
-`API_DOCS_ENABLED=false` in production (§28.3) hides `/docs` and `/openapi.json`, but **not** the
-schema itself from anyone who knows the path — it is a convenience switch, not a security control.
+API_DOCS_ENABLED=false in production (§28.3) hides /docs and /openapi.json, as it is a convenience switch, not a security control.
 
 ---
 

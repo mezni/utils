@@ -1357,6 +1357,19 @@ This draft proposes `GET /api/v1/health` returning a version. **Not adopted**: a
 endpoint cannot be probed by a load balancer that does not know the version, and duplicating
 liveness under `/api/v1` invites the two to disagree. The version belongs on `/ready`.
 
+## Description switches (FR-004)
+
+The table below records the served URLs and the settings that control their availability:
+
+| URL | Controlling setting | Default | Behaviour when `false` |
+|---|---|---|---|
+| `/docs` | `API_DOCS_ENABLED` | `true` | Returns 404; schema not retrievable at alternate path |
+| `/redoc` | `API_REDOC_ENABLED` | `true` | Returns 404 |
+| `/openapi.json` | `API_DOCS_ENABLED` | `true` | Returns 404 |
+
+Both switches are independently controllable convenience controls, not a security boundary
+(research D-05). Turning one off does not make the other's schema retrievable at an alternate path.
+
 ---
 
 # 26. OpenAPI

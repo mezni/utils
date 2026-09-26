@@ -2,7 +2,10 @@
 
 ## Fake E-Commerce Server
 
-> **Status:** Draft
+> **Status:** Complete — FastAPI foundation implemented, `make check` passes, 55/55 tasks recorded.
+> Feature: `002-fastapi-foundation` (P3). `make bootstrap` verified, liveness `/health`,
+> description switches (`API_DOCS_ENABLED`, `API_REDOC_ENABLED`), error envelope, version
+> consistency, dependency declaration correction.
 > **Authority:** `.specify/memory/constitution.md` v1.1.1, *Simple Local Development*
 > **Goal:** clean checkout → populated server, in a handful of commands
 

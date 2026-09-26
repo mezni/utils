@@ -14,6 +14,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **Liveness endpoint** — `GET /health` returns `{"status":"ok"}` (FR-002, FR-003)
+- **Description switches** — `API_DOCS_ENABLED` and `API_REDOC_ENABLED` independently gate `/docs`, `/redoc`, `/openapi.json`; not a security boundary (FR-004, research D-05)
+- **Error envelope** — consistent four-field envelope (`code`, `message`, `details`, `request_id`) on all failures (FR-008)
+- **Dependency declaration correction** — runtime deps moved to `[project] dependencies`, dev deps to `[dependency-groups]` uv.lock re-locked (39 packages, P0 blocker)
+
 #### Governance
 
 - **Constitution v1.1.1** — two PATCH clarifications, no principle added or removed. The core
