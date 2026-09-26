@@ -3,13 +3,13 @@
 > **Status:** Draft — derived from the project constitution
 > (`.specify/memory/constitution.md`, v1.1.0).
 >
-> **Open conflicts (flagged per constitution §44, not silently resolved):**
+> **Conflicts (tracked per constitution §44 — none resolved silently):**
 >
-> | # | Conflict | Where | Status |
-> |---|----------|-------|--------|
-> | C1 | Spec numbering. §30 below proposes a 16-feature list where the fake-data generator is `010`. The `specs/` tree already on disk (user-created) uses 11 features where the fake-data generator is `008` and was called out as *the important feature*. | §30 vs `specs/` | **Needs decision** |
-> | C2 | Constitution path. §4 below lists `constitution.md` at the repository root. The constitution is canonically at `.specify/memory/constitution.md`. | §4 | Resolved below in favour of the constitution path |
-> | C3 | Generator entrypoint. §4 below lists `seed/` without `__main__.py`, but `python -m ecommerce.seed` (constitution §20) requires it. | §4 vs constitution §20 | Resolved below in favour of the constitution |
+> | # | Conflict | Where | Resolution |
+> |---|---|---|---|
+> | C1 | Spec feature decomposition. An earlier draft of this section proposed a 16-feature list in which the fake-data generator is `010`. The `specs/` tree uses 11 features in which the generator is `008` and was identified as *the important feature*. | §30 | **Resolved** — 11 features authoritative. The 16-item list is retained below as a rejected alternative. |
+> | C2 | Constitution path. §4 listed `constitution.md` at the repository root. | §4 | **Resolved** — authoritative path is `.specify/memory/constitution.md` |
+> | C3 | Generator entrypoint. §4 listed `seed/` without `__main__.py`, which `python -m ecommerce.seed` requires. | §4 | **Resolved** — `__main__.py` included |
 
 ---
 
@@ -1119,20 +1119,16 @@ dependencies.
 
 ## 30. SpecKit Feature Mapping
 
-> **CONFLICT C1 — UNRESOLVED. Decision required before any `/speckit.specify` run.**
+> **CONFLICT C1 — RESOLVED.** The **11-feature** breakdown is authoritative, and the
+> fake-data generator is **`008-fake-data-generator`**, explicitly identified as *the important
+> feature*. This matches the `specs/` tree on disk and the constitution
+> (*Speckit Development Process*). The 16-feature list that appeared in an earlier draft of this
+> section is **rejected** and retained below only for traceability.
 >
-> This section proposes a **16-feature** breakdown in which the fake-data generator is
-> **`010-fake-data-generator`**. The `specs/` tree already present in the repository uses an
-> **11-feature** breakdown in which the fake-data generator is
-> **`008-fake-data-generator`**, and that feature was explicitly identified as
-> *the important feature*.
->
-> The 11-feature layout is currently authoritative because the constitution
-> (*Speckit Development Process*) pins it and it is what exists on disk. The list below is
-> preserved as a **candidate decomposition** that may split three existing features into
-> finer slices. Until this is reconciled, do not create `012-`+ directories.
+> Do not create `012-`+ directories. If a capability genuinely outgrows its feature — most likely
+> `checkout` or `testing-hardening` — that is a new Spec Kit proposal, not an implicit split.
 
-**Proposal A — 11 features (authoritative, currently on disk):**
+**Authoritative — 11 features (in place under `specs/`):**
 
 ```text
 001-foundation
