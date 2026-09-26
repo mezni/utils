@@ -1,15 +1,29 @@
 # Fake E-Commerce Server — Implementation Plan
 
 > **Status:** Draft — derived from the project constitution
-> (`.specify/memory/constitution.md`, v1.1.0).
+> (`.specify/memory/constitution.md`, v1.1.1).
 >
-> **Conflicts (tracked per constitution §44 — none resolved silently):**
+> **Conflicts (tracked per constitution's *Explicit Business Rules* (III) — none resolved silently):**
 >
 > | # | Conflict | Where | Resolution |
 > |---|---|---|---|
 > | C1 | Spec feature decomposition. An earlier draft of this section proposed a 16-feature list in which the fake-data generator is `010`. The `specs/` tree uses 11 features in which the generator is `008` and was identified as *the important feature*. | §30 | **Resolved** — 11 features authoritative. The 16-item list is retained below as a rejected alternative. |
 > | C2 | Constitution path. §4 listed `constitution.md` at the repository root. | §4 | **Resolved** — authoritative path is `.specify/memory/constitution.md` |
 > | C3 | Generator entrypoint. §4 listed `seed/` without `__main__.py`, which `python -m ecommerce.seed` requires. | §4 | **Resolved** — `__main__.py` included |
+>
+> **Architecture divergences (found reconciling `architecture.md` against the other documents;**
+> **full tables in `architecture.md` §1, §20.1, §60.1):**
+>
+> | # | Divergence | Where | Resolution |
+> |---|---|---|---|
+> | A1 | Documentation at repo root vs. under `docs/`. | arch. §1 | **Resolved** — same class as C2 |
+> | A2 | `seed/` omitted `__main__.py`. | arch. §1 | **Resolved** — same class as C3 |
+> | A3 | Order lifecycle omitted `FAILED`. | arch. §1 | **Resolved** — added; required by the constitution's *Explicit Business Rules* (III) and by the compensation path failure simulation exercises |
+> | A4 | Payment lifecycle omitted `CAPTURED`, showed `AUTHORIZED → REFUNDED`. | arch. §1 | **Resolved** — `AUTHORIZED → CAPTURED → REFUNDED`, matching `API.md` §22.7–22.7 |
+> | A5 | Money as `Decimal` vs integer minor units. | arch. §20.1 | **Resolved** — integer minor units; `float`/`Decimal` prohibited as the representation. Consistent with `API.md` §12.2, `database.md` §13, `generator.md` |
+> | A6 | `POST /api/v1/checkout` vs `POST /api/v1/carts/{cart_id}/checkout`. | arch. §60.1 | **Deferred** — becomes an acceptance criterion in `specs/005-orders`; interim contract is the published `POST /api/v1/checkout` |
+> | A7 | Product Catalog claimed "availability" that Inventory owns. | arch. §7.1 | **Resolved** — Catalog owns `is_active`; Inventory owns availability |
+> | A8 | Determinism ports (`Clock`, `IdGenerator`, `RandomSource`) absent, breaking cross-refs in `testing.md` §5, `failure-simulation.md` §7, `generator.md` §12. | arch. §68 | **Resolved** — §68 added |
 
 ---
 
@@ -206,7 +220,7 @@ fake-ecommerce-server/
 > `API.md`, `database.md`, `generator.md`, `configuration.md`, `testing.md`,
 > `failure-simulation.md`, `development.md` entries from the original draft are **not** used.
 >
-> **Conflict C3 (resolved):** `seed/__main__.py` is included because constitution §20 mandates
+> **Conflict C3 (resolved):** `seed/__main__.py` is included because the constitution's *Simple Local Development* (V) mandates
 > `uv run python -m ecommerce.seed`.
 
 The exact structure MAY evolve when feature specifications expose better boundaries.
@@ -1144,7 +1158,7 @@ dependencies.
 011-observability
 ```
 
-**Proposal B — 16 features (this section, as originally drafted):**
+**Rejected alternative — 16 features (earlier draft of this section; not adopted):**
 
 ```text
 001-foundation
@@ -1156,7 +1170,7 @@ dependencies.
 007-cart
 008-orders
 009-payments
-010-fake-data-generator
+010-fake-data-generator      <-- renumbered away from 008; not adopted
 011-checkout
 012-failure-simulation
 013-authentication
@@ -1165,23 +1179,36 @@ dependencies.
 016-developer-experience
 ```
 
-**Mapping of the two proposals:**
+**Why it was rejected:**
 
-| Proposal A | Proposal B | Relationship |
+* It renumbered the fake-data generator from `008` to `010`, contradicting both the existing
+  `specs/` tree and the decision that the generator is the project's most important feature.
+* Its finer slicing is **not** better justified: `fastapi-foundation` and `database-foundation`
+  are both trivially small and are better absorbed by `001-foundation`; splitting them would
+  produce three near-empty features and more ceremony than value — contrary to the *Simplicity*
+  principle.
+* `011-checkout` is real work but is genuinely a cross-context *workflow* over cart, inventory,
+  order, and payment. It is better specified inside `005-orders` (with `006-inventory` and
+  `007-payments` as dependencies) than as a feature that owns none of the entities it touches.
+* `015-testing-hardening` and `016-developer-experience` are not independent features. Testing is
+  a *requirement of every* feature, and DX is a consequence of the whole system — neither can be
+  meaningfully "completed" in isolation.
+
+**Cross-reference**, for anyone revisiting this decision:
+
+| Authoritative (11) | Rejected (16) | Relationship |
 |---|---|---|
-| `001-foundation` | `001` + `002` + `003` | A splits foundation into three |
+| `001-foundation` | `001` + `002` + `003` | merged into one |
 | `002-product-catalog` | `004` | 1:1 |
 | `003-customers` | `005` | 1:1 |
-| `006-inventory` | `006` | 1:1 (position differs) |
 | `004-cart` | `007` | 1:1 (position differs) |
-| `005-orders` | `008` | 1:1 (position differs) |
+| `005-orders` | `008` + `011` | merged; checkout absorbed |
+| `006-inventory` | `006` | 1:1 (position differs) |
 | `007-payments` | `009` | 1:1 (position differs) |
-| `008-fake-data-generator` | `010` | 1:1 (**numbering conflict**) |
-| `009-failure-simulation` | `012` | 1:1 (**numbering conflict**) |
-| `010-authentication` | `013` | 1:1 (**numbering conflict**) |
-| `011-observability` | `014` + `015` | B splits observability from testing hardening |
-| *(folded into `005-orders`)* | `011-checkout` | B extracts checkout as its own feature |
-| *(n/a)* | `016-developer-experience` | B adds a docs/DX feature A does not have |
+| `008-fake-data-generator` | `010` | 1:1 (**numbering conflict — 008 wins**) |
+| `009-failure-simulation` | `012` | 1:1 (position differs) |
+| `010-authentication` | `013` | 1:1 (position differs) |
+| `011-observability` | `014` + `015` + `016` | merged; testing/DX absorbed |
 
 Each feature SHOULD have its own specification and implementation plan.
 
