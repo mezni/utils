@@ -223,7 +223,7 @@ class GeneratorConfig(BaseModel):
     categories: int = 12
     products: int = 200
     customers: int = 50
-    carts: int | None = None       # None = derived from customers
+    carts: int | None = None  # None = derived from customers
     orders: int = 300
 
     min_cart_items: int = 1
@@ -1361,8 +1361,8 @@ class EcommerceGenerator:
             orders = self.factories.orders.create_many(customers, products)
             payments = self.factories.payments.create_for(orders)
 
-            self.validate()          # inside the transaction
-            self.uow.commit()        # validation passed → commit
+            self.validate()  # inside the transaction
+            self.uow.commit()  # validation passed → commit
 
         return GenerationResult(...)
 ```

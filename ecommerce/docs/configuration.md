@@ -350,7 +350,7 @@ class ApiSettings(BaseModel):
 
 class DeterminismSettings(BaseModel):
     seed: int = 42
-    clock: datetime | None = None      # FAKE_CLOCK
+    clock: datetime | None = None  # FAKE_CLOCK
 ```
 
 Grouping by concern means a reader looking for "how do I control time" finds one section rather than
@@ -861,6 +861,7 @@ Settings → Composition root → Service / Provider
 
 ```python
 import os
+
 API_KEY = os.getenv("API_KEY")
 ```
 
@@ -907,7 +908,9 @@ makes a failure unreproducible.
 Tests override settings explicitly:
 
 ```python
-settings = Settings(app_env="test", database=DatabaseSettings(url="sqlite+aiosqlite:///:memory:"))
+settings = Settings(
+    app_env="test", database=DatabaseSettings(url="sqlite+aiosqlite:///:memory:")
+)
 ```
 
 FastAPI dependency overrides work for application services. Tests MUST NOT depend on a developer's

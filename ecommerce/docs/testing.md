@@ -1333,7 +1333,7 @@ response = client.post(
     json={
         "name": "Wireless Earbuds",
         "sku": "AUDIO-0001",
-        "price": { "amount": 2999, "currency": "USD" },
+        "price": {"amount": 2999, "currency": "USD"},
         "category_id": category.id,
     },
 )
@@ -1439,8 +1439,8 @@ assert order.total.currency == "USD"
 Not:
 
 ```python
-assert order.total == 39.98      # float — prohibited
-assert order.total == Decimal("39.98")   # Decimal — prohibited
+assert order.total == 39.98  # float — prohibited
+assert order.total == Decimal("39.98")  # Decimal — prohibited
 ```
 
 A price of `$39.98` is the integer `3998`. Comparing integers is exact; there is no rounding step

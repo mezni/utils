@@ -1002,8 +1002,7 @@ Repositories provide persistence abstractions.
 Example domain interface:
 
 ```python
-class ProductRepository:
-    ...
+class ProductRepository: ...
 ```
 
 The infrastructure layer implements it:
