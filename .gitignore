@@ -1,0 +1,106 @@
+# ==========================================
+# Repo-wide
+# ==========================================
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.swp
+*~
+.idea/
+.vscode/
+!.vscode/extensions.json
+.direnv/
+
+# Secrets and local config. Commit .env.example instead.
+.env
+.env.*
+!.env.example
+
+# Logs and scratch output
+*.log
+*.tmp
+*.bak
+tmp/
+.cache/
+
+# ==========================================
+# Python (root uv project + every sub-project)
+# ==========================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.pyre/
+.hypothesis/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+
+# Virtual environments. uv writes the root env here.
+.venv/
+venv/
+env/
+ENV/
+
+# ==========================================
+# Node / frontend (apps/*, skills/*)
+# ==========================================
+node_modules/
+.npm/
+.yarn/
+.pnpm-store/
+*.tsbuildinfo
+next-env.d.ts
+.nuxt/
+.svelte-kit/
+.output/
+.turbo/
+
+# Framework build output
+apps/*/dist/
+apps/*/build/
+apps/*/.next/
+apps/*/out/
+apps/*/target/
+skills/*/dist/
+skills/*/build/
+skills/*/.next/
+
+# Docs site caches (docs/)
+docs/_build/
+docs/.vitepress/cache/
+docs/.vitepress/dist/
+docs/.docusaurus/
+docs/public/crawl-cache/
+
+# ==========================================
+# Generators (generators/*)
+# ==========================================
+# Generated documents and local run state produced by generators such as
+# generators/docgen. The generator recreates these, so they stay untracked.
+generators/*/data/
+generators/*/state.json
+generators/*/out/
+generators/*/output/
+generators/*/samples/
+!generators/*/samples/README.md
+generators/*/.env
+generators/*/*.log
+
+# ==========================================
+# Editor and OS noise inside sub-directories
+# ==========================================
+**/.DS_Store
+**/Thumbs.db
+**/__pycache__/
+**/node_modules/
+**/.venv/
