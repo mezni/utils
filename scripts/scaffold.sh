@@ -29,7 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec.php#pe
 | Version | Feature Domain | Key Objectives |
 |---------|---------------|----------------|
 | 0.0.1   | Project          | Scaffold|
-| 0.1-pre | Repo       | Cleanup|
+| 0.0.1-pre | Repo       | Cleanup|
 
 
 ## [0.0.1] - 2026-08-16
@@ -38,7 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec.php#pe
 - **Project scaffold:** `pyproject.toml`, `.env.example`, `.gitignore`, `README.md`, test directory structure
 
 
-## [0.1-pre] - 2026-08-16
+## [0.0.1-pre] - 2026-08-16
 
 ### Added
 - **Cleanup repo:**
